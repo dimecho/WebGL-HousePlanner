@@ -9,4 +9,4 @@ Live Preview: http://houseplanner.iroot.ca
 
 Look around the code, join the development.
 
-![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot.png)
+![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot.jpg)
