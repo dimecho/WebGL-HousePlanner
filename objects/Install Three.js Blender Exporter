@@ -1,0 +1,19 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+clear
+
+curl -O https://github.com/mrdoob/three.js/blob/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/__init__.py
+curl -O https://github.com/mrdoob/three.js/raw/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/export_threejs.py
+curl -O https://github.com/mrdoob/three.js/blob/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/import_threejs.py
+
+BLENDER_PATH=/Applications/Blender/blender.app/Contents/MacOS/2.6X/scripts/addons/io_mesh_threejs/
+mkdir -p "$BLENDER_PATH"
+
+cp -R __init__.py "$BLENDER_PATH"
+cp -R export_threejs.py "$BLENDER_PATH"
+cp -R import_threejs.py "$BLENDER_PATH"
+
+rm __init__.py
+rm export_threejs.py
+rm import_threejs.py

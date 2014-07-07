@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>WebGL HousePlanner 3D</title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+
+  <script src="js/jquery.js?v=2.1.1"></script>
+  <script type="text/javascript" src="js/jquery.tooltipster.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
+
+  <!--
+  <script src="js/preloader.js" type="text/javascript"></script>
+  <style>
+      #loaderMask{
+      	text-align: center;
+          padding-top: 20%;
+      }
+      #loaderMask span{
+      	font-size: 5em;            
+      }
+  </style>
+  -->
+  <!-- END PreLoader -->
+
+<!-- http://www.webtutorialsource.com/tutorial/show-hide-toggle-sliding-menu-css-javascript -->
+<!-- Slide Menu -->
+<style>
+#box-left{
+    width: 150px;
+    line-height: 20px;
+    left: -100px;
+    top: 80px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 100;
+}
+
+#tab-left{
+    float: right;
+    list-style: none outside none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 99;
+}
+
+#tab-left li span{
+    display: block;
+    padding: 0 5px;
+    position: relative;
+}
+
+#links-left{
+    width: 80px;
+    padding: 10px;
+    float: right;
+    border-right: 1px solid #B4B8BB;
+}
+
+.show-left, .hide-left{
+    /* we specify the transition length for hiding and showing */
+    transition: margin-left .4s ease-in;
+    -webkit-transition: margin-left .4s ease-in;
+}
+
+.hide-left{
+    margin-left:0px;
+}
+
+.show-left{
+    margin-left:100px;
+}
+#arrow-left, .bt{
+    cursor: pointer;
+}
+
+#box-right{
+    width: 400px;
+    font-size: 12px;
+    line-height: 20px;
+    right: -350px;
+    top: 80px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 100;
+}
+
+#tab-right{
+    float: left;
+    list-style: none outside none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 99;
+}
+
+#tab-right li span{
+    display: block;
+    padding: 0 5px;
+    position: relative;
+}
+
+#links-right{
+    width: 80px;
+    padding: 10px;
+    float: left;
+    border-left: 1px solid #B4B8BB;
+}
+
+.show-right, .hide-right{
+    /* we specify the transition length for hiding and showing */
+    transition: margin-right .4s ease-in;
+    -webkit-transition: margin-right .4s ease-in;
+}
+
+.hide-right{
+    margin-right:0px;
+}
+
+.show-right{
+    margin-right:350px;
+}
+
+#arrow-right, .bt{
+    cursor: pointer;
+}
+
+.bt{
+    width: 77px;
+    height: 40px;
+    margin: -1px;
+    text-align:center;
+    border:1px solid #858fa6;
+    font: bold 13px Helvetica,Arial,sans-serif;
+    text-shadow:0px 0px 5px rgba(0, 0, 0, 0.75);
+    background:#014464;
+    background-image: -o-linear-gradient(left, #1F82AF, #002F44);
+    background-image: -ms-linear-gradient(left, #1F82AF, #002F44);
+    background-image: -moz-linear-gradient(left, #1F82AF, #002F44);
+    background-image: -webkit-linear-gradient(left, #1F82AF, #002F44);
+    background-image: -webkit-gradient(linear, left top, right top, from(#1F82AF), to(#002F44));
+}
+
+.bt a{
+    line-height: 40px;
+    color: #fff;
+    display: block;
+}
+
+.bt:hover{
+    transition: background .3s linear;
+    background: #32A3D3;
+    -o-transition: background .3s linear;
+    -moz-transition: background .3s linear;
+    -webkit-transition: background .3s linear;
+}
+
+#deco{
+    width: 100%;
+    float: left;
+    box-shadow:0px 0px 5px #000;
+    -moz-box-shadow:0px 0px 5px #000;
+    -webkit-box-shadow:0px 0px 5px #000;
+}
+</style>
+<script>
+function toggleRight(id) {
+    var el = document.getElementById(id);
+    var img = document.getElementById("arrow-right");
+    var box = el.getAttribute("class");
+    if(box == "hide-right"){
+        el.setAttribute("class", "show-right");
+        delay(img, "images/arrowright.png", 400);
+    }
+    else{
+        el.setAttribute("class", "hide-right");
+        delay(img, "images/arrowleft.png", 400);
+    }
+}
+function toggleLeft(id) {
+    var el = document.getElementById(id);
+    var img = document.getElementById("arrow-left");
+    var box = el.getAttribute("class");
+    if(box == "hide-left"){
+        el.setAttribute("class", "show-left");
+        delay(img, "images/arrowleft.png", 400);
+    }
+    else{
+        el.setAttribute("class", "hide-left");
+        delay(img, "images/arrowright.png", 400);
+    }
+}
+
+function delay(elem, src, delayTime){
+    window.setTimeout(function() {elem.setAttribute("src", src);}, delayTime);
+}
+</script>
+<!-- Slide Menu -->
+
+<!-- Top Menu -->
+<style>
+#top-menu {
+	position: absolute;
+    top: 10px;
+    left: 10px;
+  	width: 98%;	
+  	height: 60px;
+    background: #ccc;
+    padding: 4px;
+    z-index:5;
+   
+	border-radius: 10px;
+	background: #fff;
+	background: -moz-linear-gradient(#fff, #999);
+	background: -webkit-linear-gradient(#fff, #999);
+	background: -o-linear-gradient(#fff, #999);
+}
+
+</style>
+<script>
+$( document).ready(function () {
+	 //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });  	
+    $("#top-menu p").click(function(){
+    $(this).hide().after('<input type="text" class="editP" value="'+$(this).html()+'" size="10" />');
+    $('.editP').focus();
+    });
+    $('.editP').bind('blur', function(){
+       	$(this).hide().prev('#top-menu p').html($(this).val()).show();
+    });
+});
+</script>
+<!-- END Top Menu -->
+
+<!-- Login -->
+
+<!-- END Login -->
+
+<!-- Full Screen -->
+<script>
+// Find the right method, call on correct element
+function launchFullscreen(element) {
+  if(element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if(element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if(element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else if(element.msRequestFullscreen) {
+    element.msRequestFullscreen();
+  }
+}
+
+function exitFullscreen() {
+  if(document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if(document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if(document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  }
+}
+
+function dumpFullscreen() {
+  console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+  console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
+}
+
+// Events
+/*
+document.addEventListener("fullscreenchange", function(e) {
+  console.log("fullscreenchange event! ", e);
+});
+document.addEventListener("mozfullscreenchange", function(e) {
+  console.log("mozfullscreenchange event! ", e);
+});
+document.addEventListener("webkitfullscreenchange", function(e) {
+  console.log("webkitfullscreenchange event! ", e);
+});
+document.addEventListener("msfullscreenchange", function(e) {
+  console.log("msfullscreenchange event! ", e);
+});
+*/
+// Add different events for fullscreen
+
+document.addEventListener("keydown", function(e) {
+  if (e.keyCode == 13) {
+    exitFullscreen();
+  }
+}, false);
+</script>
+<!-- END Full Screen-->
+
+
+<script type="application/x-glsl" id="sky-vertex">
+varying vec2 vUV;
+
+void main() {
+  vUV = uv;
+  vec4 pos = vec4(position, 1.0);
+  gl_Position = projectionMatrix * modelViewMatrix * pos;
+}
+</script>
+
+<script type="application/x-glsl" id="sky-fragment">
+uniform sampler2D texture;
+varying vec2 vUV;
+
+void main() {
+  vec4 sample = texture2D(texture, vUV);
+  gl_FragColor = vec4(sample.xyz, sample.w);
+}
+</script>
+
+<!--http://www.webdesignerdepot.com/2012/10/creating-a-modal-window-with-html5-and-css3/ -->
+<!-- Dialog Box -->
+<style>
+	.modalDialog {
+		position: fixed;
+		font-family: Arial, Helvetica, sans-serif;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background: rgba(0,0,0,0.8);
+		z-index: 9999;
+		opacity:0;
+		-webkit-transition: opacity 400ms ease-in;
+		-moz-transition: opacity 400ms ease-in;
+		transition: opacity 400ms ease-in;
+		pointer-events: none;
+	}
+
+	.modalDialog:target {
+		opacity:1;
+		pointer-events: auto;
+	}
+
+	.modalDialog > div {
+		width: 400px;
+		position: relative;
+		margin: 10% auto;
+		padding: 5px 20px 13px 20px;
+		border-radius: 10px;
+		background: #fff;
+		background: -moz-linear-gradient(#fff, #999);
+		background: -webkit-linear-gradient(#fff, #999);
+		background: -o-linear-gradient(#fff, #999);
+	}
+
+	.close {
+		background: #606061;
+		color: #FFFFFF;
+		line-height: 25px;
+		position: absolute;
+		right: -12px;
+		text-align: center;
+		top: -10px;
+		width: 24px;
+		text-decoration: none;
+		font-weight: bold;
+		-webkit-border-radius: 12px;
+		-moz-border-radius: 12px;
+		border-radius: 12px;
+		-moz-box-shadow: 1px 1px 3px #000;
+		-webkit-box-shadow: 1px 1px 3px #000;
+		box-shadow: 1px 1px 3px #000;
+	}
+
+	.close:hover { background: #00d9ff; }
+	</style>
+<!-- END Dialog Box -->
+
+<script>
+    $(document).ready(function() {
+        $('.tooltip').tooltipster({
+   		animation: 'fade',
+  		delay: 200,
+   		theme: 'tooltipster-default',
+   		touchDevices: false,
+   		trigger: 'hover',
+   		position: 'bottom',
+   		contentAsHTML: true
+		});
+    });
+</script>
+
+<!-- iScroll -->
+<style type="text/css">
+#scroller * {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  -ms-touch-action: none;
+}
+
+body{
+  padding: 0;
+  margin: 0;
+  border: 0;
+  overflow:hidden;
+}
+
+#header {
+ position: absolute;
+  z-index: 2;
+  top: 50;
+  left: 55px;
+  width: 320px;
+  height: 55px;
+  background: #444;
+  padding: 0;
+}
+
+#footer {
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  left: 55px;
+  width: 320px;
+  height: 55px;
+  background: #444;
+  padding: 0;
+}
+
+#scrollWrapper {
+  position: absolute;
+  top: 85px;
+  bottom: 55px;
+  left: 55px;
+  width: 320px;
+  background: #ccc;
+  overflow: hidden;
+  z-index: 1;
+  background: #ccc;
+  overflow: hidden;
+}
+
+#scroller {
+  position: relative;
+  z-index: 1;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  width: 100%;
+  /*-webkit-transform: translate3d(0,0,0);*/ /*http://cantina.co/thought_leadership/ios-5-native-scrolling-grins-and-gothcas*/
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  -ms-text-size-adjust: none;
+  -o-text-size-adjust: none;
+  text-size-adjust: none;
+}
+</style>
+<!-- END iScroll -->
+
+</head>
+<body onload="loaded()">
+
+<!-- UI -->
+
+<!-- 
+https://github.com/codrops/IconHoverEffects
+http://fontello.com 
+http://www.flaticon.com
+-->
+<link rel="stylesheet" href="font/style.css"></head>
+<link rel="stylesheet" href="css/iconhover.css">
+<script src="js/modernizr.custom.js"></script>
+
+<link rel="stylesheet" type="text/css" href="css/reset.css"  />
+<link rel="stylesheet" type="text/css" href="css/normalize.css"  />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<link rel="stylesheet" type="text/css" href="css/style2.css" />
+
+<script type="text/javascript" src="js/iscroll-lite.js"></script>
+<script type="text/javascript" src="js/draggable.js"></script>
+<script type="text/javascript">
+$(function() {
+
+  $('#dragElement').drags();
+  //$('#wrap-left .with-handle').drags({handle:"strong"});
+});
+</script>
+<style>
+#dragElement {
+  position: absolute;
+  display: none;
+  top: 0;
+  left: 0;
+  width:100px;
+  height:100px;
+  z-index:9999; /* move the z-index to the CSS */
+}
+</style>
+
+<script type="text/javascript">
+var myScroll;
+function loaded () {
+  myScroll = new IScroll('#scrollWrapper', {
+    //scrollbars: true,
+    mouseWheel: true,
+    interactiveScrollbars: true,
+    //shrinkScrollbars: 'scale',
+    //fadeScrollbars: true
+  });
+}
+document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+</script>
+
+<div id="openLogin" class="modalDialog">
+	<div>
+		<a href="#close" class="close">X</a>
+		<p class="validateTips"></p>
+		<form>
+		<label for="name">Username</label>
+		<input type="text" name="name" id="name">
+    <br/>
+		<label for="password">Password</label>
+		<input type="password" name="password" id="password" value="" >
+		</form>
+	</div>
+</div>
+
+<div id="openThumb" class="modalDialog">
+	<div style="width:600px">
+		<a href="#close" class="close">X</a>
+		<img src="images/house.jpg" />
+	</div>
+</div>
+
+<div id="openExistingDesign" class="modalDialog">
+	<div style="width:600px; height:300px">
+		<a href="#close" class="close">X</a>
+	</div>
+</div>
+
+<!-- Slide Right Menu -->
+<script>
+ $(document).ready(function() {
+    $('.tooltip-top').tooltipster({
+   		animation: 'fade',
+  		delay: 200,
+   		theme: 'tooltipster-default',
+   		touchDevices: false,
+   		trigger: 'hover',
+   		position: 'top'
+		});
+    //toggleRight('box-right');
+   });
+</script>
+<div id="box-right" class="hide-right" style="padding-bottom:40%;">
+    <ul id="tab-right">
+        <li>
+            <img id="arrow-right" onclick="toggleRight('box-right');" src="images/arrowleft.png">
+        </li>
+    </ul>
+    <div id="links-right">
+        <div id="deco" style="width:320px;padding-bottom:50%;">
+          <div id="Menu3DHouse" style="display: none;">
+          
+          </div>
+          <div id="Menu3DFloor" style="display: none;">
+            <!--
+            <div id="vendorLogo" style="display:inline-block;left:0;width:175px;height:73px;background-image: url('images/_logotag.png')">
+              <a href="#suppliers"><img src="images/suppliers/logos/leons.png" style="padding:10px;" alt="Vendor" /></a>
+            </div>
+            -->
+          </div>
+          <div id="Menu2DFloor" style="display: none;">
+
+          </div>
+
+          <div style="display: inline-block;vertical-align:top;padding:5px">
+              <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+                <a class="hi-icon icon-arrow483 tooltip-top" title="Upload Your 3D Object"></a>
+                <a class="hi-icon icon-shopping145 tooltip-top" title="Catalog"></a>
+                <a href="#" class="hi-icon icon-task tooltip-top" title="Whish List"></a>
+              </div>
+          </div>
+			    		<style>
+              .input-wrapper {
+                  border-raius:5px;
+                  padding:10px;
+              }
+              input[type=text] {
+                border-raius:5px;
+                  width:310px;
+                  font-size:16px;
+              }
+            </style>
+
+          <div id="header">
+            
+              <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" />
+              <!--
+            	<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+              		<a href="#" class="hi-icon icon-navigate6" title="Scroll Up"></a>
+            	</div>
+              -->
+          </div>
+        	
+          <div id="dragElement"></div>
+
+           
+	        <div id="scrollWrapper">
+
+	            <div id="scroller">
+	              <div id="WebGLCanvasMenu"></div>
+                <div id="HTMLCanvasMenu" style="display: none;"></div>
+	            </div>
+	        </div>
+	        <!--
+	        <div id="footer">
+	             <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+	              <a href="#" class="hi-icon icon-arrow483" title="Scroll Down"></a>
+	            </div>
+	        </div>
+	        -->
+        </div>
+    </div>
+</div>
+<!-- END Slide Right Menu -->
+<!-- Slide Left Menu -->
+<script>
+ $(document).ready(function() {
+        $('.tooltip-right').tooltipster({
+   		animation: 'fade',
+  		delay: 200,
+   		theme: 'tooltipster-default',
+   		touchDevices: false,
+   		trigger: 'hover',
+   		position: 'right'
+		});
+   });
+</script>
+<div id="box-left" class="hide-left">
+    <ul id="tab-left">
+        <li>
+            <img id="arrow-left" onclick="toggleLeft('box-left');" src="images/arrowright.png">
+        </li>
+    </ul>
+    <div id="links-left">
+        <div id="deco">
+        <!-- 3D Editor Menu -->
+			<a href="#" class="hi-icon icon-images11 tooltip-right" title="Insert Picture"></a>
+			<a href="#" class="hi-icon icon-edit26 tooltip-right" title="Insert Note"></a>
+        <!-- 2D Editor Menu -->
+        	<a href="#" class="hi-icon icon-vector15 tooltip-right" title="Draw Room"></a>
+			<a href="#" class="hi-icon icon-vector18 tooltip-right" title="Draw Wall"></a>
+			<a href="#" class="hi-icon icon-vector17 tooltip-right" title="Draw Curved Wall"></a>
+        	<a href="#" class="hi-icon icon-cube12 tooltip-right" title="Cube"></a>
+			<a href="#" class="hi-icon icon-cylindrical7 tooltip-right" title="Cylinder"></a>
+
+        </div>
+    </div>
+</div>
+<!-- END Slide Right Menu -->
+
+<!-- Suppliers -->
+<div id="suppliers" class="panel" style="background-color: #fff;">
+
+		<section class="ff-container" style="margin-top:8em;">
+				<input id="select-type-all" name="radio-set-1" type="radio" class="ff-label-type-1" checked="checked" />
+				<label for="select-type-all" class="ff-label-type-all">All</label>
+				
+				<input id="select-type-1" name="radio-set-1" type="radio" class="ff-selector-type-1" />
+				<label for="select-type-1" class="ff-label-type-1">Furnishings</label>
+				
+				<input id="select-type-2" name="radio-set-1" type="radio" class="ff-selector-type-2" />
+				<label for="select-type-2" class="ff-label-type-2">Appliances</label>
+				
+				<input id="select-type-3" name="radio-set-1" type="radio" class="ff-selector-type-3" />
+				<label for="select-type-3" class="ff-label-type-3">Hardware</label>
+				
+				<div class="clr"></div>
+				
+				<ul class="ff-items">
+					<li class="ff-item-type-1 ff-item-type-2">
+						<a href="#">
+							<span>LazBoy</span>
+							<img src="images/suppliers/lazboy.png" />
+						</a>
+					</li>
+					<li class="ff-item-type-1 ff-item-type-2">
+						<a href="#">
+							<span>Leons</span>
+							<img src="images/suppliers/leons.png" />
+						</a>
+					</li>
+					<li class="ff-item-type-1 ff-item-type-2">
+						<a href="#">
+							<span>TheBrick</span>
+							<img src="images/suppliers/thebrick.png" />
+						</a>
+					</li>
+					<li class="ff-item-type-3">
+						<a href="#">
+							<span>HomeDepot</span>
+							<img src="images/suppliers/homedepot.png" />
+						</a>
+					</li>
+				</ul>
+			</section>
+</div>
+<!-- End Suppliers -->
+
+<!-- Map -->
+<div id="info" class="panel" style="background-color: #fff;">
+  <br/><br/><br/><br/><br/><br/>
+	<center><h1>Property Info & Agent Contact</h1></center>
+</div>
+<!-- End Map -->
+
+<!-- Debug-->
+<div id="debug" class="panel" style="background-color: #fff;">
+
+</div>
+<!-- End Debug -->
+
+<!-- Thumbnail class="ui-widget-content" -->
+<div id="top-menu">
+		<div style="display: inline-block;width:108px;">
+		<a href="#openThumb"><img src="images/_house.jpg" height="55" width="100" alt="Sample" /></a>
+	</div>
+	<div style="display:inline-block;width:200px;">
+		<div style="height:55px">
+			<div style="float:left" class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+				<a id="link-portfolio" href="#info" class="hi-icon icon-info"></a>
+			</div>
+			<div style="padding-top:5px; line-height:140%;  float:left">MLS#: <br/>Agent: </div>
+			<div style="padding-top:5px; line-height:140%; float:left"><p>12345</p>Alyson</div>
+		</div>
+	</div>
+	<div style="display: inline-block;vertical-align:top">
+		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+			<a href="#" onclick="show3DHouse()" class="hi-icon icon-home87 tooltip" title="Home Exterior"></a>
+			<a href="#" onclick="show3DFloor()" class="hi-icon icon-stack tooltip" title="Floor Furnish"></a>
+			<a href="#" onclick="show2D()" class="hi-icon icon-cube10 tooltip" title="Floor Plan"></a>
+			<a href="#" onclick="sceneNew()" class="hi-icon icon-document6 tooltip" title="New"></a>
+			<a href="#openExistingDesign" class="hi-icon icon-open127 tooltip" title="Open"></a>
+      <a href="#" onclick="exportJSON()" class="hi-icon icon-floppy19 tooltip" title="Save"></a>
+      <script>
+			$('.tooltip-save-menu').tooltipster({
+				interactive:true,
+        		content: $('<a href="#" class="hi-icon icon-earth16" style="color:white"></a><strong>Online</strong><br/><a href="#" onclick="exportJSON();" class="hi-icon icon-usb3" style="color:white"></a><strong>USB File</strong>')
+        	});
+			</script>
+			
+			<a href="#" class="hi-icon icon-undo tooltip" title="Undo"></a>
+			<a href="#" class="hi-icon icon-redo tooltip" title="Redo"></a>
+			<!--
+			<a href="#" class="hi-icon icon-profile22 tooltip-share-menu" title="Share"></a>
+			<script>
+			$('.tooltip-share-menu').tooltipster({
+				interactive:true,
+        		content: $('<span><i class="hi-icon icon-printer60" style="color:white"></i></span><br/><span><i class="hi-icon icon-mail59" style="color:white"></i></span><br/><span><i class="hi-icon icon-social21" style="color:white"></i></span><br/><span><i class="hi-icon icon-social5" style="color:white"></i></span><br/><span><i class="hi-icon icon-social38" style="color:white"></i></span>')
+        	});
+			</script>
+      -->
+			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-photo146 tooltip" title="Screenshot"></a>
+			<a href="#" onclick="launchFullscreen(document.documentElement);" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
+			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login"></a>
+		</div>
+	</div>
+	</div>
+<!--
+<div class="apple_overlay black" id="photo1">
+  	<img src="img/property-large.jpg" />
+	<h2>Agent</h2>
+	<p>Address Location</p>
+</div>
+-->
+<!-- End Thumbnail -->
+<!-- UI -->
+
+<!-- http://threejs.org/editor -->
+
+<div id="WebGLCanvas"></div>
+
+<script src="js/3d/three.js"></script>
+<script src="js/3d/Detector.js"></script>
+
+<script src="js/3d/loaders/BinaryLoader.js"></script>
+<script src="js/3d/loaders/BabylonLoader.js"></script>
+
+<!--
+<script src="js/3d/loaders/ColladaLoader.js"></script>
+<script src="js/3d/loaders/OBJLoader.js"></script>
+<script src="js/3d/loaders/MTLLoader.js"></script>
+<script src="js/3d/loaders/OBJMTLLoader.js"></script>
+-->
+
+<script src="js/3d/controls/OrbitControls.js"></script>
+
+<script src="js/3d/exporters/OBJExporter.js"></script>
+<script src="js/3d/exporters/ObjectExporter.js"></script>
+<script src="js/3d/exporters/GeometryExporter.js"></script>
+<script src="js/3d/exporters/Geometry2Exporter.js"></script>
+<!--<script src="js/3d/exporters/BufferGeometryExporter.js"></script>-->
+<script src="js/3d/exporters/MaterialExporter.js"></script>
+<!-- <script src="js/libs/stats.min.js"></script> -->
+
+<script src="js/main.js"></script>
+<!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->
+
+</body>
+</html>

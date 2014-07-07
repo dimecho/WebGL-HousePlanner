@@ -1,0 +1,13 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+
+for f in $(find ./ -name '*.blend1')
+do
+	rm "$f"
+done
+
+for f in $(find ./ -name '.DS_Store')
+do
+	rm "$f"
+done
