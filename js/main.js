@@ -22,6 +22,8 @@ var scene2DFloorContainer = []; //Contains all 2D lines by floor
 var scene3DPivotPoint; //Rotational pivot point - 1 object
 var sceneAmbientLight;
 var sceneDirectionalLight;
+//var sceneParticleLight;
+//var scenePointLight;
 
 var controls3D;
 //var controls2D;
@@ -39,20 +41,32 @@ var skyMesh;
 
 var containerWork
 var containerMenu
-var stats, objects;
+//var stats, objects;
 
 var RADIAN = Math.PI / 180;
 var AUTOROTATE = true;
 var TOOL = 'view';
+var FLOOR = 1; //first floor selected default
 
 //var keyboard = new THREE.KeyboardState();
-var clock = new THREE.Clock();
+//var clock = new THREE.Clock();
+var mouse2D;
+var scene2DDrawLineGeometry; //Temporary holder for mouse click and drag drawings
+var scene2DDrawLineMaterial; //Line thikness		
+var scene2DWallGeometry = [
+    [],
+    []
+]; //Multidimensional Array to hold multiple floors with each having multiple walls - they also hold a 3D geometry
+var scene2DWallRegularMaterial;
+var scene2DWallRegularMaterialSelect;
+var scene2DWallBearingMaterial;
+var scene2DWallBearingMaterialSelect;
 
-var particleLight, pointLight;
+
 var collision = [];
 var hold = {};
 
-var projector = new THREE.Projector();
+var menuProjector;
 var spinObject;
 var menuSpinHelper;
 
@@ -74,7 +88,10 @@ initMenu();
 init();
 
 function initMenu() {
+
     scene3DMenu = new THREE.Scene();
+    menuProjector = new THREE.Projector();
+
     scene3DMenuHouseContainer = new THREE.Object3D();
     scene3DMenuFloorContainer = new THREE.Object3D();
     //scene3DMenuHouseContainer.position.set(0, 0, 0);
@@ -112,7 +129,7 @@ function initMenu() {
     camera3DMenu.position.set(0, 0, 440);
     camera3DMenu.lookAt(new THREE.Vector3(0, 0, 0));
     //scene3DMenu.add(camera3DMenu);
-    projector = new THREE.Projector();
+
     //mouseVector = new THREE.Vector3();
 
     window.addEventListener('resize', function() {
@@ -167,7 +184,7 @@ function initMenu() {
     var topMenu3DPosition = 11;
     var topMenuItemPosition = 50;
 
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < 3; i++) {
         loadJSON(menuItem[i], scene3DMenuHouseContainer, -3, topMenu3DPosition, 0, 0, 0, 2.5);
 
         // create a canvas element
@@ -215,8 +232,7 @@ function initMenu() {
 
     scene3DMenu.add(scene3DMenuHouseContainer);
     scene3DMenuLight();
-
-    //animateMenu();
+    animateMenu();
     //rendererMenu.render(scene3DMenu, camera3DMenu);
 }
 
@@ -253,40 +269,43 @@ function init() {
     scene3DPivotPoint = new THREE.Object3D();
 
 
-    sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
-    sceneDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    sceneDirectionalLight.color.setHSL(0.1, 1, 0.95);
-    sceneDirectionalLight.position.set(-1, 15, 1);
-    sceneDirectionalLight.position.multiplyScalar(50);
-    //sceneDirectionalLight.position.set(-1, 0, 0).normalize();
-    sceneDirectionalLight.castShadow = true;
-    sceneDirectionalLight.shadowMapWidth = 2048;
-    sceneDirectionalLight.shadowMapHeight = 2048;
-    var d = 10;
-    sceneDirectionalLight.shadowCameraLeft = -d;
-    sceneDirectionalLight.shadowCameraRight = d;
-    sceneDirectionalLight.shadowCameraTop = d;
-    sceneDirectionalLight.shadowCameraBottom = -d;
-    sceneDirectionalLight.shadowCameraFar = 3000;
-    sceneDirectionalLight.shadowBias = -0.0001;
-    sceneDirectionalLight.shadowDarkness = 0.5;
-    //sceneDirectionalLight.shadowCameraVisible = true;
-    scene3D.add(sceneAmbientLight);
-    scene3D.add(sceneDirectionalLight);
-
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
     camera3D = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 600);
     camera2D = new THREE.PerspectiveCamera(12, window.innerWidth / window.innerHeight, 0.1, 600);
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
     camera3D.position.set(3, 6, 18);
-    //camera2D.position.z = 400; // the camera starts at 0,0,0 so pull it back
-    camera2D.lookAt(new THREE.Vector3(0, 0, 0));
+    camera2D.position.z = 100; // the camera starts at 0,0,0 so pull it back
+
+
     var gridXY = new THREE.GridHelper(100, 2);
     gridXY.position.set(0, 0, -200);
     gridXY.rotation.x = Math.PI / 2;
     gridXY.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
     scene2D.add(gridXY);
+
+    scene2DDrawLineGeometry = new THREE.Geometry();
+    scene2DDrawLineMaterial = new THREE.LineBasicMaterial({
+        color: 0x000000,
+        linewidth: 3,
+        //opacity: 0.5
+    });
+    scene2DWallRegularMaterial = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0001.png');
+    scene2DWallRegularMaterialSelect = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0002.png');
+
+    /*
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+
+    geometry.vertices.push(new THREE.Vector3(10, 10, 0));
+    var line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+        color: 0x000000,
+        opacity: 0.5
+    }));
+    scene2D.add(line);
+	*/
+
+
     //camera3D.lookAt(scene3D.position);
 
     //Quaternion slerp is your friend for smooth rotations to target location. You need to use quaternion 
@@ -315,10 +334,10 @@ function init() {
         renderer = new THREE.CanvasRenderer();
     }
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0xeeeedd, 1.0);
+    renderer.setClearColor(0xffffff, 1.0);
     renderer.shadowMapEnabled = true;
-    //renderer.shadowMapType = THREE.PCFShadowMap;
-    //renderer.physicallyBasedShading = true;
+    renderer.shadowMapType = THREE.PCFShadowMap;
+    renderer.physicallyBasedShading = true;
 
     containerWork = document.getElementById('WebGLCanvas');
     containerWork.appendChild(renderer.domElement);
@@ -341,11 +360,15 @@ function init() {
     })();
     */
 
-    //Quick performance optimization
     $(window).bind('mousedown', function(e) {
         AUTOROTATE = false;
         //renderer.antialias = false;
-        $(window).unbind('mousedown');
+        //mouse.set(e.clientX, e.clientY);
+        //line = null;
+        if (scene2D.visible) {
+            $(window).bind('mousemove', drag2D).bind('mouseup', drag2DEnd);
+        }
+        //$(window).unbind('mousedown');
     });
     //$(window).bind('mouseup', function(e) {
     //renderer.antialias = true;
@@ -377,15 +400,13 @@ function init() {
     });
     */
 
-    //////////////
-    // CONTROLS //
-    //////////////
 
     // move mouse and: left   click to rotate,  middle click to zoom, right  click to pan
     controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
     //controls2D = new THREE.OrbitControls(camera2D, renderer.domElement);
 
     controls3D.target = new THREE.Vector3(0, 0, 0); //+ object.lookAT!
+    //controls2D.target = new THREE.Vector3(0, 0, 0); //+ object.lookAT!
 
     //mycontrols.target = new THREE.Vector3(newx, newy, newz); //flyin effect?
 
@@ -401,40 +422,9 @@ function init() {
     stats.domElement.style.zIndex = 100;
     containerWork.appendChild( stats.domElement );
     */
-    //pointLight = new THREE.PointLight( 0xffffff, 4 );
-    //pointLight.position = particleLight.position;
-    //scene.add( pointLight );
-
-    //////////////
-    // GEOMETRY //
-    //////////////
 
     //var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x00ee00, wireframe: true, transparent: true } ); 
 
-    // create an array with six textures for a cool cube
-    /*
-    var materialArray = [];
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/Dice-Blue-1.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/Dice-Blue-6.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/Dice-Blue-2.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/Dice-Blue-5.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/Dice-Blue-3.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/Dice-Blue-4.png' ) }));
-    var DiceBlueMaterial = new THREE.MeshFaceMaterial(materialArray);
-    */
-    // create a set of coordinate axes to help orient user
-    //    specify length in pixels in each direction
-    //var axes = new THREE.AxisHelper(100);
-    //scene.add( axes );
-
-    ///////////
-    // FLOOR //
-    ///////////
-
-
-    /////////
-    // SKY //
-    /////////
     /*
     var imagePrefix = "images/mountains-";
     var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
@@ -454,7 +444,7 @@ function init() {
 
     sceneNew();
     scene3DSky();
-    //scene3DLight();
+    scene3DLight();
 
     show3DHouse();
     animate();
@@ -613,7 +603,7 @@ function loadJSON(js, object, x, y, z, xaxis, yaxis, ratio) {
         object.add(mesh);
     }, "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/");
 }
-
+/*
 function loadBabylon(js, object, x, y, z, xaxis, yaxis, ratio) {
 
     var loader = new THREE.BabylonLoader();
@@ -633,6 +623,7 @@ function loadBabylon(js, object, x, y, z, xaxis, yaxis, ratio) {
         object.add(mesh);
     }, "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/");
 }
+*/
 
 
 function loadBIN(js, object, x, y, z, xaxis, yaxis, ratio) {
@@ -956,9 +947,9 @@ function exportJSON() {
     //log(json);
 }
 
-function calc2Dpoint(x, y, z) {
-    var projector = new THREE.Projector();
-    var vector = projector.projectVector(new THREE.Vector3(x, y, z), camera);
+function calc2Dpoint(x, y, z, camera) {
+    //var projector = new THREE.Projector();
+    var vector = menuProjector.projectVector(new THREE.Vector3(x, y, camera.position.z), camera);
 
     var result = new Object();
     result.x = Math.round(vector.x * (renderer.domElement.width / 2));
@@ -1032,12 +1023,12 @@ function sceneNew() {
     loadJSON("Exterior/Plants/bush.js", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
     loadJSON("Exterior/Fence/fence1.js", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
     loadJSON("Exterior/Fence/fence2.js", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
-    loadJSON("Exterior/Cars/VWbeetle.js", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
+    //loadJSON("Exterior/Cars/VWbeetle.js", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
 
 
     //loadJSON("Platform/elaine.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
 
-    loadJSON("Interior/Furniture/burlap-sofa.js", scene3DFloorContainer[0], 0, 0, 0, 0, 0, 1);
+    //loadJSON("Interior/Furniture/burlap-sofa.js", scene3DFloorContainer[0], 0, 0, 0, 0, 0, 1);
 
     //scene3D.rotation.y += 10;
     //THREE.GeometryUtils.center();
@@ -1151,33 +1142,32 @@ function scene3DLight() {
     //scene.add(ambientLight);
 
     /*
-    particleLight = new THREE.Mesh(new THREE.SphereGeometry(0, 10, 0), new THREE.MeshBasicMaterial({
+    sceneParticleLight = new THREE.Mesh(new THREE.SphereGeometry(0, 10, 0), new THREE.MeshBasicMaterial({
         color: 0xffffff
     }));
-    scene3D.add(particleLight);
+    scene3D.add(sceneParticleLight);
     */
 
-    var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    directionalLight.color.setHSL(0.1, 1, 0.95);
-    directionalLight.position.set(-1, 15, 1);
-    directionalLight.position.multiplyScalar(50);
-    //directionalLight.position.set(-1, 0, 0).normalize();
-    scene3D.add(directionalLight);
-
-    directionalLight.castShadow = true;
-    directionalLight.shadowMapWidth = 2048;
-    directionalLight.shadowMapHeight = 2048;
-
+    sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
+    sceneDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    sceneDirectionalLight.color.setHSL(0.1, 1, 0.95);
+    sceneDirectionalLight.position.set(-1, 15, 1);
+    sceneDirectionalLight.position.multiplyScalar(50);
+    //sceneDirectionalLight.position.set(-1, 0, 0).normalize();
+    sceneDirectionalLight.castShadow = true;
+    sceneDirectionalLight.shadowMapWidth = 2048;
+    sceneDirectionalLight.shadowMapHeight = 2048;
     var d = 10;
-    directionalLight.shadowCameraLeft = -d;
-    directionalLight.shadowCameraRight = d;
-    directionalLight.shadowCameraTop = d;
-    directionalLight.shadowCameraBottom = -d;
-
-    directionalLight.shadowCameraFar = 3000;
-    directionalLight.shadowBias = -0.0001;
-    directionalLight.shadowDarkness = 0.5;
-    //dirLight.shadowCameraVisible = true;
+    sceneDirectionalLight.shadowCameraLeft = -d;
+    sceneDirectionalLight.shadowCameraRight = d;
+    sceneDirectionalLight.shadowCameraTop = d;
+    sceneDirectionalLight.shadowCameraBottom = -d;
+    sceneDirectionalLight.shadowCameraFar = 3000;
+    sceneDirectionalLight.shadowBias = -0.0001;
+    sceneDirectionalLight.shadowDarkness = 0.5;
+    //sceneDirectionalLight.shadowCameraVisible = true;
+    scene3D.add(sceneAmbientLight);
+    scene3D.add(sceneDirectionalLight);
 
 }
 
@@ -1231,7 +1221,7 @@ function mouseDownMenu(event) {
     var directionVector = new THREE.Vector3((hold.x / containerWidth) * 2 - 1, -(hold.y / containerHeight) * 2 + 1, 0.5);
     //directionVector.set(x, y, 0.5);
 
-    projector.unprojectVector(directionVector, camera3DMenu);
+    menuProjector.unprojectVector(directionVector, camera3DMenu);
     directionVector.sub(camera3DMenu.position); // Substract the vector representing the camera position
     directionVector.normalize(); //Normalize the vector, to avoid large numbers from the projection and substraction
 
@@ -1264,11 +1254,13 @@ function mouseMoveMenu(event) {
 }
 
 function animateMenu() {
+
+    //TODO: render only when menu is visible
     requestAnimationFrame(animateMenu);
 
-    if (spinObject != null && menuSpinHelper) {
+    if (spinObject != null) { // && menuSpinHelper) {
         if (spinObject.rotation.y > 6) {
-            menuSpinHelper = false;
+            //menuSpinHelper = false;
             spinObject.rotation.y = 0;
             spinObject = null;
         } else {
@@ -1335,12 +1327,7 @@ function animate() {
             //controls3D.update();
         }
 
-
-        if (scene3DHouseContainer.visible) {
-            controls3D.update();
-            //controls3DHouse.update();
-        } else if (scene3DFloorContainer.visible) {
-            controls3D.update();
+        if (scene3DFloorContainer.visible) {
 
             /*
             move the CubeCamera to the position of the object that has a reflective surface,
@@ -1351,17 +1338,14 @@ function animate() {
             camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
             camera3DMirrorReflection.visible = true;
             //controls3DFloor.update();
+
         }
 
+        controls3D.update();
         renderer.render(scene3D, camera3D);
 
-        //} else if (scene2D.visible) {
-        //controls2D.update();
-        //console.log(camera2D.fov);
-    }
-    //stats.update();
-
-    /*
+        //stats.update();
+        /*
                 var timer = Date.now() * 0.0005;
 
                 camera.position.x = Math.cos( timer ) * 10;
@@ -1373,12 +1357,9 @@ function animate() {
                 particleLight.position.x = Math.sin( timer * 4 ) * 3009;
                 particleLight.position.y = Math.cos( timer * 5 ) * 4000;
                 particleLight.position.z = Math.cos( timer * 4 ) * 3009;
-    */
+    	*/
 
-    if (scene3D.visible) {
-
-    }
-    /*
+        /*
                 if(scene3DHouse.visible){
           renderer.render(scene3DHouse, camera3D);
                     //renderer.render(scene3DHouse, camera3DHouse);
@@ -1386,11 +1367,12 @@ function animate() {
         else if(scene3DFloor.visible){
           renderer.render(scene3DFloor, camera3D);
                     //renderer.render(scene3DFloor, camera3DFloor);
-  */
-    else if (scene2D.visible) {
+  		*/
+    } else if (scene2D.visible) {
+        //controls2D.update();
         renderer.render(scene2D, camera2D);
     }
-
+    /*
     if (spinObject != null) { //} && menuSpinHelper){
         if (spinObject.rotation.y > 6) {
             //menuSpinHelper = false;
@@ -1411,17 +1393,63 @@ function animate() {
         //rendererMenu.render(scene3DMenu, camera3DMenu);
     }
     rendererMenu.render(scene3DMenu, camera3DMenu);
-
+	*/
     //renderer.render( scene, camera );
 }
 
-
-
-//2DEngine
 function drag2D(e) {
-    /*
+
     x = e.clientX;
     y = e.clientY;
+
+    var point = calc2Dpoint(x, y, z, camera3D);
+
+
+    /*
+    var PI2 = Math.PI * 2;
+    var material = new THREE.SpriteCanvasMaterial({
+        color: 0x000000,
+        program: function(context) {
+            context.beginPath();
+            context.arc(0, 0, 0.5, 0, PI2, true);
+            context.fill();
+        }
+    });
+	*/
+    /*
+    var particle = new THREE.Sprite(material);
+    particle.position.x = e.clientX; //Math.random() * 2 - 1;
+    particle.position.y = e.clientY; //Math.random() * 2 - 1;
+    particle.position.z = 0; //Math.random() * 2 - 1;
+    particle.position.normalize();
+    particle.position.multiplyScalar(Math.random() * 10 + 450);
+    particle.scale.x = particle.scale.y = 10;
+    scene2D.add(particle);
+    geometry.vertices.push(particle.position);
+	*/
+
+    /*
+    scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0));
+    scene2DDrawLineGeometry.vertices.push(mouse2D);
+    scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
+    scene2D.add(scene2DDrawLine);
+	*/
+
+    //geometry.vertices.push(mouse2D);
+    //geometry.faces.push(new THREE.Face3(0, 1, 2));
+    //geometry.computeFaceNormals();
+    //var line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+    //    color: 0x000000,
+    //    linewidth: 3,
+    //    opacity: 0.5
+    //}));
+    //scene2D.add(line);
+
+    mouse2D = new THREE.Vector3(x, y, 0); //remmember for next time around
+
+    console.log("draw X:" + x + " Y:" + y);
+
+    /*
     if (!line) {
         var v1 = makePoint(mouse);
         var v2 = makePoint(x, y);
@@ -1439,6 +1467,21 @@ function drag2D(e) {
     mouse.set(x, y);
     */
 }
+
+/*
+function make2DPoint(x, y) {
+
+    if (arguments.length <= 1) {
+        y = x.y;
+        x = x.x;
+    }
+
+    var v = new Two.Vector(x, y);
+    v.position = new Two.Vector().copy(v);
+
+    return v;
+}
+*/
 
 function drag2DEnd(e) {
     $(window).unbind('mousemove', drag2D).unbind('mouseup', drag2DEnd);
