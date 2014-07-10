@@ -1,6 +1,7 @@
 /*
 WebGL HousePlanner v 1.0
-http://houseplanner.iroot.ca
+Preview: http://houseplanner.iroot.ca
+Source Code: https://github.com/poofik/webgl-houseplanner
 */
 
 if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -41,7 +42,7 @@ var skyMesh;
 
 var containerWork
 var containerMenu
-//var stats, objects;
+    //var stats, objects;
 
 var RADIAN = Math.PI / 180;
 var AUTOROTATE = true;
@@ -50,7 +51,7 @@ var FLOOR = 1; //first floor selected default
 
 //var keyboard = new THREE.KeyboardState();
 //var clock = new THREE.Clock();
-var mouse2D;
+var mouse2D = new THREE.Vector3(0, 0, 0);
 var scene2DDrawLineGeometry; //Temporary holder for mouse click and drag drawings
 var scene2DDrawLineMaterial; //Line thikness		
 var scene2DWallGeometry = [
@@ -66,7 +67,7 @@ var scene2DWallBearingMaterialSelect;
 var collision = [];
 var hold = {};
 
-var menuProjector;
+var projector;
 var spinObject;
 var menuSpinHelper;
 
@@ -90,7 +91,7 @@ init();
 function initMenu() {
 
     scene3DMenu = new THREE.Scene();
-    menuProjector = new THREE.Projector();
+    projector = new THREE.Projector();
 
     scene3DMenuHouseContainer = new THREE.Object3D();
     scene3DMenuFloorContainer = new THREE.Object3D();
@@ -271,7 +272,7 @@ function init() {
 
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
     camera3D = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 600);
-    camera2D = new THREE.PerspectiveCamera(12, window.innerWidth / window.innerHeight, 0.1, 600);
+    camera2D = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 0.1, 600);
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
     camera3D.position.set(3, 6, 18);
@@ -279,7 +280,7 @@ function init() {
 
 
     var gridXY = new THREE.GridHelper(100, 2);
-    gridXY.position.set(0, 0, -200);
+    gridXY.position.set(0, 0, -100);
     gridXY.rotation.x = Math.PI / 2;
     gridXY.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
     scene2D.add(gridXY);
@@ -287,9 +288,12 @@ function init() {
     scene2DDrawLineGeometry = new THREE.Geometry();
     scene2DDrawLineMaterial = new THREE.LineBasicMaterial({
         color: 0x000000,
-        linewidth: 3,
+        linewidth: 3
         //opacity: 0.5
     });
+    //scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
+    //scene2D.add(scene2DDrawLine);
+
     scene2DWallRegularMaterial = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0001.png');
     scene2DWallRegularMaterialSelect = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0002.png');
 
@@ -949,7 +953,7 @@ function exportJSON() {
 
 function calc2Dpoint(x, y, z, camera) {
     //var projector = new THREE.Projector();
-    var vector = menuProjector.projectVector(new THREE.Vector3(x, y, camera.position.z), camera);
+    var vector = projector.projectVector(new THREE.Vector3(x, y, z), camera);
 
     var result = new Object();
     result.x = Math.round(vector.x * (renderer.domElement.width / 2));
@@ -1221,7 +1225,7 @@ function mouseDownMenu(event) {
     var directionVector = new THREE.Vector3((hold.x / containerWidth) * 2 - 1, -(hold.y / containerHeight) * 2 + 1, 0.5);
     //directionVector.set(x, y, 0.5);
 
-    menuProjector.unprojectVector(directionVector, camera3DMenu);
+    projector.unprojectVector(directionVector, camera3DMenu);
     directionVector.sub(camera3DMenu.position); // Substract the vector representing the camera position
     directionVector.normalize(); //Normalize the vector, to avoid large numbers from the projection and substraction
 
@@ -1399,11 +1403,15 @@ function animate() {
 
 function drag2D(e) {
 
-    x = e.clientX;
-    y = e.clientY;
 
-    var point = calc2Dpoint(x, y, z, camera3D);
 
+    //var point = calc2Dpoint(x, y, 0.5, camera2D);
+    //var point = projector.projectVector(new THREE.Vector3(e.clientX, e.clientY, 0), camera2D);
+
+    //console.log("draw W:" + renderer.domElement.width + " H:" + renderer.domElement.height);
+
+    x = (e.clientX - (window.innerWidth / 2)) / 50;
+    y = ((window.innerHeight / 2) - e.clientY) / 50;
 
     /*
     var PI2 = Math.PI * 2;
@@ -1428,12 +1436,15 @@ function drag2D(e) {
     geometry.vertices.push(particle.position);
 	*/
 
-    /*
-    scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0));
+
+    scene2DDrawLineGeometry = new THREE.Geometry();
+    //scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
     scene2DDrawLineGeometry.vertices.push(mouse2D);
+    scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0));
+    //scene2DDrawLineGeometry.vertices.push(mouse2D);
     scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
     scene2D.add(scene2DDrawLine);
-	*/
+
 
     //geometry.vertices.push(mouse2D);
     //geometry.faces.push(new THREE.Face3(0, 1, 2));
@@ -1447,7 +1458,7 @@ function drag2D(e) {
 
     mouse2D = new THREE.Vector3(x, y, 0); //remmember for next time around
 
-    console.log("draw X:" + x + " Y:" + y);
+    //console.log("draw X:" + x + " Y:" + y);
 
     /*
     if (!line) {
