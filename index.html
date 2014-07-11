@@ -7,6 +7,7 @@
 
   <script src="js/jquery.js?v=2.1.1"></script>
   <script type="text/javascript" src="js/jquery.tooltipster.js"></script>
+  <link type="text/css" rel="stylesheet" href="css/preloader.css"/>
   <link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
 
   <!--
@@ -463,7 +464,7 @@ body{
 <!-- END iScroll -->
 
 </head>
-<body onload="loaded()">
+<body class="preloader">
 
 <!-- UI -->
 
@@ -783,8 +784,67 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 <!-- UI -->
 
 <!-- http://threejs.org/editor -->
+<style>
+#WebGLCubeCanvas {
+    position:absolute;
+    bottom:0px;
+    left:0px;
+    border:none;
+    width:100;
+    height:100px;
+    opacity:1;
+    /*-moz-opacity: 0;*/          /* Netscape */
+    /*-khtml-opacity: 0;*/        /* Safari 1.x */
+    /*opacity: 0.8;*/               /* Good browsers */
+}
 
-<div id="WebGLCanvas"></div>
+#WebGLHelp {
+    position:absolute;
+    bottom:10px;
+    right:10px;
+    color:#666666;
+    cursor:help;
+}
+</style>
+<div id="WebGLCanvas" tabindex="-1">
+  <div id="WebGLHelp"><h1>?</h1></div>
+  <div id="WebGLCubeCanvas"></div>
+</div>
+
+<script type="text/javascript" src="js/preloader.js"></script>
+<script type="text/javascript">
+    var images = {
+    };
+    // config
+    Royal_Preloader.config({
+          mode:'text',
+          //logo:'images/leele.png',
+          text: 'WebGL HousePlanner',
+          images: images,
+          //showPercentage: true,
+            timeout:        0,
+            showInfo:       false,
+            opacity:        1,
+            background:     ['#FFFFFF'],
+            onComplete: function() {
+              //$(".logo-element-circle").fadeOut('slow');
+              /*
+              $(".logo-element-box").animate({width:"40px",height:"40px",top:"30px",left: $('.logo').offset().left},1000);
+              $(".logo-element-top1").animate({width:"10px",height:"20px",top:"30px",left: $('.logo').offset().left},1000);
+              $(".logo-element-top2").animate({width:"15px",height:"20px",top:"30px",left: $('.logo').offset().left},1000);
+              $(".logo-element-top-right").animate({width:"15px",height:"20px",top:"30px",left: $('.logo').offset().left},1000);
+              $(".logo-element-top-left").animate({width:"15px",height:"20px",top:"30px",left: $('.logo').offset().left},1000);
+              $(".logo-element-bottom1").animate({width:"15px",height:"20px",top:"30px",left: $('.logo').offset().left},1000);
+              $(".logo-element-bottom2").animate({width:"10px",height:"20px",top:"30px",left: $('.logo').offset().left},1000);
+              $(".logo-element-bottom-right").animate({width:"15px",height:"20px",top:"30px",left: $('.logo').offset().left},1000);
+              $(".logo-element-bottom-left").animate({width:"15px",height:"20px",top:"30px",left: $('.logo').offset().left},1000);
+              
+              $(".royal_preloader").delay(200).fadeOut('slow');
+              $(".logo").delay(800).fadeIn('slow');
+              */
+        }
+  });
+</script>
 
 <script src="js/3d/three.js"></script>
 <script src="js/3d/Detector.js"></script>
