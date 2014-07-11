@@ -840,7 +840,7 @@ function show3DHouse() {
 
     scene3DCube.add(scene3DCubeMesh);
 
-    scene3DHouseContainer.traverse;
+    //scene3DHouseContainer.traverse;
 
     //show3DHouseContainer(true)
     //show3DFloorContainer(false);
@@ -875,7 +875,7 @@ function show3DFloor() {
 
     scene3DCube.add(scene3DCubeMesh);
 
-    scene3DFloorContainer[0].traverse;
+    //scene3DFloorContainer[0].traverse;
     //show3DFloorContainer(true);
     //show3DHouseContainer(false)
 
@@ -891,7 +891,7 @@ function show2D() {
 
     scene2D.add(scene2DFloorContainer[0]);
 
-    scene2DFloorContainer[0].traverse;
+    //scene2DFloorContainer[0].traverse;
 
     //Auto close right menu
     document.getElementById('box-right').setAttribute("class", "hide-right");
@@ -1134,7 +1134,7 @@ function sceneNew() {
         var groundTexture = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/G36096.png');
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set(6, 6);
+        groundTexture.repeat.set(5, 5);
         groundTexture.anisotropy = 1.5; //focus blur (16=unblured 1=blured)
 
         var groundMaterial = new THREE.MeshBasicMaterial({
