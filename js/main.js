@@ -115,7 +115,6 @@ init();
 function initMenu() {
 
     scene3DMenu = new THREE.Scene();
-    projector = new THREE.Projector();
 
     scene3DMenuHouseContainer = new THREE.Object3D();
     scene3DMenuFloorContainer = new THREE.Object3D();
@@ -274,6 +273,7 @@ function init() {
 
     scene3D = new THREE.Scene();
     scene2D = new THREE.Scene();
+    projector = new THREE.Projector();
 
     /*
     scene3DContainer must contain all scene objects (save/open) scene2DFloorContainer generates own objects based on idName from scene3DContainer.
@@ -408,8 +408,7 @@ function init() {
     scene3DCube.add(scene3DCubeMesh);
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
-    //window.addEventListener('resize', onWindowResize, false);
-    $(window).addEventListener('resize', onWindowResize, false);
+    window.addEventListener('resize', onWindowResize, false);
 
     //http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
     //shim layer with setTimeout fallback
@@ -1036,6 +1035,10 @@ function onDocumentMouseDown(event) {
         scene2D.add(scene2DDrawLineContainer);
         //$(window).bind('mousemove', drag2D).bind('mouseup', drag2DEnd);
     } else {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        console.log("Mouse Down");
 
         var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
         projector.unprojectVector(vector, camera3D);
@@ -1065,11 +1068,12 @@ function onDocumentMouseUp(event) {
         scene2D.remove(scene2DDrawLineContainer);
     } else {
         controls3D.enabled = true;
-
+        /*
         if (INTERSECTED) {
             plane.position.copy(INTERSECTED.position);
             SELECTED = null;
         }
+        */
         //container.style.cursor = 'auto';
     }
 }
@@ -1123,11 +1127,11 @@ function sceneNew() {
     //===============================================
     //TODO: Find more efficient way to repeat texture
     //===============================================
-    new THREE.JSONLoader().load("objects/Platform/ground-grass.js", function(geometry, materials) {
-        var groundTexture = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/G36096.png');
+    new THREE.JSONLoader().load("./objects/Platform/ground-grass.js", function(geometry, materials) {
+        var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Platform/Textures/G36096.png');
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set(5, 5);
+        groundTexture.repeat.set(12, 12);
         groundTexture.anisotropy = 1.5; //focus blur (16=unblured 1=blured)
 
         var groundMaterial = new THREE.MeshBasicMaterial({
@@ -1139,8 +1143,8 @@ function sceneNew() {
         scene3DHouseGroundContainer.add(mesh);
     });
 
-    new THREE.JSONLoader().load("objects/Platform/ground-wood.js", function(geometry, materials) {
-        var groundTexture = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/W36786.jpg');
+    new THREE.JSONLoader().load("./objects/Platform/ground-wood.js", function(geometry, materials) {
+        var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Platform/Textures/W36786.jpg');
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set(10, 10);
