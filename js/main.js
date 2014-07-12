@@ -499,7 +499,7 @@ function init() {
     scene3DSky();
     scene3DLight();
     show3DHouse();
-    initMenu();
+    //initMenu();
     animate();
 }
 
