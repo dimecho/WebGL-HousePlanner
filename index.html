@@ -834,10 +834,9 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
         //agent.moveTo(100,100);
         //agent.animations();
         agent.play("Searching");
-        setTimeout(function(){agent.speak("Hey there, I'm Bonzi")}, 7000);
-        setTimeout(function(){agent.speak("I will be your personal assistant")}, 10000);
-        setTimeout(function(){agent.speak("Use top menu to switch between exterior, interior and floor plan views");agent.gestureAt(500,100);agent.stopCurrent()}, 14000);
-        setTimeout(function(){agent.play("Pleased")}, 16000);
+        setTimeout(function(){agent.speak("Hi, my name is Bonzi! I am your interactive assistant")}, 8000);
+        setTimeout(function(){agent.speak("Use top menu to switch between exterior, interior and floor plan views");agent.gestureAt(500,100)}, 14000);
+        setTimeout(function(){agent.play("Pleased")}, 18000);
       });
     }
   });

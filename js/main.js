@@ -110,7 +110,6 @@ userHasClicked: false
 };
 */
 
-initMenu();
 init();
 
 function initMenu() {
@@ -391,8 +390,7 @@ function init() {
     });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0xffffff, 0); // the default
-    //renderer.setClearColor(0xffffff, 1.0);
+    renderer.setClearColor(0xffffff, 0);
     renderer.shadowMapEnabled = true;
     renderer.shadowMapType = THREE.PCFShadowMap;
     //renderer.physicallyBasedShading = true;
@@ -408,11 +406,10 @@ function init() {
     camera3DCube.up = camera3D.up;
     scene3DCube.add(camera3D);
     scene3DCube.add(scene3DCubeMesh);
-    //scene3DCube.add(makeCoordinateArrows());
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
     //window.addEventListener('resize', onWindowResize, false);
-    $(window).bind('resize', onWindowResize);
+    $(window).addEventListener('resize', onWindowResize, false);
 
     //http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
     //shim layer with setTimeout fallback
@@ -430,10 +427,6 @@ function init() {
     renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
     renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
     renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
-
-    //$(window).bind('mouseup', function(e) {
-    //renderer.antialias = true;
-    //});
 
     /*
     document.addEventListener('dragover', function(event) {
@@ -507,6 +500,7 @@ function init() {
     scene3DSky();
     scene3DLight();
     show3DHouse();
+    initMenu();
     animate();
 }
 
@@ -1047,17 +1041,16 @@ function onDocumentMouseDown(event) {
         projector.unprojectVector(vector, camera3D);
 
         var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
-
         var intersects = raycaster.intersectObjects(scene3DHouseContainer);
 
         if (intersects.length > 0) {
+            console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
 
             controls3D.enabled = false;
-
             SELECTED = intersects[0].object;
 
-            var intersects = raycaster.intersectObject(plane);
-            offset.copy(intersects[0].point).sub(plane.position);
+            //var intersects = raycaster.intersectObject(plane);
+            //offset.copy(intersects[0].point).sub(plane.position);
 
             //container.style.cursor = 'move';
         }
@@ -1397,6 +1390,7 @@ function mouseDownMenu(event) {
     directionVector.normalize(); //Normalize the vector, to avoid large numbers from the projection and substraction
 
     var ray = new THREE.Raycaster(camera3DMenu.position, directionVector); // Now our direction vector holds the right numbers!
+
     //ray.ray.direction.set(0, 0, -1); // Z- DIRECTION
 
     var intersects = ray.intersectObjects(scene3DMenuHouseContainer.children);
