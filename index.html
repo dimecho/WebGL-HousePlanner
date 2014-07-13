@@ -18,7 +18,7 @@
     width: 150px;
     line-height: 20px;
     left: -100px;
-    top: 80px; /* change this value to place the menu higher or lower */
+    top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
     z-index: 100;
 }
@@ -39,10 +39,25 @@
 }
 
 #links-left{
-    width: 80px;
-    padding: 10px;
-    float: right;
-    border-right: 1px solid #B4B8BB;
+  width: 60px;
+  /*padding: 10px;*/
+  float: right;
+  /*border-right: 1px solid #B4B8BB;*/
+
+  background: #fff;
+
+  background: -moz-linear-gradient(#fff, #999);
+  background: -webkit-linear-gradient(#fff, #999);
+  background: -o-linear-gradient(#fff, #999);
+
+  -moz-background-clip: padding;     /* Firefox 3.6 */
+  -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
+  background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
+  border: 10px solid rgba(0,0,0,0.3);
+
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
 }
 
 .show-left, .hide-left{
@@ -67,7 +82,7 @@
     font-size: 12px;
     line-height: 20px;
     right: -350px;
-    top: 80px; /* change this value to place the menu higher or lower */
+    top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
     z-index: 100;
 }
@@ -509,10 +524,10 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 		<p class="validateTips"></p>
 		<form>
 		<label for="name">Username</label>
-		<input type="text" name="name" id="name">
+		<input type="text" name="name" id="name" size="12">
     <br/>
 		<label for="password">Password</label>
-		<input type="password" name="password" id="password" value="" >
+		<input type="password" name="password" id="password" size="12">
 		</form>
 	</div>
 </div>
@@ -618,7 +633,7 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 <!-- END Slide Right Menu -->
 <!-- Slide Left Menu -->
 <script>
- $(document).ready(function() {
+$(document).ready(function() {
         $('.tooltip-right').tooltipster({
    		animation: 'fade',
   		delay: 200,
@@ -628,27 +643,107 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
    		position: 'right'
 		});
    });
+
+var reader;
+//var progress = document.querySelector('.percent');
+
+function  fileSelect2DDraftPlan() {
+  // Check for the various File API support.
+  if (window.File && window.FileReader && window.FileList && window.Blob) {
+    // Great success! All the File APIs are supported.
+    $("#fileselect").click();
+    document.getElementById('fileselect').addEventListener('change', handleFileSelect, false);
+  } else {
+    alert('The File APIs are not fully supported in this browser.');
+  }
+}
+
+function errorHandler(event) {
+  switch(event.target.error.code) {
+    case event.target.error.NOT_FOUND_ERR:
+      alert('File Not Found!');
+      break;
+    case event.target.error.NOT_READABLE_ERR:
+      alert('File is not readable');
+      break;
+    case event.target.error.ABORT_ERR:
+      break; // noop
+    default:
+      alert('An error occurred reading this file.');
+  };
+  //reader.abort();
+}
+
+function updateProgress(event) {
+    // evt is an ProgressEvent.
+    if (event.lengthComputable) {
+      var percentLoaded = Math.round((event.loaded / event.total) * 100);
+      // Increase the progress bar length.
+      if (percentLoaded < 100) {
+        //progress.style.width = percentLoaded + '%';
+        //progress.textContent = percentLoaded + '%';
+    }
+  }
+}
+
+function handleFileSelect(event) {
+  // Reset progress indicator on new file selection.
+  //progress.style.width = '0%';
+  //progress.textContent = '0%';
+
+  reader = new FileReader();
+  reader.onerror = errorHandler;
+  reader.onprogress = updateProgress;
+  reader.onabort = function(e) {
+      alert('File read cancelled');
+  };
+  reader.onloadstart = function(e) {
+      //document.getElementById('progress_bar').className = 'loading';
+  };
+  reader.onload = function(e) {
+      // Ensure that the progress bar displays 100% at the end.
+      //progress.style.width = '100%';
+      //progress.textContent = '100%';
+      //setTimeout("document.getElementById('progress_bar').className='';", 2000);
+  }
+  // Read in the image file as a binary string.
+  reader.readAsBinaryString(event.target.files[0]);
+}
+
 </script>
 <div id="box-left" class="hide-left">
-    <ul id="tab-left">
+  <ul id="tab-left">
         <li>
             <img id="arrow-left" onclick="toggleLeft('box-left');" src="images/arrowright.png">
         </li>
-    </ul>
+  </ul>
+  <div id="menuLeft2D">
     <div id="links-left">
-        <div id="deco">
-        <!-- 3D Editor Menu -->
-			<a href="#" class="hi-icon icon-images11 tooltip-right" title="Insert Picture"></a>
-			<a href="#" class="hi-icon icon-edit26 tooltip-right" title="Insert Note"></a>
-        <!-- 2D Editor Menu -->
-        	<a href="#" class="hi-icon icon-vector15 tooltip-right" title="Draw Room"></a>
-			<a href="#" class="hi-icon icon-vector18 tooltip-right" title="Draw Wall"></a>
-			<a href="#" class="hi-icon icon-vector17 tooltip-right" title="Draw Curved Wall"></a>
-        	<a href="#" class="hi-icon icon-cube12 tooltip-right" title="Cube"></a>
-			<a href="#" class="hi-icon icon-cylindrical7 tooltip-right" title="Cylinder"></a>
-
-        </div>
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
+        <a href="#" onclick="fileSelect2DDraftPlan()" class="hi-icon icon-draftplan tooltip" id="tool2DDraft" title="Upload Draft Plan (pdf, jpg, png)" ></a>
+        <input type="file" id="fileselect" hidden /> 
+        <a href="#" class="hi-icon icon-draw tooltip" id="tool2DFreestyle" title="Freestyle Sketch" ></a>
+        <a href="#" class="hi-icon icon-vector tooltip" id="tool2DVector" title="Vector Corrections"></a>
+        <a href="#" class="hi-icon icon-vector-square tooltip" id="tool2DSquare" title="Draw Square"></a>
+        <a href="#" class="hi-icon icon-vector-circle tooltip" id="tool2DCircle" title="Draw Circle"></a>
+      </div>
     </div>
+  </div>
+  <div id="menuLeft3D">
+    <div id="links-left">
+      <div id="deco">
+        <!-- 3D Editor Menu -->
+        <a href="#" class="hi-icon icon-images11 tooltip-right" title="Insert Picture"></a>
+        <a href="#" class="hi-icon icon-edit26 tooltip-right" title="Insert Note"></a>
+        <!-- 2D Editor Menu -->
+        <a href="#" class="hi-icon icon-vector15 tooltip-right" title="Draw Room"></a>
+        <a href="#" class="hi-icon icon-vector18 tooltip-right" title="Draw Wall"></a>
+        <a href="#" class="hi-icon icon-vector17 tooltip-right" title="Draw Curved Wall"></a>
+        <a href="#" class="hi-icon icon-cube12 tooltip-right" title="Cube"></a>
+        <a href="#" class="hi-icon icon-cylindrical7 tooltip-right" title="Cylinder"></a>
+      </div>
+    </div>
+  </div>
 </div>
 <!-- END Slide Right Menu -->
 
@@ -730,8 +825,9 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 	<div style="display: inline-block;vertical-align:top">
 		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
 			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior"></a>
-			<a href="#" onclick="show3DFloor()" class="hi-icon icon-stack tooltip" title="Floor Furnish"></a>
-			<a href="#" onclick="show2D()" class="hi-icon icon-cube tooltip" title="Floor Plan"></a>
+      <a href="#" onclick="show3DHouse()" class="hi-icon icon-floors tooltip" title="Floor Arrangements"></a>
+			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings"></a>
+			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans"></a>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New"></a>
 			<a href="#openExistingDesign" class="hi-icon icon-open tooltip" title="Open"></a>
       <a href="#" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
@@ -755,6 +851,7 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
       -->
 			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot"></a>
 			<a href="#" onclick="launchFullscreen(document.documentElement);" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
+      <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
 			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login"></a>
 		</div>
 	</div>

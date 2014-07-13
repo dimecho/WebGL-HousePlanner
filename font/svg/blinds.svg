@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Generator: Adobe Illustrator 17.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<g>
+	<polygon points="5,12 47,12 47,9 9,9 	"/>
+	<polygon points="50,9 50,12 60,12 56,9 	"/>
+	<polygon points="47,16 47,13 9,13 5,16 	"/>
+	<polygon points="50,13 50,16 60,16 56,13 	"/>
+	<polygon points="47,20 47,17 9,17 5,20 	"/>
+	<polygon points="50,17 50,20 60,20 56,17 	"/>
+	<polygon points="50,21 50,24 60,24 56,21 	"/>
+	<polygon points="47,24 47,21 9,21 5,24 	"/>
+	<polygon points="47,28 47,25 9,25 5,28 	"/>
+	<polygon points="50,25 50,28 60,28 56,25 	"/>
+	<polygon points="47,32 47,29 9,29 5,32 	"/>
+	<polygon points="50,29 50,32 60,32 56,29 	"/>
+	<polygon points="47,36 47,33 9,33 5,36 	"/>
+	<polygon points="50,33 50,36 60,36 56,33 	"/>
+	<polygon points="47,40 47,37 9,37 5,40 	"/>
+	<polygon points="50,37 50,40 60,40 56,37 	"/>
+	<polygon points="50,41 50,44 60,44 56,41 	"/>
+	<polygon points="47,44 47,41 9,41 5,44 	"/>
+	<polygon points="50,45 50,48 60,48 56,45 	"/>
+	<polygon points="47,48 47,45 9,45 5,48 	"/>
+	<path d="M46.212,52c0.173-0.394,0.449-0.73,0.788-0.987V49H9l-4,3H46.212z"/>
+	<path d="M50,49v2.013c0.34,0.257,0.615,0.593,0.788,0.987H60l-4-3H50z"/>
+	<path d="M51,53c0,1.378-1.121,2.5-2.5,2.5S46,54.378,46,53H9l-4,3h55l-4-3H51z"/>
+	<polygon points="9,57 5,60 60,60 56,57 	"/>
+	<path d="M49,50.551V49v-1v-3v-1v-3v-1v-3v-1v-3v-1v-3v-1v-3v-1v-3v-1v-3v-1v-3v-1V9h-1v3v1v3v1v3v1v3v1v3v1v3v1v3v1v3v1v3v1v3v1
+		v1.551c0.162-0.033,0.329-0.051,0.5-0.051S48.838,50.518,49,50.551z"/>
+	<polygon points="4,8 47,8 48,8 49,8 50,8 62,8 62,3 4,3 	"/>
+	<path d="M47.39,52C47.15,52.266,47,52.614,47,53c0,0.827,0.673,1.5,1.5,1.5S50,53.827,50,53c0-0.386-0.15-0.734-0.39-1
+		c-0.165-0.183-0.373-0.323-0.61-0.408c-0.157-0.056-0.324-0.092-0.5-0.092s-0.343,0.036-0.5,0.092
+		C47.763,51.677,47.555,51.817,47.39,52z"/>
+</g>
+</svg>
