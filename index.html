@@ -188,13 +188,12 @@ function delay(elem, src, delayTime){
 <style>
 #top-menu {
 	position: absolute;
-    top: 10px;
-    left: 10px;
-  	width: 98%;	
-  	height: 60px;
-    background: #ccc;
-    padding: 4px;
-    z-index:5;
+  top: 10px;
+  left: 10px;
+  width: 98%;	
+  height: 60px;
+  padding: 4px;
+  z-index:5;
    
 	border-radius: 10px;
 	background: #fff;
@@ -791,7 +790,12 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 #WebGLInteractiveMenu {
   display: none;
 
-  background-color: white;
+  background: #fff;
+
+  background: -moz-linear-gradient(#fff, #999);
+  background: -webkit-linear-gradient(#fff, #999);
+  background: -o-linear-gradient(#fff, #999);
+
   -moz-background-clip: padding;     /* Firefox 3.6 */
   -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
   background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
@@ -799,7 +803,8 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
-  border-radius: 10px; 
+  border-radius: 10px;
+
 
   width: 50px;
   height: 220px;
