@@ -716,7 +716,7 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 <!-- Thumbnail class="ui-widget-content" -->
 <div id="top-menu">
 		<div style="display: inline-block;width:108px;">
-		<a href="#openThumb"><img src="images/_house.jpg" height="55" width="100" alt="Sample" /></a>
+		<a href="#openThumb"><img src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius: 3px;" /></a>
 	</div>
 	<div style="display:inline-block;width:200px;">
 		<div style="height:55px">
@@ -785,6 +785,7 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
     bottom:10px;
     right:20px;
     color:#666666;
+    font-size: 20px;
     cursor:help;
 }
 #WebGLInteractiveMenu {
@@ -880,7 +881,7 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 }
 </style>
 <div id="WebGLCanvas" tabindex="-1">
-  <div id="WebGLHelp"></div>
+  <div id="WebGLHelp">?</div>
   <div id="WebGLCubeCanvas"></div>
   <div id="WebGLInteractiveMenu">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
@@ -931,9 +932,13 @@ Royal_Preloader.config({
     if (getCookie("firstTimer") == null)
     {
       createCookie("firstTimer","1",5);
+
       clippy.load('Bonzi', function(agent) {
         Agent = agent;
+
         agent.show();
+        $('#WebGLHelp').hide();
+
         //agent.moveTo(100,100);
         //agent.animations();
         agent.play("Searching");
@@ -945,13 +950,35 @@ Royal_Preloader.config({
   }
 });
 
-$('.clippy').click(function (event) {
+$('#clippy').click(function (event) {
   //if (evt.target.tagName != "A") {
-  if (Agent != null)
-  {
-    agent.hide();
-  }
+  agentToggle();
 });
+
+$('#WebGLHelp').click(function (event) {
+  agentToggle();
+});
+
+function agentToggle() {
+  if (Agent == null)
+  {
+    clippy.load('Bonzi', function(agent) {
+      Agent = agent;
+      Agent.show();
+      $('#WebGLHelp').hide();
+    });
+  }else{
+    if ($('#WebGLHelp').is(':visible'))
+    {
+      Agent.hide();
+      $('#WebGLHelp').hide();
+    }else{
+      Agent.show();
+      $('#WebGLHelp').show();
+    }
+  }
+}
+
 </script>
 
 <script src="js/3d/three.js"></script>

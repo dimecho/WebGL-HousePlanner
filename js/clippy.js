@@ -10,7 +10,7 @@ clippy.Agent = function(path, data, sounds) {
 
     this._queue = new clippy.Queue($.proxy(this._onQueueEmpty, this));
 
-    this._el = $('<div class="clippy"></div>').hide();
+    this._el = $('<div class="clippy" id="clippy"></div>').hide();
 
     $(document.body).append(this._el);
 

@@ -4,18 +4,18 @@ Preview: http://houseplanner.iroot.ca
 Source Code: https://github.com/poofik/webgl-houseplanner
 
 TODO:
-- [difficulty: 10/10 progress: 5%] Finish 2D floor plan gyometry drafting
-- [difficulty: 8/10  progress: 0%] Toolbar edit functions for 2D floor plans
-- [difficulty: 9/10  progress: 0%] Make converter function to "extrude" 2D into 3D walls
-- [difficulty: 6/10  progress: 0%] Make front walls 80% transparent in 3D rotation
-- [difficulty: 8/10  progress: 0%] 3D movable objects and collision detection
-- [difficulty: 2/10  progress: 0%] 3D objects sub-edit menu (textures/delete/duplicate)
-- [difficulty: 2/10  progress: 2%] Categorize and populate 3D Menu items
-- [difficulty: 8/10  progress: 5%] Make 3D Menu draggable objects
-- [difficulty: 5/10  progress: 5%] Make 3D Floor ground base glass reflective
-- [difficulty: 6/10  progress: 0%] 3D Exterior View ability to select floors (+ flying-in animationeffect)
-- [difficulty: 6/10  progress: 0%] Keep history and implement Undo/Redo
-- [difficulty: 4/10  progress: 0%] Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
+- [difficulty: 10/10 progress: 5%]  Finish 2D floor plan gyometry drafting
+- [difficulty: 8/10  progress: 0%]  Toolbar edit functions for 2D floor plans
+- [difficulty: 9/10  progress: 10%] Make converter function to "extrude" 2D into 3D walls
+- [difficulty: 6/10  progress: 0%]  Make front walls 80% transparent in 3D rotation
+- [difficulty: 8/10  progress: 3%]  3D movable objects and collision detection
+- [difficulty: 2/10  progress: 20%] 3D objects sub-edit menu (textures/delete/duplicate)
+- [difficulty: 2/10  progress: 2%]  Categorize and populate 3D Menu items
+- [difficulty: 8/10  progress: 60%] Make 3D Menu for draggable objects
+- [difficulty: 5/10  progress: 5%]  Make 3D Floor ground base glass reflective
+- [difficulty: 6/10  progress: 0%]  3D Exterior View ability to select floors (+ flying-in animationeffect)
+- [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
+- [difficulty: 4/10  progress: 0%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
 */
 
 if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -302,9 +302,9 @@ function init() {
     camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 600);
     camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 
-    camera2D = new THREE.PerspectiveCamera(10, window.innerWidth / window.innerHeight, 0.1, 600);
+    camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
     camera2D.lookAt(new THREE.Vector3(0, 0, 0));
-    camera2D.position.z = 200; // the camera starts at 0,0,0 so pull it back
+    camera2D.position.z = 5000; // the camera starts at 0,0,0 so pull it back
 
     var gridXY = new THREE.GridHelper(100, 2);
     gridXY.position.set(0, 0, 0);
@@ -359,18 +359,8 @@ function init() {
         }),
     ];
     var cubeMaterial = new THREE.MeshFaceMaterial(cubeMaterials);
-    scene3DCubeMesh = new THREE.Mesh(new THREE.CubeGeometry(10, 10, 10), cubeMaterial);
+    scene3DCubeMesh = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), cubeMaterial);
     //THREE.GeometryUtils.merge(geometry, mesh);
-
-    //camera3D.lookAt(scene3D.position);
-
-    //Quaternion slerp is your friend for smooth rotations to target location. You need to use quaternion 
-    camera3D.useQuaternion = true;
-    /*
-    var newQuaternion = new THREE.Quaternion();
-	THREE.Quaternion.slerp(camera.quaternion, destinationQuaternion, newQuaternion, 0.07);
-	camera.quaternion = newQuaternion;
-	*/
 
     //scene2D.add(new THREE.GridHelper(100, 10));
 
@@ -411,7 +401,7 @@ function init() {
     scene3DCube.add(scene3DCubeMesh);
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
-    window.addEventListener('resize', onWindowResize, false);
+    $(window).bind('resize', onWindowResize);
 
     //a cross-browser method for efficient animation, more info at:
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -426,9 +416,9 @@ function init() {
             };
     })();
 
-    renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
-    renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
-    renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
+    $(renderer.domElement).bind('mousemove', onDocumentMouseMove);
+    $(renderer.domElement).bind('mousedown', onDocumentMouseDown);
+    $(renderer.domElement).bind('mouseup', onDocumentMouseUp);
 
     /*
     document.addEventListener('dragover', function(event) {
@@ -970,19 +960,41 @@ function onDocumentMouseMove(event) {
     if (scene2D.visible) {
         //x = (event.clientX - (window.innerWidth / 2)) / 20;
         //y = ((window.innerHeight / 2) - event.clientY) / 20;
-        x = x * 20;
-        y = y * 20;
+        //x = x * 20;
+        //y = y * 20;
+
+        //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
+        //===================================
+        /*
+        vector = new THREE.Vector3(x, y, 0.5);
+        projector = new THREE.Projector();
+        projector.unprojectVector(vector, camera2D);
+        var dir = vector.sub(camera2D.position).normalize();
+        var distance = -camera2D.position.z / dir.z;
+        var pos = camera2D.position.clone().add(dir.multiplyScalar(distance));
+        */
+        var planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 0.5), 0);
+        vector = new THREE.Vector3(x, y, 0.5);
+        var raycaster = projector.pickingRay(vector, camera2D);
+        var pos = raycaster.ray.intersectPlane(planeZ);
+        //console.log("x: " + pos.x + ", y: " + pos.y);
+        //===================================
 
         if (mouse.x != 0 && mouse.y != 0) {
+
             var scene2DDrawLineGeometry = new THREE.Geometry();
             scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(mouse.x, mouse.y, 0.5));
-            scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0.5));
+            scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(pos.x, pos.y, 0.5));
+            //scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0.5));
+
             var scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
             scene2DDrawLineContainer.add(scene2DDrawLine);
             //scene2D.add(scene2DDrawLineContainer);
         }
-        mouse.x = x;
-        mouse.y = y;
+
+        mouse.x = pos.x;
+        mouse.y = pos.y;
+
     } else {
         /*
         mouse.x = x;
@@ -1059,6 +1071,24 @@ function onDocumentMouseDown(event) {
             controls3D.enabled = false;
             SELECTED = intersects[0].object;
 
+            //Focus on 3D object
+
+            //camera3D.fov = currentFov.fov;
+            //camera3D.lookAt(intersects[0].object.position);
+            //camera3D.updateProjectionMatrix();
+
+            var destinationQuaternion = new THREE.Quaternion(intersects[0].object.position.x, intersects[0].object.position.y, intersects[0].object.position.z, 1);
+            var newQuaternion = new THREE.Quaternion();
+            THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
+            camera3D.quaternion = newQuaternion;
+            camera3D.quaternion.normalize();
+            scene3D.updateMatrixWorld();
+
+            //Reset camera?
+            //var vector = new THREE.Vector3( 1, 0, 0 ); 
+            //vector.applyQuaternion( quaternion );
+
+
             //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
             var percX, percY
 
@@ -1128,32 +1158,65 @@ function onDocumentMouseUp(event) {
 
     if (scene2D.visible) {
 
-        //TODO: calculate 2D walls from chicken scratch
+        scene2D.remove(scene2DDrawLineContainer);
 
+        //console.log("lines to analyze: " + scene2DDrawLineContainer.children.length);
+        //scene.getObjectByName( "objectName", true );
+        //scene.getObjectByName( "objectName" ).id
+
+        //Calculate 2D walls from mouse draw
         for (var i = 0; i < scene2DDrawLineContainer.children.length; i++) {
-            //scene3D.remove(scene2DDrawLineContainer.children[i]);
+
+            //console.log("object is :" + scene2DDrawLineContainer.children[i].id);
+
             var magicNumberX = 0;
+            var magicNumberY = 0;
 
-            for (var d = 0; d < 10; d++) { //how many lines-segments to analyze before determining a angle or straight line
+            //TODO: calculate geometric angle
 
-                magicNumberX += scene2DDrawLineContainer.children[i + d].position.x;
-                magicNumberY += scene2DDrawLineContainer.children[i + d].position.y;
+            for (var d = 0; d < 10; d++) { //how many lines-segments to analyze before determining an angle or straight line
+                var n = i + d;
+                //var object = scene2D.getObjectById(scene2DDrawLineContainer.children[n].id, true);
+                //console.log("[" + n + "] " + scene2DDrawLineContainer.children[n].geometry.vertices[0].y);
+
+                magicNumberX += scene2DDrawLineContainer.children[n].geometry.vertices[0].x;
+                magicNumberY += scene2DDrawLineContainer.children[n].geometry.vertices[0].y;
             }
 
-            //Allowable margin for shaking 1.5, everything over that is an angle
-            if (magicNumberX - scene2DDrawLineContainer.children[i].position.x * 10 > 1.5) {
 
+            //========= Vertical Analisys ============
+            var vertical = (magicNumberX / scene2DDrawLineContainer.children[i].geometry.vertices[0].x * 10);
+
+
+            //========= Horizontal Analisys ============
+            var horizontal = (magicNumberY / (scene2DDrawLineContainer.children[i].geometry.vertices[0].y * 10)).toFixed(2);
+
+            console.log("(" + i + ") " + magicNumberY + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y * 10 + " > " + horizontal);
+
+            if (horizontal <= 0.8) { //Horizontal line jump up
+
+            } else if (horizontal >= 1.10) { //Horizontal line jump down
+
+            } else { //Horizontal straight line (around 1.0)
+                console.log("straight line from " + scene2DDrawLineContainer.children[i].geometry.vertices[0].x + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y + " to " + scene2DDrawLineContainer.children[i + 10].geometry.vertices[0].x + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
+                var rectLength = 120,
+                    rectWidth = 40;
+
+                var rectShape = new THREE.Shape();
+                rectShape.moveTo(scene2DDrawLineContainer.children[i].geometry.vertices[0].x, scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
+
+                rectShape.lineTo(scene2DDrawLineContainer.children[i + 10].geometry.vertices[0].x, rectWidth);
+                rectShape.lineTo(rectLength, rectWidth);
+                rectShape.lineTo(rectLength, scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
+                rectShape.lineTo(scene2DDrawLineContainer.children[i + 10].geometry.vertices[0].x, scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
+                scene2DDrawLineContainer.add(rectShape);
+                scene2D.add(scene2DDrawLineContainer);
             }
 
-            if (magicNumberY - scene2DDrawLineContainer.children[i].position.y * 10 > 1.5) {
-
-            }
+            i += 10; //skip next 10
 
             //http://stemkoski.github.io/Three.js/Extrusion.html
         }
-
-        scene2D.remove(scene2DDrawLineContainer);
-
 
     } else {
         controls3D.enabled = true;
@@ -1236,8 +1299,8 @@ function sceneNew() {
         var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Platform/Textures/G36096.png');
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set(12, 12);
-        groundTexture.anisotropy = 1; //focus blur (16=unblured 1=blured)
+        groundTexture.repeat.set(14, 14);
+        groundTexture.anisotropy = 2; //focus blur (16=unblured 1=blured)
 
         var groundMaterial = new THREE.MeshBasicMaterial({
             map: groundTexture
@@ -1253,7 +1316,7 @@ function sceneNew() {
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set(10, 10);
-        groundTexture.anisotropy = 1.5; //focus blur (16=unblured 1=blured)
+        groundTexture.anisotropy = 2; //focus blur (16=unblured 1=blured)
 
         var groundMaterial = new THREE.MeshBasicMaterial({
             map: groundTexture
@@ -1517,6 +1580,18 @@ function onMenuMouseDown(event) {
     }
 }
 
+function camera3DAnimateObjectFocus() {
+    /*
+    if (keyboard.pressed("left")) {
+        camera.position.x = camera3D.position.x * Math.cos(rotSpeed) + camera3D.position.z * Math.sin(.02);
+        camera.position.z = camera3D.position.z * Math.cos(rotSpeed) - camera3D.position.x * Math.sin(.02);
+    } else if (keyboard.pressed("right")) {
+        camera.position.x = camera3D.position.x * Math.cos(rotSpeed) - camera3D.position.z * Math.sin(.02);
+        camera.position.z = camera3D.position.z * Math.cos(rotSpeed) + camera3D.position.x * Math.sin(.02);
+    }
+	*/
+    camera3D.lookAt(SELECTED.position);
+}
 
 function animateMenu() {
 
@@ -1606,6 +1681,16 @@ function animate() {
         }
 
         controls3D.update();
+        /*
+        if (SELECTED != null) {
+            //camera3DAnimateObjectFocus();
+            var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
+            var newQuaternion = new THREE.Quaternion();
+            THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
+            camera3D.quaternion = newQuaternion;
+            camera3D.quaternion.normalize();
+        }
+        */
         renderer.render(scene3D, camera3D);
 
         //Orientation Cube
