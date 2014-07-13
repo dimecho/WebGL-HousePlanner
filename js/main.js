@@ -46,6 +46,7 @@ var sceneDirectionalLight;
 var controls3D;
 //var controls2D;
 
+
 var camera3D;
 var camera2D;
 var camera3DCube;
@@ -66,6 +67,7 @@ var RADIAN = Math.PI / 180;
 var AUTOROTATE = true;
 var TOOL = 'view';
 var FLOOR = 1; //first floor selected default
+var DIMENTIONS = 'metric' //imperial
 
 //var keyboard = new THREE.KeyboardState();
 //var clock = new THREE.Clock();
@@ -85,13 +87,13 @@ var scene2DWallBearingMaterialSelect;
 
 
 var collision = [];
-//var hold = {};
 
 var mouse = new THREE.Vector2(),
     offset = new THREE.Vector3(),
     INTERSECTED, SELECTED;
 
 var projector;
+var vector;
 var geometry;
 var spinObject;
 var menuSpinHelper;
@@ -411,18 +413,18 @@ function init() {
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
     window.addEventListener('resize', onWindowResize, false);
 
-    //http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
-    //shim layer with setTimeout fallback
-    /*
+    //a cross-browser method for efficient animation, more info at:
+    // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
     window.requestAnimFrame = (function() {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
             window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
             function(callback) {
                 window.setTimeout(callback, 1000 / 60);
-        };
+            };
     })();
-    */
 
     renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
     renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
@@ -500,7 +502,7 @@ function init() {
     scene3DSky();
     scene3DLight();
     show3DHouse();
-    initMenu();
+    //initMenu();
     animate();
 }
 
@@ -1043,7 +1045,7 @@ function onDocumentMouseDown(event) {
 
         //console.log("Mouse Down " + mouse.x + ":" + mouse.x + " " + event.clientX + "|" + window.innerWidth + ":" + event.clientY + "|" + window.innerHeight + " -> " + camera3D.position.z);
 
-        var vector = new THREE.Vector3(mouse.x, mouse.y, 0.1);
+        vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
         projector = new THREE.Projector();
 
         projector.unprojectVector(vector, camera3D);
@@ -1072,28 +1074,45 @@ function onDocumentMouseDown(event) {
             vector.y = percY * window.innerHeight - $('#WebGLInteractiveMenu').height(); // / 2;
 
             $('#WebGLInteractiveMenu').css('top', vector.y).css('left', vector.x);
-            $('#WebGLInteractiveMenu').show();
 
             /*
 			var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
 				    new THREE.MeshLambertMaterial( { color: 0xffffff} ),
 				    new THREE.MeshBasicMaterial( { color: 0x222222, wireframe: true} )
-
 			]);
 			*/
+
             /*
             INTERSECTED = intersects[0].object.material; //new THREE.MeshFaceMaterial(intersects[0].object.material);
-
             intersects[0].object.material = new THREE.MeshBasicMaterial({
                 color: 0x222222,
                 wireframe: true
             });
 			*/
-            //intersects[0].object.material.material.color.set(0x00ff00);
-            //intersects[0].object.material.color.setHex(Math.random() * 0xffffff);
 
-            //var intersects = raycaster.intersectObject(plane);
-            //offset.copy(intersects[0].point).sub(plane.position);
+            //Calculate object real dimentions TODO: find some smart code
+
+            /*
+            intersects[0].object.geometry.computeBoundingBox();
+            var position = new THREE.Vector3();
+            position.subVectors(intersects[0].object.geometry.boundingBox.max, intersects[0].object.geometry.boundingBox.min);
+            //position.multiplyScalar(0.5);
+            //position.addSelf(intersects[0].object.geometry.boundingBox.min);
+            intersects[0].object.matrixWorld.multiplyVector3(position);
+            var point1 = camera3D.matrixWorld.getPosition().clone();
+            var point2 = position;
+            var distance = point1.distanceTo(point2);
+            */
+
+            /*
+            var vFOV = camera3D.fov * Math.PI / 180;      // convert vertical fov to radians
+            var height = 2 * Math.tan( vFOV / 2 ) * distance; // visible height
+            var aspect = window.width / window.height;
+            var width = height * aspect;                  // visible width
+            */
+
+            $('#WebGLInteractiveMenuText').html("Dimentionas:");
+            $('#WebGLInteractiveMenu').show();
 
             //container.style.cursor = 'move';
         } else {
@@ -1108,7 +1127,34 @@ function onDocumentMouseUp(event) {
     event.preventDefault();
 
     if (scene2D.visible) {
+
+        //TODO: calculate 2D walls from chicken scratch
+
+        for (var i = 0; i < scene2DDrawLineContainer.children.length; i++) {
+            //scene3D.remove(scene2DDrawLineContainer.children[i]);
+            var magicNumberX = 0;
+
+            for (var d = 0; d < 10; d++) { //how many lines-segments to analyze before determining a angle or straight line
+
+                magicNumberX += scene2DDrawLineContainer.children[i + d].position.x;
+                magicNumberY += scene2DDrawLineContainer.children[i + d].position.y;
+            }
+
+            //Allowable margin for shaking 1.5, everything over that is an angle
+            if (magicNumberX - scene2DDrawLineContainer.children[i].position.x * 10 > 1.5) {
+
+            }
+
+            if (magicNumberY - scene2DDrawLineContainer.children[i].position.y * 10 > 1.5) {
+
+            }
+
+            //http://stemkoski.github.io/Three.js/Extrusion.html
+        }
+
         scene2D.remove(scene2DDrawLineContainer);
+
+
     } else {
         controls3D.enabled = true;
         /*
@@ -1121,6 +1167,20 @@ function onDocumentMouseUp(event) {
         //SELECTED = null;
         //container.style.cursor = 'auto';
     }
+}
+
+function mouseMoveMenu(event) {
+
+    event.preventDefault();
+
+    var menuOffset = containerMenu.getBoundingClientRect();
+    var diffX = event.clientX - menuOffset.left - hold.x;
+    var diffY = event.clientY - menuOffset.top - hold.y;
+
+    //console.log("DiffX" + diffX + " DiffY " + diffY)
+
+    //spinObject.rotation.x = (diffY * 0.25) * RADIAN;
+    spinObject.rotation.y = (diffX * 0.25) * RADIAN;
 }
 
 function exportOBJ() {
@@ -1457,17 +1517,6 @@ function onMenuMouseDown(event) {
     }
 }
 
-function mouseMoveMenu(event) {
-    event.preventDefault();
-    var menuOffset = containerMenu.getBoundingClientRect();
-    var diffX = event.clientX - menuOffset.left - hold.x;
-    var diffY = event.clientY - menuOffset.top - hold.y;
-
-    //console.log("DiffX" + diffX + " DiffY " + diffY)
-
-    //spinObject.rotation.x = (diffY * 0.25) * RADIAN;
-    spinObject.rotation.y = (diffX * 0.25) * RADIAN;
-}
 
 function animateMenu() {
 
