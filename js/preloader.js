@@ -118,7 +118,7 @@ var Royal_Preloader = {
     // build loader DOM
     _build: function() {
         this._overlay = $('<div>').attr('id', 'preloader').addClass(this._mode);
-        this._overlay_bg = $('<div>').addClass('background').appendTo(this._overlay).css('background-color', this._background[0]);
+        this._overlay_bg = $('<div>').addClass('background').appendTo(this._overlay).css('background-color', this._background[0]).css('background-image', 'url(./images/bg.jpg)').css('background-repeat', 'no-repeat');
 
         if (this._mode === 'number') {
             this._percentage = $('<div>').addClass('percentage').appendTo(this._overlay);

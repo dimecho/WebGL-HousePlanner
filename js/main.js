@@ -5,14 +5,15 @@ Source Code: https://github.com/poofik/webgl-houseplanner
 
 TODO:
 - [difficulty: 10/10 progress: 5%]  Finish 2D floor plan gyometry drafting
-- [difficulty: 8/10  progress: 0%]  Toolbar edit functions for 2D floor plans
+- [difficulty: 3/10  progress: 80%] 2D floor plan select and overlay external draft image
+- [difficulty: 8/10  progress: 5%]  Toolbar edit functions for 2D floor plans
 - [difficulty: 9/10  progress: 10%] Make converter function to "extrude" 2D into 3D walls
 - [difficulty: 6/10  progress: 0%]  Make front walls 80% transparent in 3D rotation
 - [difficulty: 8/10  progress: 3%]  3D movable objects and collision detection
-- [difficulty: 2/10  progress: 20%] 3D objects sub-edit menu (textures/delete/duplicate)
+- [difficulty: 2/10  progress: 90%] 3D objects sub-edit menu (textures/delete/duplicate)
 - [difficulty: 2/10  progress: 2%]  Categorize and populate 3D Menu items
-- [difficulty: 8/10  progress: 60%] Make 3D Menu for draggable objects
-- [difficulty: 5/10  progress: 5%]  Make 3D Floor ground base glass reflective
+- [difficulty: 8/10  progress: 0%]  3D Menu functions for draggable objects
+- [difficulty: 5/10  progress: 5%]  3D Floor ground base glass reflective
 - [difficulty: 6/10  progress: 0%]  3D Exterior View ability to select floors (+ flying-in animationeffect)
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
 - [difficulty: 4/10  progress: 0%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
@@ -36,6 +37,7 @@ var scene3DMenuHouseContainer; //Contains rotatable 3D objects for Exterior (tre
 var scene3DMenuFloorContainer; //Contains rotatable 3D objects for Exterior (sofas,tables)
 var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,tables)
 var scene2DFloorContainer = []; //Contains all 2D lines by floor
+var scene2DFloorDraftPlan = []; //Image as texture for plan tracing for multiple floors
 var scene3DPivotPoint; //Rotational pivot point - 1 object
 var scene3DCudeMesh;
 var sceneAmbientLight;
@@ -98,6 +100,9 @@ var vector;
 var geometry;
 var spinObject;
 var menuSpinHelper;
+
+var fileReader; //HTML5 local file reader
+//var progress = document.querySelector('.percent');
 
 /*
 var menuOffset = {
@@ -827,7 +832,11 @@ function show3DHouse() {
 
     scene3DCube.add(scene3DCubeMesh);
 
-    $('#box-left').hide();
+    $('#menuLeft3DFloor').hide();
+    $('#menuLeft2D').hide();
+    $('#menuLeft3DHome').show();
+
+    toggleLeft('menuLeft3DHome', true);
 
     //scene3DHouseContainer.traverse;
 
@@ -864,7 +873,10 @@ function show3DFloor() {
 
     scene3DCube.add(scene3DCubeMesh);
 
-    $('#box-left').hide();
+    $('#menuLeft3DFloor').hide();
+    $('#menuLeft2D').hide();
+    $('#menuLeft3DHome').hide();
+
 
     //scene3DFloorContainer[0].traverse;
     //show3DFloorContainer(true);
@@ -882,8 +894,8 @@ function show2D() {
 
     scene2D.add(scene2DFloorContainer[0]);
 
-    $('#menuLeft3D').hide();
-    $('#menuLeft2D').show();
+    $('#menuLeft3DHome').hide();
+    $('#menuLeft3DFloor').hide();
 
     if (TOOL2D == 'freestyle') {
         $('#tool2DFreestyle').css('color', 'blue');
@@ -894,11 +906,11 @@ function show2D() {
     } else if (TOOL2D == 'circle') {
         $('#tool2DCircle').css('color', 'blue');
     }
-    $('#box-left').show();
+    $('#tool2DFreestyle').css('color', 'blue');
+    $('#menuLeft2D').show();
 
     //Auto open left menu
-    document.getElementById('box-left').setAttribute("class", "show-left");
-    delay(document.getElementById("arrow-left"), "images/arrowleft.png", 400);
+    toggleLeft('menuLeft2D', true);
 
     //scene2DFloorContainer[0].traverse;
 
@@ -981,7 +993,11 @@ function onDocumentMouseMove(event) {
     y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     if (scene2D.visible) {
-        if (TOOL2D == 'freestyle') {
+        if (TOOL2D == '') { //Nothing selected, move grid X/Y
+
+            //TODO: ability to unslect current tool
+
+        } else if (TOOL2D == 'freestyle') {
             //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
             //===================================
             /*
@@ -1571,7 +1587,7 @@ function onMenuMouseDown(event) {
     mouse.x = ((event.clientX - menuOffset.left) / rendererMenu.domElement.clientWidth) * 2 - 1
     mouse.y = -((event.clientY - menuOffset.top) / rendererMenu.domElement.clientHeight) * 2 + 1
 
-    console.log("mouse X:" + mouse.x + " mouse Y:" + mouse.y);
+    //console.log("mouse X:" + mouse.x + " mouse Y:" + mouse.y);
 
     // The following will translate the mouse coordinates into a number ranging from -1 to 1, where
     // x == -1 && y == -1 means top-left, and
@@ -1865,6 +1881,102 @@ function drag2D(e) {
     }
     mouse.set(x, y);
     */
+}
+
+function fileSelect2DDraftPlan() {
+    // Check for the various File API support.
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+
+        $("#fileselect").click();
+        $('#fileselect').bind('change', handleFileSelect);
+
+        scene2D.remove(scene2DFloorDraftPlan[0]);
+
+        //document.getElementById('fileselect').addEventListener('change', handleFileSelect, false);
+    } else {
+        alert('The File APIs are not fully supported in this browser.');
+    }
+}
+
+function errorHandler(event) {
+    switch (event.target.error.code) {
+        case event.target.error.NOT_FOUND_ERR:
+            alert('File Not Found!');
+            break;
+        case event.target.error.NOT_READABLE_ERR:
+            alert('File is not readable');
+            break;
+        case event.target.error.ABORT_ERR:
+            break; // noop
+        default:
+            alert('An error occurred reading this file.');
+    };
+    //fileReader.abort();
+}
+
+function updateProgress(event) {
+    // evt is an ProgressEvent.
+    if (event.lengthComputable) {
+        var percentLoaded = Math.round((event.loaded / event.total) * 100);
+        // Increase the progress bar length.
+        if (percentLoaded < 100) {
+            //progress.style.width = percentLoaded + '%';
+            //progress.textContent = percentLoaded + '%';
+        }
+    }
+}
+
+function handleFileSelect(event) {
+    // Reset progress indicator on new file selection.
+    //progress.style.width = '0%';
+    //progress.textContent = '0%';
+
+    if (!event.target.files[0].type.match('image.*')) {
+        return;
+    }
+
+    fileReader = new FileReader();
+    fileReader.onerror = errorHandler;
+    fileReader.onprogress = updateProgress;
+    fileReader.onabort = function(e) {
+        alert('File read cancelled');
+    };
+
+    /*
+  fileReader.onloadstart = function(e) {
+      document.getElementById('progress_bar').className = 'loading';
+  };
+  */
+
+    fileReader.onload = function(e) {
+        // Ensure that the progress bar displays 100% at the end.
+        //progress.style.width = '100%';
+        //progress.textContent = '100%';
+        //setTimeout("document.getElementById('progress_bar').className='';", 2000);
+
+        //var span = document.createElement('span');
+        //span.innerHTML = ['<img class="thumb" src="' + e.target.result + '" title="' + escape(e.name) + '"/>'].join('');
+        //document.getElementById('WebGLThumbnail').insertBefore(span, null);
+
+        var texture = new THREE.ImageUtils.loadTexture(e.target.result);
+        var material = new THREE.MeshBasicMaterial({
+            map: texture
+        });
+
+        var vFOV = camera2D.fov * Math.PI / 180; // convert vertical fov to radians
+        var height = 2 * Math.tan(vFOV / 2) * camera2D.position.z; // visible height
+        var aspect = innerWidth / window.innerHeight;
+        var width = height * aspect; // visible width
+
+        var geometry = new THREE.PlaneGeometry(width, height, 10, 10);
+        scene2DFloorDraftPlan[0] = new THREE.Mesh(geometry, material);
+        scene2DFloorDraftPlan[0].position.y = -0.5;
+        scene2D.add(scene2DFloorDraftPlan[0]);
+    }
+    // Read in the image file as a binary string.
+
+    fileReader.readAsDataURL(event.target.files[0]);
+    //fileReader.readAsBinaryString(event.target.files[0]);
 }
 
 function drag2DEnd(e) {

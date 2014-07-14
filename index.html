@@ -7,15 +7,25 @@
 
   <script src="js/jquery.js?v=2.1.1"></script>
   <script type="text/javascript" src="js/jquery.tooltipster.js"></script>
-  <link type="text/css" rel="stylesheet" href="css/preloader.css"/>
+  <link rel="stylesheet" type="text/css" href="css/preloader.css"/>
   <link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
   <link rel="stylesheet" type="text/css" href="css/clippy.css" media="all">
+  <link rel="stylesheet" type="text/css" href="css/cssmenu.css">
 
 <!-- http://www.webtutorialsource.com/tutorial/show-hide-toggle-sliding-menu-css-javascript -->
 <!-- Slide Menu -->
 <style>
-#box-left{
-    width: 150px;
+
+#menuLeft3DHome{
+    width: 240px;
+    line-height: 20px;
+    left: -180px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 100;
+}
+#menuLeft3DFloor{
+    width: 100px;
     line-height: 20px;
     left: -100px;
     top: 100px; /* change this value to place the menu higher or lower */
@@ -23,25 +33,20 @@
     z-index: 100;
 }
 
-#tab-left{
-    float: right;
-    list-style: none outside none;
-    margin: 0;
-    padding: 0;
-    position: relative;
-    z-index: 99;
+#menuLeft2D{
+    width: 130px;
+    left: -80px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 100;
 }
 
-#tab-left li span{
-    display: block;
-    padding: 0 5px;
-    position: relative;
-}
+div.clear { clear: both; }
 
 #links-left{
-  width: 60px;
+  
   /*padding: 10px;*/
-  float: right;
+  float: left;
   /*border-right: 1px solid #B4B8BB;*/
 
   background: #fff;
@@ -60,7 +65,17 @@
   border-radius: 10px;
 }
 
-.show-left, .hide-left{
+#tab-left{
+  width: 44px;
+  float: right;
+  /*list-style: none outside none;*/
+  margin: 0;
+  padding: 0;
+  /*position: relative;*/
+  z-index: 99;
+}
+
+.menuLeft3DHome-show-left, .menuLeft3DFloor-show-left, .menuLeft2D-show-left, .hide-left{
     /* we specify the transition length for hiding and showing */
     transition: margin-left .4s ease-in;
     -webkit-transition: margin-left .4s ease-in;
@@ -70,9 +85,16 @@
     margin-left:0px;
 }
 
-.show-left{
-    margin-left:100px;
+.menuLeft3DHome-show-left{
+    margin-left:210px;
 }
+.menuLeft3DFloor-show-left{
+    margin-left:200px;
+}
+.menuLeft2D-show-left{
+    margin-left:110px;
+}
+
 #arrow-left, .bt{
     cursor: pointer;
 }
@@ -179,12 +201,12 @@ function toggleRight(id) {
         delay(img, "images/arrowleft.png", 400);
     }
 }
-function toggleLeft(id) {
+function toggleLeft(id,open) {
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-left");
     var box = el.getAttribute("class");
-    if(box == "hide-left"){
-        el.setAttribute("class", "show-left");
+    if(box == "hide-left" || open){
+        el.setAttribute("class", id + "-show-left");
         delay(img, "images/arrowleft.png", 400);
     }
     else{
@@ -644,93 +666,48 @@ $(document).ready(function() {
 		});
    });
 
-var reader;
-//var progress = document.querySelector('.percent');
-
-function  fileSelect2DDraftPlan() {
-  // Check for the various File API support.
-  if (window.File && window.FileReader && window.FileList && window.Blob) {
-    // Great success! All the File APIs are supported.
-    $("#fileselect").click();
-    document.getElementById('fileselect').addEventListener('change', handleFileSelect, false);
-  } else {
-    alert('The File APIs are not fully supported in this browser.');
-  }
-}
-
-function errorHandler(event) {
-  switch(event.target.error.code) {
-    case event.target.error.NOT_FOUND_ERR:
-      alert('File Not Found!');
-      break;
-    case event.target.error.NOT_READABLE_ERR:
-      alert('File is not readable');
-      break;
-    case event.target.error.ABORT_ERR:
-      break; // noop
-    default:
-      alert('An error occurred reading this file.');
-  };
-  //reader.abort();
-}
-
-function updateProgress(event) {
-    // evt is an ProgressEvent.
-    if (event.lengthComputable) {
-      var percentLoaded = Math.round((event.loaded / event.total) * 100);
-      // Increase the progress bar length.
-      if (percentLoaded < 100) {
-        //progress.style.width = percentLoaded + '%';
-        //progress.textContent = percentLoaded + '%';
-    }
-  }
-}
-
-function handleFileSelect(event) {
-  // Reset progress indicator on new file selection.
-  //progress.style.width = '0%';
-  //progress.textContent = '0%';
-
-  reader = new FileReader();
-  reader.onerror = errorHandler;
-  reader.onprogress = updateProgress;
-  reader.onabort = function(e) {
-      alert('File read cancelled');
-  };
-  reader.onloadstart = function(e) {
-      //document.getElementById('progress_bar').className = 'loading';
-  };
-  reader.onload = function(e) {
-      // Ensure that the progress bar displays 100% at the end.
-      //progress.style.width = '100%';
-      //progress.textContent = '100%';
-      //setTimeout("document.getElementById('progress_bar').className='';", 2000);
-  }
-  // Read in the image file as a binary string.
-  reader.readAsBinaryString(event.target.files[0]);
-}
-
 </script>
-<div id="box-left" class="hide-left">
+<div id="menuLeft3DHome" class="hide-left">
   <ul id="tab-left">
-        <li>
-            <img id="arrow-left" onclick="toggleLeft('box-left');" src="images/arrowright.png">
-        </li>
+    <li>
+      <img id="arrow-left" onclick="toggleLeft('menuLeft3DHome',false);" src="images/arrowright.png">
+    </li>
   </ul>
-  <div id="menuLeft2D">
-    <div id="links-left">
-      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
-        <a href="#" onclick="fileSelect2DDraftPlan()" class="hi-icon icon-draftplan tooltip" id="tool2DDraft" title="Upload Draft Plan (pdf, jpg, png)" ></a>
-        <input type="file" id="fileselect" hidden /> 
-        <a href="#" class="hi-icon icon-draw tooltip" id="tool2DFreestyle" title="Freestyle Sketch" ></a>
-        <a href="#" class="hi-icon icon-vector tooltip" id="tool2DVector" title="Vector Corrections"></a>
-        <a href="#" class="hi-icon icon-vector-square tooltip" id="tool2DSquare" title="Draw Square"></a>
-        <a href="#" class="hi-icon icon-vector-circle tooltip" id="tool2DCircle" title="Draw Circle"></a>
+  <div id="links-left" style="width: 160px;">
+  <script>
+  $( document ).ready(function() {
+    $("#menuFloor1").click();
+  });
+  </script>
+      <div id='cssmenu'>
+        <ul>
+           <li class='active'><a href='#' id="menuFloor0"><span>Basement</span></a></li>
+           <li class='has-sub'><a href='#' id="menuFloor1"><span>Floor 1</span></a>
+              <ul>
+                 <li><a href='#'><span>Living Room</span></a></li>
+                 <li><a href='#'><span>Kitchen</span></a></li>
+                 <li class='last'><a href='#'><span>Garage</span></a></li>
+              </ul>
+           </li>
+           <li class='has-sub'><a href='#' id="menuFloor2"><span>Floor 2</span></a>
+              <ul>
+                 <li><a href='#'><span>Bedroom 1</span></a></li>
+                 <li class='last'><a href='#'><span>Bedroom 2</span></a></li>
+              </ul>
+           </li>
+        </ul>
       </div>
-    </div>
   </div>
-  <div id="menuLeft3D">
-    <div id="links-left">
+</div>
+<div class="clear"></div>
+
+<div id="menuLeft3DFloor" class="hide-left">
+  <ul id="tab-left">
+    <li>
+      <img id="arrow-left" onclick="toggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
+    </li>
+  </ul>
+  <div id="links-left" style="width: 60px;">
       <div id="deco">
         <!-- 3D Editor Menu -->
         <a href="#" class="hi-icon icon-images11 tooltip-right" title="Insert Picture"></a>
@@ -742,9 +719,28 @@ function handleFileSelect(event) {
         <a href="#" class="hi-icon icon-cube12 tooltip-right" title="Cube"></a>
         <a href="#" class="hi-icon icon-cylindrical7 tooltip-right" title="Cylinder"></a>
       </div>
-    </div>
   </div>
 </div>
+<div class="clear"></div>
+
+<div id="menuLeft2D" class="hide-left">
+  <ul id="tab-left">
+    <li>
+      <img id="arrow-left" onclick="toggleLeft('menuLeft2D',false);" src="images/arrowright.png">
+    </li>
+  </ul>
+  <div id="links-left" style="width: 60px;">
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
+        <a href="#" onclick="fileSelect2DDraftPlan()" class="hi-icon icon-draftplan tooltip" id="tool2DDraft" title="Upload Draft Plan (pdf, jpg, png)" ></a>
+        <input type="file" id="fileselect" hidden /> 
+        <a href="#" class="hi-icon icon-draw tooltip" id="tool2DFreestyle" title="Freestyle Sketch" ></a>
+        <a href="#" class="hi-icon icon-vector tooltip" id="tool2DVector" title="Vector Corrections"></a>
+        <a href="#" class="hi-icon icon-vector-square tooltip" id="tool2DSquare" title="Draw Square"></a>
+        <a href="#" class="hi-icon icon-vector-circle tooltip" id="tool2DCircle" title="Draw Circle"></a>
+      </div>
+  </div>
+</div>
+<div class="clear"></div>
 <!-- END Slide Right Menu -->
 
 <!-- Suppliers -->
@@ -768,26 +764,26 @@ function handleFileSelect(event) {
 				<ul class="ff-items">
 					<li class="ff-item-type-1 ff-item-type-2">
 						<a href="#">
-							<span>LazBoy</span>
-							<img src="images/suppliers/lazboy.png" />
+							<span>1</span>
+							<img src="images/suppliers/1.png" />
 						</a>
 					</li>
 					<li class="ff-item-type-1 ff-item-type-2">
 						<a href="#">
-							<span>Leons</span>
-							<img src="images/suppliers/leons.png" />
+							<span>2</span>
+							<img src="images/suppliers/2.png" />
 						</a>
 					</li>
 					<li class="ff-item-type-1 ff-item-type-2">
 						<a href="#">
-							<span>TheBrick</span>
-							<img src="images/suppliers/thebrick.png" />
+							<span>3</span>
+							<img src="images/suppliers/3.png" />
 						</a>
 					</li>
 					<li class="ff-item-type-3">
 						<a href="#">
-							<span>HomeDepot</span>
-							<img src="images/suppliers/homedepot.png" />
+							<span>4</span>
+							<img src="images/suppliers/4.png" />
 						</a>
 					</li>
 				</ul>
@@ -905,7 +901,7 @@ function handleFileSelect(event) {
 
 
   width: 50px;
-  height: 220px;
+  height: 270px;
   text-align: center;
 
   position:absolute;
@@ -982,11 +978,12 @@ function handleFileSelect(event) {
   <div id="WebGLCubeCanvas"></div>
   <div id="WebGLInteractiveMenu">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
-      <a href="#" class="hi-icon icon-move tooltip" title="Move" ></a>
-      <a href="#" class="hi-icon icon-rotate tooltip" title="Rotate"></a>
-      <a href="#" class="hi-icon icon-resize tooltip" title="Resize"></a>
-      <a href="#" class="hi-icon icon-duplicate tooltip" title="Duplicate"></a>
-      <a href="#" class="hi-icon icon-delete tooltip" title="Remove"></a>
+      <a href="#" class="hi-icon icon-move tooltip" id="tool3DMoveXY" title="Move Horizontaly" ></a>
+      <a href="#" class="hi-icon icon-updown tooltip" id="tool3DMoveZ" title="Move Vertically" ></a>
+      <a href="#" class="hi-icon icon-rotate tooltip" id="tool3DRotate" title="Rotate"></a>
+      <a href="#" class="hi-icon icon-resize tooltip" id="tool2DResize" title="Resize"></a>
+      <a href="#" class="hi-icon icon-duplicate tooltip" id="tool3DDuplicate" title="Duplicate"></a>
+      <a href="#" class="hi-icon icon-delete tooltip" id="tool3DRemove" title="Remove"></a>
     </div>
     <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
         <p>Object Textures</p>
@@ -1075,8 +1072,9 @@ function agentToggle() {
     }
   }
 }
-
 </script>
+
+<script src="js/cssmenu.js"></script>
 
 <script src="js/3d/three.js"></script>
 <script src="js/3d/Detector.js"></script>
