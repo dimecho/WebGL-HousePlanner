@@ -1,10 +1,10 @@
 @font-face {
 	font-family: 'icomoon';
-	src:url('fonts/icomoon.eot?ev2tx8');
-	src:url('fonts/icomoon.eot?#iefixev2tx8') format('embedded-opentype'),
-		url('fonts/icomoon.woff?ev2tx8') format('woff'),
-		url('fonts/icomoon.ttf?ev2tx8') format('truetype'),
-		url('fonts/icomoon.svg?ev2tx8#icomoon') format('svg');
+	src:url('fonts/icomoon.eot?-d3hrgr');
+	src:url('fonts/icomoon.eot?#iefix-d3hrgr') format('embedded-opentype'),
+		url('fonts/icomoon.woff?-d3hrgr') format('woff'),
+		url('fonts/icomoon.ttf?-d3hrgr') format('truetype'),
+		url('fonts/icomoon.svg?-d3hrgr#icomoon') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -23,6 +23,15 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
+.icon-upload:before {
+	content: "\e631";
+}
+.icon-task:before {
+	content: "\e632";
+}
+.icon-catalog:before {
+	content: "\e633";
+}
 .icon-updown:before {
 	content: "\e671";
 }
@@ -133,6 +142,9 @@
 }
 .icon-earth38:before {
 	content: "\e623";
+}
+.icon-edit26:before {
+	content: "\e65c";
 }
 .icon-ellipse1:before {
 	content: "\e624";
@@ -292,9 +304,6 @@
 }
 .icon-stairs:before {
 	content: "\e65b";
-}
-.icon-task:before {
-	content: "\e65c";
 }
 .icon-test:before {
 	content: "\e65d";

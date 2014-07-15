@@ -118,17 +118,13 @@ div.clear { clear: both; }
     z-index: 99;
 }
 
-#tab-right li span{
-    display: block;
-    padding: 0 5px;
-    position: relative;
-}
-
 #links-right{
     width: 80px;
     padding: 10px;
     float: left;
     border-left: 1px solid #B4B8BB;
+
+
 }
 
 .show-right, .hide-right{
@@ -223,7 +219,7 @@ function delay(elem, src, delayTime){
 
 <!-- Top Menu -->
 <style>
-#top-menu {
+#topMenu {
 	position: absolute;
   top: 10px;
   left: 10px;
@@ -241,16 +237,18 @@ function delay(elem, src, delayTime){
 
 </style>
 <script>
+
 $( document).ready(function () {
 	 //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });  	
-    $("#top-menu p").click(function(){
+    $("#topMenu p").click(function(){
     $(this).hide().after('<input type="text" class="editP" value="'+$(this).html()+'" size="10" />');
     $('.editP').focus();
     });
     $('.editP').bind('blur', function(){
-       	$(this).hide().prev('#top-menu p').html($(this).val()).show();
+       	$(this).hide().prev('#topMenu p').html($(this).val()).show();
     });
 });
+
 </script>
 <!-- END Top Menu -->
 
@@ -450,7 +448,7 @@ body{
 
 #scrollWrapper {
   position: absolute;
-  top: 85px;
+  top: 100px;
   bottom: 55px;
   left: 55px;
   width: 320px;
@@ -499,6 +497,7 @@ http://www.flaticon.com
 <link rel="stylesheet" href="font/style.css"></head>
 <link rel="stylesheet" href="css/iconhover.css">
 <script src="js/modernizr.custom.js"></script>
+
 
 <link rel="stylesheet" type="text/css" href="css/reset.css"  />
 <link rel="stylesheet" type="text/css" href="css/normalize.css"  />
@@ -581,76 +580,57 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
     //toggleRight('box-right');
    });
 </script>
-<div id="box-right" class="hide-right" style="padding-bottom:40%;">
+<div id="box-right" class="hide-right">
     <ul id="tab-right">
         <li>
             <img id="arrow-right" onclick="toggleRight('box-right');" src="images/arrowleft.png">
         </li>
     </ul>
-    <div id="links-right">
-        <div id="deco" style="width:320px;padding-bottom:50%;">
-          <div id="Menu3DHouse" style="display: none;">
-          
-          </div>
-          <div id="Menu3DFloor" style="display: none;">
+    <div id="links-left" style="width:320px;padding-bottom:40%;">
+
+      <div id="Menu3DHouse" style="display: none;">
+      </div>
+
+      <div id="Menu3DFloor" style="display: none;">
             <!--
             <div id="vendorLogo" style="display:inline-block;left:0;width:175px;height:73px;background-image: url('images/_logotag.png')">
               <a href="#suppliers"><img src="images/suppliers/logos/leons.png" style="padding:10px;" alt="Vendor" /></a>
             </div>
             -->
-          </div>
-          <div id="Menu2DFloor" style="display: none;">
+      </div>
+          
+      <div id="Menu2DFloor" style="display: none;">
+      </div>
 
-          </div>
-
-          <div style="display: inline-block;vertical-align:top;padding:5px">
-              <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-                <a class="hi-icon icon-arrow483 tooltip-top" title="Upload Your 3D Object"></a>
-                <a class="hi-icon icon-shopping145 tooltip-top" title="Catalog"></a>
-                <a href="#" class="hi-icon icon-task tooltip-top" title="Whish List"></a>
-              </div>
-          </div>
-			    		<style>
-              .input-wrapper {
-                  border-raius:5px;
-                  padding:10px;
-              }
-              input[type=text] {
-                border-raius:5px;
-                  width:310px;
-                  font-size:16px;
-              }
-            </style>
-
-          <div id="header">
-            
-              <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" />
-              <!--
-            	<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-              		<a href="#" class="hi-icon icon-navigate6" title="Scroll Up"></a>
-            	</div>
-              -->
-          </div>
-        	
-          <div id="dragElement"></div>
-
-           
-	        <div id="scrollWrapper">
-
-	            <div id="scroller">
-	              <div id="WebGLCanvasMenu"></div>
-                <div id="HTMLCanvasMenu" style="display: none;"></div>
-	            </div>
-	        </div>
-	        <!--
-	        <div id="footer">
-	             <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-	              <a href="#" class="hi-icon icon-arrow483" title="Scroll Down"></a>
-	            </div>
-	        </div>
-	        -->
+      <div style="display:inline-block;vertical-align:top;padding:5px">
+        <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+                <a class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
+                <a class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
+                <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
         </div>
-    </div>
+        <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
+      </div>
+
+      <!--
+        <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+          <a href="#" class="hi-icon icon-navigate6" title="Scroll Up"></a>
+        </div>
+      -->
+      <div id="dragElement" style="display: none;"></div>
+
+	    <div id="scrollWrapper">
+	            <div id="scroller">
+                <div id="ObjectMenu" style="display: none;"></div>
+	            </div>
+	    </div>
+	    <!--
+	    <div id="footer">
+	      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+	        <a href="#" class="hi-icon icon-arrow483" title="Scroll Down"></a>
+	      </div>
+	    </div>
+	    -->
+  </div>
 </div>
 <!-- END Slide Right Menu -->
 <!-- Slide Left Menu -->
@@ -673,7 +653,7 @@ $(document).ready(function() {
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DHome',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width: 160px;">
+  <div id="links-left" style="width:160px">
   <script>
   $( document ).ready(function() {
     $("#menuFloor1").click();
@@ -707,7 +687,7 @@ $(document).ready(function() {
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width: 60px;">
+  <div id="links-left" style="width:60px">
       <div id="deco">
         <!-- 3D Editor Menu -->
         <a href="#" class="hi-icon icon-images11 tooltip-right" title="Insert Picture"></a>
@@ -729,7 +709,7 @@ $(document).ready(function() {
       <img id="arrow-left" onclick="toggleLeft('menuLeft2D',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width: 60px;">
+  <div id="links-left" style="width:60px">
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
         <a href="#" onclick="fileSelect2DDraftPlan()" class="hi-icon icon-draftplan tooltip" id="tool2DDraft" title="Upload Draft Plan (pdf, jpg, png)" ></a>
         <input type="file" id="fileselect" hidden /> 
@@ -805,7 +785,7 @@ $(document).ready(function() {
 <!-- End Debug -->
 
 <!-- Thumbnail class="ui-widget-content" -->
-<div id="top-menu">
+  <div id="topMenu">
 		<div style="display: inline-block;width:108px;">
 		<a href="#openThumb"><img src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius: 3px;" /></a>
 	</div>
@@ -821,7 +801,7 @@ $(document).ready(function() {
 	<div style="display: inline-block;vertical-align:top">
 		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
 			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior"></a>
-      <a href="#" onclick="show3DHouse()" class="hi-icon icon-floors tooltip" title="Floor Arrangements"></a>
+      <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements"></a>
 			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings"></a>
 			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans"></a>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New"></a>
@@ -852,6 +832,9 @@ $(document).ready(function() {
 		</div>
 	</div>
 	</div>
+
+  <div id="displayFloorName" style="display: none;">
+  </div>
 <!--
 <div class="apple_overlay black" id="photo1">
   	<img src="img/property-large.jpg" />

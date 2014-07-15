@@ -33,12 +33,13 @@ var rendererMenu;
 var scene3DHouseContainer; //Contains all Exterior 3D objects by floor (trees,fences)
 var scene3DHouseGroundContainer; //Grass Ground - 1 object
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
+var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DMenuHouseContainer; //Contains rotatable 3D objects for Exterior (trees,fences)
 var scene3DMenuFloorContainer; //Contains rotatable 3D objects for Exterior (sofas,tables)
 var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,tables)
 var scene2DFloorContainer = []; //Contains all 2D lines by floor
 var scene2DFloorDraftPlan = []; //Image as texture for plan tracing for multiple floors
-var scene3DPivotPoint; //Rotational pivot point - 1 object
+//var scene3DPivotPoint; //Rotational pivot point - 1 object
 var scene3DCudeMesh;
 var sceneAmbientLight;
 var sceneDirectionalLight;
@@ -296,9 +297,10 @@ function init() {
     scene3DHouseContainer = new THREE.Object3D();
     scene3DHouseGroundContainer = new THREE.Object3D();
     scene3DFloorGroundContainer = new THREE.Object3D();
+    scene3DFloorLevelGroundContainer = new THREE.Object3D();
     scene3DFloorContainer[0] = new THREE.Object3D();
     scene2DFloorContainer[0] = new THREE.Object3D();
-    scene3DPivotPoint = new THREE.Object3D();
+
 
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
@@ -828,13 +830,13 @@ function show3DHouse() {
     scene3D.add(scene3DHouseGroundContainer);
     scene3D.add(scene3DHouseContainer);
     scene3D.add(scene3DFloorContainer[0]);
-    scene3D.add(scene3DPivotPoint);
 
     scene3DCube.add(scene3DCubeMesh);
 
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
     $('#menuLeft3DHome').show();
+    $('#box-right').show();
 
     toggleLeft('menuLeft3DHome', true);
 
@@ -869,13 +871,13 @@ function show3DFloor() {
     //TODO: remove other floors
     scene3D.add(scene3DFloorGroundContainer);
     scene3D.add(scene3DFloorContainer[0]);
-    scene3D.add(scene3DPivotPoint);
 
     scene3DCube.add(scene3DCubeMesh);
 
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
     $('#menuLeft3DHome').hide();
+    $('#box-right').show();
 
 
     //scene3DFloorContainer[0].traverse;
@@ -886,6 +888,24 @@ function show3DFloor() {
     //Auto open right menu
     document.getElementById('box-right').setAttribute("class", "show-right");
     delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
+}
+
+function show3DFloorLevel() {
+
+    show2DContainer(false);
+
+    camera3D.position.set(0, 4, 12);
+
+    scene3D.add(scene3DFloorLevelGroundContainer);
+
+    //TODO: show extruded stuff from scene2DFloorContainer[0]
+
+    scene3DCube.add(scene3DCubeMesh);
+
+    $('#menuLeft3DFloor').hide();
+    $('#menuLeft2D').hide();
+    $('#menuLeft3DHome').hide();
+    $('#box-right').hide();
 }
 
 function show2D() {
@@ -908,6 +928,7 @@ function show2D() {
     }
     $('#tool2DFreestyle').css('color', 'blue');
     $('#menuLeft2D').show();
+    $('#box-right').show();
 
     //Auto open left menu
     toggleLeft('menuLeft2D', true);
@@ -923,10 +944,13 @@ function show2DContainer(b) {
     //console.log("show2DContainer " + b);
 
     scene3D.remove(sceneDirectionalLight);
+
     scene3D.remove(scene3DHouseGroundContainer);
+    scene3D.remove(scene3DFloorGroundContainer);
+    scene3D.remove(scene3DFloorLevelGroundContainer);
+
     scene3D.remove(scene3DHouseContainer);
     scene3D.remove(scene3DFloorContainer[0]);
-    scene3D.remove(scene3DPivotPoint);
     scene2D.remove(scene2DDrawLineContainer);
 
     scene3DCube.remove(scene3DCubeMesh);
@@ -1361,6 +1385,22 @@ function sceneNew() {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         scene3DFloorGroundContainer.add(mesh);
+    });
+
+    new THREE.JSONLoader().load("./objects/Platform/ground-wood.js", function(geometry, materials) {
+        var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Platform/Textures/F56734.jpg');
+        groundTexture.wrapS = THREE.RepeatWrapping;
+        groundTexture.wrapT = THREE.RepeatWrapping;
+        groundTexture.repeat.set(12, 12);
+        groundTexture.anisotropy = 2; //focus blur (16=unblured 1=blured)
+
+        var groundMaterial = new THREE.MeshBasicMaterial({
+            map: groundTexture
+        });
+        var mesh = new THREE.Mesh(geometry, groundMaterial);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        scene3DFloorLevelGroundContainer.add(mesh);
     });
     //===============================================
     //loadJSON("Platform/ground-wood.js", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1); //Interior ground (defferent from floor textures)
