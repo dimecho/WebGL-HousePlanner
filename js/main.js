@@ -79,6 +79,7 @@ var DIMENTIONS = 'metric' //imperial
 var scene2DDrawLineGeometry; //Temporary holder for mouse click and drag drawings
 var scene2DDrawLine;
 var scene2DDrawLineMaterial; //Line thikness
+var scene2DDrawLineDashedMaterial;
 var scene2DDrawLineContainer; //Container of line geometries - need it as a collection for "quick hide"
 var scene2DWallGeometry = [
     [],
@@ -324,10 +325,16 @@ function init() {
     scene2DDrawLineMaterial = new THREE.LineBasicMaterial({
         color: 0x000000,
         linewidth: 5,
-        //linecap: "round",
-        linejoin: "round"
+        linecap: "round",
+        //linejoin: "round"
         //opacity: 0.5
     });
+    scene2DDrawLineDashedMaterial = new THREE.LineDashedMaterial({
+        color: 0x000000,
+        dashSize: 1,
+        gapSize: 0.5
+    });
+
     scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
     //scene2DDrawLineContainer.add(scene2DDrawLine);
 
@@ -1017,42 +1024,75 @@ function onDocumentMouseMove(event) {
     y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     if (scene2D.visible) {
+
+        //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
+        //===================================
+        /*
+        vector = new THREE.Vector3(x, y, 0.5);
+        projector = new THREE.Projector();
+        projector.unprojectVector(vector, camera2D);
+        var dir = vector.sub(camera2D.position).normalize();
+        var distance = -camera2D.position.z / dir.z;
+        var pos = camera2D.position.clone().add(dir.multiplyScalar(distance));
+        */
+        var planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 0.5), 0);
+        vector = new THREE.Vector3(x, y, 0.5);
+        var raycaster = projector.pickingRay(vector, camera2D);
+        var pos = raycaster.ray.intersectPlane(planeZ);
+        //console.log("x: " + pos.x + ", y: " + pos.y);
+        //===================================
+
         if (TOOL2D == '') { //Nothing selected, move grid X/Y
 
             //TODO: ability to unslect current tool
 
         } else if (TOOL2D == 'freestyle') {
-            //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
-            //===================================
-            /*
-            vector = new THREE.Vector3(x, y, 0.5);
-            projector = new THREE.Projector();
-            projector.unprojectVector(vector, camera2D);
-            var dir = vector.sub(camera2D.position).normalize();
-            var distance = -camera2D.position.z / dir.z;
-            var pos = camera2D.position.clone().add(dir.multiplyScalar(distance));
-            */
-            var planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 0.5), 0);
-            vector = new THREE.Vector3(x, y, 0.5);
-            var raycaster = projector.pickingRay(vector, camera2D);
-            var pos = raycaster.ray.intersectPlane(planeZ);
-            //console.log("x: " + pos.x + ", y: " + pos.y);
-            //===================================
 
             if (mouse.x != 0 && mouse.y != 0) {
-
-                var scene2DDrawLineGeometry = new THREE.Geometry();
+                scene2DDrawLineGeometry = new THREE.Geometry();
                 scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(mouse.x, mouse.y, 0.5));
                 scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(pos.x, pos.y, 0.5));
                 //scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0.5));
 
-                var scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
+                scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
                 scene2DDrawLineContainer.add(scene2DDrawLine);
                 //scene2D.add(scene2DDrawLineContainer);
             }
             mouse.x = pos.x;
             mouse.y = pos.y;
+
         } else if (TOOL2D == 'vector') {
+
+            container.style.cursor = 'crosshair';
+
+            //MouseMove = Selection
+            scene2DDrawLineGeometry = new THREE.Geometry();
+            scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(mouse.x, mouse.y, 0.5));
+            scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(pos.x, pos.y, 0.5));
+            scene2DDrawLineGeometry.computeLineDistances(); //what is this?
+
+            scene2DDrawLineContainer.remove(scene2DDrawLine);
+            scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineDashedMaterial, THREE.LineStrip);
+            scene2DDrawLineContainer.add(scene2DDrawLine);
+
+            /*
+            var material = new THREE.SpriteMaterial({
+                map: texture,
+                color: 0xffffff,
+                fog: true
+            });
+            //var width = material.map.image.width;
+            //var height = material.map.image.height;
+            sprite = new THREE.Sprite(material);
+            //sprite.scale.set( width, height, 1 );
+            //sprite.material.rotation += 0.1 * ( i / l );
+            sprite.position.set(0, 0, 1);
+            scene2D.add(sprite);
+            */
+
+        } else if (TOOL2D == 'square') {
+
+        } else if (TOOL2D == 'circle') {
 
         }
     } else {
@@ -1102,6 +1142,9 @@ function onDocumentMouseDown(event) {
 
     event.preventDefault();
 
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
     AUTOROTATE = false;
     //renderer.antialias = false;
 
@@ -1111,9 +1154,14 @@ function onDocumentMouseDown(event) {
         mouse = new THREE.Vector2()
         scene2D.add(scene2DDrawLineContainer);
         //$(window).bind('mousemove', drag2D).bind('mouseup', drag2DEnd);
+
+        if (TOOL2D == 'vector') {
+            //container.style.cursor = 'crosshair';
+        } else {
+            container.style.cursor = 'pointer';
+        }
+
     } else {
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
         //console.log("Mouse Down " + mouse.x + ":" + mouse.x + " " + event.clientX + "|" + window.innerWidth + ":" + event.clientY + "|" + window.innerHeight + " -> " + camera3D.position.z);
 
@@ -1201,7 +1249,7 @@ function onDocumentMouseDown(event) {
             var width = height * aspect;                  // visible width
             */
 
-            $('#WebGLInteractiveMenuText').html("Dimentionas:");
+            $('#WebGLInteractiveMenuText').html("Dimentions:");
             $('#WebGLInteractiveMenu').show();
 
             //container.style.cursor = 'move';
@@ -1217,6 +1265,8 @@ function onDocumentMouseUp(event) {
     event.preventDefault();
 
     if (scene2D.visible) {
+
+        container.style.cursor = 'pointer';
 
         scene2D.remove(scene2DDrawLineContainer);
 
@@ -1923,15 +1973,18 @@ function drag2D(e) {
     */
 }
 
-function fileSelect2DDraftPlan() {
+function fileSelect(action) {
     // Check for the various File API support.
     if (window.File && window.FileReader && window.FileList && window.Blob) {
 
         $("#fileselect").click();
-        $('#fileselect').bind('change', handleFileSelect);
 
-        scene2D.remove(scene2DFloorDraftPlan[0]);
+        if (action == '2ddraftplan') {
+            $('#fileselect').bind('change', handleFileImageSelect);
+            scene2D.remove(scene2DFloorDraftPlan[0]);
+        } else if (action == '3dobject') {
 
+        }
         //document.getElementById('fileselect').addEventListener('change', handleFileSelect, false);
     } else {
         alert('The File APIs are not fully supported in this browser.');
@@ -1966,7 +2019,7 @@ function updateProgress(event) {
     }
 }
 
-function handleFileSelect(event) {
+function handleFileImageSelect(event) {
     // Reset progress indicator on new file selection.
     //progress.style.width = '0%';
     //progress.textContent = '0%';

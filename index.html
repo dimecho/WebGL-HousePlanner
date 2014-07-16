@@ -566,6 +566,13 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 	</div>
 </div>
 
+<div id="open3DTin" class="modalDialog" >
+  <div id="wrap" style="width:90%; height:90%;margin: 2% auto;">
+    <a href="#close" class="close">X</a>
+    <iframe src="" frameborder="0" id="iframe3DTin" style="display: block; width:100%; height:100%;"></iframe> 
+  </div>
+</div>
+
 <!-- Slide Right Menu -->
 <script>
  $(document).ready(function() {
@@ -604,8 +611,9 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 
       <div style="display:inline-block;vertical-align:top;padding:5px">
         <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-                <a class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
-                <a class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
+                <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
+                <a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>
+                <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
                 <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
         </div>
         <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
@@ -711,8 +719,7 @@ $(document).ready(function() {
   </ul>
   <div id="links-left" style="width:60px">
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
-        <a href="#" onclick="fileSelect2DDraftPlan()" class="hi-icon icon-draftplan tooltip" id="tool2DDraft" title="Upload Draft Plan (pdf, jpg, png)" ></a>
-        <input type="file" id="fileselect" hidden /> 
+        <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-draftplan tooltip" id="tool2DDraft" title="Upload Draft Plan (pdf, jpg, png)" ></a>
         <a href="#" class="hi-icon icon-draw tooltip" id="tool2DFreestyle" title="Freestyle Sketch" ></a>
         <a href="#" class="hi-icon icon-vector tooltip" id="tool2DVector" title="Vector Corrections"></a>
         <a href="#" class="hi-icon icon-vector-square tooltip" id="tool2DSquare" title="Draw Square"></a>
@@ -767,7 +774,7 @@ $(document).ready(function() {
 						</a>
 					</li>
 				</ul>
-			</section>
+	</section>
 </div>
 <!-- End Suppliers -->
 
@@ -805,7 +812,7 @@ $(document).ready(function() {
 			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings"></a>
 			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans"></a>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New"></a>
-			<a href="#openExistingDesign" class="hi-icon icon-open tooltip" title="Open"></a>
+			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
       <a href="#" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
       <script>
 			$('.tooltip-save-menu').tooltipster({
@@ -957,6 +964,7 @@ $(document).ready(function() {
 }
 </style>
 <div id="WebGLCanvas" tabindex="-1">
+  <input type="file" id="fileselect" hidden /> 
   <div id="WebGLHelp">?</div>
   <div id="WebGLCubeCanvas"></div>
   <div id="WebGLInteractiveMenu">
