@@ -664,6 +664,8 @@ function loadJSON(js, object, x, y, z, xaxis, yaxis, ratio) {
         object.add(mesh);
     }, "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/");
 }
+
+
 /*
 function loadBabylon(js, object, x, y, z, xaxis, yaxis, ratio) {
 
@@ -842,10 +844,15 @@ function show3DHouse() {
 
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
-    $('#menuLeft3DHome').show();
-    $('#box-right').show();
+    $('#menuLeft3DHouse').show();
+    toggleLeft('menuLeft3DHouse', true);
 
-    toggleLeft('menuLeft3DHome', true);
+
+    $('#menuRight3DFloor').hide();
+    $('#menuRight2D').hide();
+    $('#menuRight3DHouse').show();
+    $('#box-right').show();
+    //toggleLeft('box-right', true);
 
     //scene3DHouseContainer.traverse;
 
@@ -853,8 +860,8 @@ function show3DHouse() {
     //show3DFloorContainer(false);
 
     //Auto close right menu
-    document.getElementById('box-right').setAttribute("class", "hide-right");
-    delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+    //document.getElementById('box-right').setAttribute("class", "hide-right");
+    //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
     //TODO: change menu content
     /*
@@ -883,9 +890,12 @@ function show3DFloor() {
 
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
-    $('#menuLeft3DHome').hide();
-    $('#box-right').show();
+    $('#menuLeft3DHouse').hide();
 
+    $('#menuRight3DFloor').show();
+    $('#menuRight2D').hide();
+    $('#menuRight3DHouse').hide();
+    $('#box-right').show();
 
     //scene3DFloorContainer[0].traverse;
     //show3DFloorContainer(true);
@@ -911,8 +921,10 @@ function show3DFloorLevel() {
 
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
-    $('#menuLeft3DHome').hide();
+    $('#menuLeft3DHouse').hide();
     $('#box-right').hide();
+
+
 }
 
 function show2D() {
@@ -935,13 +947,15 @@ function show2D() {
     }
     $('#tool2DFreestyle').css('color', 'blue');
     $('#menuLeft2D').show();
-    $('#box-right').show();
-
-    //Auto open left menu
     toggleLeft('menuLeft2D', true);
 
-    //scene2DFloorContainer[0].traverse;
+    $('#menuRight3DFloor').hide();
+    $('#menuRight2D').show();
+    $('#menuRight3DHouse').hide();
+    $('#box-right').show();
 
+
+    //scene2DFloorContainer[0].traverse;
     //Auto close right menu
     document.getElementById('box-right').setAttribute("class", "hide-right");
     delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
@@ -1977,13 +1991,17 @@ function fileSelect(action) {
     // Check for the various File API support.
     if (window.File && window.FileReader && window.FileList && window.Blob) {
 
-        $("#fileselect").click();
+        $("#fileInput").click();
 
         if (action == '2ddraftplan') {
-            $('#fileselect').bind('change', handleFileImageSelect);
+
+            $('#fileInput').bind('change', handleFile2DImageSelect);
             scene2D.remove(scene2DFloorDraftPlan[0]);
+
         } else if (action == '3dobject') {
 
+            //Determine if local or submit through webserver
+            $('#fileInput').bind('change', handleFile3DObjectSelect); //If local makesure it is located in ./objects folder and images in Textures)
         }
         //document.getElementById('fileselect').addEventListener('change', handleFileSelect, false);
     } else {
@@ -2007,6 +2025,7 @@ function errorHandler(event) {
     //fileReader.abort();
 }
 
+/*
 function updateProgress(event) {
     // evt is an ProgressEvent.
     if (event.lengthComputable) {
@@ -2018,38 +2037,123 @@ function updateProgress(event) {
         }
     }
 }
+*/
 
-function handleFileImageSelect(event) {
-    // Reset progress indicator on new file selection.
-    //progress.style.width = '0%';
-    //progress.textContent = '0%';
+function ajaxBeforeSubmit() {
+    var fsize = $('#fileInput')[0].files[0].size; //get file size
+    var ftype = $('#fileInput')[0].files[0].type; // get file type
+
+    //allow file types
+    switch (ftype) {
+        case 'application/zip':
+        case 'application/octet-stream':
+            break;
+        default:
+            alert(ftype + " is unsupported file type!");
+            return false
+    }
+
+    //Allowed file size is less than 10 MB (1048576 = 1 mb)
+    if (fsize > 10485760) {
+        alert("<b>" + fsize + "</b> Too big file! <br />File is too big, it should be less than 5 MB.");
+        return false
+    }
+}
+
+/*
+function ajaxAfterSuccess()
+{
+	$('#submit-btn').show(); //hide submit button
+	$('#loading-img').hide(); //hide submit button
+
+}
+function ajaxProgress(event, position, total, percentComplete)
+{
+    //Progress bar
+    $('#progressbox').show();
+    $('#progressbar').width(percentComplete + '%') //update progressbar percent complete
+    $('#statustxt').html(percentComplete + '%'); //update status text
+    if(percentComplete>50)
+    {
+        $('#statustxt').css('color','#000'); //change status text to white after 50%
+    }
+}
+*/
+
+//TODO: optimize there two functions into one
+function handleFile3DObjectSelect(event) {
+
+    switch (event.target.files[0].type) {
+        case 'application/zip': //Zip root folder structure should contain .js and textures in '/Textures' folder (assuming have proper texture paths)
+        case 'application/octet-stream':
+            var options = {
+                //target: '#output', // target element(s) to be updated with server response 
+                beforeSubmit: ajaxBeforeSubmit, // pre-submit callback
+                //uploadProgress: ajaxProgress,
+                //success:       ajaxAfterSuccess,  // post-submit callback 
+                resetForm: true // reset the form after successful submit 
+            };
+
+            $('#uploadForm').submit(function() {
+                $(this).ajaxSubmit(options);
+                return false; // return false to prevent standard browser submit and page navigation 
+            });
+            break;
+        case 'application/x-javascript': //Security Reason local load can only load string file (JSON,DAE,OBJ) content but no Textures or Binary extentions
+            fileReader = new FileReader();
+            fileReader.onerror = errorHandler;
+            //fileReader.onprogress = updateProgress;
+
+            fileReader.onloadstart = function(e) {
+                //TODO: show indicator, some 3D objects take time to load
+            };
+
+            fileReader.onload = function(e) {
+                console.log("Load File: " + $('#fileInput').value + ":" + event.target.files[0].name)
+                /*
+				if (scene3DHouseContainer.visible) {
+
+				    loadJSON("Exterior/Uploads/" + event.target.files[0], scene3DFloorContainer[0], 0, 0, 0, 0, 0, 1);
+
+				} else if (scene3DFloorContainer.visible) {
+
+				    loadJSON("Interior/Uploads/" + event.target.files[0], scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
+				}
+				*/
+            }
+
+            //fileReader.readAsDataURL(event.target.files[0]);
+            //fileReader.readAsBinaryString(event.target.files[0]);
+            fileReader.readAsText(file);
+            break;
+        default:
+            alert("file type should be .js, .json or .zip");
+            return false;
+    }
+}
+
+function handleFile2DImageSelect(event) {
 
     if (!event.target.files[0].type.match('image.*')) {
+        alert('Currently only photos are supported');
         return;
     }
 
     fileReader = new FileReader();
     fileReader.onerror = errorHandler;
-    fileReader.onprogress = updateProgress;
+    //fileReader.onprogress = updateProgress;
+
     fileReader.onabort = function(e) {
         alert('File read cancelled');
     };
 
     /*
-  fileReader.onloadstart = function(e) {
-      document.getElementById('progress_bar').className = 'loading';
-  };
-  */
+	fileReader.onloadstart = function(e) {
+	      
+	};
+	*/
 
     fileReader.onload = function(e) {
-        // Ensure that the progress bar displays 100% at the end.
-        //progress.style.width = '100%';
-        //progress.textContent = '100%';
-        //setTimeout("document.getElementById('progress_bar').className='';", 2000);
-
-        //var span = document.createElement('span');
-        //span.innerHTML = ['<img class="thumb" src="' + e.target.result + '" title="' + escape(e.name) + '"/>'].join('');
-        //document.getElementById('WebGLThumbnail').insertBefore(span, null);
 
         var texture = new THREE.ImageUtils.loadTexture(e.target.result);
         var material = new THREE.MeshBasicMaterial({
@@ -2066,16 +2170,10 @@ function handleFileImageSelect(event) {
         scene2DFloorDraftPlan[0].position.y = -0.5;
         scene2D.add(scene2DFloorDraftPlan[0]);
     }
-    // Read in the image file as a binary string.
 
+    // Read image file as a binary string.
     fileReader.readAsDataURL(event.target.files[0]);
     //fileReader.readAsBinaryString(event.target.files[0]);
-}
-
-function drag2DEnd(e) {
-    $(window).unbind('mousemove', drag2D).unbind('mouseup', drag2DEnd);
-    scene2D.remove(scene2DDrawLineContainer);
-    //TODO: Analyse and create solid wall lines
 }
 
 function touch2DDrag(e) {

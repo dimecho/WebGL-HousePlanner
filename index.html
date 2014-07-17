@@ -16,7 +16,7 @@
 <!-- Slide Menu -->
 <style>
 
-#menuLeft3DHome{
+#menuLeft3DHouse{
     width: 240px;
     line-height: 20px;
     left: -180px;
@@ -75,7 +75,7 @@ div.clear { clear: both; }
   z-index: 99;
 }
 
-.menuLeft3DHome-show-left, .menuLeft3DFloor-show-left, .menuLeft2D-show-left, .hide-left{
+.menuLeft3DHouse-show-left, .menuLeft3DFloor-show-left, .menuLeft2D-show-left, .hide-left{
     /* we specify the transition length for hiding and showing */
     transition: margin-left .4s ease-in;
     -webkit-transition: margin-left .4s ease-in;
@@ -85,7 +85,7 @@ div.clear { clear: both; }
     margin-left:0px;
 }
 
-.menuLeft3DHome-show-left{
+.menuLeft3DHouse-show-left{
     margin-left:210px;
 }
 .menuLeft3DFloor-show-left{
@@ -123,8 +123,6 @@ div.clear { clear: both; }
     padding: 10px;
     float: left;
     border-left: 1px solid #B4B8BB;
-
-
 }
 
 .show-right, .hide-right{
@@ -145,43 +143,6 @@ div.clear { clear: both; }
     cursor: pointer;
 }
 
-.bt{
-    width: 77px;
-    height: 40px;
-    margin: -1px;
-    text-align:center;
-    border:1px solid #858fa6;
-    font: bold 13px Helvetica,Arial,sans-serif;
-    text-shadow:0px 0px 5px rgba(0, 0, 0, 0.75);
-    background:#014464;
-    background-image: -o-linear-gradient(left, #1F82AF, #002F44);
-    background-image: -ms-linear-gradient(left, #1F82AF, #002F44);
-    background-image: -moz-linear-gradient(left, #1F82AF, #002F44);
-    background-image: -webkit-linear-gradient(left, #1F82AF, #002F44);
-    background-image: -webkit-gradient(linear, left top, right top, from(#1F82AF), to(#002F44));
-}
-
-.bt a{
-    line-height: 40px;
-    color: #fff;
-    display: block;
-}
-
-.bt:hover{
-    transition: background .3s linear;
-    background: #32A3D3;
-    -o-transition: background .3s linear;
-    -moz-transition: background .3s linear;
-    -webkit-transition: background .3s linear;
-}
-
-#deco{
-    width: 100%;
-    float: left;
-    box-shadow:0px 0px 5px #000;
-    -moz-box-shadow:0px 0px 5px #000;
-    -webkit-box-shadow:0px 0px 5px #000;
-}
 </style>
 <script>
 function toggleRight(id) {
@@ -568,7 +529,7 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
 
 <div id="open3DTin" class="modalDialog" >
   <div id="wrap" style="width:90%; height:90%;margin: 2% auto;">
-    <a href="#close" class="close">X</a>
+    <a href="#close" class="close" onclick="document.getElementById('iframe3DTin').src = 'about:blank'">X</a>
     <iframe src="" frameborder="0" id="iframe3DTin" style="display: block; width:100%; height:100%;"></iframe> 
   </div>
 </div>
@@ -593,23 +554,8 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
             <img id="arrow-right" onclick="toggleRight('box-right');" src="images/arrowleft.png">
         </li>
     </ul>
-    <div id="links-left" style="width:320px;padding-bottom:40%;">
-
-      <div id="Menu3DHouse" style="display: none;">
-      </div>
-
-      <div id="Menu3DFloor" style="display: none;">
-            <!--
-            <div id="vendorLogo" style="display:inline-block;left:0;width:175px;height:73px;background-image: url('images/_logotag.png')">
-              <a href="#suppliers"><img src="images/suppliers/logos/leons.png" style="padding:10px;" alt="Vendor" /></a>
-            </div>
-            -->
-      </div>
-          
-      <div id="Menu2DFloor" style="display: none;">
-      </div>
-
-      <div style="display:inline-block;vertical-align:top;padding:5px">
+    <div id="links-left" style="width:320px;">
+      <div style="display:inline-block;width:100%;vertical-align:top;padding:10px">
         <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
                 <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
                 <a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>
@@ -617,7 +563,7 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
                 <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
         </div>
         <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
-      </div>
+     </div>
 
       <!--
         <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
@@ -626,11 +572,64 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
       -->
       <div id="dragElement" style="display: none;"></div>
 
-	    <div id="scrollWrapper">
-	            <div id="scroller">
-                <div id="ObjectMenu" style="display: none;"></div>
-	            </div>
+      <div id="menuRight3DHouse" style="display: none;">
+        <div id='cssmenu'>
+              <ul>
+                 <li><a href='#'><span>Trees</span></a></li>
+                 <li class='has-sub'><a href='#'><span>Plants</span></a>
+                    <ul>
+                       <li><a href='#'><span>Bushes</span></a></li>
+                       <li class='last'><a href='#'><span>Flowers</span></a></li>
+                    </ul>
+                 </li>
+                 <li><a href='#'><span>Driveway</span></a></li>
+                 <li><a href='#'><span>Backyard</span></a></li>
+                 <li><a href='#'><span>Fences</span></a></li>
+                 <li><a href='#'><span>Lights</span></a></li>
+                 <li><a href='#'><span>Swimming Pools</span></a></li>
+                 <li><a href='#'><span>Animals</span></a></li>
+                 <li><a href='#'><span>Cars</span></a></li>
+              </ul>
+        </div>
+      </div>
+
+      <div id="menuRight3DFloor" style="display: none;">
+        <!--
+                <div id="vendorLogo" style="display:inline-block;left:0;width:175px;height:73px;background-image: url('images/_logotag.png')">
+                  <a href="#suppliers"><img src="images/suppliers/logos/leons.png" style="padding:10px;" alt="Vendor" /></a>
+                </div>
+        -->
+        <div id='cssmenu'>
+          <ul>
+                 <li class='has-sub'><a href='#'><span>Furniture</span></a>
+                    <ul>
+                       <li><a href='#'><span>Sofas</span></a></li>
+                       <li class='last'><a href='#'><span>Tables</span></a></li>
+                    </ul>
+                 </li>
+                 <li><a href='#'><span>Bedroom</span></a></li>
+                 <li><a href='#'><span>Cabinets</span></a></li>
+                 <li><a href='#'><span>Kitchen</span></a></li>
+                 <li><a href='#'><span>Tables</span></a></li>
+                 <li><a href='#'><span>Bathroom</span></a></li>
+                 <li><a href='#'><span>Lights</span></a></li>
+                 <li><a href='#'><span>Doors</span></a></li>
+                 <li><a href='#'><span>Outlets</span></a></li>
+                 <li><a href='#'><span>Plants</span></a></li>
+                 <li><a href='#'><span>Structural</span></a></li>
+          </ul>
+        </div>
+      </div>
+              
+      <div id="menuRight2D" style="display: none;">
+      
+      </div>
+      <!--
+      <div id="scrollWrapper" style="height:500px">
+        <div id="scroller">
+	      </div>
 	    </div>
+      -->
 	    <!--
 	    <div id="footer">
 	      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
@@ -655,10 +654,10 @@ $(document).ready(function() {
    });
 
 </script>
-<div id="menuLeft3DHome" class="hide-left">
+<div id="menuLeft3DHouse" class="hide-left">
   <ul id="tab-left">
     <li>
-      <img id="arrow-left" onclick="toggleLeft('menuLeft3DHome',false);" src="images/arrowright.png">
+      <img id="arrow-left" onclick="toggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
     </li>
   </ul>
   <div id="links-left" style="width:160px">
@@ -779,65 +778,65 @@ $(document).ready(function() {
 <!-- End Suppliers -->
 
 <!-- Map -->
-<div id="info" class="panel" style="background-color: #fff;">
-  <br/><br/><br/><br/><br/><br/>
-	<center><h1>Property Info & Agent Contact</h1></center>
-</div>
+  <div id="info" class="panel" style="background-color: #fff;">
+    <br/><br/><br/><br/><br/><br/>
+  	<center><h1>Property Info & Agent Contact</h1></center>
+  </div>
 <!-- End Map -->
 
 <!-- Debug-->
-<div id="debug" class="panel" style="background-color: #fff;">
+  <div id="debug" class="panel" style="background-color: #fff;">
 
-</div>
+  </div>
 <!-- End Debug -->
 
 <!-- Thumbnail class="ui-widget-content" -->
   <div id="topMenu">
 		<div style="display: inline-block;width:108px;">
-		<a href="#openThumb"><img src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius: 3px;" /></a>
-	</div>
-	<div style="display:inline-block;width:200px;">
-		<div style="height:55px">
-			<div style="float:left" class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-				<a id="link-portfolio" href="#info" class="hi-icon icon-info"></a>
-			</div>
-			<div style="padding-top:5px; line-height:140%;  float:left">MLS#: <br/>Agent: </div>
-			<div style="padding-top:5px; line-height:140%; float:left"><p>12345</p>Alyson</div>
-		</div>
-	</div>
-	<div style="display: inline-block;vertical-align:top">
-		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior"></a>
-      <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements"></a>
-			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings"></a>
-			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans"></a>
-			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New"></a>
-			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
-      <a href="#" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
-      <script>
-			$('.tooltip-save-menu').tooltipster({
-				interactive:true,
-        		content: $('<a href="#" class="hi-icon icon-earth16" style="color:white"></a><strong>Online</strong><br/><a href="#" onclick="exportJSON();" class="hi-icon icon-usb3" style="color:white"></a><strong>USB File</strong>')
-        	});
-			</script>
-			
-			<a href="#" class="hi-icon icon-undo tooltip" title="Undo"></a>
-			<a href="#" class="hi-icon icon-redo tooltip" title="Redo"></a>
-			<!--
-			<a href="#" class="hi-icon icon-profile22 tooltip-share-menu" title="Share"></a>
-			<script>
-			$('.tooltip-share-menu').tooltipster({
-				interactive:true,
-        		content: $('<span><i class="hi-icon icon-printer60" style="color:white"></i></span><br/><span><i class="hi-icon icon-email" style="color:white"></i></span><br/><span><i class="hi-icon icon-social21" style="color:white"></i></span><br/><span><i class="hi-icon icon-social5" style="color:white"></i></span><br/><span><i class="hi-icon icon-social38" style="color:white"></i></span>')
-        	});
-			</script>
-      -->
-			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot"></a>
-			<a href="#" onclick="launchFullscreen(document.documentElement);" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
-      <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
-			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login"></a>
-		</div>
-	</div>
+		  <a href="#openThumb"><img src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000;" /></a>
+	  </div>
+  	<div style="display:inline-block;width:200px;">
+  		<div style="height:55px">
+  			<div style="float:left" class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+  				<a id="link-portfolio" href="#info" class="hi-icon icon-info"></a>
+  			</div>
+  			<div style="padding-top:5px; line-height:140%;  float:left">MLS#: <br/>Agent: </div>
+  			<div style="padding-top:5px; line-height:140%; float:left"><p>12345</p>Alyson</div>
+  		</div>
+  	</div>
+  	<div style="display: inline-block;vertical-align:top">
+  		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+  			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior"></a>
+        <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements"></a>
+  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings"></a>
+  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans"></a>
+  			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New"></a>
+  			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
+        <a href="#" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
+        <script>
+  			$('.tooltip-save-menu').tooltipster({
+  				interactive:true,
+          		content: $('<a href="#" class="hi-icon icon-earth16" style="color:white"></a><strong>Online</strong><br/><a href="#" onclick="exportJSON();" class="hi-icon icon-usb3" style="color:white"></a><strong>USB File</strong>')
+          	});
+  			</script>
+  			
+  			<a href="#" class="hi-icon icon-undo tooltip" title="Undo"></a>
+  			<a href="#" class="hi-icon icon-redo tooltip" title="Redo"></a>
+  			<!--
+  			<a href="#" class="hi-icon icon-profile22 tooltip-share-menu" title="Share"></a>
+  			<script>
+  			$('.tooltip-share-menu').tooltipster({
+  				interactive:true,
+          		content: $('<span><i class="hi-icon icon-printer60" style="color:white"></i></span><br/><span><i class="hi-icon icon-email" style="color:white"></i></span><br/><span><i class="hi-icon icon-social21" style="color:white"></i></span><br/><span><i class="hi-icon icon-social5" style="color:white"></i></span><br/><span><i class="hi-icon icon-social38" style="color:white"></i></span>')
+          	});
+  			</script>
+        -->
+  			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot"></a>
+  			<a href="#" onclick="launchFullscreen(document.documentElement);" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
+        <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
+  			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login"></a>
+  		</div>
+  	</div>
 	</div>
 
   <div id="displayFloorName" style="display: none;">
@@ -964,7 +963,10 @@ $(document).ready(function() {
 }
 </style>
 <div id="WebGLCanvas" tabindex="-1">
-  <input type="file" id="fileselect" hidden /> 
+  <form action="objects/index.php" method="post" enctype="multipart/form-data" id="uploadForm">
+    <input type="file" name="fileInput" id="fileInput"  hidden />
+    <input type="submit" id="fileSubmit" value="Upload" hidden />
+  </form>
   <div id="WebGLHelp">?</div>
   <div id="WebGLCubeCanvas"></div>
   <div id="WebGLInteractiveMenu">
