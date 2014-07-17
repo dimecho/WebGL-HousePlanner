@@ -21,6 +21,12 @@ TODO:
 
 if (!Detector.webgl) Detector.addGetWebGLMessage();
 
+// workaround for chrome bug: http://code.google.com/p/chromium/issues/detail?id=35980#c12
+if (window.innerWidth === 0) {
+    window.innerWidth = parent.innerWidth;
+    window.innerHeight = parent.innerHeight;
+}
+
 var scene3D;
 var scene3DCube;
 var scene3DMenu;
@@ -58,10 +64,10 @@ var camera3DMirrorReflection;
 
 var groundGrid;
 var groundMesh;
+var glowMesh;
 
 var skyGrid;
 var skyMesh;
-
 
 var containerMenu;
 //var stats, objects;
@@ -390,6 +396,17 @@ function init() {
         antialias: true,
         preserveDrawingBuffer: false
     });
+    /*
+    renderer = new THREE.WebGLDeferredRenderer({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        scale: 1,
+        antialias: true,
+        tonemapping: THREE.UnchartedOperator,
+        brightness: 2.5
+    });
+    */
+
     rendererCube = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
@@ -431,7 +448,7 @@ function init() {
             };
     })();
 
-    $(renderer.domElement).bind('mousemove', onDocumentMouseMove);
+    //$(renderer.domElement).bind('mousemove', onDocumentMouseMove);
     $(renderer.domElement).bind('mousedown', onDocumentMouseDown);
     $(renderer.domElement).bind('mouseup', onDocumentMouseUp);
 
@@ -659,8 +676,12 @@ function loadJSON(js, object, x, y, z, xaxis, yaxis, ratio) {
         mesh.position.y = y;
         mesh.position.z = z;
         mesh.doubleSided = false;
-        mesh.matrixAutoUpdate = false;
-        mesh.updateMatrix();
+
+        mesh.geometry.computeFaceNormals();
+        mesh.geometry.computeVertexNormals(); // requires correct face normals
+
+        //mesh.matrixAutoUpdate = false;
+        //mesh.updateMatrix();
         object.add(mesh);
     }, "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/");
 }
@@ -869,8 +890,8 @@ function show3DHouse() {
         //do what you need here
     }, 2000);
     */
-    //document.getElementById('box-right').setAttribute("class", "show-right");
-    //delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
+    document.getElementById('box-right').setAttribute("class", "show-right");
+    delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
 }
 
 function show3DFloor() {
@@ -923,8 +944,6 @@ function show3DFloorLevel() {
     $('#menuLeft2D').hide();
     $('#menuLeft3DHouse').hide();
     $('#box-right').hide();
-
-
 }
 
 function show2D() {
@@ -933,7 +952,7 @@ function show2D() {
 
     scene2D.add(scene2DFloorContainer[0]);
 
-    $('#menuLeft3DHome').hide();
+    $('#menuLeft3DHouse').hide();
     $('#menuLeft3DFloor').hide();
 
     if (TOOL2D == 'freestyle') {
@@ -1156,6 +1175,8 @@ function onDocumentMouseDown(event) {
 
     event.preventDefault();
 
+    $(renderer.domElement).bind('mousemove', onDocumentMouseMove);
+
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -1187,11 +1208,28 @@ function onDocumentMouseDown(event) {
         //var raycaster = projector.pickingRay(vector.clone(), camera3D);
         var intersects = raycaster.intersectObjects(scene3DHouseContainer.children);
 
-        if (intersects.length > 0) {
+        // INTERSECTED = the object in the scene currently closest to the camera 
+        // and intersected by the Ray projected from the mouse position
+
+        if (intersects.length > 0) { // case if mouse is not currently over an object
             //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
 
             controls3D.enabled = false;
+
+            if (SELECTED != null)
+                SELECTED.remove(glowMesh.object3d); //avoid showing multiple selected objects
             SELECTED = intersects[0].object;
+
+            //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
+            glowMesh = new THREEx.GeometricGlowMesh(SELECTED);
+            SELECTED.add(glowMesh.object3d);
+
+            // example of customization of the default glowMesh
+            //var insideUniforms = glowMesh.insideMesh.material.uniforms;
+            //insideUniforms.glowColor.value.set('hotpink');
+            //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
+            //outsideUniforms.glowColor.value.set('hotpink');
+
 
             //Focus on 3D object
 
@@ -1267,9 +1305,13 @@ function onDocumentMouseDown(event) {
             $('#WebGLInteractiveMenu').show();
 
             //container.style.cursor = 'move';
+
         } else {
-            $('#WebGLInteractiveMenu').hide();
+            if (SELECTED != null)
+                SELECTED.remove(glowMesh.object3d);
             SELECTED = null;
+
+            $('#WebGLInteractiveMenu').hide();
         }
     }
 }
@@ -1277,6 +1319,8 @@ function onDocumentMouseDown(event) {
 function onDocumentMouseUp(event) {
 
     event.preventDefault();
+
+    $(renderer.domElement).unbind('mousemove', onDocumentMouseMove);
 
     if (scene2D.visible) {
 
@@ -1448,6 +1492,11 @@ function sceneNew() {
         var mesh = new THREE.Mesh(geometry, groundMaterial);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
+
+        //add mirror effect - too easy
+        var meshMirror = new THREEx.CubeCamera(mesh)
+        mesh.add(meshMirror.object3d)
+
         scene3DFloorGroundContainer.add(mesh);
     });
 

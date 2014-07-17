@@ -465,7 +465,9 @@ http://www.flaticon.com
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <link rel="stylesheet" type="text/css" href="css/style2.css" />
 
-<script type="text/javascript" src="js/iscroll-lite.js"></script>
+<!--http://www.jquerybyexample.net/2013/05/jquery-scroll-page-automatically-by-few-pixels-after-every-few-seconds.html-->
+<script type="text/javascript" src="js/iscroll.js"></script>
+
 <script type="text/javascript" src="js/draggable.js"></script>
 <script type="text/javascript">
 $(function() {
@@ -573,8 +575,8 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
       <div id="dragElement" style="display: none;"></div>
 
       <div id="menuRight3DHouse" style="display: none;">
-        <div id='cssmenu'>
-              <ul>
+        <div id='cssmenuRight3DHouse' class='cssmenu'>
+          <ul>
                  <li><a href='#'><span>Trees</span></a></li>
                  <li class='has-sub'><a href='#'><span>Plants</span></a>
                     <ul>
@@ -589,35 +591,90 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
                  <li><a href='#'><span>Swimming Pools</span></a></li>
                  <li><a href='#'><span>Animals</span></a></li>
                  <li><a href='#'><span>Cars</span></a></li>
-              </ul>
+          </ul>
+        </div>
+        <div id='webglmenuRight3DHouse' style="display: none;">
+          <ul>
+            <li><a href='#'><span>&#60; Back to Catalog</span></a></li>
+          </ul>
+          <!-- TODO: Move to dynamically generate from json -->
+          <div id='webglmenuRight3DHouse-0'></div>
+          <div id='webglmenuRight3DHouse-1'></div>
+          <div id='webglmenuRight3DHouse-2'></div>
         </div>
       </div>
 
       <div id="menuRight3DFloor" style="display: none;">
-        <!--
-                <div id="vendorLogo" style="display:inline-block;left:0;width:175px;height:73px;background-image: url('images/_logotag.png')">
-                  <a href="#suppliers"><img src="images/suppliers/logos/leons.png" style="padding:10px;" alt="Vendor" /></a>
-                </div>
-        -->
-        <div id='cssmenu'>
+        <div id="cssmenuRight3DFloor" class='cssmenu'>
           <ul>
-                 <li class='has-sub'><a href='#'><span>Furniture</span></a>
-                    <ul>
-                       <li><a href='#'><span>Sofas</span></a></li>
-                       <li class='last'><a href='#'><span>Tables</span></a></li>
-                    </ul>
-                 </li>
-                 <li><a href='#'><span>Bedroom</span></a></li>
-                 <li><a href='#'><span>Cabinets</span></a></li>
-                 <li><a href='#'><span>Kitchen</span></a></li>
-                 <li><a href='#'><span>Tables</span></a></li>
-                 <li><a href='#'><span>Bathroom</span></a></li>
-                 <li><a href='#'><span>Lights</span></a></li>
-                 <li><a href='#'><span>Doors</span></a></li>
-                 <li><a href='#'><span>Outlets</span></a></li>
-                 <li><a href='#'><span>Plants</span></a></li>
-                 <li><a href='#'><span>Structural</span></a></li>
+            <li class='has-sub'><a href='#'><span>Furniture</span></a>
+              <ul>
+                <li><a href='#'><span>Sofas</span></a></li>
+                <li class='last'><a href='#'><span>Armchairs</span></a></li>
+                <li class='last'><a href='#'><span>Ottomans</span></a></li>
+              </ul>
+            </li>
+            <li class='has-sub'><a href='#'><span>Living Room</span></a>
+              <ul>
+                <li><a href='#'><span>Paintings</span></a></li>
+                <li class='last'><a href='#'><span>Miscellaneous Items</span></a></li>
+              </ul>
+            </li>
+            <li class='has-sub'><a href='#'><span>Bedroom</span></a>
+              <ul>
+                <li><a href='#'><span>Beds</span></a></li>
+                <li><a href='#'><span>Dressers</span></a></li>
+                <li><a href='#'><span>Cabinets</span></a></li>
+                <li class='last'><a href='#'><span>Table Lamps</span></a></li>
+              </ul>
+            </li>
+            <li class='has-sub'><a href='#'><span>Kitchen</span></a>
+              <ul>
+                <li><a href='#'><span>Sinks</span></a></li>
+                <li><a href='#'><span>Fridge</span></a></li>
+                <li><a href='#'><span>Stove</span></a></li>
+                <li><a href='#'><span>Cabinets</span></a></li>
+                <li class='last'><a href='#'><span>Miscellaneous Items</span></a></li>
+              </ul>
+            </li>
+            <li class='has-sub'><a href='#'><span>Bathroom</span></a>
+               <ul>
+                <li><a href='#'><span>Sinks</span></a></li>
+                <li><a href='#'><span>Tubs</span></a></li>
+                <li><a href='#'><span>Mirrors</span></a></li>
+                <li class='last'><a href='#'><span>Shelves</span></a></li>
+              </ul>
+            </li>
+            <li class='has-sub'><a href='#'><span>Tables</span></a>
+              <ul>
+                <li><a href='#'><span>Dinning</span></a></li>
+                <li><a href='#'><span>Computer</span></a></li>
+                <li class='last'><a href='#'><span>Work Bench</span></a></li>
+              </ul>
+            </li>
+            <li class='has-sub'><a href='#'><span>Floors</span></a>
+              <ul>
+                <li><a href='#'><span>Rugs</span></a></li>
+                <li class='last'><a href='#'><span>Miscellaneous Items</span></a></li>
+              </ul>
+            </li>
+            <li><a href='#'><span>Lights</span></a></li>
+            <li><a href='#'><span>Doors</span></a></li>
+            <li><a href='#'><span>Outlets</span></a></li>
+            <li><a href='#'><span>Plants</span></a></li>
+            <li><a href='#'><span>Pets</span></a></li>
+            <li><a href='#'><span>Structural</span></a></li>
+            <li><a href='#'><span>Other Items</span></a></li>
           </ul>
+        </div>
+        <div id='webglmenuRight3DFloor' style="display: none;">
+          <ul>
+            <li><a href='#'><span>&#60; Back to Catalog</span></a></li>
+          </ul>
+          <!-- TODO: Move to dynamically generate from json -->
+          <div id='webglmenuRight3DFLoor-0'></div>
+          <div id='webglmenuRight3DFloor-1'></div>
+          <div id='webglmenuRight3DFloor-2'></div>
         </div>
       </div>
               
@@ -666,7 +723,7 @@ $(document).ready(function() {
     $("#menuFloor1").click();
   });
   </script>
-      <div id='cssmenu'>
+      <div class='cssmenu'>
         <ul>
            <li class='active'><a href='#' id="menuFloor0"><span>Basement</span></a></li>
            <li class='has-sub'><a href='#' id="menuFloor1"><span>Floor 1</span></a>
@@ -1089,6 +1146,14 @@ function agentToggle() {
 <!--<script src="js/3d/exporters/BufferGeometryExporter.js"></script>-->
 <script src="js/3d/exporters/MaterialExporter.js"></script>
 <!-- <script src="js/libs/stats.min.js"></script> -->
+
+<script src="js/3d/threex.dilategeometry.js"></script>
+<script src="js/3d/threex.atmospherematerial.js"></script>
+<script src="js/3d/threex.geometricglowmesh.js"></script>
+
+<script src="js/3d/threex.cubecamera.js"></script>
+
+
 
 <script src="js/main.js"></script>
 <!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->
