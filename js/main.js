@@ -10,6 +10,7 @@ TODO:
 - [difficulty: 9/10  progress: 10%] Make converter function to "extrude" 2D into 3D walls
 - [difficulty: 6/10  progress: 0%]  Make front walls 80% transparent in 3D rotation
 - [difficulty: 8/10  progress: 3%]  3D movable objects and collision detection
+- [difficulty: 9/10  progress: 0%]  3D menu objects draggable with "pop-up" or star burst effect
 - [difficulty: 2/10  progress: 90%] 3D objects sub-edit menu (textures/delete/duplicate)
 - [difficulty: 2/10  progress: 2%]  Categorize and populate 3D Menu items
 - [difficulty: 8/10  progress: 0%]  3D Menu functions for draggable objects
@@ -55,7 +56,6 @@ var sceneDirectionalLight;
 var controls3D;
 //var controls2D;
 
-
 var camera3D;
 var camera2D;
 var camera3DCube;
@@ -75,9 +75,10 @@ var containerMenu;
 var RADIAN = Math.PI / 180;
 var AUTOROTATE = true;
 var TOOL3D = 'view';
+var TOOL3DINTERACTIVE = 'move';
 var TOOL2D = 'freestyle';
 var FLOOR = 1; //first floor selected default
-var DIMENTIONS = 'metric' //imperial
+var REALSIZERATIO = 1.8311874; //Real-life ratio (Metric/Imperial)
 
 //var keyboard = new THREE.KeyboardState();
 //var clock = new THREE.Clock();
@@ -96,7 +97,6 @@ var scene2DWallRegularMaterialSelect;
 var scene2DWallBearingMaterial;
 var scene2DWallBearingMaterialSelect;
 
-
 var collision = [];
 
 var mouse = new THREE.Vector2(),
@@ -106,6 +106,7 @@ var mouse = new THREE.Vector2(),
 var projector;
 var vector;
 var geometry;
+var material;
 var spinObject;
 var menuSpinHelper;
 
@@ -351,36 +352,63 @@ function init() {
         new THREE.MeshBasicMaterial({
             color: 0x33AA55,
             transparent: true,
-            opacity: 0.9
+            opacity: 0.9,
+            shading: THREE.FlatShading,
+            vertexColors: THREE.VertexColors,
+            map: THREE.ImageUtils.loadTexture('5.png')
         }),
         new THREE.MeshBasicMaterial({
             color: 0x55CC00,
             transparent: true,
-            opacity: 0.9
+            opacity: 0.9,
+            shading: THREE.FlatShading,
+            vertexColors: THREE.VertexColors
         }),
         new THREE.MeshBasicMaterial({
             color: 0x000000,
             transparent: true,
-            opacity: 0.9
+            opacity: 0.9,
+            shading: THREE.FlatShading,
+            vertexColors: THREE.VertexColors
         }),
         new THREE.MeshBasicMaterial({
             color: 0x000000,
             transparent: true,
-            opacity: 0.9
+            opacity: 0.9,
+            shading: THREE.FlatShading,
+            vertexColors: THREE.VertexColors
         }),
         new THREE.MeshBasicMaterial({
             color: 0x0000FF,
             transparent: true,
-            opacity: 0.9
+            opacity: 0.9,
+            shading: THREE.FlatShading,
+            vertexColors: THREE.VertexColors
         }),
         new THREE.MeshBasicMaterial({
             color: 0x5555AA,
             transparent: true,
-            opacity: 0.9
+            opacity: 0.9,
+            shading: THREE.FlatShading,
+            vertexColors: THREE.VertexColors
         }),
     ];
-    var cubeMaterial = new THREE.MeshFaceMaterial(cubeMaterials);
-    scene3DCubeMesh = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), cubeMaterial);
+    material = new THREE.MeshFaceMaterial(cubeMaterials);
+    material.vertexColors = THREE.FaceColors;
+
+    geometry = cube(8); //new THREE.BoxGeometry(10, 10, 10, 1, 1, 1)
+    geometry.computeLineDistances();
+
+    scene3DCubeMesh = new THREE.Line(geometry, new THREE.LineDashedMaterial({
+        color: 0xff3700,
+        dashSize: 3,
+        gapSize: 1,
+        linewidth: 2
+    }), THREE.LinePieces);
+
+    //scene3DCubeMesh = new THREE.Mesh(geometry, material);
+    scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
+
     //THREE.GeometryUtils.merge(geometry, mesh);
 
     //scene2D.add(new THREE.GridHelper(100, 10));
@@ -388,9 +416,6 @@ function init() {
     //A 1x1 Rectangle for Scale - Should Map to a 1x1 square of Three.js space
     //scene2D.fillStyle = "#FF0000";
     //scene2D.fillRect(0, 0, 1, 1);
-
-    //scene3D.add(camera3D);
-    //scene2D.add(camera2D);
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
@@ -429,8 +454,9 @@ function init() {
     scene3DCube = new THREE.Scene();
     camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 1000);
     camera3DCube.up = camera3D.up;
-    scene3DCube.add(camera3D);
+    scene3DCube.add(camera3DCube);
     scene3DCube.add(scene3DCubeMesh);
+    $(rendererCube.domElement).bind('mousemove', onCubeMouseMove);
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
     $(window).bind('resize', onWindowResize);
@@ -679,6 +705,7 @@ function loadJSON(js, object, x, y, z, xaxis, yaxis, ratio) {
 
         mesh.geometry.computeFaceNormals();
         mesh.geometry.computeVertexNormals(); // requires correct face normals
+        mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
 
         //mesh.matrixAutoUpdate = false;
         //mesh.updateMatrix();
@@ -848,6 +875,53 @@ function loadBIN(js, object, x, y, z, xaxis, yaxis, ratio) {
     });
 }
 
+function cube(size) {
+
+    var h = size * 0.5;
+
+    var geometry = new THREE.Geometry();
+
+    geometry.vertices.push(
+        new THREE.Vector3(-h, -h, -h),
+        new THREE.Vector3(-h, h, -h),
+
+        new THREE.Vector3(-h, h, -h),
+        new THREE.Vector3(h, h, -h),
+
+        new THREE.Vector3(h, h, -h),
+        new THREE.Vector3(h, -h, -h),
+
+        new THREE.Vector3(h, -h, -h),
+        new THREE.Vector3(-h, -h, -h),
+
+
+        new THREE.Vector3(-h, -h, h),
+        new THREE.Vector3(-h, h, h),
+
+        new THREE.Vector3(-h, h, h),
+        new THREE.Vector3(h, h, h),
+
+        new THREE.Vector3(h, h, h),
+        new THREE.Vector3(h, -h, h),
+
+        new THREE.Vector3(h, -h, h),
+        new THREE.Vector3(-h, -h, h),
+
+        new THREE.Vector3(-h, -h, -h),
+        new THREE.Vector3(-h, -h, h),
+
+        new THREE.Vector3(-h, h, -h),
+        new THREE.Vector3(-h, h, h),
+
+        new THREE.Vector3(h, h, -h),
+        new THREE.Vector3(h, h, h),
+
+        new THREE.Vector3(h, -h, -h),
+        new THREE.Vector3(h, -h, h)
+    );
+    return geometry;
+}
+
 function show3DHouse() {
 
     show2DContainer(false);
@@ -875,7 +949,7 @@ function show3DHouse() {
     $('#box-right').show();
     //toggleLeft('box-right', true);
 
-    menuTopSelect(1);
+    menuSelect(1, 'menuTopItem', '#ff3700');
 
     //scene3DHouseContainer.traverse;
 
@@ -924,7 +998,7 @@ function show3DFloor() {
     //show3DFloorContainer(true);
     //show3DHouseContainer(false)
 
-    menuTopSelect(3);
+    menuSelect(3, 'menuTopItem', '#ff3700');
 
 
     //Auto open right menu
@@ -949,7 +1023,7 @@ function show3DFloorLevel() {
     $('#menuLeft3DHouse').hide();
     $('#box-right').hide();
 
-    menuTopSelect(2);
+    menuSelect(2, 'menuTopItem', '#ff3700');
 }
 
 function show2D() {
@@ -962,15 +1036,15 @@ function show2D() {
     $('#menuLeft3DFloor').hide();
 
     if (TOOL2D == 'freestyle') {
-        $('#tool2DFreestyle').css('color', 'blue');
+        menuSelect(1, 'menuLeft2DItem', 'blue');
     } else if (TOOL2D == 'vector') {
-        $('#tool2DVector').css('color', 'blue');
+
     } else if (TOOL2D == 'square') {
-        $('#tool2DSquare').css('color', 'blue');
+
     } else if (TOOL2D == 'circle') {
-        $('#tool2DCircle').css('color', 'blue');
+
     }
-    $('#tool2DFreestyle').css('color', 'blue');
+
     $('#menuLeft2D').show();
     toggleLeft('menuLeft2D', true);
 
@@ -979,7 +1053,7 @@ function show2D() {
     $('#menuRight3DHouse').hide();
     $('#box-right').show();
 
-    menuTopSelect(4);
+    menuSelect(4, 'menuTopItem', '#ff3700');
 
     //scene2DFloorContainer[0].traverse;
     //Auto close right menu
@@ -987,15 +1061,15 @@ function show2D() {
     delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 }
 
-function menuTopSelect(item) {
+function menuSelect(item, id, color) {
     if (item == null) //clear all
     {
         for (i = 0; i <= 4; i++) {
-            $('#menuTopItem' + i).css('color', 'black');
+            $("#" + id + i).css('color', 'black');
         }
     } else {
-        menuTopSelect(null);
-        $('#menuTopItem' + item).css('color', '#ff3700'); //#53C100
+        menuSelect(null, id, color);
+        $("#" + id + item).css('color', color); //#53C100
     }
 }
 
@@ -1013,6 +1087,8 @@ function show2DContainer(b) {
     scene2D.remove(scene2DDrawLineContainer);
 
     scene3DCube.remove(scene3DCubeMesh);
+
+    scene3DObjectUnselect();
 
     scene3D.visible = !b;
     scene2D.visible = b;
@@ -1068,11 +1144,55 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+function onCubeMouseMove(event) {
+
+    event.preventDefault();
+
+    //scene3DCubeMesh.face.color = new THREE.Color(0xddaa00);
+    //scene3DCubeMesh.geometry.colorsNeedUpdate = true;
+    /*
+    x = (event.clientX / $(rendererCube.domElement).width) * 2 - 1;
+    y = -(event.clientY / $(rendererCube.domElement).height) * 2 + 1;
+
+    vector = new THREE.Vector3(x, y, 0.5);
+    projector.unprojectVector(vector, camera3DCube);
+
+    var ray = new THREE.Raycaster(camera3DCube.position, vector.sub(camera3DCube.position).normalize());
+    var intersects = ray.intersectObjects(scene3DCube.children);
+
+    if (intersects.length > 0) {
+
+        intersects[0].face.color = new THREE.Color(0xddaa00);
+        intersects[0].object.geometry.colorsNeedUpdate = true;
+
+        face = intersects[0].face;
+        var faceIndices = ['a', 'b', 'c', 'd'];
+        var numberOfSides = (face instanceof THREE.Face3) ? 3 : 4;
+
+        // assign color to each vertex of current face
+        for (var j = 0; j < numberOfSides; j++) {
+
+            var vertexIndex = face[faceIndices[j]];
+            
+            geometry.faces.filter(someFilter).forEach(function(face) {
+			  face.color = someOtherColor;
+			}
+			
+            // initialize color variable
+            var color = new THREE.Color(0xffffff);
+            color.setRGB(Math.random(), 0, 0);
+            face.vertexColors[j] = color;
+        } 
+    }
+    */
+}
+
 function onDocumentMouseMove(event) {
 
     event.preventDefault();
 
-    x = (event.clientX / window.innerWidth) * 2 - 1;
+    x = (event.clientX /
+        window.innerWidth) * 2 - 1;
     y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     if (scene2D.visible) {
@@ -1233,106 +1353,120 @@ function onDocumentMouseDown(event) {
         if (intersects.length > 0) { // case if mouse is not currently over an object
             //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
 
-            controls3D.enabled = false;
+            if (SELECTED != intersects[0].object) {
+                controls3D.enabled = false;
 
-            if (SELECTED != null)
-                SELECTED.remove(glowMesh.object3d); //avoid showing multiple selected objects
-            SELECTED = intersects[0].object;
+                scene3DObjectUnselect(); //avoid showing multiple selected objects
 
-            //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
-            glowMesh = new THREEx.GeometricGlowMesh(SELECTED);
-            SELECTED.add(glowMesh.object3d);
+                SELECTED = intersects[0].object;
 
-            // example of customization of the default glowMesh
-            //var insideUniforms = glowMesh.insideMesh.material.uniforms;
-            //insideUniforms.glowColor.value.set('hotpink');
-            //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
-            //outsideUniforms.glowColor.value.set('hotpink');
+                //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
+                glowMesh = new THREEx.GeometricGlowMesh(SELECTED);
+                SELECTED.add(glowMesh.object3d);
 
-
-            //Focus on 3D object
-
-            //camera3D.fov = currentFov.fov;
-            //camera3D.lookAt(intersects[0].object.position);
-            //camera3D.updateProjectionMatrix();
-
-            var destinationQuaternion = new THREE.Quaternion(intersects[0].object.position.x, intersects[0].object.position.y, intersects[0].object.position.z, 1);
-            var newQuaternion = new THREE.Quaternion();
-            THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
-            camera3D.quaternion = newQuaternion;
-            camera3D.quaternion.normalize();
-            scene3D.updateMatrixWorld();
-
-            //Reset camera?
-            //var vector = new THREE.Vector3( 1, 0, 0 ); 
-            //vector.applyQuaternion( quaternion );
+                // example of customization of the default glowMesh
+                //var insideUniforms = glowMesh.insideMesh.material.uniforms;
+                //insideUniforms.glowColor.value.set('hotpink');
+                //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
+                //outsideUniforms.glowColor.value.set('hotpink');
 
 
-            //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
-            var percX, percY
+                //Focus on 3D object
 
-            // projectVector will translate position to 2d
-            vector = projector.projectVector(vector.setFromMatrixPosition(intersects[0].object.matrixWorld), camera3D); //vector will give us position relative to the world
+                //camera3D.fov = currentFov.fov;
+                //camera3D.lookAt(intersects[0].object.position);
+                //camera3D.updateProjectionMatrix();
 
-            // translate our vector so that percX=0 represents the left edge, percX=1 is the right edge, percY=0 is the top edge, and percY=1 is the bottom edge.
-            percX = (vector.x + 1) / 2;
-            percY = (-vector.y + 1) / 2;
+                var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
+                var newQuaternion = new THREE.Quaternion();
+                THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
+                camera3D.quaternion = newQuaternion;
+                camera3D.quaternion.normalize();
+                scene3D.updateMatrixWorld();
 
-            // scale these values to our viewport size
-            vector.x = percX * window.innerWidth - $('#WebGLInteractiveMenu').width() * 2;
-            vector.y = percY * window.innerHeight - $('#WebGLInteractiveMenu').height(); // / 2;
+                //Reset camera?
+                //var vector = new THREE.Vector3( 1, 0, 0 ); 
+                //vector.applyQuaternion( quaternion );
 
-            $('#WebGLInteractiveMenu').css('top', vector.y).css('left', vector.x);
 
-            /*
-			var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
-				    new THREE.MeshLambertMaterial( { color: 0xffffff} ),
-				    new THREE.MeshBasicMaterial( { color: 0x222222, wireframe: true} )
-			]);
-			*/
+                //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
+                var percX, percY
 
-            /*
-            INTERSECTED = intersects[0].object.material; //new THREE.MeshFaceMaterial(intersects[0].object.material);
-            intersects[0].object.material = new THREE.MeshBasicMaterial({
-                color: 0x222222,
-                wireframe: true
-            });
-			*/
+                // projectVector will translate position to 2d
+                vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
 
-            //Calculate object real dimentions TODO: find some smart code
+                // translate our vector so that percX=0 represents the left edge, percX=1 is the right edge, percY=0 is the top edge, and percY=1 is the bottom edge.
+                percX = (vector.x + 1) / 2;
+                percY = (-vector.y + 1) / 2;
 
-            /*
-            intersects[0].object.geometry.computeBoundingBox();
-            var position = new THREE.Vector3();
-            position.subVectors(intersects[0].object.geometry.boundingBox.max, intersects[0].object.geometry.boundingBox.min);
-            //position.multiplyScalar(0.5);
-            //position.addSelf(intersects[0].object.geometry.boundingBox.min);
-            intersects[0].object.matrixWorld.multiplyVector3(position);
-            var point1 = camera3D.matrixWorld.getPosition().clone();
-            var point2 = position;
-            var distance = point1.distanceTo(point2);
-            */
+                // scale these values to our viewport size
+                vector.x = percX * window.innerWidth - $('#WebGLInteractiveMenu').width() * 2;
+                vector.y = percY * window.innerHeight - $('#WebGLInteractiveMenu').height(); // / 2;
 
-            /*
-            var vFOV = camera3D.fov * Math.PI / 180;      // convert vertical fov to radians
-            var height = 2 * Math.tan( vFOV / 2 ) * distance; // visible height
-            var aspect = window.width / window.height;
-            var width = height * aspect;                  // visible width
-            */
+                $('#WebGLInteractiveMenu').css('top', vector.y).css('left', vector.x);
 
-            $('#WebGLInteractiveMenuText').html("Dimentions:");
-            $('#WebGLInteractiveMenu').show();
+                /*
+				var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
+					    new THREE.MeshLambertMaterial( { color: 0xffffff} ),
+					    new THREE.MeshBasicMaterial( { color: 0x222222, wireframe: true} )
+				]);
+				*/
 
-            //container.style.cursor = 'move';
+                /*
+	            INTERSECTED = intersects[0].object.material; //new THREE.MeshFaceMaterial(intersects[0].object.material);
+	            intersects[0].object.material = new THREE.MeshBasicMaterial({
+	                color: 0x222222,
+	                wireframe: true
+	            });
+				*/
 
+                //Calculate object real dimentions TODO: find some smart code
+
+                /*
+	            intersects[0].object.geometry.computeBoundingBox();
+	            var position = new THREE.Vector3();
+	            position.subVectors(intersects[0].object.geometry.boundingBox.max, intersects[0].object.geometry.boundingBox.min);
+	            //position.multiplyScalar(0.5);
+	            //position.addSelf(intersects[0].object.geometry.boundingBox.min);
+	            intersects[0].object.matrixWorld.multiplyVector3(position);
+	            var point1 = camera3D.matrixWorld.getPosition().clone();
+	            var point2 = position;
+	            var distance = point1.distanceTo(point2);
+	            */
+
+                /*
+	            var vFOV = camera3D.fov * Math.PI / 180;      // convert vertical fov to radians
+	            var height = 2 * Math.tan( vFOV / 2 ) * distance; // visible height
+	            var aspect = window.width / window.height;
+	            var width = height * aspect;                  // visible width
+	            */
+
+
+
+                $('#WebGLInteractiveMenuText').html("Dimentions: " + (SELECTED.geometry.boundingBox.max.x * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.y * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.z * REALSIZERATIO).toFixed(1) + " Meters");
+                $('#WebGLInteractiveMenu').show();
+
+                if (TOOL3DINTERACTIVE == 'move') {
+                    menuSelect(0, 'menuInteractiveItem', 'blue');
+
+                } else if (TOOL3DINTERACTIVE == 'rotate') {
+                    menuSelect(1, 'menuInteractiveItem', 'blue');
+                }
+
+                //container.style.cursor = 'move';
+            }
         } else {
-            if (SELECTED != null)
-                SELECTED.remove(glowMesh.object3d);
-            SELECTED = null;
-
-            $('#WebGLInteractiveMenu').hide();
+            scene3DObjectUnselect();
         }
     }
+}
+
+function scene3DObjectUnselect() {
+    if (SELECTED != null)
+        SELECTED.remove(glowMesh.object3d);
+    SELECTED = null;
+
+    $('#WebGLInteractiveMenu').hide();
 }
 
 function onDocumentMouseUp(event) {
@@ -1419,7 +1553,7 @@ function onDocumentMouseUp(event) {
     }
 }
 
-function mouseMoveMenu(event) {
+function onMenuMouseMove(event) {
 
     event.preventDefault();
 

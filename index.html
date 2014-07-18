@@ -560,7 +560,8 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
       <div style="display:inline-block;width:100%;vertical-align:top;padding:10px">
         <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
           <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
-          <a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>
+          <!--<a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>-->
+          <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
           <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
           <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
           <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
@@ -776,11 +777,11 @@ $(document).ready(function() {
   </ul>
   <div id="links-left" style="width:60px">
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
-        <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-draftplan tooltip" id="tool2DDraft" title="Upload Draft Plan (pdf, jpg, png)" ></a>
-        <a href="#" class="hi-icon icon-draw tooltip" id="tool2DFreestyle" title="Freestyle Sketch" ></a>
-        <a href="#" class="hi-icon icon-vector tooltip" id="tool2DVector" title="Vector Corrections"></a>
-        <a href="#" class="hi-icon icon-vector-square tooltip" id="tool2DSquare" title="Draw Square"></a>
-        <a href="#" class="hi-icon icon-vector-circle tooltip" id="tool2DCircle" title="Draw Circle"></a>
+        <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-draftplan tooltip" id="menuLeft2DItem0" title="Upload Draft Plan (pdf, jpg, png)" ></a>
+        <a href="#" class="hi-icon icon-draw tooltip" id="menuLeft2DItem1" title="Freestyle Sketch" ></a>
+        <a href="#" class="hi-icon icon-vector tooltip" id="menuLeft2DItem2" title="Vector Corrections"></a>
+        <a href="#" class="hi-icon icon-vector-square tooltip" id="menuLeft2DItem3" title="Draw Square"></a>
+        <a href="#" class="hi-icon icon-vector-circle tooltip" id="menuLeft2DItem4" title="Draw Circle"></a>
       </div>
   </div>
 </div>
@@ -964,7 +965,7 @@ $(document).ready(function() {
   top:0px;
   left:150px;
 
-  width:220px;
+  width:300px;
   padding:5px 4px;
   /*margin:1em auto 80px;*/
   text-align:center;
@@ -1028,12 +1029,12 @@ $(document).ready(function() {
   <div id="WebGLCubeCanvas"></div>
   <div id="WebGLInteractiveMenu">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
-      <a href="#" class="hi-icon icon-move tooltip" id="tool3DMoveXY" title="Move Horizontaly" ></a>
-      <a href="#" class="hi-icon icon-updown tooltip" id="tool3DMoveZ" title="Move Vertically" ></a>
-      <a href="#" class="hi-icon icon-rotate tooltip" id="tool3DRotate" title="Rotate"></a>
-      <a href="#" class="hi-icon icon-resize tooltip" id="tool2DResize" title="Resize"></a>
-      <a href="#" class="hi-icon icon-duplicate tooltip" id="tool3DDuplicate" title="Duplicate"></a>
-      <a href="#" class="hi-icon icon-delete tooltip" id="tool3DRemove" title="Remove"></a>
+      <a href="#" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
+      <a href="#" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem0"></a>
+      <a href="#" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem1"></a>
+      <a href="#" class="hi-icon icon-resize tooltip" title="Resize" id="menuInteractiveItem2"></a>
+      <a href="#" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem3"></a>
+      <a href="#" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem4"></a>
     </div>
     <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
         <p>Object Textures</p>
