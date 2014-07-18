@@ -875,6 +875,8 @@ function show3DHouse() {
     $('#box-right').show();
     //toggleLeft('box-right', true);
 
+    menuTopSelect(1);
+
     //scene3DHouseContainer.traverse;
 
     //show3DHouseContainer(true)
@@ -922,6 +924,8 @@ function show3DFloor() {
     //show3DFloorContainer(true);
     //show3DHouseContainer(false)
 
+    menuTopSelect(3);
+
 
     //Auto open right menu
     document.getElementById('box-right').setAttribute("class", "show-right");
@@ -944,6 +948,8 @@ function show3DFloorLevel() {
     $('#menuLeft2D').hide();
     $('#menuLeft3DHouse').hide();
     $('#box-right').hide();
+
+    menuTopSelect(2);
 }
 
 function show2D() {
@@ -973,11 +979,24 @@ function show2D() {
     $('#menuRight3DHouse').hide();
     $('#box-right').show();
 
+    menuTopSelect(4);
 
     //scene2DFloorContainer[0].traverse;
     //Auto close right menu
     document.getElementById('box-right').setAttribute("class", "hide-right");
     delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+}
+
+function menuTopSelect(item) {
+    if (item == null) //clear all
+    {
+        for (i = 0; i <= 4; i++) {
+            $('#menuTopItem' + i).css('color', 'black');
+        }
+    } else {
+        menuTopSelect(null);
+        $('#menuTopItem' + item).css('color', '#ff3700'); //#53C100
+    }
 }
 
 function show2DContainer(b) {
@@ -1468,7 +1487,7 @@ function sceneNew() {
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set(14, 14);
-        groundTexture.anisotropy = 2; //focus blur (16=unblured 1=blured)
+        groundTexture.anisotropy = renderer.getMaxAnisotropy(); //focus blur (16=unblured 1=blured)
 
         var groundMaterial = new THREE.MeshBasicMaterial({
             map: groundTexture
@@ -1484,7 +1503,7 @@ function sceneNew() {
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set(10, 10);
-        groundTexture.anisotropy = 2; //focus blur (16=unblured 1=blured)
+        groundTexture.anisotropy = renderer.getMaxAnisotropy(); //focus blur (16=unblured 1=blured)
 
         var groundMaterial = new THREE.MeshBasicMaterial({
             map: groundTexture

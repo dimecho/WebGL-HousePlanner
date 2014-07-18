@@ -180,7 +180,7 @@ function delay(elem, src, delayTime){
 
 <!-- Top Menu -->
 <style>
-#topMenu {
+#menuTop {
 	position: absolute;
   top: 10px;
   left: 10px;
@@ -201,12 +201,12 @@ function delay(elem, src, delayTime){
 
 $( document).ready(function () {
 	 //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });  	
-    $("#topMenu p").click(function(){
+    $("#menuTop p").click(function(){
     $(this).hide().after('<input type="text" class="editP" value="'+$(this).html()+'" size="10" />');
     $('.editP').focus();
     });
     $('.editP').bind('blur', function(){
-       	$(this).hide().prev('#topMenu p').html($(this).val()).show();
+       	$(this).hide().prev('#menuTop p').html($(this).val()).show();
     });
 });
 
@@ -559,10 +559,11 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
     <div id="links-left" style="width:320px;">
       <div style="display:inline-block;width:100%;vertical-align:top;padding:10px">
         <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-                <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
-                <a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>
-                <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
-                <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
+          <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
+          <a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>
+          <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
+          <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
+          <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
         </div>
         <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
      </div>
@@ -848,26 +849,26 @@ $(document).ready(function() {
 <!-- End Debug -->
 
 <!-- Thumbnail class="ui-widget-content" -->
-  <div id="topMenu">
+  <div id="menuTop">
 		<div style="display: inline-block;width:108px;">
 		  <a href="#openThumb"><img src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000;" /></a>
 	  </div>
   	<div style="display:inline-block;width:200px;">
   		<div style="height:55px">
   			<div style="float:left" class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-  				<a id="link-portfolio" href="#info" class="hi-icon icon-info"></a>
+  				<a id="link-portfolio" href="#info" class="hi-icon icon-info" id="menuTopItem0"></a>
   			</div>
   			<div style="padding-top:5px; line-height:140%;  float:left">MLS#: <br/>Agent: </div>
   			<div style="padding-top:5px; line-height:140%; float:left"><p>12345</p>Alyson</div>
   		</div>
   	</div>
   	<div style="display: inline-block;vertical-align:top">
-  		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-  			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior"></a>
-        <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements"></a>
-  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings"></a>
-  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans"></a>
-  			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New"></a>
+  		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+  			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
+        <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem2"></a>
+  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem3"></a>
+  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem4"></a>
+  			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" ></a>
   			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
         <a href="#" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
         <script>
@@ -890,7 +891,6 @@ $(document).ready(function() {
         -->
   			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot"></a>
   			<a href="#" onclick="launchFullscreen(document.documentElement);" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
-        <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
   			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login"></a>
   		</div>
   	</div>
