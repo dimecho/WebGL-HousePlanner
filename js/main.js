@@ -88,10 +88,7 @@ var scene2DDrawLine;
 var scene2DDrawLineMaterial; //Line thikness
 var scene2DDrawLineDashedMaterial;
 var scene2DDrawLineContainer; //Container of line geometries - need it as a collection for "quick hide"
-var scene2DWallGeometry = [
-    [],
-    []
-]; //Multidimensional Array to hold multiple floors with each having multiple walls - they also hold a 3D geometry
+
 var scene2DWallRegularMaterial;
 var scene2DWallRegularMaterialSelect;
 var scene2DWallBearingMaterial;
@@ -100,13 +97,15 @@ var scene2DWallBearingMaterialSelect;
 var collision = [];
 
 var mouse = new THREE.Vector2(),
-    offset = new THREE.Vector3(),
     INTERSECTED, SELECTED;
 
 var projector;
 var vector;
 var geometry;
 var material;
+var texture;
+var mesh;
+
 var spinObject;
 var menuSpinHelper;
 
@@ -345,8 +344,21 @@ function init() {
     scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
     //scene2DDrawLineContainer.add(scene2DDrawLine);
 
-    scene2DWallRegularMaterial = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0001.png');
-    scene2DWallRegularMaterialSelect = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0002.png');
+    texture = new THREE.ImageUtils.loadTexture('./objects/FloorPlan/P0001.png');
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(4, 4);
+    scene2DWallRegularMaterial = new THREE.MeshBasicMaterial({
+        map: texture
+    });
+
+    texture = new THREE.ImageUtils.loadTexture('./objects/FloorPlan/P0002.png');
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(4, 4);
+    scene2DWallRegularMaterialSelect = new THREE.MeshBasicMaterial({
+        map: texture
+    });
 
     var cubeMaterials = [
         new THREE.MeshBasicMaterial({
@@ -355,7 +367,6 @@ function init() {
             opacity: 0.9,
             shading: THREE.FlatShading,
             vertexColors: THREE.VertexColors,
-            map: THREE.ImageUtils.loadTexture('5.png')
         }),
         new THREE.MeshBasicMaterial({
             color: 0x55CC00,
@@ -879,7 +890,7 @@ function cube(size) {
 
     var h = size * 0.5;
 
-    var geometry = new THREE.Geometry();
+    geometry = new THREE.Geometry();
 
     geometry.vertices.push(
         new THREE.Vector3(-h, -h, -h),
@@ -974,7 +985,7 @@ function show3DFloor() {
 
     show2DContainer(false);
 
-    camera3D.position.set(0, 6, 15);
+    camera3D.position.set(0, 4, 12);
 
     //TODO: Loop and show based in ID name / floor
     //scene3D.add(scene3DContainer);
@@ -1084,7 +1095,9 @@ function show2DContainer(b) {
 
     scene3D.remove(scene3DHouseContainer);
     scene3D.remove(scene3DFloorContainer[0]);
+
     scene2D.remove(scene2DDrawLineContainer);
+    scene2D.remove(scene2DFloorContainer[0]);
 
     scene3DCube.remove(scene3DCubeMesh);
 
@@ -1235,7 +1248,7 @@ function onDocumentMouseMove(event) {
 
         } else if (TOOL2D == 'vector') {
 
-            container.style.cursor = 'crosshair';
+            //container.style.cursor = 'crosshair';
 
             //MouseMove = Selection
             scene2DDrawLineGeometry = new THREE.Geometry();
@@ -1332,7 +1345,7 @@ function onDocumentMouseDown(event) {
         if (TOOL2D == 'vector') {
             //container.style.cursor = 'crosshair';
         } else {
-            container.style.cursor = 'pointer';
+            //container.style.cursor = 'pointer';
         }
 
     } else {
@@ -1477,67 +1490,92 @@ function onDocumentMouseUp(event) {
 
     if (scene2D.visible) {
 
-        container.style.cursor = 'pointer';
+        //container.style.cursor = 'pointer';
 
-        scene2D.remove(scene2DDrawLineContainer);
+        if (TOOL2D == 'freestyle') {
 
-        //console.log("lines to analyze: " + scene2DDrawLineContainer.children.length);
-        //scene.getObjectByName( "objectName", true );
-        //scene.getObjectByName( "objectName" ).id
+            scene2D.remove(scene2DDrawLineContainer);
 
-        //Calculate 2D walls from mouse draw
-        for (var i = 0; i < scene2DDrawLineContainer.children.length; i++) {
+            //console.log("lines to analyze: " + scene2DDrawLineContainer.children.length);
+            //scene.getObjectByName( "objectName", true );
+            //scene.getObjectByName( "objectName" ).id
 
-            //console.log("object is :" + scene2DDrawLineContainer.children[i].id);
+            var scene2DDrawLineArray = [];
+            var arrayCount = 0;
+            var sensitivityRatio = 5;
 
-            var magicNumberX = 0;
-            var magicNumberY = 0;
+            //Calculate 2D walls from mouse draw
+            for (var i = 0; i < scene2DDrawLineContainer.children.length; i++) {
 
-            //TODO: calculate geometric angle
+                //console.log("object is :" + scene2DDrawLineContainer.children[i].id);
 
-            for (var d = 0; d < 10; d++) { //how many lines-segments to analyze before determining an angle or straight line
-                var n = i + d;
-                //var object = scene2D.getObjectById(scene2DDrawLineContainer.children[n].id, true);
-                //console.log("[" + n + "] " + scene2DDrawLineContainer.children[n].geometry.vertices[0].y);
+                var magicNumberX = 0;
+                var magicNumberY = 0;
 
-                magicNumberX += scene2DDrawLineContainer.children[n].geometry.vertices[0].x;
-                magicNumberY += scene2DDrawLineContainer.children[n].geometry.vertices[0].y;
+                //TODO: calculate geometric angle
+
+                for (var d = 0; d < sensitivityRatio; d++) { //how many lines-segments to analyze before determining an angle or straight line
+                    var n = i + d;
+                    //var object = scene2D.getObjectById(scene2DDrawLineContainer.children[n].id, true);
+                    //console.log("[" + n + "] " + scene2DDrawLineContainer.children[n].geometry.vertices[0].y);
+
+                    magicNumberX += scene2DDrawLineContainer.children[n].geometry.vertices[0].x;
+                    magicNumberY += scene2DDrawLineContainer.children[n].geometry.vertices[0].y;
+                }
+
+                //========= Vertical Analisys ============
+                var vertical = (magicNumberX / scene2DDrawLineContainer.children[i].geometry.vertices[0].x * sensitivityRatio);
+
+                //========= Horizontal Analisys ============
+                var horizontal = (magicNumberY / (scene2DDrawLineContainer.children[i].geometry.vertices[0].y * sensitivityRatio)).toFixed(2);
+
+                //console.log("(" + i + ") " + magicNumberY + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y * 8 + " > " + horizontal);
+
+                var shape = new THREE.Shape();
+
+                if (horizontal <= 0.8) { //Horizontal line jump up
+
+                    console.log("line up");
+
+                } else if (horizontal >= 1.15) { //Horizontal line jump down
+
+                    console.log("line down");
+
+                } else { //Horizontal straight line (around 1.0)
+                    console.log("straight line (" + array + ") from " + scene2DDrawLineContainer.children[i].geometry.vertices[0].x + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y + " to " + scene2DDrawLineContainer.children[i + sensitivityRatio].geometry.vertices[0].x + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
+
+                    scene2DDrawLineArray[arrayCount] = new THREE.Vector2(scene2DDrawLineContainer.children[i].geometry.vertices[0].x, scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
+                    scene2DDrawLineArray[arrayCount + 1] = new THREE.Vector2(scene2DDrawLineContainer.children[i + sensitivityRatio].geometry.vertices[0].x, scene2DDrawLineContainer.children[i + sensitivityRatio].geometry.vertices[0].y);
+                    arrayCount += 2;
+                }
+
+                i += sensitivityRatio;
             }
 
+            //TODO: Optimize (remove extra points of refference in scene2DDrawLineArray (ex: straight line))
 
-            //========= Vertical Analisys ============
-            var vertical = (magicNumberX / scene2DDrawLineContainer.children[i].geometry.vertices[0].x * 10);
+            //TODO: http://stemkoski.github.io/Three.js/Extrusion.html
 
+            for (var i = 0; i < scene2DDrawLineArray.length - 1; i++) {
 
-            //========= Horizontal Analisys ============
-            var horizontal = (magicNumberY / (scene2DDrawLineContainer.children[i].geometry.vertices[0].y * 10)).toFixed(2);
+                var shape = new THREE.Shape();
+                shape.moveTo(scene2DDrawLineArray[i].x, scene2DDrawLineArray[i].y);
+                shape.lineTo(scene2DDrawLineArray[i].x, scene2DDrawLineArray[i].y + 2);
+                shape.lineTo(scene2DDrawLineArray[i + 1].x, scene2DDrawLineArray[i + 1].y + 2);
+                shape.lineTo(scene2DDrawLineArray[i + 1].x, scene2DDrawLineArray[i + 1].y);
+                shape.lineTo(scene2DDrawLineArray[i].x, scene2DDrawLineArray[i].y); // close the loop
+                geometry = shape.makeGeometry();
 
-            console.log("(" + i + ") " + magicNumberY + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y * 10 + " > " + horizontal);
+                mesh = new THREE.Mesh(geometry, scene2DWallRegularMaterial);
+                mesh.position.z = 1;
 
-            if (horizontal <= 0.8) { //Horizontal line jump up
-
-            } else if (horizontal >= 1.10) { //Horizontal line jump down
-
-            } else { //Horizontal straight line (around 1.0)
-                console.log("straight line from " + scene2DDrawLineContainer.children[i].geometry.vertices[0].x + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y + " to " + scene2DDrawLineContainer.children[i + 10].geometry.vertices[0].x + ":" + scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
-                var rectLength = 120,
-                    rectWidth = 40;
-
-                var rectShape = new THREE.Shape();
-                rectShape.moveTo(scene2DDrawLineContainer.children[i].geometry.vertices[0].x, scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
-
-                rectShape.lineTo(scene2DDrawLineContainer.children[i + 10].geometry.vertices[0].x, rectWidth);
-                rectShape.lineTo(rectLength, rectWidth);
-                rectShape.lineTo(rectLength, scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
-                rectShape.lineTo(scene2DDrawLineContainer.children[i + 10].geometry.vertices[0].x, scene2DDrawLineContainer.children[i].geometry.vertices[0].y);
-                scene2DDrawLineContainer.add(rectShape);
-                scene2D.add(scene2DDrawLineContainer);
+                scene2DFloorContainer[0].add(mesh);
+                //scene2DDrawLineContainer.add(rectShape);
+                //scene2D.add(scene2DDrawLineContainer);
             }
-
-            i += 10; //skip next 10
-
-            //http://stemkoski.github.io/Three.js/Extrusion.html
         }
+
+        //scene3D.updateMatrixWorld();
 
     } else {
         controls3D.enabled = true;
@@ -2009,18 +2047,20 @@ function animate() {
             //controls3D.update();
         }
 
+        /*
         if (scene3DFloorContainer.visible) {
 
-            /*
+            /
             move the CubeCamera to the position of the object that has a reflective surface,
             "take a picture" in each direction and apply it to the surface.
             need to hide surface before and after so that it does not "get in the way" of the camera
-            */
+            /
             camera3DMirrorReflection.visible = false;
             camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
             camera3DMirrorReflection.visible = true;
             //controls3DFloor.update();
         }
+        */
 
         controls3D.update();
         /*
@@ -2095,21 +2135,6 @@ function animate() {
     rendererMenu.render(scene3DMenu, camera3DMenu);
 	*/
     //renderer.render( scene, camera );
-}
-
-/* COORDINATE ARROWS */
-function makeCoordinateArrows() {
-    var coordinateArrows = new THREE.Object3D();
-    var org = new THREE.Vector3(0, 0, 0);
-
-    var dir = new THREE.Vector3(0, 0, 1);
-    coordinateArrows.add(new THREE.ArrowHelper(dir, org, 8, 0x0000FF)); // Blue = z
-    dir = new THREE.Vector3(0, 1, 0);
-    coordinateArrows.add(new THREE.ArrowHelper(dir, org, 8, 0x00FF00)); // Green = y
-    dir = new THREE.Vector3(1, 0, 0);
-    coordinateArrows.add(new THREE.ArrowHelper(dir, org, 8, 0xFF0000)); // Red = x
-
-    return coordinateArrows;
 }
 
 function drag2D(e) {

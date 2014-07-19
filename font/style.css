@@ -1,10 +1,10 @@
 @font-face {
 	font-family: 'icomoon';
-	src:url('fonts/icomoon.eot?-d3hrgr');
-	src:url('fonts/icomoon.eot?#iefix-d3hrgr') format('embedded-opentype'),
-		url('fonts/icomoon.woff?-d3hrgr') format('woff'),
-		url('fonts/icomoon.ttf?-d3hrgr') format('truetype'),
-		url('fonts/icomoon.svg?-d3hrgr#icomoon') format('svg');
+	src:url('fonts/icomoon.eot?68q5kl');
+	src:url('fonts/icomoon.eot?#iefix68q5kl') format('embedded-opentype'),
+		url('fonts/icomoon.woff?68q5kl') format('woff'),
+		url('fonts/icomoon.ttf?68q5kl') format('truetype'),
+		url('fonts/icomoon.svg?68q5kl#icomoon') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -23,6 +23,9 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
+.icon-roof:before {
+	content: "\e610";
+}
 .icon-upload:before {
 	content: "\e631";
 }
@@ -83,29 +86,14 @@
 .icon-close:before {
 	content: "\e60f";
 }
-.icon-cloud127:before {
-	content: "\e610";
-}
-.icon-connections:before {
-	content: "\e611";
-}
-.icon-credit:before {
-	content: "\e612";
-}
 .icon-cube:before {
 	content: "\e613";
-}
-.icon-cube12:before {
-	content: "\e614";
 }
 .icon-cube25:before {
 	content: "\e615";
 }
 .icon-curtains:before {
 	content: "\e616";
-}
-.icon-cylindrical7:before {
-	content: "\e617";
 }
 .icon-delete:before {
 	content: "\e618";
