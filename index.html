@@ -776,12 +776,12 @@ $(document).ready(function() {
     </li>
   </ul>
   <div id="links-left" style="width:60px">
-      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
-        <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-draftplan tooltip" id="menuLeft2DItem0" title="Upload Draft Plan (pdf, jpg, png)" ></a>
-        <a href="#" class="hi-icon icon-draw tooltip" id="menuLeft2DItem1" title="Freestyle Sketch" ></a>
-        <a href="#" class="hi-icon icon-vector tooltip" id="menuLeft2DItem2" title="Vector Corrections"></a>
-        <a href="#" class="hi-icon icon-vector-square tooltip" id="menuLeft2DItem3" title="Draw Square"></a>
-        <a href="#" class="hi-icon icon-vector-circle tooltip" id="menuLeft2DItem4" title="Draw Circle"></a>
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
+        <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-draftplan tooltip" id="menuLeft2DItem0" title="Upload Draft Plan (pdf, jpg, png)"></a>
+        <a href="#" onclick="menuSelect(1,'menuLeft2DItem','#ff3700');TOOL2D='freestyle'" class="hi-icon icon-draw tooltip" id="menuLeft2DItem1" title="Freestyle Sketch" ></a>
+        <a href="#" onclick="menuSelect(2,'menuLeft2DItem','#ff3700');TOOL2D='vector'" class="hi-icon icon-vector tooltip" id="menuLeft2DItem2" title="Vector Corrections"></a>
+        <a href="#" onclick="menuSelect(3,'menuLeft2DItem','#ff3700');TOOL2D='square'" class="hi-icon icon-vector-square tooltip" id="menuLeft2DItem3" title="Draw Square"></a>
+        <a href="#" onclick="menuSelect(4,'menuLeft2DItem','#ff3700');TOOL2D='circle'" class="hi-icon icon-vector-circle tooltip" id="menuLeft2DItem4" title="Draw Circle"></a>
       </div>
   </div>
 </div>
@@ -1029,12 +1029,12 @@ $(document).ready(function() {
   <div id="WebGLCubeCanvas"></div>
   <div id="WebGLInteractiveMenu">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
-      <a href="#" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
-      <a href="#" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem0"></a>
-      <a href="#" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem1"></a>
-      <a href="#" class="hi-icon icon-resize tooltip" title="Resize" id="menuInteractiveItem2"></a>
-      <a href="#" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem3"></a>
-      <a href="#" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem4"></a>
+      <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
+      <a href="#" onclick="menuSelect(1,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveZ'" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem1"></a>
+      <a href="#" onclick="menuSelect(2,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='rotate'" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem2"></a>
+      <a href="#" onclick="menuSelect(3,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='resize'" class="hi-icon icon-resize tooltip" title="Resize" id="menuInteractiveItem3"></a>
+      <a href="#" onclick="" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem4"></a>
+      <a href="#" onclick="" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem5"></a>
     </div>
     <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
         <p>Object Textures</p>
