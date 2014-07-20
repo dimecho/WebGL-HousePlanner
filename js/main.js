@@ -79,7 +79,9 @@ var TOOL3DINTERACTIVE = 'moveXY';
 var TOOL2D = 'freestyle';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1.8311874; //Real-life ratio (Metric/Imperial)
+
 var leftButtonDown = false;
+var clickTime;
 
 //var keyboard = new THREE.KeyboardState();
 //var clock = new THREE.Clock();
@@ -94,8 +96,6 @@ var scene2DWallRegularMaterial;
 var scene2DWallRegularMaterialSelect;
 var scene2DWallBearingMaterial;
 var scene2DWallBearingMaterialSelect;
-
-var collision = [];
 
 var mouse = new THREE.Vector2(),
     INTERSECTED, SELECTED;
@@ -1293,37 +1293,74 @@ function onDocumentMouseMove(event) {
 
         }
 
-    } else if (scene3D.visible) {
+    } else if (leftButtonDown && SELECTED != null) {
 
-        if (leftButtonDown) {
+        $('#WebGLInteractiveMenu').hide();
 
-            if (TOOL3DINTERACTIVE == 'moveXY') {
+        if (TOOL3DINTERACTIVE == 'moveXY') {
 
-            } else if (TOOL3DINTERACTIVE == 'moveZ') {
+            vector = new THREE.Vector3(x, y, 0.5);
+            projector.unprojectVector(vector, camera3D);
+            var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+            var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
+
+            if (intersects.length > 0) {
+                //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
+                SELECTED.position.x = intersects[0].point.x;
+                SELECTED.position.z = intersects[0].point.z;
+
+                /*
+                    var originPoint = intersects[0].object.position.clone();
+                    for (var i = 0; i < intersects[0].object.geometry.vertices.length; i++) {
+
+                        var globalVertex = intersects[0].object.geometry.vertices[i].applyMatrix4(intersects[0].object.matrix);
+                        var directionVector = globalVertex.sub(intersects[0].object.position);
+                        var ray = new THREE.Raycaster(originPoint, directionVector.normalize());
+                        var collisionResults = ray.intersectObjects(scene3DHouseContainer.children);
+
+                        if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
+                            console.log("bump");
+                            break;
+                        }
+                    }
+                    */
+            }
+
+        } else if (TOOL3DINTERACTIVE == 'moveZ') {
+
+            if (SELECTED.position.y >= 0) {
 
                 if (mouse.y >= y && y > 0) {
-                    SELECTED.position.y -= y / 2;
+
+                    SELECTED.position.y -= y;
+
                 } else {
-                    SELECTED.position.y += y / 2;
+
+                    SELECTED.position.y += y;
                 }
 
-            } else if (TOOL3DINTERACTIVE == 'rotate') {
-
-                //SELECTED.rotation.x += x * Math.PI / 180;
-                //SELECTED.rotation.y += y * Math.PI / 180;
-                //SELECTED.rotation.z += x; // * Math.PI / 180;
-
-                if (mouse.x >= x && x > 0) {
-                    SELECTED.rotation.y += x / 4;
-                } else {
-                    SELECTED.rotation.y -= x / 4;
-                }
-                //var axis = new THREE.Vector3(x, y, 0);
-                //SELECTED.rotateOnAxis(axis, 0);
-
-
+                //SELECTED.position.y = y;
+            } else {
+                SELECTED.position.y = 0;
             }
+
+        } else if (TOOL3DINTERACTIVE == 'rotate') {
+
+            //SELECTED.rotation.x += x * Math.PI / 180;
+            //SELECTED.rotation.y += y * Math.PI / 180;
+            //SELECTED.rotation.z += x; // * Math.PI / 180;
+
+            if (mouse.x >= x && x > 0) {
+                SELECTED.rotation.y += x / 4;
+            } else {
+                SELECTED.rotation.y -= x / 4;
+            }
+            //var axis = new THREE.Vector3(x, y, 0);
+            //SELECTED.rotateOnAxis(axis, 0);
+
+
         }
+
         /*
         mouse.x = x;
         mouse.y = y;
@@ -1370,9 +1407,11 @@ function onDocumentMouseDown(event) {
 
     event.preventDefault();
 
+    clickTime = new Date().getTime();
+
     $(renderer.domElement).bind('mousemove', onDocumentMouseMove);
 
-    if (event.which === 1) leftButtonDown = true; // Left mouse button was pressed, set flag
+    if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -1396,46 +1435,15 @@ function onDocumentMouseDown(event) {
     } else {
 
         //console.log("Mouse Down " + mouse.x + ":" + mouse.x + " " + event.clientX + "|" + window.innerWidth + ":" + event.clientY + "|" + window.innerHeight + " -> " + camera3D.position.z);
+        if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children)) {
 
-        vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
-        projector = new THREE.Projector();
+            //Focus on 3D object
 
-        projector.unprojectVector(vector, camera3D);
-        var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
-        //var raycaster = projector.pickingRay(vector.clone(), camera3D);
-        var intersects = raycaster.intersectObjects(scene3DHouseContainer.children);
+            //camera3D.fov = currentFov.fov;
+            //camera3D.lookAt(intersects[0].object.position);
+            //camera3D.updateProjectionMatrix();
 
-        // INTERSECTED = the object in the scene currently closest to the camera 
-        // and intersected by the Ray projected from the mouse position
-
-        if (intersects.length > 0) { // case if mouse is not currently over an object
-            //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
-            controls3D.enabled = false;
-
-            if (SELECTED != intersects[0].object) {
-
-                scene3DObjectUnselect(); //avoid showing multiple selected objects
-
-                SELECTED = intersects[0].object;
-
-                //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
-                glowMesh = new THREEx.GeometricGlowMesh(SELECTED);
-                SELECTED.add(glowMesh.object3d);
-
-                // example of customization of the default glowMesh
-                //var insideUniforms = glowMesh.insideMesh.material.uniforms;
-                //insideUniforms.glowColor.value.set('hotpink');
-                //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
-                //outsideUniforms.glowColor.value.set('hotpink');
-
-
-                //Focus on 3D object
-
-                //camera3D.fov = currentFov.fov;
-                //camera3D.lookAt(intersects[0].object.position);
-                //camera3D.updateProjectionMatrix();
-
-                /*
+            /*
                 var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
                 var newQuaternion = new THREE.Quaternion();
                 THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
@@ -1444,35 +1452,37 @@ function onDocumentMouseDown(event) {
                 scene3D.updateMatrixWorld();
                 */
 
-                //Reset camera?
-                //var vector = new THREE.Vector3( 1, 0, 0 ); 
-                //vector.applyQuaternion( quaternion );
+            //Reset camera?
+            //var vector = new THREE.Vector3( 1, 0, 0 ); 
+            //vector.applyQuaternion( quaternion );
 
 
-                //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
-                var percX, percY
+            //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
+            vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
 
-                // projectVector will translate position to 2d
-                vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
+            var percX, percY
 
-                // translate our vector so that percX=0 represents the left edge, percX=1 is the right edge, percY=0 is the top edge, and percY=1 is the bottom edge.
-                percX = (vector.x + 1) / 2;
-                percY = (-vector.y + 1) / 2;
+            // projectVector will translate position to 2d
+            vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
 
-                // scale these values to our viewport size
-                vector.x = percX * window.innerWidth - $('#WebGLInteractiveMenu').width() * 2;
-                vector.y = percY * window.innerHeight - $('#WebGLInteractiveMenu').height(); // / 2;
+            // translate our vector so that percX=0 represents the left edge, percX=1 is the right edge, percY=0 is the top edge, and percY=1 is the bottom edge.
+            percX = (vector.x + 1) / 2;
+            percY = (-vector.y + 1) / 2;
 
-                $('#WebGLInteractiveMenu').css('top', vector.y).css('left', vector.x);
+            // scale these values to our viewport size
+            vector.x = percX * window.innerWidth - $('#WebGLInteractiveMenu').width() * 2;
+            vector.y = percY * window.innerHeight - $('#WebGLInteractiveMenu').height(); // / 2;
 
-                /*
+            $('#WebGLInteractiveMenu').css('top', vector.y).css('left', vector.x);
+
+            /*
 				var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
 					    new THREE.MeshLambertMaterial( { color: 0xffffff} ),
 					    new THREE.MeshBasicMaterial( { color: 0x222222, wireframe: true} )
 				]);
 				*/
 
-                /*
+            /*
 	            INTERSECTED = intersects[0].object.material; //new THREE.MeshFaceMaterial(intersects[0].object.material);
 	            intersects[0].object.material = new THREE.MeshBasicMaterial({
 	                color: 0x222222,
@@ -1480,9 +1490,9 @@ function onDocumentMouseDown(event) {
 	            });
 				*/
 
-                //Calculate object real dimentions TODO: find some smart code
+            //Calculate object real dimentions TODO: find some smart code
 
-                /*
+            /*
 	            intersects[0].object.geometry.computeBoundingBox();
 	            var position = new THREE.Vector3();
 	            position.subVectors(intersects[0].object.geometry.boundingBox.max, intersects[0].object.geometry.boundingBox.min);
@@ -1494,34 +1504,19 @@ function onDocumentMouseDown(event) {
 	            var distance = point1.distanceTo(point2);
 	            */
 
-                /*
+            /*
 	            var vFOV = camera3D.fov * Math.PI / 180;      // convert vertical fov to radians
 	            var height = 2 * Math.tan( vFOV / 2 ) * distance; // visible height
 	            var aspect = window.width / window.height;
 	            var width = height * aspect;                  // visible width
 	            */
 
-
-
-                $('#WebGLInteractiveMenuText').html("Dimentions: " + (SELECTED.geometry.boundingBox.max.x * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.y * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.z * REALSIZERATIO).toFixed(1) + " Meters");
-                $('#WebGLInteractiveMenu').show();
-
-
-
-                //container.style.cursor = 'move';
-            }
+            //$('#WebGLInteractiveMenuText').html("Dimentions: " + (SELECTED.geometry.boundingBox.max.x * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.y * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.z * REALSIZERATIO).toFixed(1) + " Meters");
+            $('#WebGLInteractiveMenu').show();
         } else {
-            scene3DObjectUnselect();
+            $('#WebGLInteractiveMenu').hide();
         }
     }
-}
-
-function scene3DObjectUnselect() {
-    if (SELECTED != null)
-        SELECTED.remove(glowMesh.object3d);
-    SELECTED = null;
-
-    $('#WebGLInteractiveMenu').hide();
 }
 
 function onDocumentMouseUp(event) {
@@ -1530,7 +1525,10 @@ function onDocumentMouseUp(event) {
 
     $(renderer.domElement).unbind('mousemove', onDocumentMouseMove);
 
-    if (event.which === 1) leftButtonDown = false; // Left mouse button was released, clear flag
+    if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
+
+    //mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    //mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     if (scene2D.visible) {
 
@@ -1624,17 +1622,72 @@ function onDocumentMouseUp(event) {
         //scene3D.updateMatrixWorld();
 
     } else {
-        controls3D.enabled = true;
-        /*
-        if (INTERSECTED) {
-            plane.position.copy(INTERSECTED.position);
-            SELECTED = null;
+
+        //TODO: zoom out far, reset pivot-point to 0,0,0
+
+        if (new Date().getTime() - 200 < clickTime) { //Set pivot-point to clicked coordinates
+
+            vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+            projector.unprojectVector(vector, camera3D);
+            var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+            var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
+
+            if (intersects.length > 0) {
+                controls3D.target = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z); //having THREE.TrackballControls or THREE.OrbitControls seems to override the camera.lookAt function
+            }
         }
-        */
-        //SELECTED.material = INTERSECTED;
-        //SELECTED = null;
         //container.style.cursor = 'auto';
     }
+}
+
+
+function scene3DObjectSelect(x, y, camera, container) {
+
+    vector = new THREE.Vector3(x, y, 0.5);
+    //var projector = new THREE.Projector();
+    projector.unprojectVector(vector, camera);
+    var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+    //var raycaster = projector.pickingRay(vector.clone(), camera3D);
+    var intersects = raycaster.intersectObjects(container);
+
+    // INTERSECTED = the object in the scene currently closest to the camera 
+    // and intersected by the Ray projected from the mouse position
+
+    if (intersects.length > 0) { // case if mouse is not currently over an object
+        //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
+        controls3D.enabled = false;
+
+        if (SELECTED != intersects[0].object) {
+
+            scene3DObjectUnselect(); //avoid showing multiple selected objects
+
+            SELECTED = intersects[0].object;
+
+            //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
+            glowMesh = new THREEx.GeometricGlowMesh(SELECTED);
+            SELECTED.add(glowMesh.object3d);
+
+            // example of customization of the default glowMesh
+            //var insideUniforms = glowMesh.insideMesh.material.uniforms;
+            //insideUniforms.glowColor.value.set('hotpink');
+            //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
+            //outsideUniforms.glowColor.value.set('hotpink');
+        }
+        return true;
+    } else {
+        scene3DObjectUnselect();
+        controls3D.enabled = true;
+        return false;
+    }
+}
+
+function scene3DObjectUnselect() {
+
+    if (SELECTED != null) {
+        SELECTED.remove(glowMesh.object3d);
+    }
+
+    SELECTED = null;
 }
 
 function onMenuMouseMove(event) {
