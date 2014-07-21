@@ -712,6 +712,7 @@ function loadJSON(js, object, x, y, z, xaxis, yaxis, ratio) {
         mesh.receiveShadow = true;
         //mesh.overdraw = true;
 
+        /*
         if (ratio != 1) {
             geometry.computeBoundingBox();
             var box = geometry.boundingBox;
@@ -721,6 +722,8 @@ function loadJSON(js, object, x, y, z, xaxis, yaxis, ratio) {
             mesh.castShadow = false;
             mesh.receiveShadow = false;
         }
+        */
+
         mesh.position.x = x;
         mesh.position.y = y;
         mesh.position.z = z;
@@ -1259,25 +1262,28 @@ function onDocumentDoubleClick(event) {
 
     if (scene3D.visible) {
 
+        x = (event.clientX / window.innerWidth) * 2 - 1;
+        y = -(event.clientY / window.innerHeight) * 2 + 1;
+
         //TODO: zoom out far, reset pivot-point to 0,0,0
 
         //if (new Date().getTime() - 150 < clickTime) { //Set pivot-point to clicked coordinates
 
-        vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+        vector = new THREE.Vector3(x, y, 0.5);
         projector.unprojectVector(vector, camera3D);
         var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
         var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
 
         if (intersects.length > 0) {
 
-            vector = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z);
-            controls3D.target = vector; //having THREE.TrackballControls or THREE.OrbitControls seems to override the camera.lookAt function
-            scene3DPivotPoint.position.set(vector);
-
+            scene3DPivotPoint.position.set(intersects[0].point.x, 0, intersects[0].point.z);
             scene3D.add(scene3DPivotPoint);
+
+            controls3D.target = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z); //having THREE.TrackballControls or THREE.OrbitControls seems to override the camera.lookAt function
+
             setTimeout(function() {
                 scene3D.remove(scene3DPivotPoint)
-            }, 2000);
+            }, 800);
         }
     }
 }
@@ -1884,10 +1890,20 @@ function sceneNew() {
     });
     //===============================================
     //loadJSON("Platform/ground-wood.js", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1); //Interior ground (defferent from floor textures)
+
     camera3DMirrorReflection = new THREE.CubeCamera(0.1, 5000, 512); //Glassy looking showfloor surface
 
     //Temporary Objects for visualization
     //TODO: load from one JSON file
+
+    loadJSON("Platform/pivotpoint.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
+
+
+    //loadJSON("Exterior/Plants/bush.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
+    //vector = new THREE.Vector3(-7, 0, 9);
+    //scene3DPivotPoint.position.set(vector);
+    //scene3D.add(scene3DPivotPoint);
+
     loadJSON("Platform/house3.js", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
     loadJSON("Exterior/Trees/palm.js", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
     loadJSON("Exterior/Plants/bush.js", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
