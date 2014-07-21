@@ -478,10 +478,6 @@ $(function() {
 </script>
 <style>
 #dragElement {
-  position: absolute;
-  display: none;
-  top: 0;
-  left: 0;
   width:100px;
   height:100px;
   z-index:9999; /* move the z-index to the CSS */
@@ -492,14 +488,14 @@ $(function() {
 var myScroll;
 function loaded () {
   myScroll = new IScroll('#scrollWrapper', {
-    //scrollbars: true,
+    scrollbars: true,
     mouseWheel: true,
     interactiveScrollbars: true,
     //shrinkScrollbars: 'scale',
     //fadeScrollbars: true
   });
 }
-document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+//document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
 </script>
 
 <div id="openLogin" class="modalDialog">
@@ -551,12 +547,12 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
    });
 </script>
 <div id="box-right" class="hide-right">
-    <ul id="tab-right">
-        <li>
-            <img id="arrow-right" onclick="toggleRight('box-right');" src="images/arrowleft.png">
-        </li>
-    </ul>
-    <div id="links-left" style="width:320px;">
+  <ul id="tab-right">
+      <li>
+          <img id="arrow-right" onclick="toggleRight('box-right');" src="images/arrowleft.png">
+      </li>
+  </ul>
+  <div id="links-left" style="width:320px;">
       <div style="display:inline-block;width:100%;vertical-align:top;padding:10px">
         <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
           <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
@@ -567,14 +563,13 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
           <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
         </div>
         <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
-     </div>
+  </div>
 
       <!--
         <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
           <a href="#" class="hi-icon icon-navigate6" title="Scroll Up"></a>
         </div>
       -->
-      <div id="dragElement" style="display: none;"></div>
 
       <div id="menuRight3DHouse" style="display: none;">
         <div id='cssmenuRight3DHouse' class='cssmenu'>
@@ -594,15 +589,6 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
                  <li><a href='#'><span>Animals</span></a></li>
                  <li><a href='#'><span>Cars</span></a></li>
           </ul>
-        </div>
-        <div id='webglmenuRight3DHouse' style="display: none;">
-          <ul>
-            <li><a href='#'><span>&#60; Back to Catalog</span></a></li>
-          </ul>
-          <!-- TODO: Move to dynamically generate from json -->
-          <div id='webglmenuRight3DHouse-0'></div>
-          <div id='webglmenuRight3DHouse-1'></div>
-          <div id='webglmenuRight3DHouse-2'></div>
         </div>
       </div>
 
@@ -669,26 +655,26 @@ document.addEventListener('touchmove', function (e) { e.preventDefault(); }, fal
             <li><a href='#'><span>Other Items</span></a></li>
           </ul>
         </div>
-        <div id='webglmenuRight3DFloor' style="display: none;">
-          <ul>
-            <li><a href='#'><span>&#60; Back to Catalog</span></a></li>
-          </ul>
-          <!-- TODO: Move to dynamically generate from json -->
-          <div id='webglmenuRight3DFLoor-0'></div>
-          <div id='webglmenuRight3DFloor-1'></div>
-          <div id='webglmenuRight3DFloor-2'></div>
-        </div>
       </div>
               
       <div id="menuRight2D" style="display: none;">
-      
       </div>
-      <!--
-      <div id="scrollWrapper" style="height:500px">
-        <div id="scroller">
-	      </div>
-	    </div>
-      -->
+
+      <div id='menuRightObjects' style="display:none;">
+          <ul>
+            <li><a href='#' onclick=""><span>&#60; Back to Catalog</span></a></li>
+          </ul>
+          <!--
+          <div id="scrollWrapper" style="height:500px">
+            <div id="scroller">
+            </div>
+          </div>
+          -->
+          <!-- TODO: Move to dynamically generate from json -->
+          <div style="width:200px;height:110px;-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;border:1px solid #000000" id="menuRightObject0">
+            <div id="dragElement" style="background-image:url('images/object.png');"></div>
+          </div>
+      </div>
 	    <!--
 	    <div id="footer">
 	      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
@@ -711,7 +697,6 @@ $(document).ready(function() {
    		position: 'right'
 		});
    });
-
 </script>
 <div id="menuLeft3DHouse" class="hide-left">
   <ul id="tab-left">
@@ -720,11 +705,6 @@ $(document).ready(function() {
     </li>
   </ul>
   <div id="links-left" style="width:160px">
-  <script>
-  $( document ).ready(function() {
-    $("#menuFloor1").click();
-  });
-  </script>
       <div class='cssmenu'>
         <ul>
            <li class='active'><a href='#' id="menuFloor0"><span>Basement</span></a></li>
@@ -920,11 +900,21 @@ $(document).ready(function() {
     height:100px;
 }
 
+#WebGLMeasureMenu {
+    position:absolute;
+    bottom:0px;
+    left:100px;
+    border:none;
+    width:100;
+    height:100px;
+    color:#474747;
+}
+
 #WebGLHelp {
     position:absolute;
     bottom:10px;
     right:20px;
-    color:#666666;
+    color:#474747
     font-size: 20px;
     cursor:help;
 }
@@ -1027,6 +1017,7 @@ $(document).ready(function() {
   </form>
   <div id="WebGLHelp">?</div>
   <div id="WebGLCubeCanvas"></div>
+  <div id="WebGLMeasureMenu"><br/><br/><a href="#" onclick="" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a>Metric</div>
   <div id="WebGLInteractiveMenu">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
       <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
