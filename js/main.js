@@ -28,6 +28,7 @@ if (window.innerWidth === 0) {
     window.innerHeight = parent.innerHeight;
 }
 
+var onRenderFcts = [];
 var scene3D;
 var scene3DCube;
 var scene3DMenu;
@@ -326,6 +327,11 @@ function init() {
     camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
     camera2D.lookAt(new THREE.Vector3(0, 0, 0));
     camera2D.position.z = 5000; // the camera starts at 0,0,0 so pull it back
+
+    camera3DMirrorReflection = new THREE.CubeCamera(0.01, 10, 500);
+    //camera3DMirrorReflection.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
+    camera3DMirrorReflection.renderTarget.width = camera3DMirrorReflection.renderTarget.height = 4;
+
 
     var gridXY = new THREE.GridHelper(100, 2);
     gridXY.position.set(0, 0, 0);
@@ -1031,8 +1037,9 @@ function show3DFloor() {
     //sceneSpotLight.castShadow = false;
     scene3D.add(sceneSpotLight);
 
-
     scene3D.add(scene3DFloorGroundContainer);
+    scene3D.add(camera3DMirrorReflection);
+
     scene3D.add(scene3DFloorContainer[0]);
     scene3DCube.add(scene3DCubeMesh);
 
@@ -1146,7 +1153,10 @@ function show2DContainer(b) {
     scene3D.remove(sceneSpotLight);
 
     scene3D.remove(scene3DHouseGroundContainer);
+
     scene3D.remove(scene3DFloorGroundContainer);
+    scene3D.remove(camera3DMirrorReflection);
+
     scene3D.remove(scene3DFloorLevelGroundContainer);
 
     scene3D.remove(scene3DHouseContainer);
@@ -1859,16 +1869,23 @@ function sceneNew() {
         groundTexture.repeat.set(10, 10);
         groundTexture.anisotropy = renderer.getMaxAnisotropy(); //focus blur (16=unblured 1=blured)
 
-        var groundMaterial = new THREE.MeshBasicMaterial({
-            map: groundTexture
+        var groundMaterial = new THREE.MeshPhongMaterial({
+            map: groundTexture,
+            envMap: camera3DMirrorReflection.renderTarget,
+            reflectivity: 0.5
         });
+
         var mesh = new THREE.Mesh(geometry, groundMaterial);
         //mesh.castShadow = true;
         mesh.receiveShadow = true;
 
-        //add mirror effect - too easy
-        var meshMirror = new THREEx.CubeCamera(mesh)
-        mesh.add(meshMirror.object3d)
+        //camera3DMirrorReflection.position = mesh.position;
+
+        //============================
+        //camera3DMirrorReflection = new THREEx.CubeCamera(mesh);
+        //mesh.add(camera3DMirrorReflection.object3d)
+        //groundMaterial.envMap = camera3DMirrorReflection.textureCube;
+        //============================
 
         scene3DFloorGroundContainer.add(mesh);
     });
@@ -1883,15 +1900,15 @@ function sceneNew() {
         var groundMaterial = new THREE.MeshBasicMaterial({
             map: groundTexture
         });
+
         var mesh = new THREE.Mesh(geometry, groundMaterial);
-        mesh.castShadow = true;
+        //mesh.castShadow = true;
         mesh.receiveShadow = true;
+
         scene3DFloorLevelGroundContainer.add(mesh);
     });
     //===============================================
     //loadJSON("Platform/ground-wood.js", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1); //Interior ground (defferent from floor textures)
-
-    camera3DMirrorReflection = new THREE.CubeCamera(0.1, 5000, 512); //Glassy looking showfloor surface
 
     //Temporary Objects for visualization
     //TODO: load from one JSON file
@@ -1960,6 +1977,9 @@ function scene3DGround(_texture, _grid) {
 */
 
 function scene3DSky() {
+
+    //var mesh = THREEx.createSkymap('mars')
+    //scene.add( mesh )
 
     //scene3D.remove(skyGrid);
 
@@ -2090,6 +2110,16 @@ function scene3DLight() {
     sceneSpotLight.intensity = 1;
     sceneSpotLight.position.set(-5, 30, 5)
     //scene3D.add(sceneSpotLight);
+
+    /*
+    var frontLight  = new THREE.DirectionalLight('white', 1)
+    frontLight.position.set(0.5, 0.5, 2).multiplyScalar(2)
+    scene.add( frontLight )
+
+    var backLight   = new THREE.DirectionalLight('white', 0.75)
+    backLight.position.set(-0.5, -0.5, -2)
+    scene.add( backLight )
+    */
 
 }
 
@@ -2253,20 +2283,24 @@ function animate() {
             //controls3D.update();
         }
 
-        /*
-        if (scene3DFloorContainer.visible) {
 
-            /
+        if (SCENE == 'floor') {
+
+            /*
             move the CubeCamera to the position of the object that has a reflective surface,
             "take a picture" in each direction and apply it to the surface.
             need to hide surface before and after so that it does not "get in the way" of the camera
-            /
-            camera3DMirrorReflection.visible = false;
-            camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
-            camera3DMirrorReflection.visible = true;
+            */
+            //camera3DMirrorReflection.visible = false;
+            //camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
+            //camera3DMirrorReflection.visible = true;
             //controls3DFloor.update();
+
+            sceneSpotLight.visible = false; //Do not reflect light
+            camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
+            sceneSpotLight.visible = true;
         }
-        */
+
 
         controls3D.update();
         /*
@@ -2279,6 +2313,8 @@ function animate() {
             camera3D.quaternion.normalize();
         }
         */
+
+
         renderer.render(scene3D, camera3D);
 
         //Orientation Cube
@@ -2287,6 +2323,8 @@ function animate() {
         camera3DCube.position.setLength(18);
         camera3DCube.lookAt(scene3DCube.position);
         rendererCube.render(scene3DCube, camera3DCube);
+
+
 
         //animateMenu();
 
