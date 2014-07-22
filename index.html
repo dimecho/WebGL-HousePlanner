@@ -409,14 +409,12 @@ body{
 
 #scrollWrapper {
   position: absolute;
-  top: 100px;
+  top: 140px;
   bottom: 55px;
   left: 55px;
   width: 320px;
-  background: #ccc;
-  overflow: hidden;
+  background-color: #fff;
   z-index: 1;
-  background: #ccc;
   overflow: hidden;
 }
 
@@ -441,6 +439,7 @@ body{
   -ms-text-size-adjust: none;
   -o-text-size-adjust: none;
   text-size-adjust: none;
+  padding: 12px
 }
 </style>
 <!-- END iScroll -->
@@ -571,14 +570,13 @@ function loaded () {
         </div>
       -->
 
-      <div id="menuRight3DHouse" style="display: none;">
-        <div id='cssmenuRight3DHouse' class='cssmenu'>
+      <div id="menuRight3DHouse" class='cssmenu' style="display: none;">
           <ul>
                  <li><a href='#'><span>Trees</span></a></li>
                  <li class='has-sub'><a href='#'><span>Plants</span></a>
                     <ul>
-                       <li><a href='#'><span>Bushes</span></a></li>
-                       <li class='last'><a href='#'><span>Flowers</span></a></li>
+                       <li><a href='#' onclick="showRightObjectMenu('Exterior/Plants/Bushes')"><span>Bushes</span></a></li>
+                       <li class='last' onclick="showRightObjectMenu('Exterior/Plants/Flowers')"><a href='#'><span>Flowers</span></a></li>
                     </ul>
                  </li>
                  <li><a href='#'><span>Driveway</span></a></li>
@@ -589,11 +587,10 @@ function loaded () {
                  <li><a href='#'><span>Animals</span></a></li>
                  <li><a href='#'><span>Cars</span></a></li>
           </ul>
-        </div>
       </div>
 
-      <div id="menuRight3DFloor" style="display: none;">
-        <div id="cssmenuRight3DFloor" class='cssmenu'>
+      <div id="menuRight3DFloor" class='cssmenu' style="display: none;">
+       
           <ul>
             <li class='has-sub'><a href='#'><span>Furniture</span></a>
               <ul>
@@ -654,26 +651,25 @@ function loaded () {
             <li><a href='#'><span>Structural</span></a></li>
             <li><a href='#'><span>Other Items</span></a></li>
           </ul>
-        </div>
       </div>
               
       <div id="menuRight2D" style="display: none;">
       </div>
 
       <div id='menuRightObjects' style="display:none;">
+        <div class='cssmenu'>
           <ul>
-            <li><a href='#' onclick=""><span>&#60; Back to Catalog</span></a></li>
+            <li><a href='#' onclick="showRightCatalogMenu()"><span>&#60; Back to Catalog</span></a></li>
           </ul>
-          <!--
-          <div id="scrollWrapper" style="height:500px">
-            <div id="scroller">
+        </div>
+        <div id="scrollWrapper" style="height:500px">
+          <div id="scroller">
+            <!-- TODO: Move to dynamically generate from json -->
+            <div style="width:300px;height:110px;-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;border:1px solid #000000" id="menuRightObject0">
+              <div id="dragElement" style="background-image:url('images/object.png');"></div>
             </div>
           </div>
-          -->
-          <!-- TODO: Move to dynamically generate from json -->
-          <div style="width:200px;height:110px;-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;border:1px solid #000000" id="menuRightObject0">
-            <div id="dragElement" style="background-image:url('images/object.png');"></div>
-          </div>
+        </div>
       </div>
 	    <!--
 	    <div id="footer">

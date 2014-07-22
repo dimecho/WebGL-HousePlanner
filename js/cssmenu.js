@@ -13,22 +13,26 @@ $(document).ready(function() {
             $('.cssmenu ul ul:visible').slideUp('normal');
             checkElement.slideDown('normal');
         }
+        /*
         if (!checkElement.is('ul')) {
             var menuName = getParents(this);
             console.log("element click " + menuName);
         }
+        */
         if ($(this).closest('li').find('ul').children().length == 0) {
             return true;
         } else {
             return false;
         }
     });
+    /*
     $('.cssmenu > ul > li > ul > li > a').click(function(event) {
         var menuName = getParents(this);
         console.log("element click " + menuName);
     });
+*/
 });
-
+/*
 function getParents(obj) {
     objparent = obj.parentNode;
     while (objparent) {
@@ -40,3 +44,4 @@ function getParents(obj) {
         }
     }
 }
+*/

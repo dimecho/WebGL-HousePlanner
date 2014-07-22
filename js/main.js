@@ -40,6 +40,7 @@ var rendererMenu;
 
 var scene3DHouseContainer; //Contains all Exterior 3D objects by floor (trees,fences)
 var scene3DHouseGroundContainer; //Grass Ground - 1 object
+var scene3DHouseFXContainer; //Visual Effects container (user not editable/animated) - fying bugs/birds/rainbows
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DMenuHouseContainer; //Contains rotatable 3D objects for Exterior (trees,fences)
@@ -310,6 +311,7 @@ function init() {
 
     scene3DHouseContainer = new THREE.Object3D();
     scene3DHouseGroundContainer = new THREE.Object3D();
+    scene3DHouseFXContainer = new THREE.Object3D();
     scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DFloorLevelGroundContainer = new THREE.Object3D();
     scene3DFloorContainer[0] = new THREE.Object3D();
@@ -319,7 +321,6 @@ function init() {
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
 
-
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
     camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 600);
     camera3D.lookAt(new THREE.Vector3(0, 0, 0));
@@ -328,10 +329,10 @@ function init() {
     camera2D.lookAt(new THREE.Vector3(0, 0, 0));
     camera2D.position.z = 5000; // the camera starts at 0,0,0 so pull it back
 
-    camera3DMirrorReflection = new THREE.CubeCamera(0.01, 10, 500);
+    camera3DMirrorReflection = new THREE.CubeCamera(0.1, 10, 30);
     //camera3DMirrorReflection.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
-    camera3DMirrorReflection.renderTarget.width = camera3DMirrorReflection.renderTarget.height = 4;
-
+    camera3DMirrorReflection.renderTarget.width = camera3DMirrorReflection.renderTarget.height = 3;
+    //camera3DMirrorReflection.position.y = -20;
 
     var gridXY = new THREE.GridHelper(100, 2);
     gridXY.position.set(0, 0, 0);
@@ -985,6 +986,7 @@ function show3DHouse() {
 
     $('#menuRight3DFloor').hide();
     $('#menuRight2D').hide();
+    $('#menuRightObjects').hide();
     $('#menuRight3DHouse').show();
     $('#box-right').show();
     //toggleLeft('box-right', true);
@@ -1048,6 +1050,7 @@ function show3DFloor() {
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
     $('#menuLeft3DHouse').hide();
+    $('#menuRightObjects').hide();
 
     $('#menuRight3DFloor').show();
     $('#menuRight2D').hide();
@@ -1089,6 +1092,7 @@ function show3DFloorLevel() {
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
     $('#menuLeft3DHouse').hide();
+    $('#menuRightObjects').hide();
     $('#box-right').hide();
 
     menuSelect(2, 'menuTopItem', '#ff3700');
@@ -1122,6 +1126,7 @@ function show2D() {
     $('#menuRight3DFloor').hide();
     $('#menuRight2D').show();
     $('#menuRight3DHouse').hide();
+    $('#menuRightObjects').hide();
     $('#box-right').show();
 
     menuSelect(4, 'menuTopItem', '#ff3700');
@@ -1378,23 +1383,37 @@ function onDocumentMouseMove(event) {
 
         }
 
-    } else if (leftButtonDown && SELECTED != null) {
+    } else if (leftButtonDown) {
 
-        $('#WebGLInteractiveMenu').hide();
+        if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
+            //Auto close right menu
+            document.getElementById('box-right').setAttribute("class", "hide-right");
+            delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
-        if (TOOL3DINTERACTIVE == 'moveXY') {
+            //Auto close left menu
+            if (SCENE == 'house') {
+                document.getElementById('menuLeft3DHouse').setAttribute("class", "hide-left");
+                delay(document.getElementById("arrow-left"), "images/arrowright.png", 400);
+            }
+        }
 
-            vector = new THREE.Vector3(x, y, 0.5);
-            projector.unprojectVector(vector, camera3D);
-            var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
-            var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
+        if (SELECTED != null) {
 
-            if (intersects.length > 0) {
-                //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
-                SELECTED.position.x = intersects[0].point.x;
-                SELECTED.position.z = intersects[0].point.z;
+            $('#WebGLInteractiveMenu').hide();
 
-                /*
+            if (TOOL3DINTERACTIVE == 'moveXY') {
+
+                vector = new THREE.Vector3(x, y, 0.5);
+                projector.unprojectVector(vector, camera3D);
+                var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+                var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
+
+                if (intersects.length > 0) {
+                    //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
+                    SELECTED.position.x = intersects[0].point.x;
+                    SELECTED.position.z = intersects[0].point.z;
+
+                    /*
                     var originPoint = intersects[0].object.position.clone();
                     for (var i = 0; i < intersects[0].object.geometry.vertices.length; i++) {
 
@@ -1409,43 +1428,43 @@ function onDocumentMouseMove(event) {
                         }
                     }
                     */
-            }
-
-        } else if (TOOL3DINTERACTIVE == 'moveZ') {
-
-            if (SELECTED.position.y >= 0) {
-
-                if (mouse.y >= y && y > 0) {
-
-                    SELECTED.position.y -= y;
-
-                } else {
-
-                    SELECTED.position.y += y;
                 }
 
-                //SELECTED.position.y = y;
-            } else {
-                SELECTED.position.y = 0;
+            } else if (TOOL3DINTERACTIVE == 'moveZ') {
+
+                if (SELECTED.position.y >= 0) {
+
+                    if (mouse.y >= y && y > 0) {
+
+                        SELECTED.position.y -= y;
+
+                    } else {
+
+                        SELECTED.position.y += y;
+                    }
+
+                    //SELECTED.position.y = y;
+                } else {
+                    SELECTED.position.y = 0;
+                }
+
+            } else if (TOOL3DINTERACTIVE == 'rotate') {
+
+                //SELECTED.rotation.x += x * Math.PI / 180;
+                //SELECTED.rotation.y += y * Math.PI / 180;
+                //SELECTED.rotation.z += x; // * Math.PI / 180;
+
+                if (mouse.x >= x && x > 0) {
+                    SELECTED.rotation.y += x / 4;
+                } else {
+                    SELECTED.rotation.y -= x / 4;
+                }
+                //var axis = new THREE.Vector3(x, y, 0);
+                //SELECTED.rotateOnAxis(axis, 0);
+
+
             }
-
-        } else if (TOOL3DINTERACTIVE == 'rotate') {
-
-            //SELECTED.rotation.x += x * Math.PI / 180;
-            //SELECTED.rotation.y += y * Math.PI / 180;
-            //SELECTED.rotation.z += x; // * Math.PI / 180;
-
-            if (mouse.x >= x && x > 0) {
-                SELECTED.rotation.y += x / 4;
-            } else {
-                SELECTED.rotation.y -= x / 4;
-            }
-            //var axis = new THREE.Vector3(x, y, 0);
-            //SELECTED.rotateOnAxis(axis, 0);
-
-
         }
-
         /*
         mouse.x = x;
         mouse.y = y;
@@ -1660,6 +1679,18 @@ function onDocumentMouseUp(event) {
 
             $('#WebGLInteractiveMenu').show();
         }
+
+        if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0) {
+            //Auto open right menu
+            document.getElementById('box-right').setAttribute("class", "show-right");
+            delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
+
+            //Auto open left menu
+            if (SCENE == 'house') {
+                document.getElementById('menuLeft3DHouse').setAttribute("class", "menuLeft3DHouse-show-left");
+                delay(document.getElementById("arrow-left"), "images/arrowleft.png", 400);
+            }
+        }
         //container.style.cursor = 'auto';
     }
 }
@@ -1722,7 +1753,6 @@ function scene3DObjectSelectMenu(x, y) {
     //$('#WebGLInteractiveMenuText').html("Dimentions: " + (SELECTED.geometry.boundingBox.max.x * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.y * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.z * REALSIZERATIO).toFixed(1) + " Meters");
     //$('#WebGLInteractiveMenu').show();
 }
-
 
 function scene3DObjectSelect(x, y, camera) {
 
@@ -2123,6 +2153,22 @@ function scene3DLight() {
 
 }
 
+function showRightObjectMenu(path) {
+    $('#menuRight3DHouse').hide();
+    $('#menuRightObjects').show();
+}
+
+function showRightCatalogMenu() {
+
+    if (SCENE == 'house') {
+        $('#menuRight3DHouse').show();
+    } else if (SCENE == 'house') {
+        $('#menuRight3DFloor').show();
+    }
+
+    $('#menuRightObjects').hide();
+}
+
 function scene3DMenuLight() {
     var ambientLight = new THREE.AmbientLight(0x444444); // 0xcccccc
     scene3DMenu.add(ambientLight);
@@ -2297,8 +2343,14 @@ function animate() {
             //controls3DFloor.update();
 
             sceneSpotLight.visible = false; //Do not reflect light
-            camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
+            //scene3DFloorGroundContainer.children[0].visible = false; //because refrection camera is below the floor
+            //scene3D.remove(scene3DFloorGroundContainer); //because refrection camera is below the floor
+
+            camera3DMirrorReflection.updateCubeMap(renderer, scene3D); //capture the reflection
+
             sceneSpotLight.visible = true;
+            //cene3D.add(scene3DFloorGroundContainer);
+            //scene3DFloorGroundContainer.children[0].visible = true;
         }
 
 
