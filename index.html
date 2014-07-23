@@ -9,7 +9,6 @@
   <script type="text/javascript" src="js/jquery.tooltipster.js"></script>
   <link rel="stylesheet" type="text/css" href="css/preloader.css"/>
   <link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
-  <link rel="stylesheet" type="text/css" href="css/clippy.css" media="all">
   <link rel="stylesheet" type="text/css" href="css/cssmenu.css">
 
 <!-- http://www.webtutorialsource.com/tutorial/show-hide-toggle-sliding-menu-css-javascript -->
@@ -1094,7 +1093,10 @@ $(document).ready(function() {
 </div>
 
 <script type="text/javascript" src="js/preloader.js"></script>
-<script src="js/clippy.js"></script>
+<!--
+<script type="text/javascript" src="js/clippy.js"></script>
+<link rel="stylesheet" type="text/css" href="css/clippy.css" media="all">
+-->
 <script type="text/javascript">
 function getCookie(name) {
   var value = "; " + document.cookie;
@@ -1128,7 +1130,7 @@ Royal_Preloader.config({
     if (getCookie("firstTimer") == null)
     {
       createCookie("firstTimer","1",5);
-
+      /*
       clippy.load('Bonzi', function(agent) {
         Agent = agent;
 
@@ -1142,12 +1144,12 @@ Royal_Preloader.config({
         setTimeout(function(){agent.speak("Use top menu to switch between exterior, interior and floor plan views");agent.gestureAt(500,100)}, 15000);
         setTimeout(function(){agent.play("Pleased");agent.hide()}, 18000);
       });
+      */
     }
   }
 });
 
 $('#clippy').click(function (event) {
-  //if (evt.target.tagName != "A") {
   agentToggle();
 });
 
@@ -1206,7 +1208,6 @@ function agentToggle() {
 <script src="js/3d/threex.geometricglowmesh.js"></script>
 
 <script src="js/3d/extras/physics/ParticleEngine.js"></script>
-<script src="js/3d/extras/physics/ParticleEngineExamples.js"></script>
 
 <!--
 <script src="js/3d/extras/physics/Collisions.js"></script>

@@ -104,6 +104,8 @@ var scene2DWallBearingMaterialSelect;
 var mouse = new THREE.Vector2(),
     SELECTED;
 
+var clock = new THREE.Clock();
+var engine;
 var projector;
 var vector;
 var geometry;
@@ -1181,11 +1183,43 @@ function onDocumentDoubleClick(event) {
             scene3DPivotPoint.position.set(intersects[0].point.x, 0, intersects[0].point.z);
             scene3D.add(scene3DPivotPoint);
 
+            engine = new ParticleEngine();
+            fountain = {
+                positionStyle: Type.CUBE,
+                positionBase: new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z),
+                positionSpread: new THREE.Vector3(0, 0, 0),
+
+                velocityStyle: Type.CUBE,
+                velocityBase: new THREE.Vector3(0, 3, 0),
+                velocitySpread: new THREE.Vector3(3, 0, 3),
+
+                accelerationBase: new THREE.Vector3(0, -2, 0),
+
+                particleTexture: THREE.ImageUtils.loadTexture('./images/star.png'),
+
+                angleBase: 0,
+                angleSpread: 180,
+                angleVelocityBase: 0,
+                angleVelocitySpread: 360 * 4,
+
+                sizeTween: new Tween([0, 0.02], [1, 0.4]),
+                opacityTween: new Tween([2, 3], [1, 0]),
+                colorTween: new Tween([0.5, 2], [new THREE.Vector3(0, 1, 0.5), new THREE.Vector3(0.8, 1, 0.5)]),
+
+                particlesPerSecond: 30,
+                particleDeathAge: 4.0,
+                emitterDeathAge: 1.0
+            };
+            engine.setValues(fountain);
+            engine.initialize();
+
             controls3D.target = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z); //having THREE.TrackballControls or THREE.OrbitControls seems to override the camera.lookAt function
 
             setTimeout(function() {
-                scene3D.remove(scene3DPivotPoint)
-            }, 800);
+                scene3D.remove(scene3DPivotPoint);
+                engine.destroy();
+                engine = null;
+            }, 4000);
         }
     }
 }
@@ -2192,6 +2226,17 @@ function animate() {
             //controls3D.update();
         }
 
+        if (engine != null) {
+            engine.update(clock.getDelta() * 0.8);
+        } else {
+            //Orientation Cube
+            camera3DCube.position.copy(camera3D.position);
+            camera3DCube.position.sub(controls3D.center);
+            camera3DCube.position.setLength(18);
+            camera3DCube.lookAt(scene3DCube.position);
+            rendererCube.render(scene3DCube, camera3DCube);
+        }
+
         if (SCENE == 'floor') {
 
             /*
@@ -2229,12 +2274,7 @@ function animate() {
 
         renderer.render(scene3D, camera3D);
 
-        //Orientation Cube
-        camera3DCube.position.copy(camera3D.position);
-        camera3DCube.position.sub(controls3D.center);
-        camera3DCube.position.setLength(18);
-        camera3DCube.lookAt(scene3DCube.position);
-        rendererCube.render(scene3DCube, camera3DCube);
+
 
 
         //stats.update();
