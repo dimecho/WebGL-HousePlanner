@@ -100,7 +100,7 @@ div.clear { clear: both; }
     cursor: pointer;
 }
 
-#box-right{
+#menuRight{
     width: 400px;
     font-size: 12px;
     line-height: 20px;
@@ -152,26 +152,29 @@ function toggleRight(id) {
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-right");
     var box = el.getAttribute("class");
+
     if(box == "hide-right"){
-        el.setAttribute("class", "show-right");
-        delay(img, "images/arrowright.png", 400);
-    }
-    else{
-        el.setAttribute("class", "hide-right");
-        delay(img, "images/arrowleft.png", 400);
+      el.style.display="block";
+      el.setAttribute("class", "show-right");
+      delay(img, "images/arrowright.png", 400);
+    } else{
+      el.setAttribute("class", "hide-right");
+      delay(img, "images/arrowleft.png", 400);
     }
 }
 function toggleLeft(id,open) {
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-left");
     var box = el.getAttribute("class");
+
     if(box == "hide-left" || open){
-        el.setAttribute("class", id + "-show-left");
-        delay(img, "images/arrowleft.png", 400);
+      el.style.display="block";
+      el.setAttribute("class", id + "-show-left");
+      delay(img, "images/arrowleft.png", 400);
     }
     else{
-        el.setAttribute("class", "hide-left");
-        delay(img, "images/arrowright.png", 400);
+      el.setAttribute("class", "hide-left");
+      delay(img, "images/arrowright.png", 400);
     }
 }
 
@@ -527,7 +530,7 @@ function loaded () {
 <div id="openThumb" class="modalDialog">
 	<div style="width:600px">
 		<a href="#close" class="close">X</a>
-		<img src="images/house.jpg" />
+		<img id="imgHouse" src="images/house.jpg" />
 	</div>
 </div>
 
@@ -555,13 +558,13 @@ function loaded () {
    		trigger: 'hover',
    		position: 'top'
 		});
-    //toggleRight('box-right');
+    //toggleRight('menuRight');
    });
 </script>
-<div id="box-right" class="hide-right">
+<div id="menuRight" class="hide-right">
   <ul id="tab-right">
       <li>
-          <img id="arrow-right" onclick="toggleRight('box-right');" src="images/arrowleft.png">
+          <img id="arrow-right" onclick="toggleRight('menuRight');" src="images/arrowleft.png">
       </li>
   </ul>
   <div id="links-left" style="width:320px;">
@@ -730,25 +733,23 @@ $(document).ready(function() {
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width:160px">
-      <div class='cssmenu'>
+  <div id="links-left" class='cssmenu' style="width:160px">
         <ul>
-           <li class='active'><a href='#' id="menuFloor0"><span>Basement</span></a></li>
-           <li class='has-sub'><a href='#' id="menuFloor1"><span>Floor 1</span></a>
+           <li class='active'><a href='#' onclick="FLOOR=0;show3DFloor()"><span>Basement</span></a></li>
+           <li class='has-sub'><a href='#'><span>Floor 1</span></a>
               <ul>
-                 <li><a href='#'><span>Living Room</span></a></li>
-                 <li><a href='#'><span>Kitchen</span></a></li>
-                 <li class='last'><a href='#'><span>Garage</span></a></li>
+                 <li><a href='#' onclick="FLOOR=1;show3DFloor()"><span>Living Room</span></a></li>
+                 <li><a href='#' onclick="FLOOR=1;show3DFloor()"><span>Kitchen</span></a></li>
+                 <li class='last'><a href='#' onclick="FLOOR=1;show3DFloor()"><span>Garage</span></a></li>
               </ul>
            </li>
-           <li class='has-sub'><a href='#' id="menuFloor2"><span>Floor 2</span></a>
+           <li class='has-sub'><a href='#'><span>Floor 2</span></a>
               <ul>
-                 <li><a href='#'><span>Bedroom 1</span></a></li>
-                 <li class='last'><a href='#'><span>Bedroom 2</span></a></li>
+                 <li><a href='#' onclick="FLOOR=2;show3DFloor()"><span>Bedroom 1</span></a></li>
+                 <li class='last'><a href='#' onclick="FLOOR=2;show3DFloor()"><span>Bedroom 2</span></a></li>
               </ul>
            </li>
         </ul>
-      </div>
   </div>
 </div>
 <div class="clear"></div>
@@ -858,7 +859,7 @@ $(document).ready(function() {
 <!-- Thumbnail class="ui-widget-content" -->
   <div id="menuTop">
 		<div style="display: inline-block;width:108px;">
-		  <a href="#openThumb"><img src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000;" /></a>
+		  <a href="#openThumb"><img id="_imgHouse" src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000;" /></a>
 	  </div>
   	<div style="display:inline-block;width:200px;">
   		<div style="height:55px">
@@ -903,16 +904,24 @@ $(document).ready(function() {
   	</div>
 	</div>
 
-  <div id="WebGLFloorSelector" align="center">
+  <div id="menuFloorSelector" align="center">
 
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
       <a href="#" onclick="selectFloor(-1)" class="hi-icon icon-previous"></a>
     </div>
-    <div id="WebGLFloorSelectorText" style="display: inline-block"></div>
+    <div id="menuFloorSelectorText" style="display: inline-block"></div>
 
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
       <a href="#" onclick="selectFloor(1)" class="hi-icon icon-next"></a>
     </div>
+  </div>
+
+  <div id="menuMeasure">
+    <br/><a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a><div id="menuMeasureText">Metric</div>
+  </div>
+
+  <div id="menuWeather">
+    <br/><a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" style="color:#474747"></a><div id="menuWeatherText">Sunny</div>
   </div>
 
 <!--
@@ -934,16 +943,6 @@ $(document).ready(function() {
     border:none;
     width:100;
     height:100px;
-}
-
-#WebGLMeasureMenu {
-    position:absolute;
-    bottom:0px;
-    left:100px;
-    border:none;
-    width:100;
-    height:100px;
-    color:#474747;
 }
 
 #WebGLHelp {
@@ -981,7 +980,7 @@ $(document).ready(function() {
   left:300px;
 }
 
-#WebGLFloorSelector
+#menuFloorSelector
 {
   width:100%;
   position: absolute;
@@ -990,6 +989,22 @@ $(document).ready(function() {
   left:0;
   color: #333333;
   font-size: 20px;
+}
+
+#menuMeasure {
+    position:absolute;
+    bottom:15px;
+    left:100px;
+    border:none;
+    color:#474747;
+}
+
+#menuWeather {
+    position:absolute;
+    bottom:15px;
+    left:180px;
+    border:none;
+    color:#474747;
 }
 
 /* ================================
@@ -1063,7 +1078,6 @@ $(document).ready(function() {
   </form>
   <div id="WebGLHelp">?</div>
   <div id="WebGLCubeCanvas"></div>
-  <div id="WebGLMeasureMenu"><br/><br/><a href="#" onclick="" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a>Metric</div>
   <div id="WebGLInteractiveMenu">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
       <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
@@ -1163,6 +1177,8 @@ function agentToggle() {
 </script>
 
 <script src="js/cssmenu.js"></script>
+<script src="js/jszip.js"></script>
+<script src="js/FileSaver.js"></script>
 
 <script src="js/3d/three.js"></script>
 <script src="js/3d/Detector.js"></script>
@@ -1181,13 +1197,21 @@ function agentToggle() {
 <script src="js/3d/exporters/ObjectExporter.js"></script>
 <script src="js/3d/exporters/GeometryExporter.js"></script>
 <script src="js/3d/exporters/Geometry2Exporter.js"></script>
-<!--<script src="js/3d/exporters/BufferGeometryExporter.js"></script>-->
+<script src="js/3d/exporters/BufferGeometryExporter.js"></script>
 <script src="js/3d/exporters/MaterialExporter.js"></script>
 <!-- <script src="js/libs/stats.min.js"></script> -->
 
 <script src="js/3d/threex.dilategeometry.js"></script>
 <script src="js/3d/threex.atmospherematerial.js"></script>
 <script src="js/3d/threex.geometricglowmesh.js"></script>
+
+<script src="js/3d/extras/physics/ParticleEngine.js"></script>
+<script src="js/3d/extras/physics/ParticleEngineExamples.js"></script>
+
+<!--
+<script src="js/3d/extras/physics/Collisions.js"></script>
+<script src="js/3d/extras/physics/CollisionUtils.js"></script>
+-->
 
 <script src="js/main.js"></script>
 <!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->
