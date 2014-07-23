@@ -22,7 +22,7 @@
     left: -180px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
-    z-index: 100;
+    z-index: 1;
 }
 #menuLeft3DFloor{
     width: 100px;
@@ -30,7 +30,7 @@
     left: -100px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
-    z-index: 100;
+    z-index: 1;
 }
 
 #menuLeft2D{
@@ -38,7 +38,7 @@
     left: -80px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
-    z-index: 100;
+    z-index: 1;
 }
 
 div.clear { clear: both; }
@@ -68,11 +68,12 @@ div.clear { clear: both; }
 #tab-left{
   width: 44px;
   float: right;
-  /*list-style: none outside none;*/
+  list-style: none outside none;
   margin: 0;
   padding: 0;
-  /*position: relative;*/
-  z-index: 99;
+  /*position: relative;
+  z-index: 2;
+  */
 }
 
 .menuLeft3DHouse-show-left, .menuLeft3DFloor-show-left, .menuLeft2D-show-left, .hide-left{
@@ -106,7 +107,7 @@ div.clear { clear: both; }
     right: -350px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
-    z-index: 100;
+    z-index: 1;
 }
 
 #tab-right{
@@ -114,8 +115,10 @@ div.clear { clear: both; }
     list-style: none outside none;
     margin: 0;
     padding: 0;
+    /*
     position: relative;
     z-index: 99;
+    */
 }
 
 #links-right{
@@ -187,7 +190,7 @@ function delay(elem, src, delayTime){
   width: 98%;	
   height: 60px;
   padding: 4px;
-  z-index:5;
+  z-index: 2;
    
 	border-radius: 10px;
 	background: #fff;
@@ -304,7 +307,7 @@ void main() {
 		bottom: 0;
 		left: 0;
 		background: rgba(0,0,0,0.8);
-		z-index: 9999;
+		z-index: 99;
 		opacity:0;
 		-webkit-transition: opacity 400ms ease-in;
 		-moz-transition: opacity 400ms ease-in;
@@ -439,7 +442,17 @@ body{
   -ms-text-size-adjust: none;
   -o-text-size-adjust: none;
   text-size-adjust: none;
-  padding: 12px
+}
+
+.scrollerItem {
+  width:290px;
+  height:110px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border:1px solid #000000;
+  padding: 10px;
+  margin:15px;
 }
 </style>
 <!-- END iScroll -->
@@ -479,7 +492,7 @@ $(function() {
 #dragElement {
   width:100px;
   height:100px;
-  z-index:9999; /* move the z-index to the CSS */
+  z-index: 11;
 }
 </style>
 
@@ -662,12 +675,29 @@ function loaded () {
             <li><a href='#' onclick="showRightCatalogMenu()"><span>&#60; Back to Catalog</span></a></li>
           </ul>
         </div>
+
+        <div id="dragElement" style="background-image:url('images/object.png');"></div>
+
         <div id="scrollWrapper" style="height:500px">
           <div id="scroller">
             <!-- TODO: Move to dynamically generate from json -->
-            <div style="width:300px;height:110px;-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;border:1px solid #000000" id="menuRightObject0">
-              <div id="dragElement" style="background-image:url('images/object.png');"></div>
+            <div class="scrollerItem">
             </div>
+            <div class="scrollerItem">
+            </div>
+            <div class="scrollerItem">
+            </div>
+            <div class="scrollerItem">
+            </div>
+            <div class="scrollerItem">
+            </div>
+            <div class="scrollerItem">
+            </div>
+            <div class="scrollerItem">
+            </div>
+            <div class="scrollerItem">
+            </div>
+
           </div>
         </div>
       </div>
@@ -873,8 +903,18 @@ $(document).ready(function() {
   	</div>
 	</div>
 
-  <div id="displayFloorName" style="display: none;">
+  <div id="WebGLFloorSelector" align="center">
+
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
+      <a href="#" onclick="selectFloor(-1)" class="hi-icon icon-previous"></a>
+    </div>
+    <div id="WebGLFloorSelectorText" style="display: inline-block"></div>
+
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
+      <a href="#" onclick="selectFloor(1)" class="hi-icon icon-next"></a>
+    </div>
   </div>
+
 <!--
 <div class="apple_overlay black" id="photo1">
   	<img src="img/property-large.jpg" />
@@ -932,7 +972,6 @@ $(document).ready(function() {
   -moz-border-radius: 10px;
   border-radius: 10px;
 
-
   width: 50px;
   height: 270px;
   text-align: center;
@@ -940,6 +979,17 @@ $(document).ready(function() {
   position:absolute;
   top:500px;
   left:300px;
+}
+
+#WebGLFloorSelector
+{
+  width:100%;
+  position: absolute;
+  top:100px;
+  left:0;
+  left:0;
+  color: #333333;
+  font-size: 20px;
 }
 
 /* ================================
@@ -1138,10 +1188,6 @@ function agentToggle() {
 <script src="js/3d/threex.dilategeometry.js"></script>
 <script src="js/3d/threex.atmospherematerial.js"></script>
 <script src="js/3d/threex.geometricglowmesh.js"></script>
-
-<script src='js/3d/threex.objcoord.js'></script>
-
-
 
 <script src="js/main.js"></script>
 <!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->

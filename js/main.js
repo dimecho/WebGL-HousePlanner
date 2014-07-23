@@ -82,7 +82,7 @@ var RADIAN = Math.PI / 180;
 var AUTOROTATE = true;
 var SCENE = 'house';
 var TOOL3D = 'view';
-var TOOL3DINTERACTIVE = 'moveXY';
+var TOOL3DINTERACTIVE = '';
 var TOOL2D = 'freestyle';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1.8311874; //Real-life ratio (Metric/Imperial)
@@ -315,8 +315,14 @@ function init() {
     scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DFloorLevelGroundContainer = new THREE.Object3D();
     scene3DFloorContainer[0] = new THREE.Object3D();
+    scene3DFloorContainer[1] = new THREE.Object3D();
+    scene3DFloorContainer[2] = new THREE.Object3D();
     scene2DFloorContainer[0] = new THREE.Object3D();
     scene3DPivotPoint = new THREE.Object3D();
+
+    scene3DFloorContainer[0].name = "Basement";
+    scene3DFloorContainer[1].name = "Floor1";
+    scene3DFloorContainer[2].name = "Floor2";
 
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
@@ -974,15 +980,15 @@ function show3DHouse() {
 
     scene3D.add(scene3DHouseGroundContainer);
     scene3D.add(scene3DHouseContainer);
-    scene3D.add(scene3DFloorContainer[0]);
+
+    for (var i = 0; i < scene3DFloorContainer.length; i++) {
+        scene3D.add(scene3DFloorContainer[i]);
+    }
 
     scene3DCube.add(scene3DCubeMesh);
 
-    $('#menuLeft3DFloor').hide();
-    $('#menuLeft2D').hide();
     $('#menuLeft3DHouse').show();
     toggleLeft('menuLeft3DHouse', true);
-
 
     $('#menuRight3DFloor').hide();
     $('#menuRight2D').hide();
@@ -1042,16 +1048,15 @@ function show3DFloor() {
     scene3D.add(scene3DFloorGroundContainer);
     scene3D.add(camera3DMirrorReflection);
 
-    scene3D.add(scene3DFloorContainer[0]);
+    scene3D.add(scene3DFloorContainer[FLOOR]);
+
     scene3DCube.add(scene3DCubeMesh);
 
-    scene3DFloorContainer[0].traverse;
+    //scene3DFloorContainer[0].traverse;
+    $('#WebGLFloorSelectorText').html(scene3DFloorContainer[FLOOR].name);
+    $('#WebGLFloorSelector').show();
 
-    $('#menuLeft3DFloor').hide();
-    $('#menuLeft2D').hide();
-    $('#menuLeft3DHouse').hide();
     $('#menuRightObjects').hide();
-
     $('#menuRight3DFloor').show();
     $('#menuRight2D').hide();
     $('#menuRight3DHouse').hide();
@@ -1089,9 +1094,6 @@ function show3DFloorLevel() {
 
     scene3DCube.add(scene3DCubeMesh);
 
-    $('#menuLeft3DFloor').hide();
-    $('#menuLeft2D').hide();
-    $('#menuLeft3DHouse').hide();
     $('#menuRightObjects').hide();
     $('#box-right').hide();
 
@@ -1107,9 +1109,6 @@ function show2D() {
 
     scene2D.add(scene2DFloorContainer[0]);
 
-    $('#menuLeft3DHouse').hide();
-    $('#menuLeft3DFloor').hide();
-
     if (TOOL2D == 'freestyle') {
         menuSelect(1, 'menuLeft2DItem', '#ff3700');
     } else if (TOOL2D == 'vector') {
@@ -1119,7 +1118,6 @@ function show2D() {
     } else if (TOOL2D == 'circle') {
 
     }
-
     $('#menuLeft2D').show();
     toggleLeft('menuLeft2D', true);
 
@@ -1165,12 +1163,21 @@ function show2DContainer(b) {
     scene3D.remove(scene3DFloorLevelGroundContainer);
 
     scene3D.remove(scene3DHouseContainer);
-    scene3D.remove(scene3DFloorContainer[0]);
+
+    for (var i = 0; i < scene3DFloorContainer.length; i++) {
+        scene3D.remove(scene3DFloorContainer[i]);
+    }
 
     scene2D.remove(scene2DDrawLineContainer);
     scene2D.remove(scene2DFloorContainer[0]);
 
     scene3DCube.remove(scene3DCubeMesh);
+
+    $('#menuLeft3DHouse').hide();
+    $('#menuLeft3DFloor').hide();
+    $('#menuLeft2D').hide();
+
+    $('#WebGLFloorSelector').hide();
 
     scene3DObjectUnselect();
 
@@ -1205,6 +1212,24 @@ function show2DContainer(b) {
     }
     */
 }
+
+function selectFloor(next) {
+
+    if (FLOOR > 0 && FLOOR < scene3DFloorContainer.length) {
+
+        FLOOR += next;
+
+        //TODO: would be awsome to have some kind of flip transition effect
+
+        if (SCENE == 'floor') {
+            show3DFloor();
+
+        } else if (SCENE == '2d') {
+            show2D();
+        }
+    }
+}
+
 
 function onWindowResize() {
     if (scene3D.visible) {
@@ -1385,18 +1410,6 @@ function onDocumentMouseMove(event) {
 
     } else if (leftButtonDown) {
 
-        if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
-            //Auto close right menu
-            document.getElementById('box-right').setAttribute("class", "hide-right");
-            delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
-
-            //Auto close left menu
-            if (SCENE == 'house') {
-                document.getElementById('menuLeft3DHouse').setAttribute("class", "hide-left");
-                delay(document.getElementById("arrow-left"), "images/arrowright.png", 400);
-            }
-        }
-
         if (SELECTED != null) {
 
             $('#WebGLInteractiveMenu').hide();
@@ -1566,7 +1579,22 @@ function onDocumentMouseDown(event) {
 
         } else {
             $('#WebGLInteractiveMenu').hide();
+            scene3D.add(scene3DPivotPoint);
         }
+
+        clickTime = setTimeout(function() {
+            if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
+                //Auto close right menu
+                document.getElementById('box-right').setAttribute("class", "hide-right");
+                delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+
+                //Auto close left menu
+                if (SCENE == 'house') {
+                    document.getElementById('menuLeft3DHouse').setAttribute("class", "hide-left");
+                    delay(document.getElementById("arrow-left"), "images/arrowright.png", 400);
+                }
+            }
+        }, 1500);
     }
 }
 
@@ -1674,11 +1702,15 @@ function onDocumentMouseUp(event) {
 
     } else {
 
+        clearTimeout(clickTime); //prevents from hiding menus too fast
+
         if (SELECTED != null) { //Restore menu after MouseMove
             scene3DObjectSelectMenu(mouse.x, mouse.y);
 
             $('#WebGLInteractiveMenu').show();
         }
+
+        scene3D.remove(scene3DPivotPoint);
 
         if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0) {
             //Auto open right menu
@@ -1768,7 +1800,7 @@ function scene3DObjectSelect(x, y, camera) {
     if (SCENE == 'house') {
         intersects = raycaster.intersectObjects(scene3DHouseContainer.children);
     } else if (SCENE == 'floor') {
-        intersects = raycaster.intersectObjects(scene3DFloorContainer[0].children);
+        intersects = raycaster.intersectObjects(scene3DFloorContainer[FLOOR].children);
     }
 
     // INTERSECTED = the object in the scene currently closest to the camera 
@@ -1859,8 +1891,8 @@ function sceneNew() {
         scene3D.remove(scene3DHouseContainer.children[i]);
     }
 
-    for (var i = 0; i < scene3DFloorContainer[0].children.length; i++) {
-        scene3D.remove(scene3DFloorContainer[0].children[i]);
+    for (var i = 0; i < scene3DFloorContainer.length; i++) {
+        scene3D.remove(scene3DFloorContainer[i]);
     }
 
     //loadJSON("Platform/ground-grass.js", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1); //Exterior ground
@@ -1956,7 +1988,7 @@ function sceneNew() {
     loadJSON("Exterior/Plants/bush.js", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
     loadJSON("Exterior/Fence/fence1.js", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
     loadJSON("Exterior/Fence/fence2.js", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
-    loadJSON("Interior/Furniture/clear-sofa.js", scene3DFloorContainer[0], 0, 0, 0, 0, 0, 1);
+    loadJSON("Interior/Furniture/clear-sofa.js", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
     //loadJSON("Exterior/Cars/VWbeetle.js", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
 
     //loadJSON("Platform/elaine.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
@@ -2636,7 +2668,7 @@ function handleFile3DObjectSelect(event) {
                 /*
 				if (scene3DHouseContainer.visible) {
 
-				    loadJSON("Exterior/Uploads/" + event.target.files[0], scene3DFloorContainer[0], 0, 0, 0, 0, 0, 1);
+            loadJSON("Exterior/Uploads/" + event.target.files[0], scene3DFloorContainer[0], 0, 0, 0, 0, 0, 1);
 
 				} else if (scene3DFloorContainer.visible) {
 
