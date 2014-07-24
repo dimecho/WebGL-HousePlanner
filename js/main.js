@@ -10,15 +10,17 @@ TODO:
 - [difficulty: 9/10  progress: 10%] Make converter function to "extrude" 2D into 3D walls
 - [difficulty: 6/10  progress: 0%]  Make front walls 80% transparent in 3D rotation
 - [difficulty: 8/10  progress: 3%]  3D movable objects and collision detection
-- [difficulty: 9/10  progress: 0%]  3D menu objects draggable with "pop-up" or star burst effect
+- [difficulty: 9/10  progress: 10%] 3D menu objects draggable with "pop-up" or star burst effect
 - [difficulty: 2/10  progress: 90%] 3D objects sub-edit menu (textures/delete/duplicate)
-- [difficulty: 2/10  progress: 2%]  Categorize and populate 3D Menu items
-- [difficulty: 8/10  progress: 0%]  3D Menu functions for draggable objects
-- [difficulty: 5/10  progress: 5%]  3D Floor ground base glass reflective
+- [difficulty: 2/10  progress: 40%] Categorize and populate 3D Menu items
+- [difficulty: 8/10  progress: 10%] 3D Menu functions for draggable objects
+- [difficulty: 5/10  progress: 50%] 3D Floor ground base glass reflective
 - [difficulty: 6/10  progress: 0%]  3D Exterior View ability to select floors (+ flying-in animationeffect)
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
-- [difficulty: 4/10  progress: 0%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
+- [difficulty: 4/10  progress: 1%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
 */
+
+//"use strict";
 
 if (!Detector.webgl) Detector.addGetWebGLMessage();
 
@@ -47,7 +49,7 @@ var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,
 var scene2DFloorContainer = []; //Contains all 2D lines by floor
 var scene2DFloorDraftPlan = []; //Image as texture for plan tracing for multiple floors
 var scene3DPivotPoint; //Rotational pivot point - 1 object
-var scene3DCudeMesh;
+var scene3DCubeMesh;
 
 var sceneAmbientLight;
 var sceneDirectionalLight;
@@ -80,8 +82,9 @@ var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
 var TOOL2D = 'freestyle';
+var WEATHER = 'Day - Sunny';
 var FLOOR = 1; //first floor selected default
-var REALSIZERATIO = 1.8311874; //Real-life ratio (Metric/Imperial)
+var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
 
 var leftButtonDown = false;
 var clickTime;
@@ -285,7 +288,7 @@ function init() {
         linewidth: 2
     }), THREE.LinePieces);
 
-    //scene3DCubeMesh = new THREE.Mesh(geometry, material);
+    //scene3DCubeMesh = new THREE.Mesh(cubeG, material);
     scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
 
     //THREE.GeometryUtils.merge(geometry, mesh);
@@ -347,6 +350,7 @@ function init() {
      * Provides requestAnimationFrame in a cross browser way.
      * http://paulirish.com/2011/requestanimationframe-for-smart-animating/
      */
+
     if (!window.requestAnimationFrame) {
         window.requestAnimationFrame = (function() {
             return window.webkitRequestAnimationFrame ||
@@ -446,6 +450,10 @@ function init() {
     sceneNew();
     scene3DLight();
     show3DHouse();
+
+    selectMeasurement();
+    $('#menuWeatherText').html(WEATHER);
+
     animate();
 }
 
@@ -844,6 +852,7 @@ function show3DHouse() {
     sceneSpotLight.castShadow = true;
     scene3D.add(sceneSpotLight);
 
+    scene3D.add(skyMesh);
     scene3D.add(scene3DHouseGroundContainer);
     scene3D.add(scene3DHouseContainer);
 
@@ -868,8 +877,9 @@ function show3DHouse() {
     }
 
     menuSelect(1, 'menuTopItem', '#ff3700');
+    correctMenuHeight();
 
-    scene3DHouseContainer.traverse;
+    //scene3DHouseContainer.traverse;
 
     //show3DHouseContainer(true)
     //show3DFloorContainer(false);
@@ -920,7 +930,7 @@ function show3DFloor() {
     $('#menuRight3DFloor').show();
     $('#menuRight').show();
 
-    scene3DFloorContainer[FLOOR].traverse;
+    //scene3DFloorContainer[FLOOR].traverse;
     //show3DFloorContainer(true);
     //show3DHouseContainer(false)
 
@@ -953,6 +963,7 @@ function show3DFloorLevel() {
     scene3DCube.add(scene3DCubeMesh);
 
     menuSelect(2, 'menuTopItem', '#ff3700');
+    correctMenuHeight();
 }
 
 function show2D() {
@@ -979,8 +990,9 @@ function show2D() {
     $('#menuRight').show();
 
     menuSelect(4, 'menuTopItem', '#ff3700');
+    correctMenuHeight();
 
-    scene2DFloorContainer[FLOOR].traverse;
+    //scene2DFloorContainer[FLOOR].traverse;
 
     //Auto close right menu
     document.getElementById('menuRight').setAttribute("class", "hide-right");
@@ -990,7 +1002,7 @@ function show2D() {
 function menuSelect(item, id, color) {
     if (item == null) //clear all
     {
-        for (i = 0; i <= 4; i++) {
+        for (var i = 0; i <= 4; i++) {
             $("#" + id + i).css('color', 'black');
         }
     } else {
@@ -1008,6 +1020,7 @@ function show2DContainer(b) {
     scene3D.remove(sceneSpotLight);
 
     scene3D.remove(scene3DHouseGroundContainer);
+    scene3D.remove(skyMesh);
 
     scene3D.remove(scene3DFloorGroundContainer);
     scene3D.remove(camera3DMirrorReflection);
@@ -1101,29 +1114,55 @@ function selectMeasurement() {
 
 function selectWeather() {
 
-}
+    if (WEATHER == "Day - Sunny") {
+        WEATHER = "Day - Snowy";
+    } else if (WEATHER == "Day - Snowy") {
+        WEATHER = "Day - Rainy";
+    } else if (WEATHER == "Day - Rainy") {
+        WEATHER = "Night";
+    } else if (WEATHER == "Night") {
+        WEATHER = "Day - Sunny";
+    }
 
+    $('#menuWeatherText').html(WEATHER);
+}
 
 function onWindowResize() {
     if (scene3D.visible) {
         camera3D.aspect = window.innerWidth / window.innerHeight;
         camera3D.updateProjectionMatrix();
-    }
-    /*
-    if(scene3DHouse.visible)
-    {
-            camera3DHouse.aspect = window.innerWidth / window.innerHeight;
-            camera3DHouse.updateProjectionMatrix();
-        }else if(scene3DFloor.visible){
-            camera3DFloor.aspect = window.innerWidth / window.innerHeight;
-            camera3DFloor.updateProjectionMatrix();
-    }
-    */
-    else if (scene2D.visible) {
+    } else if (scene2D.visible) {
         camera2D.aspect = window.innerWidth / window.innerHeight;
         camera2D.updateProjectionMatrix();
     }
     renderer.setSize(window.innerWidth, window.innerHeight);
+    correctMenuHeight();
+}
+
+function correctMenuHeight() {
+    var h = window.innerHeight - 250;
+    var a;
+    var b;
+
+    if (SCENE == 'house') {
+        a = $("#menuRight3DHouse .cssmenu").height();
+        b = $("#menuRight3DHouse .scroll");
+    } else if (SCENE == 'floor') {
+        a = $("#menuRight3DFloor .cssmenu").height();
+        b = $("#menuRight3DFloor .scroll");
+    } else if (SCENE == '2d') {
+        a = $("#menuRight2D .cssmenu").height();
+        b = $("#menuRight2D .scroll");
+    }
+
+    $("#menuRightObjects .scroll").css('height', h);
+
+    if (b.height() < h) {
+        //console.log("H:" + a);
+        b.css('height', '100%');
+    } else {
+        b.css('height', h);
+    }
 }
 
 function onCubeMouseMove(event) {
@@ -1175,8 +1214,8 @@ function onDocumentDoubleClick(event) {
 
     if (scene3D.visible) {
 
-        x = (event.clientX / window.innerWidth) * 2 - 1;
-        y = -(event.clientY / window.innerHeight) * 2 + 1;
+        var x = (event.clientX / window.innerWidth) * 2 - 1;
+        var y = -(event.clientY / window.innerHeight) * 2 + 1;
 
         //TODO: zoom out far, reset pivot-point to 0,0,0
 
@@ -1238,8 +1277,8 @@ function onDocumentMouseMove(event) {
 
     event.preventDefault();
 
-    x = (event.clientX / window.innerWidth) * 2 - 1;
-    y = -(event.clientY / window.innerHeight) * 2 + 1;
+    var x = (event.clientX / window.innerWidth) * 2 - 1;
+    var y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     if (scene2D.visible) {
 
@@ -1893,10 +1932,14 @@ function sceneNew() {
         var groundMaterial = new THREE.MeshBasicMaterial({
             map: groundTexture
         });
-        var mesh = new THREE.Mesh(geometry, groundMaterial);
-        //mesh.castShadow = true;
+
+        mesh = new THREE.Mesh(geometry, groundMaterial);
         mesh.receiveShadow = true;
-        scene3DHouseGroundContainer.add(mesh);
+        //mesh.matrixAutoUpdate = true;
+        mesh.geometry.computeFaceNormals();
+        mesh.geometry.computeVertexNormals();
+        //mesh.updateMatrix();
+        scene3DHouseGroundContainer.add(mesh)
     });
 
     new THREE.JSONLoader().load("./objects/Platform/ground-wood.js", function(geometry, materials) {
@@ -1912,19 +1955,20 @@ function sceneNew() {
             reflectivity: 0.5
         });
 
-        var mesh = new THREE.Mesh(geometry, groundMaterial);
-        //mesh.castShadow = true;
+        mesh = new THREE.Mesh(geometry, groundMaterial);
         mesh.receiveShadow = true;
+        //mesh.matrixAutoUpdate = true;
+        mesh.geometry.computeFaceNormals();
+        mesh.geometry.computeVertexNormals();
+        //mesh.updateMatrix();
 
-        //camera3DMirrorReflection.position = mesh.position;
+        scene3DFloorGroundContainer.add(mesh)
 
         //============================
         //camera3DMirrorReflection = new THREEx.CubeCamera(mesh);
         //mesh.add(camera3DMirrorReflection.object3d)
         //groundMaterial.envMap = camera3DMirrorReflection.textureCube;
         //============================
-
-        scene3DFloorGroundContainer.add(mesh);
     });
 
     new THREE.JSONLoader().load("./objects/Platform/ground-wood.js", function(geometry, materials) {
@@ -1938,7 +1982,7 @@ function sceneNew() {
             map: groundTexture
         });
 
-        var mesh = new THREE.Mesh(geometry, groundMaterial);
+        mesh = new THREE.Mesh(geometry, groundMaterial);
         //mesh.castShadow = true;
         mesh.receiveShadow = true;
 
@@ -2075,7 +2119,6 @@ function scene3DSky() {
                 type: "f",
                 value: fog.far
             },
-
         },
         vertexShader: document.getElementById('sky-vertex').textContent,
         fragmentShader: document.getElementById('sky-fragment').textContent,
@@ -2106,7 +2149,7 @@ function scene3DSky() {
     texture.minFilter = THREE.LinearMipMapLinearFilter;
 	*/
 
-    var fog = new THREE.Fog(0x4584b4, -100, 3000);
+    var fog = new THREE.Fog(0x4584b4, -100, 1000);
     material = new THREE.ShaderMaterial({
         uniforms: {
             "map": {
@@ -2143,12 +2186,12 @@ function scene3DSky() {
         plane.position.z = i;
         plane.rotation.z = getRandomInt(5, 10);
         plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
-        THREE.GeometryUtils.merge(geometry, plane);
+        plane.updateMatrix();
+        geometry.merge(plane.geometry, plane.matrix);
+        //THREE.GeometryUtils.merge(geometry, plane);
     }
 
     skyMesh = new THREE.Mesh(geometry, material);
-    scene3D.add(skyMesh);
-
 }
 
 /*
@@ -2276,7 +2319,10 @@ function scene3DLight() {
 
 function showRightObjectMenu(path) {
     $('#menuRight3DHouse').hide();
+    $('#menuRight3DFloor').hide();
+    $('#menuRight2D').hide();
     $('#menuRightObjects').show();
+    //correctMenuHeight();
 }
 
 function showRightCatalogMenu() {
@@ -2288,6 +2334,7 @@ function showRightCatalogMenu() {
     }
 
     $('#menuRightObjects').hide();
+    //correctMenuHeight();
 }
 
 function camera3DAnimateObjectFocus() {
@@ -2350,7 +2397,7 @@ function animate() {
             //controls3D.update();
         }
 
-        if (engine != null) {
+        if (engine instanceof ParticleEngine) {
             engine.update(clock.getDelta() * 0.8);
         } else {
             //Orientation Cube
@@ -2359,20 +2406,22 @@ function animate() {
             camera3DCube.position.setLength(18);
             camera3DCube.lookAt(scene3DCube.position);
             rendererCube.render(scene3DCube, camera3DCube);
+        }
 
-            if (skyMesh != null) {
+        if (SCENE == 'house') {
 
-                //if (controls3D.needsUpdate) {
-                skyMesh.rotation.y = camera3D.rotation.y; //spiral
-                skyMesh.rotation.z = camera3D.rotation.z; //side-to-side
-                skyMesh.rotation.x = camera3D.rotation.x; //top
+            //if (controls3D.needsUpdate) {
 
-                skyMesh.position.x = camera3D.position.x / 1.5;
-                //skyMesh.position.z = camera3D.position.z;
-                //skyMesh.rotation = camera3D.rotation;
+            skyMesh.rotation.y = camera3D.rotation.y; //spiral
+            skyMesh.rotation.z = camera3D.rotation.z; //side-to-side
+            skyMesh.rotation.x = camera3D.rotation.x; //top
+            skyMesh.position.x = camera3D.position.x / 1.5;
+
+            //skyMesh.position.z = camera3D.position.z;
+            //skyMesh.rotation = camera3D.rotation;
 
 
-                /*
+            /*
                 if (skyMesh.position.x < 10) {
                     skyMesh.position.x += 0.01;
                     //skyMesh.position.z += 0.01;
@@ -2380,16 +2429,14 @@ function animate() {
                     skyMesh.position.x = skyMesh.position.x - 0.01;
                     //skyMesh.position.z -= 0.01;
                 }
-				*/
-                //skyMesh.position.y = (Math.random() - 0.5) * 0.2;
-                //skyMesh.position.z = (Math.random() - 0.5) * 5.0;
-                //skyMesh.rotation = Math.random() * Math.PI;
-                //skyMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
-                // object3d.color.setHex( 0xC0C0C0 + 0x010101*Math.floor(255*(Math.random()*0.1)) );
-            }
-        }
+            */
+            //skyMesh.position.y = (Math.random() - 0.5) * 0.2;
+            //skyMesh.position.z = (Math.random() - 0.5) * 5.0;
+            //skyMesh.rotation = Math.random() * Math.PI;
+            //skyMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
+            // object3d.color.setHex( 0xC0C0C0 + 0x010101*Math.floor(255*(Math.random()*0.1)) );
 
-        if (SCENE == 'floor') {
+        } else if (SCENE == 'floor') {
 
             /*
             move the CubeCamera to the position of the object that has a reflective surface,
@@ -2425,8 +2472,6 @@ function animate() {
         */
 
         renderer.render(scene3D, camera3D);
-
-
 
 
         //stats.update();

@@ -13,6 +13,7 @@ $(document).ready(function() {
             $('.cssmenu ul ul:visible').slideUp('normal');
             checkElement.slideDown('normal');
         }
+        //correctMenuHeight();
         /*
         if (!checkElement.is('ul')) {
             var menuName = getParents(this);
@@ -27,10 +28,11 @@ $(document).ready(function() {
     });
     /*
     $('.cssmenu > ul > li > ul > li > a').click(function(event) {
-        var menuName = getParents(this);
-        console.log("element click " + menuName);
+        correctMenuHeight();
+        //var menuName = getParents(this);
+        //console.log("element click " + menuName);
     });
-*/
+    */
 });
 /*
 function getParents(obj) {

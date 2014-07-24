@@ -276,7 +276,7 @@ document.addEventListener("keydown", function(e) {
 }, false);
 </script>
 <!-- END Full Screen-->
-
+<!--
 <script type="application/x-glsl" id="sky-vertex">
 varying vec2 vUV;
 
@@ -296,7 +296,7 @@ void main() {
   gl_FragColor = vec4(sample.xyz, sample.w);
 }
 </script>
-
+-->
 <script id="vs" type="x-shader/x-vertex">
   varying vec2 vUv;
 
@@ -440,20 +440,21 @@ body{
 
 #scrollWrapper {
   position: absolute;
+  z-index: 1;
   top: 140px;
   bottom: 55px;
   left: 55px;
   width: 320px;
-  background-color: #fff;
-  z-index: 1;
+  background: #fff;
   overflow: hidden;
 }
 
 #scroller {
-  position: relative;
+  position: absolute;
   z-index: 1;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
   width: 100%;
+  
   /*-webkit-transform: translate3d(0,0,0);*/ /*http://cantina.co/thought_leadership/ios-5-native-scrolling-grins-and-gothcas*/
   -webkit-transform: translateZ(0);
   -moz-transform: translateZ(0);
@@ -473,7 +474,22 @@ body{
 }
 
 .scrollerItem {
-  width:290px;
+  /*
+  position: relative;
+  width: 100%;
+  top: 0;
+  left: 0;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+ 
+  background-color: #fafafa;
+  font-size: 16px;
+  */
+
+  width:250px;
   height:110px;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
@@ -505,9 +521,6 @@ http://www.flaticon.com
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <link rel="stylesheet" type="text/css" href="css/style2.css" />
 
-<!--http://www.jquerybyexample.net/2013/05/jquery-scroll-page-automatically-by-few-pixels-after-every-few-seconds.html-->
-<script type="text/javascript" src="js/iscroll.js"></script>
-
 <script type="text/javascript" src="js/draggable.js"></script>
 <script type="text/javascript">
 $(function() {
@@ -522,21 +535,23 @@ $(function() {
   height:100px;
   z-index: 11;
 }
-</style>
 
-<script type="text/javascript">
-var myScroll;
-function loaded () {
-  myScroll = new IScroll('#scrollWrapper', {
-    scrollbars: true,
-    mouseWheel: true,
-    interactiveScrollbars: true,
-    //shrinkScrollbars: 'scale',
-    //fadeScrollbars: true
-  });
+.scroll {
+  border: 1px solid #aaa;
+  overflow-y: scroll;
+  background: #fff;
 }
-//document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
-</script>
+
+.jscroll-loading {
+    text-align: center;
+    background: url(images/loading.gif) no-repeat center;
+    padding: 5px 0;
+    margin-bottom: 10px;
+    font-style: italic;
+    text-indent: -9999px;
+}
+
+</style>
 
 <div id="openLogin" class="modalDialog">
 	<div>
@@ -586,159 +601,187 @@ function loaded () {
     //toggleRight('menuRight');
    });
 </script>
+
 <div id="menuRight" class="hide-right">
   <ul id="tab-right">
       <li>
           <img id="arrow-right" onclick="toggleRight('menuRight');" src="images/arrowleft.png">
       </li>
   </ul>
+
   <div id="links-left" style="width:320px;">
-      <div style="display:inline-block;width:100%;vertical-align:top;padding:10px">
-        <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+    <div style="display:inline-block;width:100%;vertical-align:top;padding:10px">
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
           <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
           <!--<a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>-->
           <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
           <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
           <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
           <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
-        </div>
-        <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
-  </div>
-
-      <!--
-        <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-          <a href="#" class="hi-icon icon-navigate6" title="Scroll Up"></a>
-        </div>
-      -->
-
-      <div id="menuRight3DHouse" class='cssmenu' style="display: none;">
-          <ul>
-                 <li><a href='#'><span>Trees</span></a></li>
-                 <li class='has-sub'><a href='#'><span>Plants</span></a>
-                    <ul>
-                       <li><a href='#' onclick="showRightObjectMenu('Exterior/Plants/Bushes')"><span>Bushes</span></a></li>
-                       <li class='last' onclick="showRightObjectMenu('Exterior/Plants/Flowers')"><a href='#'><span>Flowers</span></a></li>
-                    </ul>
-                 </li>
-                 <li><a href='#'><span>Driveway</span></a></li>
-                 <li><a href='#'><span>Backyard</span></a></li>
-                 <li><a href='#'><span>Fences</span></a></li>
-                 <li><a href='#'><span>Lights</span></a></li>
-                 <li><a href='#'><span>Swimming Pools</span></a></li>
-                 <li><a href='#'><span>Animals</span></a></li>
-                 <li><a href='#'><span>Cars</span></a></li>
-          </ul>
       </div>
-
-      <div id="menuRight3DFloor" class='cssmenu' style="display: none;">
-       
-          <ul>
-            <li class='has-sub'><a href='#'><span>Furniture</span></a>
-              <ul>
-                <li><a href='#'><span>Sofas</span></a></li>
-                <li class='last'><a href='#'><span>Armchairs</span></a></li>
-                <li class='last'><a href='#'><span>Ottomans</span></a></li>
-              </ul>
-            </li>
-            <li class='has-sub'><a href='#'><span>Living Room</span></a>
-              <ul>
-                <li><a href='#'><span>Paintings</span></a></li>
-                <li class='last'><a href='#'><span>Miscellaneous Items</span></a></li>
-              </ul>
-            </li>
-            <li class='has-sub'><a href='#'><span>Bedroom</span></a>
-              <ul>
-                <li><a href='#'><span>Beds</span></a></li>
-                <li><a href='#'><span>Dressers</span></a></li>
-                <li><a href='#'><span>Cabinets</span></a></li>
-                <li class='last'><a href='#'><span>Table Lamps</span></a></li>
-              </ul>
-            </li>
-            <li class='has-sub'><a href='#'><span>Kitchen</span></a>
-              <ul>
-                <li><a href='#'><span>Sinks</span></a></li>
-                <li><a href='#'><span>Fridge</span></a></li>
-                <li><a href='#'><span>Stove</span></a></li>
-                <li><a href='#'><span>Cabinets</span></a></li>
-                <li class='last'><a href='#'><span>Miscellaneous Items</span></a></li>
-              </ul>
-            </li>
-            <li class='has-sub'><a href='#'><span>Bathroom</span></a>
-               <ul>
-                <li><a href='#'><span>Sinks</span></a></li>
-                <li><a href='#'><span>Tubs</span></a></li>
-                <li><a href='#'><span>Mirrors</span></a></li>
-                <li class='last'><a href='#'><span>Shelves</span></a></li>
-              </ul>
-            </li>
-            <li class='has-sub'><a href='#'><span>Tables</span></a>
-              <ul>
-                <li><a href='#'><span>Dinning</span></a></li>
-                <li><a href='#'><span>Computer</span></a></li>
-                <li class='last'><a href='#'><span>Work Bench</span></a></li>
-              </ul>
-            </li>
-            <li class='has-sub'><a href='#'><span>Floors</span></a>
-              <ul>
-                <li><a href='#'><span>Rugs</span></a></li>
-                <li class='last'><a href='#'><span>Miscellaneous Items</span></a></li>
-              </ul>
-            </li>
-            <li><a href='#'><span>Lights</span></a></li>
-            <li><a href='#'><span>Doors</span></a></li>
-            <li><a href='#'><span>Outlets</span></a></li>
-            <li><a href='#'><span>Plants</span></a></li>
-            <li><a href='#'><span>Pets</span></a></li>
-            <li><a href='#'><span>Structural</span></a></li>
-            <li><a href='#'><span>Other Items</span></a></li>
-          </ul>
-      </div>
-              
-      <div id="menuRight2D" style="display: none;">
-      </div>
-
-      <div id='menuRightObjects' style="display:none;">
+      <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
+    </div>
+    <!--
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+      <a href="#" class="hi-icon icon-navigate6" title="Scroll Up"></a>
+    </div>
+    -->
+    <div id="menuRight3DHouse" style="display: none;">
+      <div class="scroll">
         <div class='cssmenu'>
           <ul>
-            <li><a href='#' onclick="showRightCatalogMenu()"><span>&#60; Back to Catalog</span></a></li>
+            <li><a href='#'><span>Trees</span></a></li>
+            <li class='has-sub'><a href='#'><span>Plants</span></a>
+              <ul>
+                <li><a href='#' onclick="showRightObjectMenu('Exterior/Plants/Bushes')"><span>Bushes</span></a></li>
+                <li class='last-child' onclick="showRightObjectMenu('Exterior/Plants/Flowers')"><a href='#'><span>Flowers</span></a></li>
+              </ul>
+            </li>
+            <li><a href='#'><span>Driveway</span></a></li>
+            <li><a href='#'><span>Backyard</span></a></li>
+            <li><a href='#'><span>Fences</span></a></li>
+            <li><a href='#'><span>Lights</span></a></li>
+            <li><a href='#'><span>Swimming Pools</span></a></li>
+            <li><a href='#'><span>Animals</span></a></li>
+            <li><a href='#'><span>Cars</span></a></li>
           </ul>
         </div>
-
-        <div id="dragElement" style="background-image:url('images/object.png');"></div>
-
-        <div id="scrollWrapper" style="height:500px">
-          <div id="scroller">
-            <!-- TODO: Move to dynamically generate from json -->
-            <div class="scrollerItem">
-            </div>
-            <div class="scrollerItem">
-            </div>
-            <div class="scrollerItem">
-            </div>
-            <div class="scrollerItem">
-            </div>
-            <div class="scrollerItem">
-            </div>
-            <div class="scrollerItem">
-            </div>
-            <div class="scrollerItem">
-            </div>
-            <div class="scrollerItem">
-            </div>
-
-          </div>
-        </div>
+        <div class="last"><a href="javascript:void(0)"></a></div>
       </div>
-	    <!--
-	    <div id="footer">
-	      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-	        <a href="#" class="hi-icon icon-arrow483" title="Scroll Down"></a>
-	      </div>
-	    </div>
-	    -->
-  </div>
+    </div>
+
+    <div id="menuRight3DFloor" style="display: none;">
+      <div class="scroll">
+        <div class='cssmenu'>
+          <ul>
+              <li class='has-sub'><a href='#'><span>Furniture</span></a>
+                <ul>
+                  <li><a href='#'><span>Sofas</span></a></li>
+                  <li><a href='#'><span>Armchairs</span></a></li>
+                  <li class='last-child'><a href='#'><span>Ottomans</span></a></li>
+                </ul>
+              </li>
+              <li class='has-sub'><a href='#'><span>Living Room</span></a>
+                <ul>
+                  <li><a href='#'><span>Paintings</span></a></li>
+                  <li class='last-child'><a href='#'><span>Miscellaneous Items</span></a></li>
+                </ul>
+              </li>
+              <li class='has-sub'><a href='#'><span>Bedroom</span></a>
+                <ul>
+                  <li><a href='#'><span>Beds</span></a></li>
+                  <li><a href='#'><span>Dressers</span></a></li>
+                  <li><a href='#'><span>Cabinets</span></a></li>
+                  <li class='last-child'><a href='#'><span>Table Lamps</span></a></li>
+                </ul>
+              </li>
+              <li class='has-sub'><a href='#'><span>Kitchen</span></a>
+                <ul>
+                  <li><a href='#'><span>Sinks</span></a></li>
+                  <li><a href='#'><span>Fridge</span></a></li>
+                  <li><a href='#'><span>Stove</span></a></li>
+                  <li><a href='#'><span>Cabinets</span></a></li>
+                  <li class='last-child'><a href='#'><span>Miscellaneous Items</span></a></li>
+                </ul>
+              </li>
+              <li class='has-sub'><a href='#'><span>Bathroom</span></a>
+                 <ul>
+                  <li><a href='#'><span>Sinks</span></a></li>
+                  <li><a href='#'><span>Tubs</span></a></li>
+                  <li><a href='#'><span>Mirrors</span></a></li>
+                  <li class='last-child'><a href='#'><span>Shelves</span></a></li>
+                </ul>
+              </li>
+              <li class='has-sub'><a href='#'><span>Tables</span></a>
+                <ul>
+                  <li><a href='#'><span>Dinning</span></a></li>
+                  <li><a href='#'><span>Computer</span></a></li>
+                  <li class='last-child'><a href='#'><span>Work Bench</span></a></li>
+                </ul>
+              </li>
+              <li class='has-sub'><a href='#'><span>Floors</span></a>
+                <ul>
+                  <li><a href='#'><span>Rugs</span></a></li>
+                  <li class='last-child'><a href='#'><span>Miscellaneous Items</span></a></li>
+                </ul>
+              </li>
+              <li><a href='#'><span>Lights</span></a></li>
+              <li><a href='#'><span>Doors</span></a></li>
+              <li><a href='#'><span>Outlets</span></a></li>
+              <li><a href='#'><span>Plants</span></a></li>
+              <li><a href='#'><span>Pets</span></a></li>
+              <li><a href='#'><span>Structural</span></a></li>
+              <li><a href='#'><span>Other Items</span></a></li>
+          </ul>
+        </div>
+        <div class="last"><a href="javascript:void(0)"></a></div>
+      </div>
+    </div>
+                
+    <div id="menuRight2D" style="display: none;">
+    </div>
+
+    <div id='menuRightObjects' style="display:none;">
+      <div class='cssmenu'>
+        <ul>
+          <li><a href='#' onclick="showRightCatalogMenu()"><span>&#60; Back to Catalog</span></a></li>
+        </ul>
+      </div>
+      <!--
+      <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div>
+      -->
+      <!-- TODO: Move to dynamically generate from json -->
+      <!--
+      <div id="scrollWrapper" style="height:200px">
+            <div id="scroller">
+              <div class="scrollerItem">
+              </div>
+              <div class="scrollerItem">
+              </div>
+              <div class="scrollerItem">
+              </div>
+              <div class="scrollerItem">
+              </div>
+              <div class="scrollerItem">
+              </div>
+              <div class="scrollerItem">
+              </div>
+              <div class="scrollerItem">
+              </div>
+              <div class="scrollerItem">
+              </div>
+            </div>
+      </div>
+      -->
+      <div class="scroll" data-ui="jscroll-default">
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>
+      </div>
+    </div>
+  	<!--
+  	<div id="footer">
+  	  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+  	  <a href="#" class="hi-icon icon-arrow483" title="Scroll Down"></a>
+  	  </div>
+  	</div>
+  	-->
+  </div>  
 </div>
 <!-- END Slide Right Menu -->
+
 <!-- Slide Left Menu -->
 <script>
 $(document).ready(function() {
@@ -799,7 +842,6 @@ $(document).ready(function() {
       </div>
   </div>
 </div>
-<div class="clear"></div>
 
 <div id="menuLeft2D" class="hide-left">
   <ul id="tab-left">
@@ -875,12 +917,6 @@ $(document).ready(function() {
   </div>
 <!-- End Map -->
 
-<!-- Debug-->
-  <div id="debug" class="panel" style="background-color: #fff;">
-
-  </div>
-<!-- End Debug -->
-
 <!-- Thumbnail class="ui-widget-content" -->
   <div id="menuTop">
 		<div style="display: inline-block;width:108px;">
@@ -942,11 +978,11 @@ $(document).ready(function() {
   </div>
 
   <div id="menuMeasure">
-    <br/><a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a><div id="menuMeasureText">Metric</div>
+    <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a><div id="menuMeasureText" style="display: inline"></div>
   </div>
 
   <div id="menuWeather">
-    <br/><a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" style="color:#474747"></a><div id="menuWeatherText">Sunny</div>
+    <a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" style="color:#474747"></a><div id="menuWeatherText" style="display: inline"></div>
   </div>
 
 <!--
@@ -1017,19 +1053,19 @@ $(document).ready(function() {
 }
 
 #menuMeasure {
-    position:absolute;
-    bottom:15px;
-    left:100px;
-    border:none;
-    color:#474747;
+  position:absolute;
+  bottom:15px;
+  left:100px;
+  border:none;
+  color:#474747;
 }
 
 #menuWeather {
-    position:absolute;
-    bottom:15px;
-    left:180px;
-    border:none;
-    color:#474747;
+  position:absolute;
+  bottom:15px;
+  left:200px;
+  border:none;
+  color:#474747;
 }
 
 /* ================================
@@ -1123,6 +1159,11 @@ $(document).ready(function() {
 <script type="text/javascript" src="js/clippy.js"></script>
 <link rel="stylesheet" type="text/css" href="css/clippy.css" media="all">
 -->
+<!--http://www.jquerybyexample.net/2013/05/jquery-scroll-page-automatically-by-few-pixels-after-every-few-seconds.html-->
+<!--<script type="text/javascript" src="js/iscroll.js"></script>-->
+
+<script type="text/javascript" src="js/jquery.jscroll.js"></script>
+
 <script type="text/javascript">
 function getCookie(name) {
   var value = "; " + document.cookie;
@@ -1140,7 +1181,8 @@ function createCookie(name,value,days) {
 }
 
 var images = {};
-var Agent;
+//var Agent;
+//var myScroll;
 
 Royal_Preloader.config({
   mode:'text',
@@ -1153,6 +1195,7 @@ Royal_Preloader.config({
   opacity:        1,
   background:     ['#FFFFFF'],
   onComplete: function() {
+   
     if (getCookie("firstTimer") == null)
     {
       createCookie("firstTimer","1",5);
@@ -1172,6 +1215,27 @@ Royal_Preloader.config({
       });
       */
     }
+
+    $('.scroll').jscroll({
+          //loadingHtml: '<small>Loading...</small>',
+          //padding: 20,
+          //nextSelector: 'a.jscroll-next:last',
+          //contentSelector: 'li'
+    });
+
+    //$(".scroll").css('height', window.innerHeight - 280);
+    /*
+    var myScroll = new IScroll('#scrollWrapper', {
+      scrollX: false,
+      scrollY: true,
+      scrollbars: true,
+      mouseWheel: true,
+      //interactiveScrollbars: true,
+      //shrinkScrollbars: 'scale',
+      //fadeScrollbars: true
+    });
+    document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+    */
   }
 });
 
@@ -1183,7 +1247,9 @@ $('#WebGLHelp').click(function (event) {
   agentToggle();
 });
 
+
 function agentToggle() {
+  /*
   if (Agent == null)
   {
     clippy.load('Bonzi', function(agent) {
@@ -1201,6 +1267,7 @@ function agentToggle() {
       $('#WebGLHelp').show();
     }
   }
+  */
 }
 </script>
 
@@ -1224,7 +1291,6 @@ function agentToggle() {
 <script src="js/3d/exporters/OBJExporter.js"></script>
 <script src="js/3d/exporters/ObjectExporter.js"></script>
 <script src="js/3d/exporters/GeometryExporter.js"></script>
-<script src="js/3d/exporters/Geometry2Exporter.js"></script>
 <script src="js/3d/exporters/BufferGeometryExporter.js"></script>
 <script src="js/3d/exporters/MaterialExporter.js"></script>
 <!-- <script src="js/libs/stats.min.js"></script> -->
