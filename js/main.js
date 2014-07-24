@@ -18,7 +18,6 @@ TODO:
 - [difficulty: 6/10  progress: 0%]  3D Exterior View ability to select floors (+ flying-in animationeffect)
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
 - [difficulty: 4/10  progress: 0%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
-http://stemkoski.github.io/Three.js/Particle-Engine-Fireworks.html
 */
 
 if (!Detector.webgl) Detector.addGetWebGLMessage();
@@ -88,7 +87,6 @@ var leftButtonDown = false;
 var clickTime;
 
 //var keyboard = new THREE.KeyboardState();
-//var clock = new THREE.Clock();
 
 var scene2DDrawLineGeometry; //Temporary holder for mouse click and drag drawings
 var scene2DDrawLine;
@@ -300,6 +298,7 @@ function init() {
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
+        alpha: true,
         //preserveDrawingBuffer: false
     });
     /*
@@ -317,11 +316,11 @@ function init() {
         antialias: true,
         alpha: true,
         //transparent: true,
-        preserveDrawingBuffer: false
+        //preserveDrawingBuffer: false
     });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0xffffff, 0);
+    //renderer.setClearColor(0xffffff, 0);
     renderer.shadowMapEnabled = true;
     renderer.shadowMapAutoUpdate = true;
     renderer.shadowMapType = THREE.PCFSoftShadowMap; //THREE.PCFShadowMap; //THREE.BasicShadowMap;
@@ -331,7 +330,8 @@ function init() {
 
     //Orientation Cube
     rendererCube.setSize(100, 100);
-    renderer.setClearColor(0xffffff, 1);
+    //renderer.setClearColor(0xffffff, 1);
+
     document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
     scene3DCube = new THREE.Scene();
     camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 1000);
@@ -394,6 +394,13 @@ function init() {
 
     // move mouse and: left   click to rotate,  middle click to zoom, right  click to pan
     controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
+    controls3D.minDistance = 4;
+    controls3D.maxDistance = 30; //Infinity;
+    //controls3D.minPolarAngle = 0; // radians
+    //controls3D.maxPolarAngle = Math.PI; // radians
+    controls3D.maxPolarAngle = Math.PI / 2; //Don't let to go below the ground
+
+
     //controls2D = new THREE.OrbitControls(camera2D, renderer.domElement);
 
     controls3D.target = new THREE.Vector3(0, 0, 0); //+ object.lookAT!
@@ -433,8 +440,10 @@ function init() {
     scene.add( skyBox );
     */
 
-    sceneNew();
+
+    scene3DBlueSkyBackground();
     scene3DSky();
+    sceneNew();
     scene3DLight();
     show3DHouse();
     animate();
@@ -1183,6 +1192,7 @@ function onDocumentDoubleClick(event) {
             scene3DPivotPoint.position.set(intersects[0].point.x, 0, intersects[0].point.z);
             scene3D.add(scene3DPivotPoint);
 
+            //http://stemkoski.github.io/Three.js/Particle-Engine-Fireworks.html
             engine = new ParticleEngine();
             fountain = {
                 positionStyle: Type.CUBE,
@@ -2003,6 +2013,25 @@ function scene3DGround(_texture, _grid) {
 }
 */
 
+// reproduction of a demo of @mrdoob by http://mrdoob.com/lab/javascript/webgl/clouds/
+function scene3DBlueSkyBackground() {
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = window.innerHeight;
+    var context = canvas.getContext('2d');
+
+    var gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, "#1e4877");
+    gradient.addColorStop(0.5, "#4584b4");
+
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    document.body.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
+
+}
+
 function scene3DSky() {
 
     //var mesh = THREEx.createSkymap('mars')
@@ -2010,17 +2039,49 @@ function scene3DSky() {
 
     //TODO: Make realistic clouds from http://mrdoob.com/lab/javascript/webgl/clouds/
 
-    var geometry = new THREE.SphereGeometry(500, 60, 40);
+    //texture = THREE.ImageUtils.loadTexture('./objects/Platform/Textures/S0001.jpg');
+    /*
+    texture = THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
+    texture.magFilter = THREE.LinearMipMapLinearFilter;
+    texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+    geometry = new THREE.SphereGeometry(500, 60, 40);
+
     var uniforms = {
         texture: {
             type: 't',
-            value: THREE.ImageUtils.loadTexture('objects/Platform/Textures/S0001.jpg')
+            value: texture
         }
     };
+
+    var fog = new THREE.Fog(0x4584b4, -100, 3000);
     var material = new THREE.ShaderMaterial({
-        uniforms: uniforms,
+        //uniforms: uniforms,
+        uniforms: {
+            "map": {
+                type: "t",
+                value: texture
+            },
+
+            "fogColor": {
+                type: "c",
+                value: fog.color
+            },
+            "fogNear": {
+                type: "f",
+                value: fog.near
+            },
+            "fogFar": {
+                type: "f",
+                value: fog.far
+            },
+
+        },
         vertexShader: document.getElementById('sky-vertex').textContent,
-        fragmentShader: document.getElementById('sky-fragment').textContent
+        fragmentShader: document.getElementById('sky-fragment').textContent,
+        depthWrite: false,
+        depthTest: false,
+        transparent: true
     });
     skyMesh = new THREE.Mesh(geometry, material);
     skyMesh.scale.set(-1, 1, 1);
@@ -2029,6 +2090,65 @@ function scene3DSky() {
 
     //scene3D.remove(skyMesh);
     scene3D.add(skyMesh);
+    */
+
+    //skyGrid = new THREE.Object3D();
+
+    geometry = new THREE.Geometry();
+
+    texture = THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
+    texture.magFilter = THREE.LinearMipMapLinearFilter;
+    texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+    /*
+    texture = THREE.ImageUtils.loadTexture("./images/cloud.png");
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearMipMapLinearFilter;
+	*/
+
+    var fog = new THREE.Fog(0x4584b4, -100, 3000);
+    material = new THREE.ShaderMaterial({
+        uniforms: {
+            "map": {
+                type: "t",
+                value: texture
+            },
+
+            "fogColor": {
+                type: "c",
+                value: fog.color
+            },
+            "fogNear": {
+                type: "f",
+                value: fog.near
+            },
+            "fogFar": {
+                type: "f",
+                value: fog.far
+            },
+        },
+        vertexShader: document.getElementById('vs').textContent,
+        fragmentShader: document.getElementById('fs').textContent,
+        depthWrite: false,
+        depthTest: false,
+        transparent: true
+    });
+
+    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
+
+    for (var i = 0; i < 20; i++) {
+
+        plane.position.x = getRandomInt(-20, 20);
+        plane.position.y = getRandomInt(5, 8);
+        plane.position.z = i;
+        plane.rotation.z = getRandomInt(5, 10);
+        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
+        THREE.GeometryUtils.merge(geometry, plane);
+    }
+
+    skyMesh = new THREE.Mesh(geometry, material);
+    scene3D.add(skyMesh);
+
 }
 
 /*
@@ -2036,6 +2156,10 @@ function scene3DFloorSky() {
     scene3D.remove(skyMesh);
 }
 */
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 function scene3DLight() {
 
@@ -2235,6 +2359,34 @@ function animate() {
             camera3DCube.position.setLength(18);
             camera3DCube.lookAt(scene3DCube.position);
             rendererCube.render(scene3DCube, camera3DCube);
+
+            if (skyMesh != null) {
+
+                //if (controls3D.needsUpdate) {
+                skyMesh.rotation.y = camera3D.rotation.y; //spiral
+                skyMesh.rotation.z = camera3D.rotation.z; //side-to-side
+                skyMesh.rotation.x = camera3D.rotation.x; //top
+
+                skyMesh.position.x = camera3D.position.x / 1.5;
+                //skyMesh.position.z = camera3D.position.z;
+                //skyMesh.rotation = camera3D.rotation;
+
+
+                /*
+                if (skyMesh.position.x < 10) {
+                    skyMesh.position.x += 0.01;
+                    //skyMesh.position.z += 0.01;
+                } else {
+                    skyMesh.position.x = skyMesh.position.x - 0.01;
+                    //skyMesh.position.z -= 0.01;
+                }
+				*/
+                //skyMesh.position.y = (Math.random() - 0.5) * 0.2;
+                //skyMesh.position.z = (Math.random() - 0.5) * 5.0;
+                //skyMesh.rotation = Math.random() * Math.PI;
+                //skyMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
+                // object3d.color.setHex( 0xC0C0C0 + 0x010101*Math.floor(255*(Math.random()*0.1)) );
+            }
         }
 
         if (SCENE == 'floor') {

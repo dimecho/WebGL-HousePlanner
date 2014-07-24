@@ -277,7 +277,6 @@ document.addEventListener("keydown", function(e) {
 </script>
 <!-- END Full Screen-->
 
-
 <script type="application/x-glsl" id="sky-vertex">
 varying vec2 vUV;
 
@@ -296,6 +295,33 @@ void main() {
   vec4 sample = texture2D(texture, vUV);
   gl_FragColor = vec4(sample.xyz, sample.w);
 }
+</script>
+
+<script id="vs" type="x-shader/x-vertex">
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  }
+</script>
+
+<script id="fs" type="x-shader/x-fragment">
+
+  uniform sampler2D map;
+  uniform vec3 fogColor;
+  uniform float fogNear;
+  uniform float fogFar;
+  varying vec2 vUv;
+
+  void main() {
+    float depth = gl_FragCoord.z / gl_FragCoord.w;
+    float fogFactor = smoothstep( fogNear, fogFar, depth );
+
+    gl_FragColor = texture2D( map, vUv );
+    gl_FragColor.w *= pow( gl_FragCoord.z, 20.0 );
+    gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
+  }
 </script>
 
 <!--http://www.webdesignerdepot.com/2012/10/creating-a-modal-window-with-html5-and-css3/ -->
