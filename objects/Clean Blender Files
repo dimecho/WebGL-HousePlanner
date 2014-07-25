@@ -11,3 +11,9 @@ for f in $(find ./ -name '.DS_Store')
 do
 	rm "$f"
 done
+
+for f in $(find ./ -name '*.jsz')
+do
+	rm "$f"
+done
+

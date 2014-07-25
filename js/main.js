@@ -86,6 +86,7 @@ var TOOL2D = 'freestyle';
 var WEATHER = 'Day - Sunny';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
+var SELECTED;
 
 var leftButtonDown = false;
 var clickTime;
@@ -103,10 +104,8 @@ var scene2DWallRegularMaterialSelect;
 var scene2DWallBearingMaterial;
 var scene2DWallBearingMaterialSelect;
 
-var mouse = new THREE.Vector2(),
-    SELECTED;
-
-var clock = new THREE.Clock();
+var mouse;
+var clock;
 var engine;
 var projector;
 var vector;
@@ -114,23 +113,10 @@ var geometry;
 var material;
 var texture;
 var mesh;
+var zip;
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
-
-/*
-var menuOffset = {
-left: 0,
-top: 0,
-};
-*/
-/*
-var clickInfo = {
-x: 0,
-y: 0,
-userHasClicked: false
-};
-*/
 
 init();
 
@@ -147,17 +133,9 @@ function init() {
     scene3D = new THREE.Scene();
     scene2D = new THREE.Scene();
     projector = new THREE.Projector();
-
-    /*
-    scene3DContainer must contain all scene objects (save/open) scene2DFloorContainer generates own objects based on idName from scene3DContainer.
-    This way Exterior objects can be hidden from Interior objects
-
-    Object id: random-ext/int-floor-history/undo/redo (ex: sofa345-int-0-5)
-    Floors:
-        0 = Basement
-        1 = First Floors
-        2 = Second Floor
-    */
+    //zip = new JSZip();
+    clock = new THREE.Clock();
+    mouse = new THREE.Vector2();
 
     scene3DHouseContainer = new THREE.Object3D();
     scene3DHouseGroundContainer = new THREE.Object3D();
@@ -172,12 +150,11 @@ function init() {
     scene2DFloorContainer[2] = new THREE.Object3D();
     scene3DPivotPoint = new THREE.Object3D();
 
-
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
 
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 600);
+    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 60); //600 if doing a sky wrap-up
     camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 
     camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
@@ -569,28 +546,77 @@ function loadOBJ(obj,mtl,object,x,y,z) {
 }
 */
 
-function loadJSON(js, object, x, y, z, xaxis, yaxis, ratio) {
+/*
+THREE.ImageUtils.prototype.loadTextureBinary = function(data, mapping, callback) {
+    var image = new Image(),
+        texture = new THREE.Texture(image, mapping);
+    image.onload = function() {
+        texture.needsUpdate = true;
+        if (callback) callback(this);
+    };
+    image.crossOrigin = this.crossOrigin;
+    image.src = "data:image/png;base64," + Base64.encode(data);
+    return texture;
+};
+*/
+
+/*
+THREE.JSONLoader.prototype.loadJson = function(data, callback, texturePath) {
+    var worker, scope = this;
+    texturePath = texturePath ? texturePath : this.extractUrlBase(url);
+    this.onLoadStart();
+    var json = JSON.parse(data);
+    //var json = jQuery.parseJSON(data);
+    var result = this.parse(json, texturePath);
+    callback(result.geometry, result.materials);
+    this.onLoadComplete();
+};
+*/
+
+function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
+
+    //http://www.smashingmagazine.com/2013/09/17/introduction-to-polygonal-modeling-and-three-js/
+
     /*
-    new THREE.JSONLoader().load('js/your_js_file_path_.js', function(geometry){
-      var mesh = new THREE.Mesh( geometry, new THREE.MeshFaceMaterial());
-      scene.add( mesh );
-    }, 'images');
+    Using a lambert material will keep light from reflecting off of the surface and is generally regarded as non-shiny.
+    Many prototypes are created in lambert materials in order to focus on the structure, rather than the aesthetics.
+    Phong materials are the opposite, instead rendering shiny surfaces. These can show some really fantastic effects when combined with the correct use of light.
     */
+
+    /*var phongShader = THREE.ShaderLib.phong;
+    //var uniforms = THREE.UniformsUtils.clone(phongShader.uniforms);
+    var material = new THREE.ShaderMaterial( {
+
+        uniforms: phongShader.uniforms, //uniforms,
+        vertexShader: phongShader.vertexShader,
+        fragmentShader: phongShader.fragmentShader,
+        lights:true,
+        fog: true
+
+    } );
+    */
+
+    //TODO: catch .obj and .dae
 
     var loader = new THREE.JSONLoader();
 
-    loader.load("./objects/" + js, function(geometry, materials) {
+    var ext = js.split('.').pop();
+    var url = "./objects/" + js;
+    var urlTextures = "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
+    var data;
+
+    var callback = function(geometry, materials) {
         /*
         var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial({
             map: materials[0],
             envMap: camera3DMirrorReflection.renderTarget
-        }));
-        */
+        })); 
+		*/
 
         var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 
         mesh.castShadow = true;
-        mesh.receiveShadow = true;
+        //mesh.receiveShadow = true;
         //mesh.overdraw = true;
 
         /*
@@ -619,10 +645,72 @@ function loadJSON(js, object, x, y, z, xaxis, yaxis, ratio) {
         object.add(mesh);
 
         //THREE.Collisions.colliders.push(THREE.CollisionUtils.MeshOBB(mesh));
+    };
 
-    }, "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/");
+    if (js.split('.').pop() == 'jsz') //zipped json file
+    {
+        zip = new JSZip();
+        var filename = js.split('/').pop().slice(0, -4);
+
+        /*
+        var fullpath = window.location.pathname; // + window.location.search;
+        var r = /[^\/]*$/;
+        fullpath = fullpath.replace(r, '');
+        console.log(fullpath + "objects/" + js + " > " + filename + " > " + ext);
+        */
+
+        /*
+        switch (window.location.protocol) {
+            case 'http:':
+            case 'https:':
+
+                $.get(url, function(data) {
+                    zip.load(data);
+                    data = zip.file(filename + ".js").asText();
+                    console.log(data);
+                });
+				
+                break;
+            case 'file:':
+
+				//Looks like jQuery method has a limit of 422315 ?
+				
+                $("#fileJQueryLoad").load(url, function(response, status, xhr) {
+                    if (status == "error") {
+                        console.log(xhr.status + " " + xhr.statusText);
+                    } else {
+                        //console.log(response);
+                        zip.load(response);
+                        data = zip.file(filename + ".js").asText();
+                        console.log(data);
+                    }
+                });
+				
+                url = "./objects/" + js.slice(0, -4) + ".js";
+
+                break;
+            default:
+        }
+		*/
+
+        //jBinary works for both online and offline
+
+        jBinary.load(url, function(err, binary) {
+            try {
+                zip.load(binary.read('string'));
+                data = zip.file(filename + ".js").asText();
+                //data = JSON.parse(data);
+                loader.loadJson(data, callback, urlTextures);
+            } catch (exception) { //zip file was probably not found, load regular json
+                loader.load(url.slice(0, -1), callback, urlTextures);
+            }
+        });
+
+    } else {
+
+        loader.load(url, callback, urlTextures);
+    }
 }
-
 
 /*
 function loadBabylon(js, object, x, y, z, xaxis, yaxis, ratio) {
@@ -645,145 +733,6 @@ function loadBabylon(js, object, x, y, z, xaxis, yaxis, ratio) {
     }, "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/");
 }
 */
-
-
-function loadBIN(js, object, x, y, z, xaxis, yaxis, ratio) {
-    //http://www.smashingmagazine.com/2013/09/17/introduction-to-polygonal-modeling-and-three-js/
-
-    /*
-    Using a lambert material will keep light from reflecting off of the surface and is generally regarded as non-shiny.
-    Many prototypes are created in lambert materials in order to focus on the structure, rather than the aesthetics.
-    Phong materials are the opposite, instead rendering shiny surfaces. These can show some really fantastic effects when combined with the correct use of light.
-    */
-
-    /*var phongShader = THREE.ShaderLib.phong;
-    //var uniforms = THREE.UniformsUtils.clone(phongShader.uniforms);
-    var material = new THREE.ShaderMaterial( {
-
-        uniforms: phongShader.uniforms, //uniforms,
-        vertexShader: phongShader.vertexShader,
-        fragmentShader: phongShader.fragmentShader,
-        lights:true,
-        fog: true
-
-    } );
-    */
-
-    //IMPORTANT: be sure to use ./ or it may not load the .bin correctly 
-    var loader = new THREE.BinaryLoader();
-    //loader.options.convertUpAxis = true;
-    loader.load("./objects/" + js, function(geometry, materials) {
-        //var geometry = new THREE.PlaneGeometry(5, 5);
-        geometry.dynamic = false;
-        geometry.verticesNeedUpdate = false;
-        geometry.normalsNeedUpdate = false;
-        geometry.needsUpdate = false;
-
-        /*
-        Smooth shading is the default one (material.shading = THREE.SmoothShading).
-        Problem is more likely normals - smooth shading depends on having proper vertex normals - either you need to have them already
-        present in the JSON file from the export / conversion or you need to compute them manually after loading the file:
-        geometry.computeVertexNormals();
-        */
-
-        //geometry.computeVertexNormals(); //smooth operator
-        /*var binMaterial = new THREE.MeshBasicMaterial({
-        map: groundTexture,
-        side: THREE.DoubleSide
-    	});
-       */
-
-        //var mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial(materials)); //basic
-        /*
-		    var groundTexture = new THREE.ImageUtils.loadTexture(_texture);
-		    groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
-		    groundTexture.repeat.set(10, 10);
-
-		    // DoubleSide: render texture on both sides of mesh
-		    var floorMaterial = new THREE.MeshBasicMaterial({
-		        map: groundTexture,
-		        side: THREE.DoubleSide
-		    });
-
-		    texture.wrapT = THREE.RepeatWrapping;
-			texture.wrapS = THREE.ClampToEdgeWrapping;
-		*/
-
-        /*
-        var texture = new THREE.Texture(materials);
-        texture.needsUpdate = true;
-
-        var material = new THREE.MeshPhongMaterial({
-            map: texture
-        });
-        var mesh = new THREE.Mesh(geometry, material);
-        */
-
-        //var orange    = new THREE.MeshLambertMaterial( { color: 0x995500, opacity: 1.0, transparent: false } ); 
-        //var material = new THREE.MeshFaceMaterial(materials);
-
-        /*
-        for (var i = 0; i < materials.length; i++) {
-            //materials[i].map.image;
-            console.log('found image texture');
-        }
-        */
-
-        var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials)); //flat
-        //var mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial(materials)); //???
-        //var mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial(materials)); //shiny
-
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        mesh.overdraw = true;
-
-        /*
-        if (ratio != 1) {
-            geometry.computeBoundingBox();
-            var box = geometry.boundingBox;
-            ratio = ratio / box.max.y //calculate scale ratio or var box = new THREE.Box3().setFromObject( object );
-            mesh.scale.x = mesh.scale.y = mesh.scale.z = ratio;
-            //console.log("width " + box.max.x);
-            mesh.castShadow = false;
-            mesh.receiveShadow = false;
-        }
-        */
-        //mesh.scale.x = mesh.scale.y = mesh.scale.z = ratio;
-
-        mesh.position.x = x;
-        mesh.position.y = y;
-        mesh.position.z = z;
-        mesh.doubleSided = false;
-
-        // set the geometry to dynamic so that it allow updates
-        //mesh.geometry.dynamic = false;
-
-        // changes to the vertices
-        //mesh.geometry.verticesNeedUpdate = false;
-
-        // changes to the normals
-        //mesh.geometry.normalsNeedUpdate = false;
-
-        //mesh.geometry.needsUpdate = false;
-
-        //THREE.GeometryUtils.center(geometry);
-
-        //offset pivot
-        //mesh.geometry.applyMatrix( new THREE.Matrix4().setTranslation( 0, 10, 0 ) );
-        //mesh.rotation.x = xaxis * Math.PI / 1000;
-        //mesh.rotation.y = yaxis * Math.PI / 1000;
-
-        //All objects by default automatically update their matrices.
-        //However, if you know object will be static, you can disable this and update transform matrix manually just when needed.
-        //object.matrixAutoUpdate = false;
-        //object.updateMatrix();
-
-        mesh.matrixAutoUpdate = false;
-        mesh.updateMatrix();
-
-        object.add(mesh);
-    });
-}
 
 function cube(size) {
 
@@ -1812,7 +1761,7 @@ function exportJSON() {
     //var exporter = new THREE.SceneExporter().parse(scene);
     //var exporter = JSON.stringify(new THREE.ObjectExporter().parse(scene3D));
 
-    var zip = new JSZip();
+    zip = new JSZip();
 
     //zip.file("scene3D.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3D)));
     zip.file("scene3DHouseContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseContainer)));
@@ -1834,12 +1783,15 @@ function exportJSON() {
     */
     zip.file("ReadMe.txt", "Saved by WebGL HousePlanner\nFiles can be opened by THREE.js Framework");
 
+    var content = zip.generate();
+    /*
     var content = zip.generate({
         type: "blob"
     });
-    //var content = zip.generate({
-    //    type: "string"
-    //});
+    var content = zip.generate({
+        type: "string"
+    });
+    */
     //location.href="data:application/zip;base64," + zip.generate({type:"base64"});
 
     saveAs(content, "scene.zip");
@@ -1863,8 +1815,8 @@ function exportJSON() {
 
 function importJSON(zipData) {
 
-    var zip = new JSZip();
-    zip.load(zipData);
+    //zip = new JSZip(readerEvent.target.result);
+    //zip.load(zipData);
 
     //zip.folder("Textures").load(data);
     //var text = zip.file("hello.txt").asText();
@@ -1910,7 +1862,7 @@ function sceneNew() {
     scene3DFloorContainer[1].name = "Floor1";
     scene3DFloorContainer[2].name = "Floor2";
 
-    //loadJSON("Platform/ground-grass.js", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1); //Exterior ground
+    //open3DModel("Platform/ground-grass.js", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1); //Exterior ground
     /*
     var groundMaterial = new THREE.MeshBasicMaterial({
         map: THREE.ImageUtils.loadTexture('objects/Platform/Textures/G36096.png'),
@@ -1990,30 +1942,26 @@ function sceneNew() {
         scene3DFloorLevelGroundContainer.add(mesh);
     });
     //===============================================
-    //loadJSON("Platform/ground-wood.js", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1); //Interior ground (defferent from floor textures)
+    //open3DModel("Platform/ground-wood.js", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1); //Interior ground (defferent from floor textures)
 
     //Temporary Objects for visualization
     //TODO: load from one JSON file
 
-    loadJSON("Platform/pivotpoint.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
+    open3DModel("Platform/pivotpoint.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
 
 
-    //loadJSON("Exterior/Plants/bush.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
+    //open3DModel("Exterior/Plants/bush.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
     //vector = new THREE.Vector3(-7, 0, 9);
     //scene3DPivotPoint.position.set(vector);
     //scene3D.add(scene3DPivotPoint);
 
-    loadJSON("Platform/house3.js", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
-    loadJSON("Exterior/Trees/palm.js", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
-    loadJSON("Exterior/Plants/bush.js", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
-    loadJSON("Exterior/Fence/fence1.js", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
-    loadJSON("Exterior/Fence/fence2.js", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
-    loadJSON("Interior/Furniture/clear-sofa.js", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
-    //loadJSON("Exterior/Cars/VWbeetle.js", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
-
-    //loadJSON("Platform/elaine.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
-
-    //loadJSON("Interior/Furniture/burlap-sofa.js", scene3DFloorContainer[0], 0, 0, 0, 0, 0, 1);
+    open3DModel("Platform/house3.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
+    open3DModel("Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
+    open3DModel("Exterior/Plants/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
+    open3DModel("Exterior/Fence/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
+    open3DModel("Exterior/Fence/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
+    open3DModel("Interior/Furniture/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
+    //open3DModel("Exterior/Cars/VWbeetle.js", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
 
     //scene3D.rotation.y += 10;
     //THREE.GeometryUtils.center();
@@ -2668,7 +2616,7 @@ function ajaxProgress(event, position, total, percentComplete)
 
 //TODO: optimize there two functions into one
 function handleFile3DObjectSelect(event) {
-
+    //console.log("catch file");
     switch (event.target.files[0].type) {
         case 'application/zip': //Zip root folder structure should contain .js and textures in '/Textures' folder (assuming have proper texture paths)
         case 'application/octet-stream':
