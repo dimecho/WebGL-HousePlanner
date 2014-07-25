@@ -699,8 +699,11 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
             try {
                 zip.load(binary.read('string'));
                 data = zip.file(filename + ".js").asText();
-                //data = JSON.parse(data);
-                loader.loadJson(data, callback, urlTextures);
+                data = JSON.parse(data);
+                //loader.loadJson(data, callback, urlTextures);
+                var result = loader.parse(data, urlTextures);
+                callback(result.geometry, result.materials);
+
             } catch (exception) { //zip file was probably not found, load regular json
                 loader.load(url.slice(0, -1), callback, urlTextures);
             }
