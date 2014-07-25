@@ -627,31 +627,96 @@ $(function() {
     </div>
     -->
     <div id="menuRight3DHouse" style="display: none;">
-      <div class="scroll">
+      <script>
+      var data = {
+          menu: [{
+                  name: "Trees",
+                  link: "javascript:showRightObjectMenu('Exterior/Trees');",
+                  sub: null
+              }, {
+                  name: "Plants",
+                  link: null,
+                  sub: [{
+                      name: 'Bushes',
+                      link: "javascript:showRightObjectMenu('Exterior/Plants/Bushes');",
+                      sub: null
+                  }, {
+                      name: 'Flowers',
+                      link: "javascript:showRightObjectMenu('Exterior/Plants/Flowers');",
+                      sub: null
+                  }]
+              }, {
+                  name: "Driveway",
+                  link: "javascript:showRightObjectMenu('Exterior/Driveway');",
+                  sub: null
+              }, {
+                  name: "Backyard",
+                  link: "javascript:showRightObjectMenu('Exterior/Backyard');",
+                  sub: null
+              }, {
+                  name: "Fences",
+                  link: "javascript:showRightObjectMenu('Exterior/Fences');",
+                  sub: null
+              }, {
+                  name: "Swimming Pools",
+                  link: "javascript:showRightObjectMenu('Exterior/Pools');",
+                  sub: null
+              }, {
+                  name: "Animals",
+                  link: "javascript:showRightObjectMenu('Exterior/Animals');",
+                  sub: null
+              }, {
+                  name: "Cars",
+                  link: "javascript:showRightObjectMenu('Exterior/Cars');",
+                  sub: null
+              }]
+      };
+          
+      $(document).ready(function()
+      {
+          //$.getJSON('./objects/Exterior/index.json', function(data) {
+            //console.log(data);
+            var menu = $("#menuRight3DHouse .scroll .cssmenu > ul");
+            $.each(data.menu, function () {
+                menu.append(
+                    getMenuItem(this)
+                );
+            });
+          //});
+      });
+
+      function getMenuItem(itemData) {
+              var li = "<li>";
+              if (itemData.sub) {
+                li = "<li class='has-sub'>";
+              }
+
+              var item = $(li)
+                  .append(
+              $("<a>", {
+                  href: itemData.link,
+                  html: itemData.name
+              }));
+              if (itemData.sub) {
+                  var subList = $("<ul>");
+                  $.each(itemData.sub, function () {
+                      subList.append(getMenuItem(this));
+                  });
+                  item.append(subList);
+              }
+              return item;
+      }
+      </script>
+      <div class="scroll" data-ui="jscroll-default">
         <div class='cssmenu'>
           <ul>
-            <li><a href='#'><span>Trees</span></a></li>
-            <li class='has-sub'><a href='#'><span>Plants</span></a>
-              <ul>
-                <li><a href='#' onclick="showRightObjectMenu('Exterior/Plants/Bushes')"><span>Bushes</span></a></li>
-                <li class='last-child' onclick="showRightObjectMenu('Exterior/Plants/Flowers')"><a href='#'><span>Flowers</span></a></li>
-              </ul>
-            </li>
-            <li><a href='#'><span>Driveway</span></a></li>
-            <li><a href='#'><span>Backyard</span></a></li>
-            <li><a href='#'><span>Fences</span></a></li>
-            <li><a href='#'><span>Lights</span></a></li>
-            <li><a href='#'><span>Swimming Pools</span></a></li>
-            <li><a href='#'><span>Animals</span></a></li>
-            <li><a href='#'><span>Cars</span></a></li>
           </ul>
         </div>
-        <div class="last"><a href="javascript:void(0)"></a></div>
       </div>
     </div>
 
     <div id="menuRight3DFloor" style="display: none;">
-      <div class="scroll">
+      <div class="scroll" data-ui="jscroll-default">
         <div class='cssmenu'>
           <ul>
               <li class='has-sub'><a href='#'><span>Furniture</span></a>
@@ -731,28 +796,6 @@ $(function() {
       <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div>
       -->
       <!-- TODO: Move to dynamically generate from json -->
-      <!--
-      <div id="scrollWrapper" style="height:200px">
-            <div id="scroller">
-              <div class="scrollerItem">
-              </div>
-              <div class="scrollerItem">
-              </div>
-              <div class="scrollerItem">
-              </div>
-              <div class="scrollerItem">
-              </div>
-              <div class="scrollerItem">
-              </div>
-              <div class="scrollerItem">
-              </div>
-              <div class="scrollerItem">
-              </div>
-              <div class="scrollerItem">
-              </div>
-            </div>
-      </div>
-      -->
       <div class="scroll" data-ui="jscroll-default">
         <div class="scrollerItem">
         </div>
@@ -1215,13 +1258,16 @@ Royal_Preloader.config({
       });
       */
     }
-
-    $('.scroll').jscroll({
+    $(window).bind('load', function()
+   {
+     $('.scroll').jscroll({
           //loadingHtml: '<small>Loading...</small>',
           //padding: 20,
           //nextSelector: 'a.jscroll-next:last',
           //contentSelector: 'li'
     });
+   });
+    
 
     //$(".scroll").css('height', window.innerHeight - 280);
     /*

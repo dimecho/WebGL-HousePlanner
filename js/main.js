@@ -71,8 +71,9 @@ var groundGrid;
 var groundMesh;
 var glowMesh;
 
-var skyGrid;
-var skyMesh;
+var weatherSkyMesh;
+var weatherSnowMesh;
+var weatherRainMesh;
 
 //var stats;
 
@@ -852,7 +853,7 @@ function show3DHouse() {
     sceneSpotLight.castShadow = true;
     scene3D.add(sceneSpotLight);
 
-    scene3D.add(skyMesh);
+    scene3D.add(weatherSkyMesh);
     scene3D.add(scene3DHouseGroundContainer);
     scene3D.add(scene3DHouseContainer);
 
@@ -1020,7 +1021,7 @@ function show2DContainer(b) {
     scene3D.remove(sceneSpotLight);
 
     scene3D.remove(scene3DHouseGroundContainer);
-    scene3D.remove(skyMesh);
+    scene3D.remove(weatherSkyMesh);
 
     scene3D.remove(scene3DFloorGroundContainer);
     scene3D.remove(camera3DMirrorReflection);
@@ -2126,13 +2127,13 @@ function scene3DSky() {
         depthTest: false,
         transparent: true
     });
-    skyMesh = new THREE.Mesh(geometry, material);
-    skyMesh.scale.set(-1, 1, 1);
+    weatherSkyMesh = new THREE.Mesh(geometry, material);
+    weatherSkyMesh.scale.set(-1, 1, 1);
     //skyBox.eulerOrder = 'XZY';
     //skyBox.renderDepth = 1000.0;
 
-    //scene3D.remove(skyMesh);
-    scene3D.add(skyMesh);
+    //scene3D.remove(weatherSkyMesh);
+    scene3D.add(weatherSkyMesh);
     */
 
     //skyGrid = new THREE.Object3D();
@@ -2191,12 +2192,12 @@ function scene3DSky() {
         //THREE.GeometryUtils.merge(geometry, plane);
     }
 
-    skyMesh = new THREE.Mesh(geometry, material);
+    weatherSkyMesh = new THREE.Mesh(geometry, material);
 }
 
 /*
 function scene3DFloorSky() {
-    scene3D.remove(skyMesh);
+    scene3D.remove(weatherSkyMesh);
 }
 */
 
@@ -2412,28 +2413,28 @@ function animate() {
 
             //if (controls3D.needsUpdate) {
 
-            skyMesh.rotation.y = camera3D.rotation.y; //spiral
-            skyMesh.rotation.z = camera3D.rotation.z; //side-to-side
-            skyMesh.rotation.x = camera3D.rotation.x; //top
-            skyMesh.position.x = camera3D.position.x / 1.5;
+            weatherSkyMesh.rotation.y = camera3D.rotation.y; //spiral
+            weatherSkyMesh.rotation.z = camera3D.rotation.z; //side-to-side
+            weatherSkyMesh.rotation.x = camera3D.rotation.x; //top
+            weatherSkyMesh.position.x = camera3D.position.x / 1.5;
 
-            //skyMesh.position.z = camera3D.position.z;
-            //skyMesh.rotation = camera3D.rotation;
+            //weatherSkyMesh.position.z = camera3D.position.z;
+            //weatherSkyMesh.rotation = camera3D.rotation;
 
 
             /*
-                if (skyMesh.position.x < 10) {
-                    skyMesh.position.x += 0.01;
-                    //skyMesh.position.z += 0.01;
+                if (weatherSkyMesh.position.x < 10) {
+                    weatherSkyMesh.position.x += 0.01;
+                    //weatherSkyMesh.position.z += 0.01;
                 } else {
-                    skyMesh.position.x = skyMesh.position.x - 0.01;
-                    //skyMesh.position.z -= 0.01;
+                    weatherSkyMesh.position.x = weatherSkyMesh.position.x - 0.01;
+                    //weatherSkyMesh.position.z -= 0.01;
                 }
             */
-            //skyMesh.position.y = (Math.random() - 0.5) * 0.2;
-            //skyMesh.position.z = (Math.random() - 0.5) * 5.0;
-            //skyMesh.rotation = Math.random() * Math.PI;
-            //skyMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
+            //weatherSkyMesh.position.y = (Math.random() - 0.5) * 0.2;
+            //weatherSkyMesh.position.z = (Math.random() - 0.5) * 5.0;
+            //weatherSkyMesh.rotation = Math.random() * Math.PI;
+            //weatherSkyMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
             // object3d.color.setHex( 0xC0C0C0 + 0x010101*Math.floor(255*(Math.random()*0.1)) );
 
         } else if (SCENE == 'floor') {
