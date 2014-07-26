@@ -3,9 +3,10 @@
 cd "$(dirname "$0")"
 clear
 
-curl -O https://github.com/mrdoob/three.js/blob/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/__init__.py
-curl -O https://github.com/mrdoob/three.js/raw/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/export_threejs.py
-curl -O https://github.com/mrdoob/three.js/blob/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/import_threejs.py
+curl -O https://raw.githubusercontent.com/mrdoob/three.js/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/__init__.py
+curl -O https://raw.githubusercontent.com/mrdoob/three.js/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/export_threejs.py
+curl -O https://raw.githubusercontent.com/mrdoob/three.js/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/import_threejs.py
+
 
 BLENDER_PATH=/Applications/blender.app/Contents/MacOS/2.71/scripts/addons/io_mesh_threejs/
 mkdir -p "$BLENDER_PATH"

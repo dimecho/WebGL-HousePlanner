@@ -422,8 +422,6 @@ function init() {
     scene.add( skyBox );
     */
 
-
-    scene3DBlueSkyBackground();
     scene3DSky();
     sceneNew();
     scene3DLight();
@@ -793,6 +791,7 @@ function show3DHouse() {
     SCENE = 'house';
 
     show2DContainer(false);
+    scene3DBlueSkyBackground(true);
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
     camera3D.position.set(0, 6, 20);
@@ -856,6 +855,7 @@ function show3DFloor() {
     SCENE = 'floor';
 
     show2DContainer(false);
+    scene3DBlueSkyBackground(true);
 
     camera3D.position.set(0, 4, 12);
 
@@ -899,6 +899,7 @@ function show3DFloorLevel() {
     SCENE = 'floorlevel';
 
     show2DContainer(false);
+    scene3DBlueSkyBackground(true);
 
     camera3D.position.set(0, 4, 12);
 
@@ -925,6 +926,7 @@ function show2D() {
 
     //camera2D.position.set(0, 8, 20);
     show2DContainer(true);
+    scene3DBlueSkyBackground(false);
 
     scene2D.add(scene2DFloorContainer[FLOOR]);
 
@@ -2010,22 +2012,25 @@ function scene3DGround(_texture, _grid) {
 */
 
 // reproduction of a demo of @mrdoob by http://mrdoob.com/lab/javascript/webgl/clouds/
-function scene3DBlueSkyBackground() {
+function scene3DBlueSkyBackground(fill) {
 
-    var canvas = document.createElement('canvas');
-    canvas.width = 32;
-    canvas.height = window.innerHeight;
-    var context = canvas.getContext('2d');
+    if (fill) {
+        var canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = window.innerHeight;
+        var context = canvas.getContext('2d');
 
-    var gradient = context.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, "#1e4877");
-    gradient.addColorStop(0.5, "#4584b4");
+        var gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, "#1e4877");
+        gradient.addColorStop(0.5, "#4584b4");
 
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, canvas.width, canvas.height);
 
-    document.body.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
-
+        document.body.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
+    } else {
+        document.body.style.background = "#fff";
+    }
 }
 
 function scene3DSky() {
