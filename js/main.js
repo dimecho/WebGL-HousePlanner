@@ -83,7 +83,7 @@ var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
 var TOOL2D = 'freestyle';
-var WEATHER = 'Day - Sunny';
+var WEATHER = 'day-sunny';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
 var SELECTED;
@@ -428,7 +428,7 @@ function init() {
     show3DHouse();
 
     selectMeasurement();
-    $('#menuWeatherText').html(WEATHER);
+    $('#menuWeatherText').html("Day - Sunny");
 
     animate();
 }
@@ -791,7 +791,7 @@ function show3DHouse() {
     SCENE = 'house';
 
     show2DContainer(false);
-    scene3DBlueSkyBackground(true);
+    scene3DSkyBackground(WEATHER);
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
     camera3D.position.set(0, 6, 20);
@@ -855,7 +855,7 @@ function show3DFloor() {
     SCENE = 'floor';
 
     show2DContainer(false);
-    scene3DBlueSkyBackground(true);
+    scene3DSkyBackground('day-sunny');
 
     camera3D.position.set(0, 4, 12);
 
@@ -887,7 +887,7 @@ function show3DFloor() {
     //show3DFloorContainer(true);
     //show3DHouseContainer(false)
 
-    menuSelect(3, 'menuTopItem', '#ff3700');
+    menuSelect(4, 'menuTopItem', '#ff3700');
 
     //Auto open right menu
     document.getElementById('menuRight').setAttribute("class", "show-right");
@@ -899,7 +899,7 @@ function show3DFloorLevel() {
     SCENE = 'floorlevel';
 
     show2DContainer(false);
-    scene3DBlueSkyBackground(true);
+    scene3DSkyBackground('day-sunny');
 
     camera3D.position.set(0, 4, 12);
 
@@ -920,13 +920,39 @@ function show3DFloorLevel() {
     correctMenuHeight();
 }
 
+function show3DRoofDesign() {
+
+    SCENE = 'roof';
+
+    show2DContainer(false);
+    scene3DSkyBackground(null);
+
+    camera3D.position.set(0, 4, 12);
+
+    sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);
+    scene3D.add(sceneAmbientLight);
+    sceneSpotLight.intensity = 0.4;
+    sceneSpotLight.castShadow = false;
+    scene3D.add(sceneSpotLight);
+    //scene3D.add(sceneHemisphereLight);
+
+    //scene3D.add(scene3DFloorLevelGroundContainer);
+
+    //TODO: show extruded stuff from scene2DFloorContainer[0]
+
+    //scene3DCube.add(scene3DCubeMesh);
+
+    menuSelect(3, 'menuTopItem', '#ff3700');
+    correctMenuHeight();
+}
+
 function show2D() {
 
     SCENE = '2d';
 
     //camera2D.position.set(0, 8, 20);
     show2DContainer(true);
-    scene3DBlueSkyBackground(false);
+    scene3DSkyBackground(null);
 
     scene2D.add(scene2DFloorContainer[FLOOR]);
 
@@ -944,7 +970,7 @@ function show2D() {
     $('#menuRight2D').show();
     $('#menuRight').show();
 
-    menuSelect(4, 'menuTopItem', '#ff3700');
+    menuSelect(5, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
     //scene2DFloorContainer[FLOOR].traverse;
@@ -1069,17 +1095,26 @@ function selectMeasurement() {
 
 function selectWeather() {
 
-    if (WEATHER == "Day - Sunny") {
-        WEATHER = "Day - Snowy";
-    } else if (WEATHER == "Day - Snowy") {
-        WEATHER = "Day - Rainy";
-    } else if (WEATHER == "Day - Rainy") {
-        WEATHER = "Night";
-    } else if (WEATHER == "Night") {
-        WEATHER = "Day - Sunny";
-    }
+    if (WEATHER == "day-sunny") {
 
-    $('#menuWeatherText').html(WEATHER);
+        WEATHER = "day-snowy";
+        $('#menuWeatherText').html("Day - Snowy");
+
+    } else if (WEATHER == "day-snowy") {
+
+        WEATHER = "day-rainy";
+        $('#menuWeatherText').html("Day - Rainy");
+
+    } else if (WEATHER == "day-rainy") {
+
+        WEATHER = "night";
+        $('#menuWeatherText').html("Night");
+
+    } else if (WEATHER == "night") {
+
+        WEATHER = "day-sunny";
+        $('#menuWeatherText').html("Day - Sunny");
+    }
 }
 
 function onWindowResize() {
@@ -2012,9 +2047,9 @@ function scene3DGround(_texture, _grid) {
 */
 
 // reproduction of a demo of @mrdoob by http://mrdoob.com/lab/javascript/webgl/clouds/
-function scene3DBlueSkyBackground(fill) {
+function scene3DSkyBackground(weather) {
 
-    if (fill) {
+    if (weather == 'day-sunny') {
         var canvas = document.createElement('canvas');
         canvas.width = 32;
         canvas.height = window.innerHeight;
@@ -2139,7 +2174,7 @@ function scene3DSky() {
     for (var i = 0; i < 20; i++) {
 
         plane.position.x = getRandomInt(-20, 20);
-        plane.position.y = getRandomInt(5, 8);
+        plane.position.y = getRandomInt(5.5, 10);
         plane.position.z = i;
         plane.rotation.z = getRandomInt(5, 10);
         plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);

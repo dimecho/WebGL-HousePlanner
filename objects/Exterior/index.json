@@ -1,43 +1,43 @@
 {
-    menu: [{
-        name: "Trees",
-        link: "javascript:showRightObjectMenu('Exterior/Trees');",
-        sub: null
+    "menu": [{
+        "name": "Trees",
+        "link": "Exterior/Trees",
+        "sub": null
     }, {
-        name: "Plants",
-        link: null,
-        sub: [{
-            name: 'Bushes',
-            link: "javascript:showRightObjectMenu('Exterior/Plants/Bushes');",
-            sub: null
+        "name": "Plants",
+        "link": null,
+        "sub": [{
+            "name": "Bushes",
+            "link": "Exterior/Plants/Bushes",
+            "sub": null
         }, {
-            name: 'Flowers',
-            link: "javascript:showRightObjectMenu('Exterior/Plants/Flowers');",
-            sub: null
+            "name": "Flowers",
+            "link": "Exterior/Plants/Flowers",
+            "sub": null
         }]
     }, {
-        name: "Driveway",
-        link: "javascript:showRightObjectMenu('Exterior/Driveway');",
-        sub: null
+        "name": "Driveway",
+        "link": "Exterior/Driveway",
+        "sub": null
     }, {
-        name: "Backyard",
-        link: "javascript:showRightObjectMenu('Exterior/Backyard');",
-        sub: null
+        "name": "Backyard",
+        "link": "Exterior/Backyard",
+        "sub": null
     }, {
-        name: "Fences",
-        link: "javascript:showRightObjectMenu('Exterior/Fences');",
-        sub: null
+        "name": "Fences",
+        "link": "Exterior/Fences",
+        "sub": null
     }, {
-        name: "Swimming Pools",
-        link: "javascript:showRightObjectMenu('Exterior/Pools');",
-        sub: null
+        "name": "Swimming Pools",
+        "link": "Exterior/Pools",
+        "sub": null
     }, {
-        name: "Animals",
-        link: "javascript:showRightObjectMenu('Exterior/Animals');",
-        sub: null
+        "name": "Animals",
+        "link": "Exterior/Animals",
+        "sub": null
     }, {
-        name: "Cars",
-        link: "javascript:showRightObjectMenu('Exterior/Cars');",
-        sub: null
+        "name": "Cars",
+        "link": "Exterior/Cars",
+        "sub": null
     }]
 }

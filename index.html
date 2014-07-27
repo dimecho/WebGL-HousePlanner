@@ -7,6 +7,9 @@
 
   <script src="js/jquery.js?v=2.1.1"></script>
   <script type="text/javascript" src="js/jquery.tooltipster.js"></script>
+  <script type="text/javascript" src="js/jdataview.js"></script>
+  <script type="text/javascript" src="js/jbinary.js"></script>
+
   <link rel="stylesheet" type="text/css" href="css/preloader.css"/>
   <link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
   <link rel="stylesheet" type="text/css" href="css/cssmenu.css">
@@ -521,14 +524,6 @@ http://www.flaticon.com
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <link rel="stylesheet" type="text/css" href="css/style2.css" />
 
-<script type="text/javascript" src="js/draggable.js"></script>
-<script type="text/javascript">
-$(function() {
-
-  $('#dragElement').drags();
-  //$('#wrap-left .with-handle').drags({handle:"strong"});
-});
-</script>
 <style>
 #dragElement {
   width:100px;
@@ -550,7 +545,6 @@ $(function() {
     font-style: italic;
     text-indent: -9999px;
 }
-
 </style>
 
 <div id="openLogin" class="modalDialog">
@@ -627,167 +621,33 @@ $(function() {
     </div>
     -->
     <div id="menuRight3DHouse" style="display: none;">
-      <script>
-      var data = {
-          menu: [{
-                  name: "Trees",
-                  link: "javascript:showRightObjectMenu('Exterior/Trees');",
-                  sub: null
-              }, {
-                  name: "Plants",
-                  link: null,
-                  sub: [{
-                      name: 'Bushes',
-                      link: "javascript:showRightObjectMenu('Exterior/Plants/Bushes');",
-                      sub: null
-                  }, {
-                      name: 'Flowers',
-                      link: "javascript:showRightObjectMenu('Exterior/Plants/Flowers');",
-                      sub: null
-                  }]
-              }, {
-                  name: "Driveway",
-                  link: "javascript:showRightObjectMenu('Exterior/Driveway');",
-                  sub: null
-              }, {
-                  name: "Backyard",
-                  link: "javascript:showRightObjectMenu('Exterior/Backyard');",
-                  sub: null
-              }, {
-                  name: "Fences",
-                  link: "javascript:showRightObjectMenu('Exterior/Fences');",
-                  sub: null
-              }, {
-                  name: "Swimming Pools",
-                  link: "javascript:showRightObjectMenu('Exterior/Pools');",
-                  sub: null
-              }, {
-                  name: "Animals",
-                  link: "javascript:showRightObjectMenu('Exterior/Animals');",
-                  sub: null
-              }, {
-                  name: "Cars",
-                  link: "javascript:showRightObjectMenu('Exterior/Cars');",
-                  sub: null
-              }]
-      };
-          
-      $(document).ready(function()
-      {
-          //$.getJSON('./objects/Exterior/index.json', function(data) {
-            //console.log(data);
-            var menu = $("#menuRight3DHouse .scroll .cssmenu > ul");
-            $.each(data.menu, function () {
-                menu.append(
-                    getMenuItem(this)
-                );
-            });
-          //});
-      });
-
-      function getMenuItem(itemData) {
-              var li = "<li>";
-              if (itemData.sub) {
-                li = "<li class='has-sub'>";
-              }
-
-              var item = $(li)
-                  .append(
-              $("<a>", {
-                  href: itemData.link,
-                  html: itemData.name
-              }));
-              if (itemData.sub) {
-                  var subList = $("<ul>");
-                  $.each(itemData.sub, function () {
-                      subList.append(getMenuItem(this));
-                  });
-                  item.append(subList);
-              }
-              return item;
-      }
-      </script>
       <div class="scroll" data-ui="jscroll-default">
-        <div class='cssmenu'>
-          <ul>
-          </ul>
+        <div class="cssmenu">
+          <ul></ul>
         </div>
       </div>
     </div>
 
     <div id="menuRight3DFloor" style="display: none;">
       <div class="scroll" data-ui="jscroll-default">
-        <div class='cssmenu'>
-          <ul>
-              <li class='has-sub'><a href='#'><span>Furniture</span></a>
-                <ul>
-                  <li><a href='#'><span>Sofas</span></a></li>
-                  <li><a href='#'><span>Armchairs</span></a></li>
-                  <li class='last-child'><a href='#'><span>Ottomans</span></a></li>
-                </ul>
-              </li>
-              <li class='has-sub'><a href='#'><span>Living Room</span></a>
-                <ul>
-                  <li><a href='#'><span>Paintings</span></a></li>
-                  <li class='last-child'><a href='#'><span>Miscellaneous Items</span></a></li>
-                </ul>
-              </li>
-              <li class='has-sub'><a href='#'><span>Bedroom</span></a>
-                <ul>
-                  <li><a href='#'><span>Beds</span></a></li>
-                  <li><a href='#'><span>Dressers</span></a></li>
-                  <li><a href='#'><span>Cabinets</span></a></li>
-                  <li class='last-child'><a href='#'><span>Table Lamps</span></a></li>
-                </ul>
-              </li>
-              <li class='has-sub'><a href='#'><span>Kitchen</span></a>
-                <ul>
-                  <li><a href='#'><span>Sinks</span></a></li>
-                  <li><a href='#'><span>Fridge</span></a></li>
-                  <li><a href='#'><span>Stove</span></a></li>
-                  <li><a href='#'><span>Cabinets</span></a></li>
-                  <li class='last-child'><a href='#'><span>Miscellaneous Items</span></a></li>
-                </ul>
-              </li>
-              <li class='has-sub'><a href='#'><span>Bathroom</span></a>
-                 <ul>
-                  <li><a href='#'><span>Sinks</span></a></li>
-                  <li><a href='#'><span>Tubs</span></a></li>
-                  <li><a href='#'><span>Mirrors</span></a></li>
-                  <li class='last-child'><a href='#'><span>Shelves</span></a></li>
-                </ul>
-              </li>
-              <li class='has-sub'><a href='#'><span>Tables</span></a>
-                <ul>
-                  <li><a href='#'><span>Dinning</span></a></li>
-                  <li><a href='#'><span>Computer</span></a></li>
-                  <li class='last-child'><a href='#'><span>Work Bench</span></a></li>
-                </ul>
-              </li>
-              <li class='has-sub'><a href='#'><span>Floors</span></a>
-                <ul>
-                  <li><a href='#'><span>Rugs</span></a></li>
-                  <li class='last-child'><a href='#'><span>Miscellaneous Items</span></a></li>
-                </ul>
-              </li>
-              <li><a href='#'><span>Lights</span></a></li>
-              <li><a href='#'><span>Doors</span></a></li>
-              <li><a href='#'><span>Outlets</span></a></li>
-              <li><a href='#'><span>Plants</span></a></li>
-              <li><a href='#'><span>Pets</span></a></li>
-              <li><a href='#'><span>Structural</span></a></li>
-              <li><a href='#'><span>Other Items</span></a></li>
-          </ul>
+        <div class="cssmenu">
+        <ul>
+        </ul>
         </div>
-        <div class="last"><a href="javascript:void(0)"></a></div>
       </div>
     </div>
                 
     <div id="menuRight2D" style="display: none;">
+      <div class="scroll" data-ui="jscroll-default">
+        <div class="cssmenu">
+        <ul>
+        </ul>
+        </div>
+      </div>
     </div>
 
-    <div id='menuRightObjects' style="display:none;">
-      <div class='cssmenu'>
+    <div id="menuRightObjects" style="display:none;">
+      <div class="cssmenu">
         <ul>
           <li><a href='#' onclick="showRightCatalogMenu()"><span>&#60; Back to Catalog</span></a></li>
         </ul>
@@ -978,8 +838,9 @@ $(document).ready(function() {
   		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
   			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
         <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem2"></a>
-  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem3"></a>
-  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem4"></a>
+        <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem3"></a>
+  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem4"></a>
+  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem5"></a>
   			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" ></a>
   			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
         <a href="#" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
@@ -1206,13 +1067,16 @@ $(document).ready(function() {
 <!--<script type="text/javascript" src="js/iscroll.js"></script>-->
 
 <script type="text/javascript" src="js/jquery.jscroll.js"></script>
+<script type="text/javascript" src="js/draggable.js"></script>
 
 <script type="text/javascript">
+
 function getCookie(name) {
   var value = "; " + document.cookie;
   var parts = value.split("; " + name + "=");
   if (parts.length == 2) return parts.pop().split(";").shift();
 }
+
 function createCookie(name,value,days) {
     if (days) {
         var date = new Date();
@@ -1222,6 +1086,81 @@ function createCookie(name,value,days) {
     else var expires = "";
     document.cookie = name+"="+value+expires+"; path=/";
 }
+  function getMenuItem(itemData, last) {
+    //console.log(itemData);
+    var li = "<li";
+    if (itemData.sub) {
+      li += " class='has-sub'";
+    }else if (last) {
+      li += " class='last-child'";
+    }
+    li += ">";
+
+    //var a =  $("<a>", {html:itemData.name,href:itemData.link});
+    var a = "<a";
+    if(itemData.link!=null)
+    {
+      a+=" href=\"javascript:showRightObjectMenu('" + itemData.link + "');\"";
+      //a+=" href=\"#\"";
+    }else{
+      a+=" href=\"#\"";
+    }
+    a += "><span>" + itemData.name + "</span></a>";
+
+    //console.log(a);
+    var item = $(li).append(a);
+
+    if (itemData.sub) {
+        var subList = $("<ul>");
+        $.each(itemData.sub, function(index) {
+          //console.log(this);
+          if (index == itemData.sub.length - 1) { // this is the last one
+            subList.append(getMenuItem(this,true));
+          }else{
+            subList.append(getMenuItem(this,false));
+          }
+        });
+        item.append(subList);
+    }
+    return item;
+  }
+
+$(document).ready(function()
+{
+
+  $('.scroll').jscroll({
+    //loadingHtml: '<small>Loading...</small>',
+    //padding: 20,
+    //nextSelector: 'a.jscroll-next:last',
+    //contentSelector: 'li'
+  });
+
+  //$('#dragElement').drags();
+
+  jBinary.load('./objects/Exterior/index.json', function(err, binary) {
+        var json = JSON.parse(binary.read('string'));
+        var menu = $("#menuRight3DHouse .scroll .cssmenu > ul");
+        $.each(json.menu, function () {
+          menu.append(getMenuItem(this));
+        });
+  });
+
+  jBinary.load('./objects/Interior/index.json', function(err, binary) {
+    var json = JSON.parse(binary.read('string'));
+    var menu = $("#menuRight3DFloor .scroll .cssmenu > ul");
+    $.each(json.menu, function () {
+          menu.append(getMenuItem(this));
+    });
+  });
+
+   jBinary.load('./objects/FloorPlan/index.json', function(err, binary) {
+    var json = JSON.parse(binary.read('string'));
+    var menu = $("#menuRight2D .scroll .cssmenu > ul");
+    $.each(json.menu, function () {
+          menu.append(getMenuItem(this,false));
+    });
+  });
+});
 
 var images = {};
 //var Agent;
@@ -1258,16 +1197,7 @@ Royal_Preloader.config({
       });
       */
     }
-    $(window).bind('load', function()
-   {
-     $('.scroll').jscroll({
-          //loadingHtml: '<small>Loading...</small>',
-          //padding: 20,
-          //nextSelector: 'a.jscroll-next:last',
-          //contentSelector: 'li'
-    });
-   });
-    
+  }
 
     //$(".scroll").css('height', window.innerHeight - 280);
     /*
@@ -1282,7 +1212,6 @@ Royal_Preloader.config({
     });
     document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
     */
-  }
 });
 
 $('#clippy').click(function (event) {
@@ -1317,14 +1246,9 @@ function agentToggle() {
 }
 </script>
 
-
-<script src="js/cssmenu.js"></script>
-<script src="js/jszip.js"></script>
-
-<script src="js/jdataview.js"></script>
-<script src="js/jbinary.js"></script>
-
-<script src="js/FileSaver.js"></script>
+<script type="text/javascript" src="js/cssmenu.js"></script>
+<script type="text/javascript" src="js/jszip.js"></script>
+<script type="text/javascript" src="js/FileSaver.js"></script>
 
 <script src="js/3d/three.js"></script>
 <script src="js/3d/Detector.js"></script>
