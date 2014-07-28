@@ -561,6 +561,13 @@ http://www.flaticon.com
 	</div>
 </div>
 
+<div id="openWebGLSettings" class="modalDialog">
+  <div>
+    <a href="#close" class="close">X</a>
+   
+  </div>
+</div>
+
 <div id="openThumb" class="modalDialog">
 	<div style="width:600px">
 		<a href="#close" class="close">X</a>
@@ -582,20 +589,6 @@ http://www.flaticon.com
 </div>
 
 <!-- Slide Right Menu -->
-<script>
- $(document).ready(function() {
-    $('.tooltip-top').tooltipster({
-   		animation: 'fade',
-  		delay: 200,
-   		theme: 'tooltipster-default',
-   		touchDevices: false,
-   		trigger: 'hover',
-   		position: 'top'
-		});
-    //toggleRight('menuRight');
-   });
-</script>
-
 <div id="menuRight" class="hide-right">
   <ul id="tab-right">
       <li>
@@ -611,7 +604,7 @@ http://www.flaticon.com
           <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
           <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
           <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
-          <a href="#" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
+          <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
       </div>
       <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
     </div>
@@ -686,18 +679,6 @@ http://www.flaticon.com
 <!-- END Slide Right Menu -->
 
 <!-- Slide Left Menu -->
-<script>
-$(document).ready(function() {
-        $('.tooltip-right').tooltipster({
-   		animation: 'fade',
-  		delay: 200,
-   		theme: 'tooltipster-default',
-   		touchDevices: false,
-   		trigger: 'hover',
-   		position: 'right'
-		});
-   });
-</script>
 <div id="menuLeft3DHouse" class="hide-left">
   <ul id="tab-left">
     <li>
@@ -723,7 +704,6 @@ $(document).ready(function() {
         </ul>
   </div>
 </div>
-<div class="clear"></div>
 
 <div id="menuLeft3DFloor" class="hide-left">
   <ul id="tab-left">
@@ -762,7 +742,6 @@ $(document).ready(function() {
       </div>
   </div>
 </div>
-<div class="clear"></div>
 <!-- END Slide Right Menu -->
 
 <!-- Suppliers -->
@@ -809,18 +788,18 @@ $(document).ready(function() {
 						</a>
 					</li>
 				</ul>
-	</section>
-</div>
-<!-- End Suppliers -->
+	  </section>
+  </div>
+  <!-- End Suppliers -->
 
-<!-- Map -->
+  <!-- Map -->
   <div id="info" class="panel" style="background-color: #fff;">
     <br/><br/><br/><br/><br/><br/>
   	<center><h1>Property Info & Agent Contact</h1></center>
   </div>
-<!-- End Map -->
+  <!-- End Map -->
 
-<!-- Thumbnail class="ui-widget-content" -->
+  <!-- Thumbnail class="ui-widget-content" -->
   <div id="menuTop">
 		<div style="display: inline-block;width:108px;">
 		  <a href="#openThumb"><img id="_imgHouse" src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000;" /></a>
@@ -870,12 +849,10 @@ $(document).ready(function() {
 	</div>
 
   <div id="menuFloorSelector" align="center">
-
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
       <a href="#" onclick="selectFloor(-1)" class="hi-icon icon-previous"></a>
     </div>
     <div id="menuFloorSelectorText" style="display: inline-block"></div>
-
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
       <a href="#" onclick="selectFloor(1)" class="hi-icon icon-next"></a>
     </div>
@@ -1136,6 +1113,23 @@ $(document).ready(function()
   });
 
   //$('#dragElement').drags();
+
+  $('.tooltip-right').tooltipster({
+      animation: 'fade',
+      delay: 200,
+      theme: 'tooltipster-default',
+      touchDevices: false,
+      trigger: 'hover',
+      position: 'right'
+  });
+  $('.tooltip-top').tooltipster({
+      animation: 'fade',
+      delay: 200,
+      theme: 'tooltipster-default',
+      touchDevices: false,
+      trigger: 'hover',
+      position: 'top'
+  });
 
   jBinary.load('./objects/Exterior/index.json', function(err, binary) {
         var json = JSON.parse(binary.read('string'));
