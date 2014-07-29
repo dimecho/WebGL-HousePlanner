@@ -173,29 +173,26 @@ function init() {
     //================================
     //Top View Camera
     camera3DQuad[0] = new THREE.OrthographicCamera(
-        window.innerWidth / -4, // Left
-        window.innerWidth / 4, // Right
-        window.innerHeight / 4, // Top
-        window.innerHeight / -4, // Bottom
-        0.1, // Near 
-        100); // Far -- enough to see the skybox
+        window.innerWidth / -100, // Left
+        window.innerWidth / 100, // Right
+        window.innerHeight / 80, // Top
+        window.innerHeight / -100, // Bottom
+        -30, // Near 
+        30); // Far -- enough to see the skybox
     camera3DQuad[0].up = new THREE.Vector3(0, 0, -1);
     camera3DQuad[0].lookAt(new THREE.Vector3(0, -1, 0));
 
-
     //Front View Camera
     camera3DQuad[1] = new THREE.OrthographicCamera(
-        window.innerWidth / -4, window.innerWidth / 4,
-        window.innerHeight / 4, window.innerHeight / -4, 1, 50);
+        window.innerWidth / -150, window.innerWidth / 150,
+        window.innerHeight / 80, window.innerHeight / -350, -30, 30);
     camera3DQuad[1].lookAt(new THREE.Vector3(0, 0, -1));
     camera3DQuad[1].position.set(0, 0, 10);
 
     //Side View Camera
-    camera3DQuad[2] = new THREE.OrthographicCamera(
-        window.innerWidth / -4, window.innerWidth / 4,
-        window.innerHeight / 4, window.innerHeight / -4, 0.1, 100);
+    camera3DQuad[2] = new THREE.OrthographicCamera(window.innerWidth / -150, window.innerWidth / 150, window.innerHeight / 80, window.innerHeight / -350, -30, 30);
     camera3DQuad[2].lookAt(new THREE.Vector3(1, 0, 0));
-    camera3DQuad[2].position.x = 1;
+    //camera3DQuad[2].position.set(0, 0, 0);
 
     //3D View Camera
     camera3DQuad[3] = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 50);
@@ -345,6 +342,7 @@ function init() {
     renderer.shadowMapEnabled = true;
     renderer.shadowMapAutoUpdate = true;
     renderer.shadowMapType = THREE.PCFSoftShadowMap; //THREE.PCFShadowMap; //THREE.BasicShadowMap;
+    renderer.autoClear = false; //REQUIRED: for split screen
     //renderer.physicallyBasedShading = true;
     //renderer.sortObjects = false;
     document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
@@ -1089,6 +1087,8 @@ function menuSelect(item, id, color) {
 
 function show2DContainer(b) {
     //console.log("show2DContainer " + b);
+    renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+    renderer.clear();
 
     scene3D.remove(sceneAmbientLight);
     //scene3D.remove(sceneDirectionalLight);
@@ -2622,24 +2622,28 @@ function animate() {
         if (SCENE == 'roof') {
             // setViewport parameters:
             //  lower_left_x, lower_left_y, viewport_width, viewport_height
-            renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-            renderer.clear();
 
+            //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+            //renderer.clear();
 
             // upper left corner
             renderer.setViewport(0, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-            renderer.render(scene3D, camera3DQuad[1]); //front 
+            renderer.render(scene3D, camera3DQuad[0]); //top
 
             // upper right corner
             renderer.setViewport(0.5 * window.innerWidth, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-            renderer.render(scene3D, camera3DQuad[0]); //top
+            renderer.render(scene3D, camera3DQuad[1]); //front 
 
             // lower left corner
             renderer.setViewport(0, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+            //camera3DQuad[2].updateProjectionMatrix();
             renderer.render(scene3D, camera3DQuad[2]); //side
 
             // lower right corner
             renderer.setViewport(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+            //renderer.setScissor(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+            //renderer.enableScissorTest(true);
+            //camera3DQuad[3].updateProjectionMatrix();
             renderer.render(scene3D, camera3DQuad[3]); //perspective
 
         } else {
@@ -2655,8 +2659,8 @@ function animate() {
             camera3D.quaternion.normalize();
         }
         */
-            renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-            renderer.clear();
+            //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+            //renderer.clear();
             renderer.render(scene3D, camera3D);
         }
 
@@ -2677,8 +2681,8 @@ function animate() {
 
     } else if (scene2D.visible) {
         //controls2D.update();
-        renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-        renderer.clear();
+        //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+        //renderer.clear();
         renderer.render(scene2D, camera2D);
     }
 }
@@ -2938,20 +2942,4 @@ function handleFile2DImageSelect(event) {
     // Read image file as a binary string.
     fileReader.readAsDataURL(event.target.files[0]);
     //fileReader.readAsBinaryString(event.target.files[0]);
-}
-
-function touch2DDrag(e) {
-    e.preventDefault();
-    var touch = e.originalEvent.changedTouches[0];
-    drag2D({
-        clientX: touch.pageX,
-        clientY: touch.pageY
-    });
-    return false;
-}
-
-function touch2DEnd(e) {
-    e.preventDefault();
-    $(window).unbind('touchmove', touch2DDrag).unbind('touchend', touch2DEnd);
-    return false;
 }
