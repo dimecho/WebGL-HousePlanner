@@ -96,11 +96,12 @@ var clickTime;
 
 //var keyboard = new THREE.KeyboardState();
 
-var scene2DDrawLineGeometry; //Temporary holder for mouse click and drag drawings
+var scene2DDrawLineGeometry = []; //Temporary holder for mouse click and drag drawings
 var scene2DDrawLine;
-var scene2DDrawLineMaterial; //Line thikness
-var scene2DDrawLineDashedMaterial;
+//var scene2DDrawLineMaterial; //Line thikness
+//var scene2DDrawLineDashedMaterial;
 var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
+var scene2DWallGeometry = []; //Multidymentional array, many floors have many walls and walls have many geomertry points
 
 var scene2DWallRegularMaterial;
 var scene2DWallRegularMaterialSelect;
@@ -139,7 +140,8 @@ function init() {
     scene2D = new Kinetic.Stage({
         container: 'KineticCanvas',
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
+        listening: true
     });
 
     projector = new THREE.Projector();
@@ -159,6 +161,11 @@ function init() {
     scene2DFloorContainer[0] = new Kinetic.Layer(); //= new THREE.Object3D();
     scene2DFloorContainer[1] = new Kinetic.Layer(); //= new THREE.Object3D();
     scene2DFloorContainer[2] = new Kinetic.Layer(); //= new THREE.Object3D();
+
+    scene2DWallGeometry[0] = new Array();
+    scene2DWallGeometry[1] = new Array();
+    scene2DWallGeometry[2] = new Array();
+
     scene3DPivotPoint = new THREE.Object3D();
 
     //scene2D.add(scene2DFloorContainer[0]);
@@ -231,7 +238,7 @@ function init() {
     var W = window.innerWidth * CELL_SIZE;
     var H = window.innerHeight * CELL_SIZE;
     gridXY.add(r);
-    for (i = 0; i < window.innerWidth + 1; i++) {
+    for (var i = 0; i < window.innerWidth + 1; i++) {
         var I = i * CELL_SIZE;
         var l = new Kinetic.Line({
             stroke: "#6dcff6",
@@ -239,7 +246,7 @@ function init() {
         });
         gridXY.add(l);
     }
-    for (j = 0; j < window.innerHeight + 1; j++) {
+    for (var j = 0; j < window.innerHeight + 1; j++) {
         var J = j * CELL_SIZE;
         var l2 = new Kinetic.Line({
             stroke: "#6dcff6",
@@ -251,7 +258,7 @@ function init() {
     scene2D.add(gridXY);
 
     //================================
-
+    /*
     scene2DDrawLineGeometry = new THREE.Geometry();
     scene2DDrawLineMaterial = new THREE.LineBasicMaterial({
         color: 0x000000,
@@ -267,7 +274,8 @@ function init() {
     });
 
     scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
-    //scene2DDrawLineContainer.add(scene2DDrawLine);
+    scene2DDrawLineContainer.add(scene2DDrawLine);
+    
 
     texture = new THREE.ImageUtils.loadTexture('./objects/FloorPlan/P0001.png');
     texture.wrapS = THREE.RepeatWrapping;
@@ -288,6 +296,7 @@ function init() {
     scene2DWallRegularMaterialSelect = new THREE.MeshBasicMaterial({
         map: texture
     });
+	*/
 
     var cubeMaterials = [
         new THREE.MeshBasicMaterial({
@@ -1201,37 +1210,10 @@ function hideElements(b) {
         engine.destroy();
         engine = null;
     }
-
     //scene3D.visible = !b;
     //scene2D.visible = b;
 
-    //document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
-
-    //scene2DFloorContainer[0].visible = b;
     //scene2DFloorContainer[0].traverse;
-
-    //controls2D.target = new THREE.Vector3(0, 0, 0);
-    /*
-    if (b) {
-        $(window).bind('mousedown', function(e) {
-            //mouse.set(e.clientX, e.clientY);
-            line = null;
-            $(window).bind('mousemove', drag2D).bind('mouseup', drag2DEnd);
-        });
-
-        $(window).bind('touchstart', function(e) {
-            e.preventDefault();
-            var touch = e.originalEvent.changedTouches[0];
-            //mouse.set(touch.pageX, touch.pageY);
-            line = null;
-            $(window).bind('touchmove', touch2DDrag).bind('touchend', touch2DEnd);
-            return false;
-        });
-    } else {
-        $(window).unbind('mousedown'); //Desktop
-        $(window).unbind('touchstart'); //Mobile
-    }
-    */
 }
 
 function selectFloor(next) {
@@ -1448,20 +1430,20 @@ function on2DMouseDown(event) {
 
     $("#KineticCanvas").bind('mousemove', on2DMouseMove);
 
-    scene2DDrawLineGeometry = []; //= new THREE.Object3D();
-    scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
-    var line = new Kinetic.Line({
-        points: scene2DDrawLineGeometry,
-        stroke: "black",
-        strokeWidth: 5,
-        lineCap: 'round',
-        lineJoin: 'round'
-    });
-    scene2DFloorContainer[FLOOR].add(line); //layer add line
-    scene2DDrawLine = line;
-    //scene2DFloorContainer[FLOOR].drawScene();
+    scene2DDrawLineGeometry.length = 0; //reset
 
-    if (TOOL2D == 'vector') {
+    if (TOOL2D == 'freestyle') {
+        scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+        scene2DDrawLine = new Kinetic.Line({
+            points: scene2DDrawLineGeometry,
+            stroke: "black",
+            strokeWidth: 5,
+            lineCap: 'round',
+            lineJoin: 'round'
+        });
+        scene2DFloorContainer[FLOOR].add(scene2DDrawLine); //layer add line
+
+    } else if (TOOL2D == 'vector') {
         //container.style.cursor = 'crosshair';
         //}else if (TOOL2D == 'freestyle') {
     } else {
@@ -1476,6 +1458,188 @@ function on2DMouseUp(event) {
     if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
 
     $("#KineticCanvas").unbind('mousemove', on2DMouseMove);
+
+    if (TOOL2D == 'freestyle') {
+
+        console.log("lines to analyze: " + scene2DDrawLineGeometry.length);
+
+        var scene2DDrawLineArray = [];
+        var arrayCount = 0;
+        var sensitivityRatio = 2;
+
+        var magicX = [];
+        var magicY = [];
+
+        var c = 0;
+        //Calculate 2D walls from mouse draw
+        for (var i = 0; i < scene2DDrawLineGeometry.length; i++) {
+
+            //console.log("(" + i + ")");
+
+            var Y_U = 0;
+            var Y_D = 0;
+            var Y_S = 0;
+
+            var X_L = 0;
+            var X_R = 0;
+            var X_S = 0;
+
+            var n;
+
+            //TODO: calculate geometric angle
+            //TODO: Detect circular geometry
+
+            for (var d = 1; d <= sensitivityRatio; d++) { //how many lines-segments to analyze before determining an angle or straight line
+
+                n = i + d;
+
+                if (n < scene2DDrawLineGeometry.length) {
+
+                    if ((scene2DDrawLineGeometry[i].y - 8) > scene2DDrawLineGeometry[n].y) {
+                        //console.log("Y line up " + n);
+                        Y_U += 1;
+                    } else if ((scene2DDrawLineGeometry[i].y + 8) < scene2DDrawLineGeometry[n].y) {
+                        //console.log("Y line down " + n);
+                        Y_D += 1;
+                    } else {
+                        //console.log("Y line straight " + n);
+                        Y_S += 1;
+                    }
+                    if ((scene2DDrawLineGeometry[i].x - 8) > scene2DDrawLineGeometry[n].x) {
+                        //console.log("X line left " + n);
+                        X_L += 1;
+                    } else if ((scene2DDrawLineGeometry[i].x + 8) < scene2DDrawLineGeometry[n].x) {
+                        //console.log("X line right " + n);
+                        X_R += 1;
+                    } else {
+                        //console.log("X line straight " + n);
+                        X_S += 1;
+                    }
+                    //magicNumberX += scene2DDrawLineGeometry[n].x;
+                    //magicNumberY += scene2DDrawLineGeometry[n].y;
+
+                } else {
+                    n = i + d - 1;
+                    break;
+                }
+            }
+
+            if (Y_U > Y_D && Y_U > Y_S) {
+                //console.log("Y is moving up");
+                magicY[c] = "up";
+
+            } else if (Y_D > Y_U && Y_D > Y_S) {
+                //console.log("Y is moving down");
+                magicY[c] = "down";
+
+            } else {
+                //console.log("Y is straight");
+                magicY[c] = "straight";
+            }
+
+            if (X_L > X_R && X_L > X_S) {
+                //console.log("X is moving left")
+                magicX[c] = "left";
+            } else if (X_R > X_L && X_R > X_S) {
+                //console.log("X is moving right")
+                magicX[c] = "right";
+            } else {
+                //console.log("X is straight")
+                magicX[c] = "straight";
+            }
+
+            var arrayWalls = [];
+            var arrayPoints = [];
+
+            if (magicY[c] == "straight") { // && (magicX[c] == "right" || magicX[c] == "left")) {
+
+                //console.log("total converted lines: " + magicY.length);
+
+                if (magicY[c - 1] == "straight") {
+
+                    //console.log(scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1]);
+                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][2] = scene2DDrawLineGeometry[n].x;
+                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][3] = scene2DDrawLineGeometry[i].y;
+                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][4] = scene2DDrawLineGeometry[n].x;
+                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][5] = scene2DDrawLineGeometry[i].y - 12;
+                } else {
+
+                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y);
+                    arrayPoints.push(scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y);
+                    arrayPoints.push(scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y - 12);
+                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y - 12);
+                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y); //complete
+                    arrayWalls.push(arrayPoints);
+                    scene2DWallGeometry[FLOOR].push(arrayWalls);
+                }
+            } else if ((magicY[c] == "up" || magicY[c] == "down")) {
+
+                if (magicY[c - 1] == "up" || magicY[c - 1] == "down") {
+
+                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][2] = scene2DDrawLineGeometry[i].x;
+                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][3] = scene2DDrawLineGeometry[n].y;
+                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][4] = scene2DDrawLineGeometry[i].x - 12;
+                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][5] = scene2DDrawLineGeometry[n].y;
+
+                } else {
+                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y);
+                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[n].y);
+                    arrayPoints.push(scene2DDrawLineGeometry[i].x - 12, scene2DDrawLineGeometry[n].y);
+                    arrayPoints.push(scene2DDrawLineGeometry[i].x - 12, scene2DDrawLineGeometry[i].y);
+                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y); //complete
+                    arrayWalls.push(arrayPoints);
+                    scene2DWallGeometry[FLOOR].push(arrayWalls);
+                }
+            }
+
+            i += sensitivityRatio;
+            c++;
+        }
+
+        //console.log(scene2DWallGeometry[FLOOR].length);
+
+        for (var i = 0; i < scene2DWallGeometry[FLOOR].length; i++) { //each floor
+
+            for (var p = 0; p < scene2DWallGeometry[FLOOR][i].length; p++) { //each wall
+
+                //console.log(scene2DWallGeometry[FLOOR][i][p]); //point array x,y
+
+                var pattern = document.createElement('canvas');
+                pattern.width = 40;
+                pattern.height = 40;
+                var pctx = pattern.getContext('2d');
+                pctx.fillStyle = "rgb(188, 222, 178)";
+                pctx.fillRect(0, 0, 20, 20);
+                pctx.fillRect(20, 20, 20, 20);
+                var img = new Image();
+                img.onload = function() {
+                    // img now contains your pattern
+                }
+                img.src = pattern.toDataURL();
+
+                var shape = new Kinetic.Polygon({
+                    points: scene2DWallGeometry[FLOOR][i][p],
+                    //fill: '#fff',
+                    fillPatternImage: img,
+                    stroke: '#555',
+                    strokeWidth: 2,
+                    alpha: 1
+                });
+
+                scene2DFloorContainer[FLOOR].add(shape);
+                //scene2DFloorContainer[FLOOR].drawScene();
+            }
+        }
+
+        scene2DDrawLineGeometry.length = 0;
+        scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+        scene2DFloorContainer[FLOOR].drawScene();
+
+        //scene2DFloorContainer[FLOOR].remove(scene2DDrawLine);
+        //scene2DFloorContainer[FLOOR].removeChildren();
+        //scene2DFloorContainer[FLOOR].drawScene();
+    }
+
 }
 
 function on2DMouseMove(event) {
@@ -1486,10 +1650,11 @@ function on2DMouseMove(event) {
         return;
     }
     //console.log(scene2D.getPointerPosition())
-    scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
-    scene2DDrawLine.setPoints(scene2DDrawLineGeometry);
-    //scene2DDrawLine.getPoints(scene2DDrawLineGeometry);
-    scene2DFloorContainer[FLOOR].drawScene();
+    if (TOOL2D == 'freestyle') {
+        scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+        scene2DDrawLine.setPoints(scene2DDrawLineGeometry);
+        scene2DFloorContainer[FLOOR].drawScene();
+    }
 }
 
 function on3DMouseMove(event) {
