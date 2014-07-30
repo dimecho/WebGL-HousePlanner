@@ -30,10 +30,9 @@ if (window.innerWidth === 0) {
     window.innerHeight = parent.innerHeight;
 }
 
-var onRenderFcts = [];
-var scene3D;
-var scene3DCube;
-var scene2D;
+var scene3D; //ThreeJS Canvas
+var scene3DCube; //ThreeJS Canvas
+var scene2D; //KineticJS Canvas
 
 var renderer;
 var rendererCube;
@@ -45,10 +44,11 @@ var scene3DHouseGroundContainer; //Grass Ground - 1 object
 var scene3DHouseFXContainer; //Visual Effects container (user not editable/animated) - fying bugs/birds/rainbows
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
-
 var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,tables)
-var scene2DFloorContainer = []; //Contains all 2D lines by floor
-var scene2DFloorDraftPlan = []; //Image as texture for plan tracing for multiple floors
+
+var scene2DFloorContainer = []; //Contains all 2D lines by floor (KineticJS - Layer)
+var scene2DFloorDraftPlan; //Image as texture for plan tracing for multiple floors
+
 var scene3DPivotPoint; //Rotational pivot point - 1 object
 var scene3DCubeMesh;
 
@@ -66,7 +66,7 @@ var controls3D;
 var camera3D;
 var camera3DQuad = [3];
 var camera3DQuadGrid;
-var camera2D;
+//var camera2D;
 var camera3DCube;
 var camera3DMirrorReflection;
 
@@ -100,7 +100,7 @@ var scene2DDrawLineGeometry; //Temporary holder for mouse click and drag drawing
 var scene2DDrawLine;
 var scene2DDrawLineMaterial; //Line thikness
 var scene2DDrawLineDashedMaterial;
-var scene2DDrawLineContainer; //Container of line geometries - need it as a collection for "quick hide"
+var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
 
 var scene2DWallRegularMaterial;
 var scene2DWallRegularMaterialSelect;
@@ -134,7 +134,14 @@ function init() {
 	*/
 
     scene3D = new THREE.Scene();
-    scene2D = new THREE.Scene();
+    //scene2D = new THREE.Scene();
+
+    scene2D = new Kinetic.Stage({
+        container: 'KineticCanvas',
+        width: window.innerWidth,
+        height: window.innerHeight
+    });
+
     projector = new THREE.Projector();
     //zip = new JSZip();
     clock = new THREE.Clock();
@@ -149,10 +156,12 @@ function init() {
     scene3DFloorContainer[0] = new THREE.Object3D();
     scene3DFloorContainer[1] = new THREE.Object3D();
     scene3DFloorContainer[2] = new THREE.Object3D();
-    scene2DFloorContainer[0] = new THREE.Object3D();
-    scene2DFloorContainer[1] = new THREE.Object3D();
-    scene2DFloorContainer[2] = new THREE.Object3D();
+    scene2DFloorContainer[0] = new Kinetic.Layer(); //= new THREE.Object3D();
+    scene2DFloorContainer[1] = new Kinetic.Layer(); //= new THREE.Object3D();
+    scene2DFloorContainer[2] = new Kinetic.Layer(); //= new THREE.Object3D();
     scene3DPivotPoint = new THREE.Object3D();
+
+    //scene2D.add(scene2DFloorContainer[0]);
 
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
@@ -161,9 +170,9 @@ function init() {
     camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 60); //600 if doing a sky wrap-up
     camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 
-    camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
-    camera2D.lookAt(new THREE.Vector3(0, 0, 0));
-    camera2D.position.z = 5000; // the camera starts at 0,0,0 so pull it back
+    //camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
+    //camera2D.lookAt(new THREE.Vector3(0, 0, 0));
+    //camera2D.position.z = 5000; // the camera starts at 0,0,0 so pull it back
 
     camera3DMirrorReflection = new THREE.CubeCamera(0.1, 10, 30);
     //camera3DMirrorReflection.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
@@ -203,11 +212,45 @@ function init() {
     camera3DQuadGrid.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
     //================================
 
+    /*
     var gridXY = new THREE.GridHelper(100, 2);
     gridXY.position.set(0, 0, 0);
     gridXY.rotation.x = Math.PI / 2;
     gridXY.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
     scene2D.add(gridXY);
+    */
+    var CELL_SIZE = $('#KineticCanvas').width() / 40;
+    var gridXY = new Kinetic.Layer();
+    var r = new Kinetic.Rect({
+        x: 0,
+        y: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        fill: 'transparent'
+    });
+    var W = window.innerWidth * CELL_SIZE;
+    var H = window.innerHeight * CELL_SIZE;
+    gridXY.add(r);
+    for (i = 0; i < window.innerWidth + 1; i++) {
+        var I = i * CELL_SIZE;
+        var l = new Kinetic.Line({
+            stroke: "#6dcff6",
+            points: [I, 0, I, H]
+        });
+        gridXY.add(l);
+    }
+    for (j = 0; j < window.innerHeight + 1; j++) {
+        var J = j * CELL_SIZE;
+        var l2 = new Kinetic.Line({
+            stroke: "#6dcff6",
+            points: [0, J, W, J]
+        });
+        gridXY.add(l2);
+    }
+    //gridXY.draw();
+    scene2D.add(gridXY);
+
+    //================================
 
     scene2DDrawLineGeometry = new THREE.Geometry();
     scene2DDrawLineMaterial = new THREE.LineBasicMaterial({
@@ -380,10 +423,13 @@ function init() {
     }
 
 
-    //$(renderer.domElement).bind('mousemove', onDocumentMouseMove);
-    $(renderer.domElement).bind('mousedown', onDocumentMouseDown);
-    $(renderer.domElement).bind('mouseup', onDocumentMouseUp);
+    //$(renderer.domElement).bind('mousemove', on3DMouseMove);
+    $(renderer.domElement).bind('mousedown', on3DMouseDown);
+    $(renderer.domElement).bind('mouseup', on3DMouseUp);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
+
+    $("#KineticCanvas").bind('mousedown', on2DMouseDown);
+    $("#KineticCanvas").bind('mouseup', on2DMouseUp);
 
     /*
     document.addEventListener('dragover', function(event) {
@@ -827,7 +873,7 @@ function show3DHouse() {
 
     SCENE = 'house';
 
-    show2DContainer(false);
+    hideElements(false);
     showWeather();
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
@@ -893,7 +939,8 @@ function show3DFloor() {
 
     SCENE = 'floor';
 
-    show2DContainer(false);
+    hideElements();
+
     showWeather();
 
     camera3D.position.set(0, 4, 12);
@@ -931,13 +978,16 @@ function show3DFloor() {
     //Auto open right menu
     document.getElementById('menuRight').setAttribute("class", "show-right");
     delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
+
+    $('#KineticCanvas').hide();
+    $('#WebGLCanvas').show();
 }
 
 function show3DFloorLevel() {
 
     SCENE = 'floorlevel';
 
-    show2DContainer(false);
+    hideElements();
     showWeather();
 
     camera3D.position.set(0, 4, 12);
@@ -957,13 +1007,17 @@ function show3DFloorLevel() {
 
     menuSelect(2, 'menuTopItem', '#ff3700');
     correctMenuHeight();
+
+    $('#KineticCanvas').hide();
+    $('#WebGLCanvas').show();
 }
 
 function show3DRoofDesign() {
 
     SCENE = 'roof';
 
-    show2DContainer(false);
+    hideElements();
+
     showWeather();
 
     //camera3D.position.set(0, 4, 12);
@@ -996,6 +1050,9 @@ function show3DRoofDesign() {
 
     menuSelect(3, 'menuTopItem', '#ff3700');
     correctMenuHeight();
+
+    $('#KineticCanvas').hide();
+    $('#WebGLCanvas').show();
 }
 
 function showWeather() {
@@ -1044,10 +1101,11 @@ function show2D() {
     SCENE = '2d';
 
     //camera2D.position.set(0, 8, 20);
-    show2DContainer(true);
+    hideElements();
+
     scene3DSkyBackground(null);
 
-    scene2D.add(scene2DFloorContainer[FLOOR]);
+    scene2D.add(scene2DFloorContainer[FLOOR]); //stage add layer
 
     if (TOOL2D == 'freestyle') {
         menuSelect(1, 'menuLeft2DItem', '#ff3700');
@@ -1071,6 +1129,9 @@ function show2D() {
     //Auto close right menu
     document.getElementById('menuRight').setAttribute("class", "hide-right");
     delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+
+    $('#WebGLCanvas').hide();
+    $('#KineticCanvas').show();
 }
 
 function menuSelect(item, id, color) {
@@ -1085,8 +1146,8 @@ function menuSelect(item, id, color) {
     }
 }
 
-function show2DContainer(b) {
-    //console.log("show2DContainer " + b);
+function hideElements(b) {
+    //console.log("hideElements " + b);
     renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
 
@@ -1114,9 +1175,9 @@ function show2DContainer(b) {
 
     for (var i = 0; i < scene3DFloorContainer.length; i++) {
         scene3D.remove(scene3DFloorContainer[i]);
-        scene2D.remove(scene2DFloorContainer[i]);
+        //scene2D.remove(scene2DFloorContainer[i]);
     }
-    scene2D.remove(scene2DDrawLineContainer);
+    //scene2D.remove(scene2DDrawLineContainer);
 
     scene3DCube.remove(scene3DCubeMesh);
 
@@ -1140,8 +1201,9 @@ function show2DContainer(b) {
         engine.destroy();
         engine = null;
     }
-    scene3D.visible = !b;
-    scene2D.visible = b;
+
+    //scene3D.visible = !b;
+    //scene2D.visible = b;
 
     //document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
 
@@ -1230,15 +1292,16 @@ function onWindowResize() {
     if (scene3D.visible) {
         camera3D.aspect = window.innerWidth / window.innerHeight;
         camera3D.updateProjectionMatrix();
-    } else if (scene2D.visible) {
-        camera2D.aspect = window.innerWidth / window.innerHeight;
-        camera2D.updateProjectionMatrix();
+        //} else if (scene2D.visible) {
+        //camera2D.aspect = window.innerWidth / window.innerHeight;
+        //camera2D.updateProjectionMatrix();
     }
     renderer.setSize(window.innerWidth, window.innerHeight);
     correctMenuHeight();
 }
 
 function correctMenuHeight() {
+
     var h = window.innerHeight - 250;
     var a;
     var b;
@@ -1255,6 +1318,8 @@ function correctMenuHeight() {
     } else if (SCENE == '2d') {
         a = $("#menuRight2D .cssmenu").height();
         b = $("#menuRight2D .scroll");
+    } else {
+        return;
     }
 
     $("#menuRightObjects .scroll").css('height', h);
@@ -1375,25 +1440,79 @@ function onDocumentDoubleClick(event) {
     }
 }
 
-function onDocumentMouseMove(event) {
+function on2DMouseDown(event) {
 
     event.preventDefault();
 
-    var x = (event.clientX / window.innerWidth) * 2 - 1;
-    var y = -(event.clientY / window.innerHeight) * 2 + 1;
+    if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
-    if (scene2D.visible) {
+    $("#KineticCanvas").bind('mousemove', on2DMouseMove);
 
-        //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
-        //===================================
-        /*
+    scene2DDrawLineGeometry = []; //= new THREE.Object3D();
+    scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+    var line = new Kinetic.Line({
+        points: scene2DDrawLineGeometry,
+        stroke: "black",
+        strokeWidth: 5,
+        lineCap: 'round',
+        lineJoin: 'round'
+    });
+    scene2DFloorContainer[FLOOR].add(line); //layer add line
+    scene2DDrawLine = line;
+    //scene2DFloorContainer[FLOOR].drawScene();
+
+    if (TOOL2D == 'vector') {
+        //container.style.cursor = 'crosshair';
+        //}else if (TOOL2D == 'freestyle') {
+    } else {
+        //container.style.cursor = 'pointer';
+    }
+}
+
+function on2DMouseUp(event) {
+
+    event.preventDefault();
+
+    if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
+
+    $("#KineticCanvas").unbind('mousemove', on2DMouseMove);
+}
+
+function on2DMouseMove(event) {
+
+    event.preventDefault();
+
+    if (!leftButtonDown) {
+        return;
+    }
+    //console.log(scene2D.getPointerPosition())
+    scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+    scene2DDrawLine.setPoints(scene2DDrawLineGeometry);
+    //scene2DDrawLine.getPoints(scene2DDrawLineGeometry);
+    scene2DFloorContainer[FLOOR].drawScene();
+}
+
+function on3DMouseMove(event) {
+
+    event.preventDefault();
+
+    if (!leftButtonDown) {
+        return;
+    }
+
+    //if (SCENE == '2d') {
+
+    //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
+    //===================================
+    /*
         vector = new THREE.Vector3(x, y, 0.5);
         projector = new THREE.Projector();
         projector.unprojectVector(vector, camera2D);
         var dir = vector.sub(camera2D.position).normalize();
         var distance = -camera2D.position.z / dir.z;
         var pos = camera2D.position.clone().add(dir.multiplyScalar(distance));
-        */
+    */
+    /*
         var planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 0.5), 0);
         vector = new THREE.Vector3(x, y, 0.5);
         var raycaster = projector.pickingRay(vector, camera2D);
@@ -1401,88 +1520,53 @@ function onDocumentMouseMove(event) {
         //console.log("x: " + pos.x + ", y: " + pos.y);
         //===================================
 
-        if (TOOL2D == '') { //Nothing selected, move grid X/Y
-
-            //TODO: ability to unslect current tool
-
-        } else if (TOOL2D == 'freestyle') {
-
             //TODO: Make eye-candy sketcher effects from mrdoob.com/projects/harmony/
 
             if (mouse.x != 0 && mouse.y != 0) {
-                scene2DDrawLineGeometry = new THREE.Geometry();
-                scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(mouse.x, mouse.y, 0.5));
-                scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(pos.x, pos.y, 0.5));
+
+                geometry = new THREE.Geometry();
+                geometry.vertices.push(new THREE.Vector3(mouse.x, mouse.y, 0.5));
+                geometry.vertices.push(new THREE.Vector3(pos.x, pos.y, 0.5));
                 //scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0.5));
+                //scene2DDrawLineGeometry.computeLineDistances(); //what is this?
+                scene2DDrawLineGeometry.merge(geometry);
 
                 scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
-                scene2DDrawLineContainer.add(scene2DDrawLine);
-                //scene2D.add(scene2DDrawLineContainer);
+                //scene2DDrawLineContainer.add(scene2DDrawLine);
+                scene2D.add(scene2DDrawLineContainer);
             }
             mouse.x = pos.x;
             mouse.y = pos.y;
+        */
+    //} else {
 
-        } else if (TOOL2D == 'vector') {
+    if (SELECTED != null) {
 
-            //container.style.cursor = 'crosshair';
+        var x = (event.clientX / window.innerWidth) * 2 - 1;
+        var y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-            //MouseMove = Selection
-            scene2DDrawLineGeometry = new THREE.Geometry();
-            scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(mouse.x, mouse.y, 0.5));
-            scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(pos.x, pos.y, 0.5));
-            scene2DDrawLineGeometry.computeLineDistances(); //what is this?
+        $('#WebGLInteractiveMenu').hide();
 
-            scene2DDrawLineContainer.remove(scene2DDrawLine);
-            scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineDashedMaterial, THREE.LineStrip);
-            scene2DDrawLineContainer.add(scene2DDrawLine);
+        if (TOOL3DINTERACTIVE == 'moveXY') {
 
+
+            vector = new THREE.Vector3(x, y, 0.5);
+            projector.unprojectVector(vector, camera3D);
+            var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+            var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
             /*
-            var material = new THREE.SpriteMaterial({
-                map: texture,
-                color: 0xffffff,
-                fog: true
-            });
-            //var width = material.map.image.width;
-            //var height = material.map.image.height;
-            sprite = new THREE.Sprite(material);
-            //sprite.scale.set( width, height, 1 );
-            //sprite.material.rotation += 0.1 * ( i / l );
-            sprite.position.set(0, 0, 1);
-            scene2D.add(sprite);
-            */
-
-        } else if (TOOL2D == 'square') {
-
-        } else if (TOOL2D == 'circle') {
-
-        }
-
-    } else if (leftButtonDown) {
-
-        if (SELECTED != null) {
-
-            $('#WebGLInteractiveMenu').hide();
-
-            if (TOOL3DINTERACTIVE == 'moveXY') {
-
-
-                vector = new THREE.Vector3(x, y, 0.5);
-                projector.unprojectVector(vector, camera3D);
-                var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
-                var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
-                /*
                 var c = THREE.Collisions.rayCastNearest(raycaster);
                 if (c) {
                     console.log("Found @ distance " + c.distance.toFixed(2));
                 }
                 */
 
-                if (intersects.length > 0) {
-                    //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
-                    SELECTED.position.x = intersects[0].point.x;
-                    SELECTED.position.z = intersects[0].point.z;
+            if (intersects.length > 0) {
+                //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
+                SELECTED.position.x = intersects[0].point.x;
+                SELECTED.position.z = intersects[0].point.z;
 
-                    /*
+                /*
                     var originPoint = intersects[0].object.position.clone();
                     for (var i = 0; i < intersects[0].object.geometry.vertices.length; i++) {
 
@@ -1497,44 +1581,42 @@ function onDocumentMouseMove(event) {
                         }
                     }
                     */
-                }
-
-            } else if (TOOL3DINTERACTIVE == 'moveZ') {
-
-                if (SELECTED.position.y >= 0) {
-
-                    if (mouse.y >= y && y > 0) {
-
-                        SELECTED.position.y -= y;
-
-                    } else {
-
-                        SELECTED.position.y += y;
-                    }
-
-                    //SELECTED.position.y = y;
-                } else {
-                    SELECTED.position.y = 0;
-                }
-
-            } else if (TOOL3DINTERACTIVE == 'rotate') {
-
-                //SELECTED.rotation.x += x * Math.PI / 180;
-                //SELECTED.rotation.y += y * Math.PI / 180;
-                //SELECTED.rotation.z += x; // * Math.PI / 180;
-
-                if (mouse.x >= x && x > 0) {
-                    SELECTED.rotation.y += x / 4;
-                } else {
-                    SELECTED.rotation.y -= x / 4;
-                }
-                //var axis = new THREE.Vector3(x, y, 0);
-                //SELECTED.rotateOnAxis(axis, 0);
-
-
             }
+
+        } else if (TOOL3DINTERACTIVE == 'moveZ') {
+
+            if (SELECTED.position.y >= 0) {
+
+                if (mouse.y >= y && y > 0) {
+
+                    SELECTED.position.y -= y;
+
+                } else {
+
+                    SELECTED.position.y += y;
+                }
+
+                //SELECTED.position.y = y;
+            } else {
+                SELECTED.position.y = 0;
+            }
+
+        } else if (TOOL3DINTERACTIVE == 'rotate') {
+
+            //SELECTED.rotation.x += x * Math.PI / 180;
+            //SELECTED.rotation.y += y * Math.PI / 180;
+            //SELECTED.rotation.z += x; // * Math.PI / 180;
+
+            if (mouse.x >= x && x > 0) {
+                SELECTED.rotation.y += x / 4;
+            } else {
+                SELECTED.rotation.y -= x / 4;
+            }
+            //var axis = new THREE.Vector3(x, y, 0);
+            //SELECTED.rotateOnAxis(axis, 0);
         }
-        /*
+    }
+    /*
         mouse.x = x;
         mouse.y = y;
 
@@ -1573,18 +1655,16 @@ function onDocumentMouseMove(event) {
             //container.style.cursor = 'auto';
         }
         */
-    }
 }
 
-function onDocumentMouseDown(event) {
+function on3DMouseDown(event) {
 
     event.preventDefault();
+    if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
     //clickTime = new Date().getTime();
 
-    $(renderer.domElement).bind('mousemove', onDocumentMouseMove);
-
-    if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
+    $(renderer.domElement).bind('mousemove', on3DMouseMove);
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -1592,31 +1672,16 @@ function onDocumentMouseDown(event) {
     AUTOROTATE = false;
     //renderer.antialias = false;
 
-    if (scene2D.visible) {
-        //reset
-        scene2DDrawLineContainer = new THREE.Object3D();
-        mouse = new THREE.Vector2()
-        scene2D.add(scene2DDrawLineContainer);
-        //$(window).bind('mousemove', drag2D).bind('mouseup', drag2DEnd);
+    //console.log("Mouse Down " + mouse.x + ":" + mouse.x + " " + event.clientX + "|" + window.innerWidth + ":" + event.clientY + "|" + window.innerHeight + " -> " + camera3D.position.z);
+    if (scene3DObjectSelect(mouse.x, mouse.y, camera3D)) {
 
-        if (TOOL2D == 'vector') {
-            //container.style.cursor = 'crosshair';
-        } else {
-            //container.style.cursor = 'pointer';
-        }
+        //Focus on 3D object
 
-    } else {
+        //camera3D.fov = currentFov.fov;
+        //camera3D.lookAt(intersects[0].object.position);
+        //camera3D.updateProjectionMatrix();
 
-        //console.log("Mouse Down " + mouse.x + ":" + mouse.x + " " + event.clientX + "|" + window.innerWidth + ":" + event.clientY + "|" + window.innerHeight + " -> " + camera3D.position.z);
-        if (scene3DObjectSelect(mouse.x, mouse.y, camera3D)) {
-
-            //Focus on 3D object
-
-            //camera3D.fov = currentFov.fov;
-            //camera3D.lookAt(intersects[0].object.position);
-            //camera3D.updateProjectionMatrix();
-
-            /*
+        /*
                 var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
                 var newQuaternion = new THREE.Quaternion();
                 THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
@@ -1625,52 +1690,52 @@ function onDocumentMouseDown(event) {
                 scene3D.updateMatrixWorld();
                 */
 
-            //Reset camera?
-            //var vector = new THREE.Vector3( 1, 0, 0 ); 
-            //vector.applyQuaternion( quaternion );
+        //Reset camera?
+        //var vector = new THREE.Vector3( 1, 0, 0 ); 
+        //vector.applyQuaternion( quaternion );
 
-            scene3DObjectSelectMenu(mouse.x, mouse.y);
+        scene3DObjectSelectMenu(mouse.x, mouse.y);
 
-            $('#WebGLInteractiveMenu').show();
+        $('#WebGLInteractiveMenu').show();
 
-        } else {
-            $('#WebGLInteractiveMenu').hide();
-            scene3D.add(scene3DPivotPoint);
-        }
-
-        clickTime = setTimeout(function() {
-            if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
-                //Auto close right menu
-                document.getElementById('menuRight').setAttribute("class", "hide-right");
-                delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
-
-                //Auto close left menu
-                if (SCENE == 'house') {
-                    document.getElementById('menuLeft3DHouse').setAttribute("class", "hide-left");
-                    delay(document.getElementById("arrow-left"), "images/arrowright.png", 400);
-                }
-            }
-        }, 1400);
+    } else {
+        $('#WebGLInteractiveMenu').hide();
+        scene3D.add(scene3DPivotPoint);
     }
+
+    clickTime = setTimeout(function() {
+        if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
+            //Auto close right menu
+            document.getElementById('menuRight').setAttribute("class", "hide-right");
+            delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+
+            //Auto close left menu
+            if (SCENE == 'house') {
+                document.getElementById('menuLeft3DHouse').setAttribute("class", "hide-left");
+                delay(document.getElementById("arrow-left"), "images/arrowright.png", 400);
+            }
+        }
+    }, 1400);
+
 }
 
-function onDocumentMouseUp(event) {
+function on3DMouseUp(event) {
 
     event.preventDefault();
 
-    $(renderer.domElement).unbind('mousemove', onDocumentMouseMove);
-
     if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
+
+    $(renderer.domElement).unbind('mousemove', on3DMouseMove);
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    if (scene2D.visible) {
+    if (SCENE == '2d') {
 
         //container.style.cursor = 'pointer';
 
         if (TOOL2D == 'freestyle') {
-
+            /*
             scene2D.remove(scene2DDrawLineContainer);
 
             //console.log("lines to analyze: " + scene2DDrawLineContainer.children.length);
@@ -1748,10 +1813,12 @@ function onDocumentMouseUp(event) {
 
                 mesh.position.z = 1;
 
-                scene2DFloorContainer[0].add(mesh);
+                //scene2DFloorContainer[0].add(mesh);
+
                 //scene2DDrawLineContainer.add(rectShape);
                 //scene2D.add(scene2DDrawLineContainer);
             }
+            */
         }
 
         //scene3D.updateMatrixWorld();
@@ -2679,11 +2746,9 @@ function animate() {
         particleLight.position.z = Math.cos( timer * 4 ) * 3009;
     	*/
 
-    } else if (scene2D.visible) {
+        //} else if (scene2D.visible) {
         //controls2D.update();
-        //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-        //renderer.clear();
-        renderer.render(scene2D, camera2D);
+        //renderer.render(scene2D, camera2D);
     }
 }
 
@@ -2928,6 +2993,7 @@ function handleFile2DImageSelect(event) {
             map: texture
         });
 
+        /*
         var vFOV = camera2D.fov * Math.PI / 180; // convert vertical fov to radians
         var height = 2 * Math.tan(vFOV / 2) * camera2D.position.z; // visible height
         var aspect = innerWidth / window.innerHeight;
@@ -2937,6 +3003,7 @@ function handleFile2DImageSelect(event) {
         scene2DFloorDraftPlan[0] = new THREE.Mesh(geometry, material);
         scene2DFloorDraftPlan[0].position.y = -0.5;
         scene2D.add(scene2DFloorDraftPlan[0]);
+        */
     }
 
     // Read image file as a binary string.

@@ -1023,27 +1023,30 @@ http://www.flaticon.com
   border-radius:15px;
 }
 </style>
-<div id="WebGLCanvas" tabindex="-1">
-  <form action="objects/index.php" method="post" enctype="multipart/form-data" id="uploadForm">
+
+<form action="objects/index.php" method="post" enctype="multipart/form-data" id="uploadForm">
     <input type="file" name="fileInput" id="fileInput"  hidden />
     <input type="submit" id="fileSubmit" value="Upload" hidden />
-  </form>
-  <div id="WebGLHelp">?</div>
-  <div id="WebGLCubeCanvas"></div>
-  <div id="WebGLInteractiveMenu">
-    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
+</form>
+
+<div id="WebGLCanvas"></div>
+<div id="KineticCanvas"></div>
+<div id="WebGLHelp">?</div>
+<div id="WebGLCubeCanvas"></div>
+<div id="WebGLInteractiveMenu">
+  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
       <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
       <a href="#" onclick="menuSelect(1,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveZ'" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem1"></a>
       <a href="#" onclick="menuSelect(2,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='rotate'" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem2"></a>
       <a href="#" onclick="menuSelect(3,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='resize'" class="hi-icon icon-resize tooltip" title="Resize" id="menuInteractiveItem3"></a>
       <a href="#" onclick="" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem4"></a>
       <a href="#" onclick="" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem5"></a>
-    </div>
-    <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
-        <p>Object Textures</p>
-    </blockquote>
   </div>
+  <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
+    <p>Object Textures</p>
+  </blockquote>
 </div>
+
 
 <script type="text/javascript" src="js/preloader.js"></script>
 <!--
@@ -1253,6 +1256,8 @@ function agentToggle() {
 <script type="text/javascript" src="js/cssmenu.js"></script>
 <script type="text/javascript" src="js/jszip.js"></script>
 <script type="text/javascript" src="js/FileSaver.js"></script>
+
+<script src="js/kinetic.js"></script>
 
 <script src="js/3d/three.js"></script>
 <script src="js/3d/Detector.js"></script>
