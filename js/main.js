@@ -4,9 +4,9 @@ Preview: http://houseplanner.iroot.ca
 Source Code: https://github.com/poofik/webgl-houseplanner
 
 TODO:
-- [difficulty: 10/10 progress: 5%]  Finish 2D floor plan gyometry drafting
-- [difficulty: 3/10  progress: 80%] 2D floor plan select and overlay external draft image
-- [difficulty: 8/10  progress: 5%]  Toolbar edit functions for 2D floor plans
+- [difficulty: 10/10 progress: 8%]  Finish 2D floor plan gyometry drafting
+- [difficulty: 3/10  progress: 90%] 2D floor plan select and overlay external draft image
+- [difficulty: 8/10  progress: 10%] Toolbar edit functions for 2D floor plans
 - [difficulty: 9/10  progress: 10%] Make converter function to "extrude" 2D into 3D walls
 - [difficulty: 6/10  progress: 0%]  Make front walls 80% transparent in 3D rotation
 - [difficulty: 8/10  progress: 3%]  3D movable objects and collision detection
@@ -46,17 +46,17 @@ var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,tables)
 
-var scene2DFloorContainer = []; //Contains all 2D lines by floor (KineticJS - Layer)
-var scene2DFloorDraftPlan; //Image as texture for plan tracing for multiple floors
+var scene2DFloorContainer = []; //KineticJS Layer contains all 2D lines by floor
+var scene2DFloorDraftPlanImage = []; //KineticJS Image for plan tracing for multiple floors
+var scene2DFloorDraftPlanLayer; //KineticJS Layer
 
-var scene3DPivotPoint; //Rotational pivot point - 1 object
+var scene3DPivotPoint; //ThreeJS rotational pivot point - 1 object
 var scene3DCubeMesh;
 
 var sceneAmbientLight;
 var sceneDirectionalLight;
 var sceneSpotLight;
 var sceneHemisphereLight;
-
 //var sceneParticleLight;
 //var scenePointLight;
 
@@ -78,8 +78,6 @@ var weatherSkyMesh;
 var weatherSnowMesh;
 var weatherRainMesh;
 
-//var stats;
-
 var RADIAN = Math.PI / 180;
 var AUTOROTATE = true;
 var SCENE = 'house';
@@ -97,11 +95,10 @@ var clickTime;
 //var keyboard = new THREE.KeyboardState();
 
 var scene2DDrawLineGeometry = []; //Temporary holder for mouse click and drag drawings
-var scene2DDrawLine;
-//var scene2DDrawLineMaterial; //Line thikness
-//var scene2DDrawLineDashedMaterial;
-var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
+var scene2DDrawLine; //KineticJS Line form with color/border/points
+//var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
 var scene2DWallGeometry = []; //Multidymentional array, many floors have many walls and walls have many geomertry points
+var scene3DWallDimentions; //Contains real-life (visual) Array 3 dimentions for scene2DWallGeometry W/L/H
 
 var scene2DWallRegularMaterial;
 var scene2DWallRegularMaterialSelect;
@@ -118,6 +115,7 @@ var material;
 var texture;
 var mesh;
 var zip;
+//var stats;
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
@@ -165,6 +163,7 @@ function init() {
     scene2DWallGeometry[0] = new Array();
     scene2DWallGeometry[1] = new Array();
     scene2DWallGeometry[2] = new Array();
+    scene3DWallDimentions = new THREE.Vector3();
 
     scene3DPivotPoint = new THREE.Object3D();
 
@@ -226,25 +225,40 @@ function init() {
     gridXY.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
     scene2D.add(gridXY);
     */
+
+    scene2DFloorDraftPlanLayer = new Kinetic.Layer();
+
     var CELL_SIZE = $('#KineticCanvas').width() / 40;
-    var gridXY = new Kinetic.Layer();
+    //var gridXY = new Kinetic.Layer();
+
+    var circle = new Kinetic.Circle({
+        x: scene2D.getWidth() / 2,
+        y: scene2D.getHeight() / 2,
+        radius: 400,
+        fill: '#E6E6E6',
+        stroke: '#B2B2B2',
+        strokeWidth: 2,
+        opacity: 0.8
+    });
+    scene2DFloorDraftPlanLayer.add(circle);
+
     var r = new Kinetic.Rect({
         x: 0,
         y: 0,
         width: window.innerWidth,
         height: window.innerHeight,
-        fill: 'transparent'
+        //fill: 'transparent'
     });
     var W = window.innerWidth * CELL_SIZE;
     var H = window.innerHeight * CELL_SIZE;
-    gridXY.add(r);
+    scene2DFloorDraftPlanLayer.add(r);
     for (var i = 0; i < window.innerWidth + 1; i++) {
         var I = i * CELL_SIZE;
         var l = new Kinetic.Line({
             stroke: "#6dcff6",
             points: [I, 0, I, H]
         });
-        gridXY.add(l);
+        scene2DFloorDraftPlanLayer.add(l);
     }
     for (var j = 0; j < window.innerHeight + 1; j++) {
         var J = j * CELL_SIZE;
@@ -252,10 +266,11 @@ function init() {
             stroke: "#6dcff6",
             points: [0, J, W, J]
         });
-        gridXY.add(l2);
+        scene2DFloorDraftPlanLayer.add(l2);
     }
     //gridXY.draw();
-    scene2D.add(gridXY);
+    scene2D.add(scene2DFloorDraftPlanLayer);
+    //scene2D.add(gridXY);
 
     //================================
     /*
@@ -1184,9 +1199,9 @@ function hideElements(b) {
 
     for (var i = 0; i < scene3DFloorContainer.length; i++) {
         scene3D.remove(scene3DFloorContainer[i]);
-        //scene2D.remove(scene2DFloorContainer[i]);
+        scene2D.remove(scene2DFloorContainer[i]);
     }
-    //scene2D.remove(scene2DDrawLineContainer);
+    //scene2D.remove(scene2DFloorDraftPlanLayer);
 
     scene3DCube.remove(scene3DCubeMesh);
 
@@ -1202,6 +1217,7 @@ function hideElements(b) {
     $('#menuRight').hide();
 
     $('#menuFloorSelector').hide();
+    $("#menuWallInput").hide();
     $('#menuWeather').hide();
 
     scene3DObjectUnselect();
@@ -1430,8 +1446,9 @@ function on2DMouseDown(event) {
 
     $("#KineticCanvas").bind('mousemove', on2DMouseMove);
 
-    scene2DDrawLineGeometry.length = 0; //reset
+    $("#menuWallInput").hide(); //TODO: analyze and store input
 
+    scene2DDrawLineGeometry.length = 0; //reset
     if (TOOL2D == 'freestyle') {
         scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
         scene2DDrawLine = new Kinetic.Line({
@@ -1465,7 +1482,7 @@ function on2DMouseUp(event) {
 
         var scene2DDrawLineArray = [];
         var arrayCount = 0;
-        var sensitivityRatio = 2;
+        var sensitivityRatio = 5;
 
         var magicX = [];
         var magicY = [];
@@ -1572,6 +1589,7 @@ function on2DMouseUp(event) {
                     arrayWalls.push(arrayPoints);
                     scene2DWallGeometry[FLOOR].push(arrayWalls);
                 }
+
             } else if ((magicY[c] == "up" || magicY[c] == "down")) {
 
                 if (magicY[c - 1] == "up" || magicY[c - 1] == "down") {
@@ -1627,6 +1645,10 @@ function on2DMouseUp(event) {
                 });
 
                 scene2DFloorContainer[FLOOR].add(shape);
+
+                $("#menuWallInput").css('left', scene2DWallGeometry[FLOOR][i][p][0]);
+                $("#menuWallInput").css('top', scene2DWallGeometry[FLOOR][i][p][1]);
+                $("#menuWallInput").show();
                 //scene2DFloorContainer[FLOOR].drawScene();
             }
         }
@@ -2013,6 +2035,17 @@ function on3DMouseUp(event) {
         }
         //container.style.cursor = 'auto';
     }
+}
+
+function scene3DObjectSelectRemove() {
+
+    if (SCENE == 'house') {
+        scene3DHouseContainer.remove(SELECTED);
+    } else if (SCENE == 'floor') {
+        scene3DFloorContainer[FLOOR].remove(SELECTED);
+    }
+
+    $('#WebGLInteractiveMenu').hide();
 }
 
 function scene3DObjectSelectMenu(x, y) {
@@ -2917,83 +2950,6 @@ function animate() {
     }
 }
 
-function drag2D(e) {
-
-    //var point = calc2Dpoint(x, y, 0.5, camera2D);
-    //var point = projector.projectVector(new THREE.Vector3(e.clientX, e.clientY, 0), camera2D);
-
-    //console.log("draw W:" + renderer.domElement.width + " H:" + renderer.domElement.height);
-
-    x = (e.clientX - (window.innerWidth / 2)) / 20;
-    y = ((window.innerHeight / 2) - e.clientY) / 20;
-
-    /*
-    var PI2 = Math.PI * 2;
-    var material = new THREE.SpriteCanvasMaterial({
-        color: 0x000000,
-        program: function(context) {
-            context.beginPath();
-            context.arc(0, 0, 0.5, 0, PI2, true);
-            context.fill();
-        }
-    });
-	*/
-    /*
-    var particle = new THREE.Sprite(material);
-    particle.position.x = e.clientX; //Math.random() * 2 - 1;
-    particle.position.y = e.clientY; //Math.random() * 2 - 1;
-    particle.position.z = 0; //Math.random() * 2 - 1;
-    particle.position.normalize();
-    particle.position.multiplyScalar(Math.random() * 10 + 450);
-    particle.scale.x = particle.scale.y = 10;
-    scene2D.add(particle);
-    geometry.vertices.push(particle.position);
-	*/
-
-    if (mouse2D.x != 0 && mouse2D.y != 0) {
-        var scene2DDrawLineGeometry = new THREE.Geometry();
-        //scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
-        scene2DDrawLineGeometry.vertices.push(mouse2D);
-        scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0.5));
-        //scene2DDrawLineGeometry.vertices.push(mouse2D);
-        var scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
-        scene2DDrawLineContainer.add(scene2DDrawLine);
-        //scene2D.add(scene2DDrawLineContainer);
-    }
-
-    //geometry.vertices.push(mouse2D);
-    //geometry.faces.push(new THREE.Face3(0, 1, 2));
-    //geometry.computeFaceNormals();
-    //var line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
-    //    color: 0x000000,
-    //    linewidth: 3,
-    //    opacity: 0.5
-    //}));
-    //scene2D.add(line);
-
-    mouse2D = new THREE.Vector3(x, y, 0.5); //remmember for next time around
-
-    //console.log("draw X:" + x + " Y:" + y);
-
-    /*
-    if (!line) {
-        var v1 = makePoint(mouse);
-        var v2 = makePoint(x, y);
-        line = two.makeCurve([v1, v2], true);
-        line.noFill().stroke = '#333';
-        line.linewidth = 10;
-        _.each(line.vertices, function(v) {
-            v.addSelf(line.translation);
-        });
-        line.translation.clear();
-    } else {
-        var v1 = makePoint(x, y);
-        line.vertices.push(v1);
-    }
-    mouse.set(x, y);
-    */
-}
-
 function fileSelect(action) {
     // Check for the various File API support.
     if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -3003,7 +2959,6 @@ function fileSelect(action) {
         if (action == '2ddraftplan') {
 
             $('#fileInput').bind('change', handleFile2DImageSelect);
-            scene2D.remove(scene2DFloorDraftPlan[0]);
 
         } else if (action == '3dobject') {
 
@@ -3153,25 +3108,33 @@ function handleFile2DImageSelect(event) {
 
     fileReader.onload = function(e) {
 
-        var texture = new THREE.ImageUtils.loadTexture(e.target.result);
-        var material = new THREE.MeshBasicMaterial({
-            map: texture
+        var img = new Image();
+        img.src = e.target.result;
+
+        scene2DFloorDraftPlanImage[FLOOR] = new Kinetic.Image({
+            x: 0,
+            y: 0,
+            image: img,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            opacity: 0.8
         });
 
-        /*
-        var vFOV = camera2D.fov * Math.PI / 180; // convert vertical fov to radians
-        var height = 2 * Math.tan(vFOV / 2) * camera2D.position.z; // visible height
-        var aspect = innerWidth / window.innerHeight;
-        var width = height * aspect; // visible width
-
-        var geometry = new THREE.PlaneGeometry(width, height, 10, 10);
-        scene2DFloorDraftPlan[0] = new THREE.Mesh(geometry, material);
-        scene2DFloorDraftPlan[0].position.y = -0.5;
-        scene2D.add(scene2DFloorDraftPlan[0]);
-        */
+        scene2DFloorDraftPlanLayer.add(scene2DFloorDraftPlanImage[FLOOR]);
+        scene2DFloorDraftPlanImage[FLOOR].moveToBottom();
+        scene2DFloorDraftPlanLayer.draw();
     }
 
     // Read image file as a binary string.
     fileReader.readAsDataURL(event.target.files[0]);
     //fileReader.readAsBinaryString(event.target.files[0]);
+}
+/*
+box.on("dragend", function(){
+    snaptogrid(box);
+  });
+*/
+function snaptogrid(object) {
+    object.x = Math.floor(object.x / 100) * 100 + 50;
+    object.y = Math.floor(object.y / 100) * 100 + 50;
 }

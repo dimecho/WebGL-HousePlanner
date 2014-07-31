@@ -112,6 +112,12 @@ div.clear { clear: both; }
     z-index: 1;
 }
 
+#menuWallInput{
+    width: 100px;
+    position: fixed;
+    z-index: 10;
+}
+
 #tab-right{
     float: left;
     list-style: none outside none;
@@ -1029,24 +1035,31 @@ http://www.flaticon.com
     <input type="submit" id="fileSubmit" value="Upload" hidden />
 </form>
 
-<div id="WebGLCanvas"></div>
-<div id="KineticCanvas"></div>
-<div id="WebGLHelp">?</div>
-<div id="WebGLCubeCanvas"></div>
-<div id="WebGLInteractiveMenu">
-  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
-      <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
-      <a href="#" onclick="menuSelect(1,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveZ'" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem1"></a>
-      <a href="#" onclick="menuSelect(2,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='rotate'" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem2"></a>
-      <a href="#" onclick="menuSelect(3,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='resize'" class="hi-icon icon-resize tooltip" title="Resize" id="menuInteractiveItem3"></a>
-      <a href="#" onclick="" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem4"></a>
-      <a href="#" onclick="" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem5"></a>
+<div id="WebGLCanvas">
+  <div id="WebGLHelp">?</div>
+  <div id="WebGLCubeCanvas"></div>
+  <div id="WebGLInteractiveMenu">
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
+        <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
+        <a href="#" onclick="menuSelect(1,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveZ'" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem1"></a>
+        <a href="#" onclick="menuSelect(2,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='rotate'" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem2"></a>
+        <a href="#" onclick="menuSelect(3,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='resize'" class="hi-icon icon-resize tooltip" title="Resize" id="menuInteractiveItem3"></a>
+        <a href="#" onclick="" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem4"></a>
+        <a href="#" onclick="scene3DObjectSelectRemove()" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem5"></a>
+    </div>
+    <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
+      <p>Object Textures</p>
+    </blockquote>
   </div>
-  <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
-    <p>Object Textures</p>
-  </blockquote>
 </div>
 
+<div id="KineticCanvas">
+  <div id="menuWallInput">
+    <div id="links-left" style="width:100px;">
+      <input type="text" name="wallInput" id="wallInput" size="9" />
+    </div>
+  </div>
+</div>
 
 <script type="text/javascript" src="js/preloader.js"></script>
 <!--
