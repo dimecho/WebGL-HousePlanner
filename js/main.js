@@ -446,6 +446,15 @@ function init() {
         })();
     }
 
+    window.cancelRequestAnimationFrame = (function() {
+        return window.cancelAnimationFrame ||
+            window.webkitCancelRequestAnimationFrame ||
+            window.mozCancelRequestAnimationFrame ||
+            window.oCancelRequestAnimationFrame ||
+            window.msCancelRequestAnimationFrame ||
+            clearTimeout
+    })();
+
 
     //$(renderer.domElement).bind('mousemove', on3DMouseMove);
     $(renderer.domElement).bind('mousedown', on3DMouseDown);
@@ -763,7 +772,6 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
         fullpath = fullpath.replace(r, '');
         console.log(fullpath + "objects/" + js + " > " + filename + " > " + ext);
         */
-
         /*
         switch (window.location.protocol) {
             case 'http:':
@@ -792,7 +800,6 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
                 });
 				
                 url = "./objects/" + js.slice(0, -4) + ".js";
-
                 break;
             default:
         }
@@ -819,28 +826,6 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
         loader.load(url, callback, urlTextures);
     }
 }
-
-/*
-function loadBabylon(js, object, x, y, z, xaxis, yaxis, ratio) {
-
-    var loader = new THREE.BabylonLoader();
-
-    loader.load("./objects/" + js, function(geometry, materials) {
-        var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        //mesh.overdraw = true;
-        mesh.position.x = x;
-        mesh.position.y = y;
-        mesh.position.z = z;
-        mesh.doubleSided = false;
-        //mesh.matrixAutoUpdate = false;
-        //mesh.updateMatrix();
-        object.add(mesh);
-    }, "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/");
-}
-*/
 
 function cube(size) {
 
@@ -1441,7 +1426,17 @@ function onDocumentDoubleClick(event) {
 function on2DMouseDown(event) {
 
     event.preventDefault();
-
+    /*
+    if (event.touches && event.touches.length > 0) leftButtonDown = true;
+    switch (event.button) {
+        case 0:
+            leftButtonDown = true;
+        case 1:
+            //BUTTON_MIDDLE;
+        case 2:
+            //BUTTON_RIGHT
+    }
+    */
     if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
     $("#KineticCanvas").bind('mousemove', on2DMouseMove);
