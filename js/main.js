@@ -32,7 +32,7 @@ if (window.innerWidth === 0) {
 
 var scene3D; //ThreeJS Canvas
 var scene3DCube; //ThreeJS Canvas
-var scene2D; //KineticJS Canvas
+var scene2D; //HTML Canvas
 
 var renderer;
 var rendererCube;
@@ -46,11 +46,10 @@ var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,tables)
 
-var scene2DFloorContainer = []; //KineticJS Layer contains all 2D lines by floor
-var scene2DFloorDraftPlanImage = []; //KineticJS Image for plan tracing for multiple floors
-var scene2DFloorDraftPlanLayer; //KineticJS Layer
+var scene2DFloorContainer = []; //2D Layer contains all 2D lines by floor
+var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 
-var scene3DPivotPoint; //ThreeJS rotational pivot point - 1 object
+var scene3DPivotPoint; //3D Layer rotational pivot point - 1 object
 var scene3DCubeMesh;
 
 var sceneAmbientLight;
@@ -95,7 +94,7 @@ var clickTime;
 //var keyboard = new THREE.KeyboardState();
 
 var scene2DDrawLineGeometry = []; //Temporary holder for mouse click and drag drawings
-var scene2DDrawLine; //KineticJS Line form with color/border/points
+var scene2DDrawLine; //2D Line form with color/border/points
 //var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
 var scene2DWallGeometry = []; //Multidymentional array, many floors have many walls and walls have many geomertry points
 var scene3DWallDimentions; //Contains real-life (visual) Array 3 dimentions for scene2DWallGeometry W/L/H
@@ -133,14 +132,28 @@ function init() {
 	*/
 
     scene3D = new THREE.Scene();
-    //scene2D = new THREE.Scene();
-
+    /*
+    scene2D = new THREE.Scene();
     scene2D = new Kinetic.Stage({
-        container: 'KineticCanvas',
+        container: 'HTMLCanvas',
         width: window.innerWidth,
         height: window.innerHeight,
         listening: true
     });
+    */
+    scene2D = new fabric.Canvas('HTMLCanvas', {
+        isDrawingMode: true,
+        width: window.innerWidth,
+        height: window.innerHeight
+    });
+    if (scene2D.freeDrawingBrush) {
+        scene2D.freeDrawingBrush.color = "#000";
+        scene2D.freeDrawingBrush.width = 8; //parseInt(drawingLineWidthEl.value, 10) || 1;
+        scene2D.freeDrawingBrush.shadowBlur = 0;
+    }
+    //scene2D.renderAll();
+
+    fabric.Object.prototype.transparentCorners = false;
 
     projector = new THREE.Projector();
     //zip = new JSZip();
@@ -156,9 +169,10 @@ function init() {
     scene3DFloorContainer[0] = new THREE.Object3D();
     scene3DFloorContainer[1] = new THREE.Object3D();
     scene3DFloorContainer[2] = new THREE.Object3D();
-    scene2DFloorContainer[0] = new Kinetic.Layer(); //= new THREE.Object3D();
-    scene2DFloorContainer[1] = new Kinetic.Layer(); //= new THREE.Object3D();
-    scene2DFloorContainer[2] = new Kinetic.Layer(); //= new THREE.Object3D();
+
+    scene2DFloorContainer[0] = new fabric.Group(); //= new Kinetic.Layer(); //= new THREE.Object3D();
+    scene2DFloorContainer[1] = new fabric.Group(); //= new Kinetic.Layer(); //= new THREE.Object3D();
+    scene2DFloorContainer[2] = new fabric.Group(); //= new Kinetic.Layer(); //= new THREE.Object3D();
 
     scene2DWallGeometry[0] = new Array();
     scene2DWallGeometry[1] = new Array();
@@ -216,63 +230,24 @@ function init() {
 
     camera3DQuadGrid = new THREE.GridHelper(25, 1);
     camera3DQuadGrid.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
-    //================================
-
-    /*
-    var gridXY = new THREE.GridHelper(100, 2);
-    gridXY.position.set(0, 0, 0);
-    gridXY.rotation.x = Math.PI / 2;
-    gridXY.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
-    scene2D.add(gridXY);
-    */
-
-    scene2DFloorDraftPlanLayer = new Kinetic.Layer();
-
-    var CELL_SIZE = $('#KineticCanvas').width() / 40;
-    //var gridXY = new Kinetic.Layer();
-
-    var circle = new Kinetic.Circle({
-        x: scene2D.getWidth() / 2,
-        y: scene2D.getHeight() / 2,
-        radius: 400,
-        fill: '#E6E6E6',
-        stroke: '#B2B2B2',
-        strokeWidth: 2,
-        opacity: 0.8
-    });
-    scene2DFloorDraftPlanLayer.add(circle);
-
-    var r = new Kinetic.Rect({
-        x: 0,
-        y: 0,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        //fill: 'transparent'
-    });
-    var W = window.innerWidth * CELL_SIZE;
-    var H = window.innerHeight * CELL_SIZE;
-    scene2DFloorDraftPlanLayer.add(r);
-    for (var i = 0; i < window.innerWidth + 1; i++) {
-        var I = i * CELL_SIZE;
-        var l = new Kinetic.Line({
-            stroke: "#6dcff6",
-            points: [I, 0, I, H]
-        });
-        scene2DFloorDraftPlanLayer.add(l);
-    }
-    for (var j = 0; j < window.innerHeight + 1; j++) {
-        var J = j * CELL_SIZE;
-        var l2 = new Kinetic.Line({
-            stroke: "#6dcff6",
-            points: [0, J, W, J]
-        });
-        scene2DFloorDraftPlanLayer.add(l2);
-    }
-    //gridXY.draw();
-    scene2D.add(scene2DFloorDraftPlanLayer);
-    //scene2D.add(gridXY);
 
     //================================
+    for (var x = 0; x <= scene2D.getWidth(); x += 25) {
+        scene2D.add(new fabric.Line([x, 0, x, scene2D.getWidth()], {
+            stroke: "#6dcff6",
+            strokeWidth: 1,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        }));
+        scene2D.add(new fabric.Line([0, x, scene2D.getWidth(), x], {
+            stroke: "#6dcff6",
+            strokeWidth: 1,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        }));
+    }
+    //================================
+
     /*
     scene2DDrawLineGeometry = new THREE.Geometry();
     scene2DDrawLineMaterial = new THREE.LineBasicMaterial({
@@ -419,6 +394,7 @@ function init() {
     //renderer.setClearColor(0xffffff, 1);
 
     document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
+
     scene3DCube = new THREE.Scene();
     camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 1000);
     camera3DCube.up = camera3D.up;
@@ -461,8 +437,8 @@ function init() {
     $(renderer.domElement).bind('mouseup', on3DMouseUp);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
-    $("#KineticCanvas").bind('mousedown', on2DMouseDown);
-    $("#KineticCanvas").bind('mouseup', on2DMouseUp);
+    //$("#HTMLCanvas").bind('mousedown', on2DMouseDown);
+    //$("#HTMLCanvas").bind('mouseup', on2DMouseUp);
 
     /*
     document.addEventListener('dragover', function(event) {
@@ -988,7 +964,7 @@ function show3DFloor() {
     document.getElementById('menuRight').setAttribute("class", "show-right");
     delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
 
-    $('#KineticCanvas').hide();
+    $('#HTMLCanvas').hide();
     $('#WebGLCanvas').show();
 }
 
@@ -1017,7 +993,7 @@ function show3DFloorLevel() {
     menuSelect(2, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
-    $('#KineticCanvas').hide();
+    $('#HTMLCanvas').hide();
     $('#WebGLCanvas').show();
 }
 
@@ -1060,7 +1036,7 @@ function show3DRoofDesign() {
     menuSelect(3, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
-    $('#KineticCanvas').hide();
+    $('#HTMLCanvas').hide();
     $('#WebGLCanvas').show();
 }
 
@@ -1114,7 +1090,7 @@ function show2D() {
 
     scene3DSkyBackground(null);
 
-    scene2D.add(scene2DFloorContainer[FLOOR]); //stage add layer
+    //scene2D.add(scene2DFloorContainer[FLOOR]); //stage add layer
 
     if (TOOL2D == 'freestyle') {
         menuSelect(1, 'menuLeft2DItem', '#ff3700');
@@ -1140,7 +1116,7 @@ function show2D() {
     delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
     $('#WebGLCanvas').hide();
-    $('#KineticCanvas').show();
+    $('#HTMLCanvas').show();
 }
 
 function menuSelect(item, id, color) {
@@ -1184,7 +1160,7 @@ function hideElements(b) {
 
     for (var i = 0; i < scene3DFloorContainer.length; i++) {
         scene3D.remove(scene3DFloorContainer[i]);
-        scene2D.remove(scene2DFloorContainer[i]);
+        //scene2D.remove(scene2DFloorContainer[i]);
     }
     //scene2D.remove(scene2DFloorDraftPlanLayer);
 
@@ -1439,13 +1415,18 @@ function on2DMouseDown(event) {
     */
     if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
-    $("#KineticCanvas").bind('mousemove', on2DMouseMove);
+    $("#HTMLCanvas").bind('mousemove', on2DMouseMove);
 
     $("#menuWallInput").hide(); //TODO: analyze and store input
 
+
     scene2DDrawLineGeometry.length = 0; //reset
+
     if (TOOL2D == 'freestyle') {
-        scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+
+        scene2DDrawLineGeometry.push(event.clientX, event.clientY);
+
+        /*
         scene2DDrawLine = new Kinetic.Line({
             points: scene2DDrawLineGeometry,
             stroke: "black",
@@ -1453,7 +1434,8 @@ function on2DMouseDown(event) {
             lineCap: 'round',
             lineJoin: 'round'
         });
-        scene2DFloorContainer[FLOOR].add(scene2DDrawLine); //layer add line
+        //scene2DFloorContainer[FLOOR].add(scene2DDrawLine); //layer add line
+        */
 
     } else if (TOOL2D == 'vector') {
         //container.style.cursor = 'crosshair';
@@ -1469,7 +1451,7 @@ function on2DMouseUp(event) {
 
     if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
 
-    $("#KineticCanvas").unbind('mousemove', on2DMouseMove);
+    $("#HTMLCanvas").unbind('mousemove', on2DMouseMove);
 
     if (TOOL2D == 'freestyle') {
 
@@ -1616,20 +1598,12 @@ function on2DMouseUp(event) {
             for (var p = 0; p < scene2DWallGeometry[FLOOR][i].length; p++) { //each wall
 
                 //console.log(scene2DWallGeometry[FLOOR][i][p]); //point array x,y
-
-                var pattern = document.createElement('canvas');
-                pattern.width = 40;
-                pattern.height = 40;
-                var pctx = pattern.getContext('2d');
-                pctx.fillStyle = "rgb(188, 222, 178)";
-                pctx.fillRect(0, 0, 20, 20);
-                pctx.fillRect(20, 20, 20, 20);
                 var img = new Image();
-                img.onload = function() {
-                    // img now contains your pattern
-                }
-                img.src = pattern.toDataURL();
+                //img.onload = function() {
+                //}
+                img.src = "./objects/FloorPlan/Hatch Patterns/ansi31.gif"; //pattern.toDataURL();
 
+                /*
                 var shape = new Kinetic.Polygon({
                     points: scene2DWallGeometry[FLOOR][i][p],
                     //fill: '#fff',
@@ -1638,8 +1612,8 @@ function on2DMouseUp(event) {
                     strokeWidth: 2,
                     alpha: 1
                 });
-
                 scene2DFloorContainer[FLOOR].add(shape);
+                */
 
                 $("#menuWallInput").css('left', scene2DWallGeometry[FLOOR][i][p][0]);
                 $("#menuWallInput").css('top', scene2DWallGeometry[FLOOR][i][p][1]);
@@ -1648,12 +1622,8 @@ function on2DMouseUp(event) {
             }
         }
 
-        scene2DDrawLineGeometry.length = 0;
-        scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
-        scene2DFloorContainer[FLOOR].drawScene();
-
-        //scene2DFloorContainer[FLOOR].remove(scene2DDrawLine);
-        //scene2DFloorContainer[FLOOR].removeChildren();
+        //scene2DDrawLineGeometry.length = 0;
+        //scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
         //scene2DFloorContainer[FLOOR].drawScene();
     }
 
@@ -1668,9 +1638,11 @@ function on2DMouseMove(event) {
     }
     //console.log(scene2D.getPointerPosition())
     if (TOOL2D == 'freestyle') {
-        scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
-        scene2DDrawLine.setPoints(scene2DDrawLineGeometry);
-        scene2DFloorContainer[FLOOR].drawScene();
+
+        scene2DDrawLineGeometry.push(event.clientX, event.clientY);
+        //scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+        //scene2DDrawLine.setPoints(scene2DDrawLineGeometry);
+        //scene2DFloorContainer[FLOOR].drawScene();
     }
 }
 
@@ -2182,6 +2154,13 @@ function exportJSON() {
     for (var i = 0; i < scene3DFloorContainer.length; i++) {
         zip.file("scene3DFloorContainer." + i + ".js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorContainer[i])));
     }
+
+    for (var i = 0; i < scene2DFloorContainer.length; i++) {
+        //scene2D.clear();
+        //scene2D.add(scene2DFloorContainer[i])
+        zip.file("scene2DFloorContainer." + i + ".js", JSON.stringify(scene2DFloorContainer));
+    }
+
     //zip.file("scene3DFloorGroundContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorGroundContainer)));
 
     zip.file("house.jpg", imageBase64('imgHouse'), {
@@ -2193,13 +2172,13 @@ function exportJSON() {
         base64: true
     });
     */
-    zip.file("ReadMe.txt", "Saved by WebGL HousePlanner\nFiles can be opened by THREE.js Framework");
+    zip.file("ReadMe.txt", "Saved by WebGL HousePlanner. Files can be opened by THREE.js Framework");
 
-    var content = zip.generate();
-    /*
+
     var content = zip.generate({
         type: "blob"
     });
+    /*
     var content = zip.generate({
         type: "string"
     });
@@ -3106,18 +3085,17 @@ function handleFile2DImageSelect(event) {
         var img = new Image();
         img.src = e.target.result;
 
-        scene2DFloorDraftPlanImage[FLOOR] = new Kinetic.Image({
-            x: 0,
-            y: 0,
-            image: img,
+        scene2DFloorDraftPlanImage[FLOOR] = new fabric.Image(img, {
+            top: 0,
+            left: 0,
             width: window.innerWidth,
             height: window.innerHeight,
-            opacity: 0.8
+            opacity: 0.6
         });
 
-        scene2DFloorDraftPlanLayer.add(scene2DFloorDraftPlanImage[FLOOR]);
-        scene2DFloorDraftPlanImage[FLOOR].moveToBottom();
-        scene2DFloorDraftPlanLayer.draw();
+        scene2D.add(scene2DFloorDraftPlanImage[FLOOR]);
+        scene2D.sendToBack(scene2DFloorDraftPlanImage[FLOOR]);
+        scene2D.renderAll();
     }
 
     // Read image file as a binary string.
