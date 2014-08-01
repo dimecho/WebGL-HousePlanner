@@ -4,19 +4,24 @@ Preview: http://houseplanner.iroot.ca
 Source Code: https://github.com/poofik/webgl-houseplanner
 
 TODO:
-- [difficulty: 10/10 progress: 8%]  Finish 2D floor plan gyometry drafting
+- [difficulty: 10/10 progress: 10%] Finish 2D floor plan gyometry drafting
 - [difficulty: 3/10  progress: 90%] 2D floor plan select and overlay external draft image
 - [difficulty: 8/10  progress: 10%] Toolbar edit functions for 2D floor plans
 - [difficulty: 9/10  progress: 10%] Make converter function to "extrude" 2D into 3D walls
 - [difficulty: 6/10  progress: 0%]  Make front walls 80% transparent in 3D rotation
-- [difficulty: 8/10  progress: 3%]  3D movable objects and collision detection
+- [difficulty: 8/10  progress: 50%] 3D movable objects and collision detection
 - [difficulty: 9/10  progress: 10%] 3D menu objects draggable with "pop-up" or star burst effect
 - [difficulty: 2/10  progress: 90%] 3D objects sub-edit menu (textures/delete/duplicate)
 - [difficulty: 2/10  progress: 40%] Categorize and populate 3D Menu items
-- [difficulty: 8/10  progress: 10%] 3D Menu functions for draggable objects
+- [difficulty: 8/10  progress: 20%] 3D Menu functions for draggable objects
 - [difficulty: 5/10  progress: 50%] 3D Floor ground base glass reflective
 - [difficulty: 6/10  progress: 0%]  3D Exterior View ability to select floors (+ flying-in animationeffect)
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
+- [difficulty: 6/10  progress: 0%]  Make House Ground editable - angle/terain/square (ex: downhill house)
+- [difficulty: 4/10  progress: 60%] Ability to save scene 3D & 2D
+- [difficulty: 5/10  progress: 1%]  Ability to open scene 3D & 2D
+- [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
+- [difficulty: 6/10  progress: 0%]  3D Exterior View create night scene atmosphere with proper lights
 - [difficulty: 4/10  progress: 1%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
 */
 
@@ -60,12 +65,10 @@ var sceneHemisphereLight;
 //var scenePointLight;
 
 var controls3D;
-//var controls2D;
 
 var camera3D;
 var camera3DQuad = [3];
 var camera3DQuadGrid;
-//var camera2D;
 var camera3DCube;
 var camera3DMirrorReflection;
 
@@ -82,7 +85,7 @@ var AUTOROTATE = true;
 var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
-var TOOL2D = 'freestyle';
+var TOOL2D = 'vector';
 var WEATHER = 'day-sunny';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
@@ -142,7 +145,7 @@ function init() {
     });
     */
     scene2D = new fabric.Canvas('HTMLCanvas', {
-        isDrawingMode: true,
+        isDrawingMode: false,
         width: window.innerWidth,
         height: window.innerHeight
     });
@@ -152,7 +155,7 @@ function init() {
         scene2D.freeDrawingBrush.shadowBlur = 0;
     }
     //scene2D.renderAll();
-
+    fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
     fabric.Object.prototype.transparentCorners = false;
 
     projector = new THREE.Projector();
@@ -437,6 +440,16 @@ function init() {
     $(renderer.domElement).bind('mouseup', on3DMouseUp);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
+    scene2D.on('mouse:down', function(event) {
+        on2DMouseDown(event.e);
+    });
+    scene2D.on('mouse:move', function(event) {
+        on2DMouseMove(event.e);
+    });
+    scene2D.on('mouse:up', function(event) {
+        on2DMouseUp(event.e);
+    });
+
     //$("#HTMLCanvas").bind('mousedown', on2DMouseDown);
     //$("#HTMLCanvas").bind('mouseup', on2DMouseUp);
 
@@ -575,6 +588,33 @@ function loadDAE(file, object, x, y, z, xaxis, yaxis, ratio) {
         //object.add(mesh);
         object.add(dae);
     });
+}
+
+function scene2DMakeWall(coords) {
+    return new fabric.Line(coords, {
+        fill: 'black',
+        stroke: 'black',
+        strokeWidth: 12,
+        selectable: true
+    });
+}
+
+function scene2DMakeWallEdgeCircle(left, top, line1, line2, line3, line4) {
+    var c = new fabric.Circle({
+        left: left,
+        top: top,
+        strokeWidth: 5,
+        radius: 12,
+        fill: '#fff',
+        stroke: '#666'
+    });
+    c.hasControls = c.hasBorders = false;
+
+    c.line1 = line1;
+    c.line2 = line2;
+    c.line3 = line3;
+    c.line4 = line4;
+    return c;
 }
 
 /*
@@ -1094,8 +1134,10 @@ function show2D() {
 
     if (TOOL2D == 'freestyle') {
         menuSelect(1, 'menuLeft2DItem', '#ff3700');
+        scene2D.isDrawingMode = true;
     } else if (TOOL2D == 'vector') {
         menuSelect(2, 'menuLeft2DItem', '#ff3700');
+        scene2D.isDrawingMode = false;
     } else if (TOOL2D == 'square') {
 
     } else if (TOOL2D == 'circle') {
@@ -1415,7 +1457,9 @@ function on2DMouseDown(event) {
     */
     if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
-    $("#HTMLCanvas").bind('mousemove', on2DMouseMove);
+    //$("#HTMLCanvas").bind('mousemove', on2DMouseMove);
+    // fabric.util.addListener(fabric.document, 'dblclick', dblClickHandler);
+    //fabric.util.removeListener(canvas.upperCanvasEl, 'dblclick', dblClickHandler); 
 
     $("#menuWallInput").hide(); //TODO: analyze and store input
 
@@ -1434,8 +1478,16 @@ function on2DMouseDown(event) {
             lineCap: 'round',
             lineJoin: 'round'
         });
-        //scene2DFloorContainer[FLOOR].add(scene2DDrawLine); //layer add line
         */
+        /*
+        scene2DDrawLine = new fabric.Line(scene2DDrawLineGeometry, {
+            stroke: "#000",
+            strokeWidth: 5,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        });
+		*/
+        //scene2DFloorContainer[FLOOR].add(scene2DDrawLine); //layer add line
 
     } else if (TOOL2D == 'vector') {
         //container.style.cursor = 'crosshair';
@@ -1451,11 +1503,61 @@ function on2DMouseUp(event) {
 
     if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
 
-    $("#HTMLCanvas").unbind('mousemove', on2DMouseMove);
+    //$("#HTMLCanvas").unbind('mousemove', on2DMouseMove);
 
     if (TOOL2D == 'freestyle') {
 
         console.log("lines to analyze: " + scene2DDrawLineGeometry.length);
+
+        //http://sett.ociweb.com/sett/settJun2014.html
+        var objects = scene2D.getObjects();
+        for (var i in objects) {
+            var obj = objects[i];
+
+            //console.log(obj.id);
+        }
+        /*
+        var object = {
+		   id:   this.id,
+		   remaining properties in all.js
+		  }
+		 */
+
+        //http://stackoverflow.com/questions/19854808/how-to-get-polygon-points-in-fabric-js
+        var polygon = scene2D.getObjects()[0]; //scene2D.getActiveObject(); //.id = 1;
+        var polygonCenter = polygon.getCenterPoint();
+        if (polygon.type === "line") {
+            /*
+                currentShape.set({
+                    x2: pos.x,
+                    y2: pos.y
+                });
+                canvas.renderAll();
+            */
+        } else if (polygon.type === "polygon") {
+
+            var translatedPoints = polygon.get('points').map(function(p) {
+                return {
+                    x: polygonCenter.x + p.x,
+                    y: polygonCenter.y + p.y
+                };
+            });
+            translatedPoints.forEach(function(p) {
+                scene2D.getContext().strokeRect(p.x - 5, p.y - 5, 10, 10);
+            });
+
+            /*
+                var points = polygon.get("points");
+                points[points.length - 1].x = pos.x - currentShape.get("left");
+                points[points.length - 1].y = pos.y - currentShape.get("top");
+                currentShape.set({
+                    points: points
+                });
+                canvas.renderAll();
+                */
+        }
+
+
 
         var scene2DDrawLineArray = [];
         var arrayCount = 0;
@@ -1591,6 +1693,19 @@ function on2DMouseUp(event) {
             c++;
         }
 
+        /*
+var polygon = new fabric.Polygon([
+    new fabric.Point(200,450),
+    new fabric.Point(200, 200),
+    new fabric.Point(350, 162.5),
+    new fabric.Point(350, 450)
+], {
+    left: 200,
+    top: 306.25,
+    fill: 'purple',
+    selectable: true
+});
+*/
         //console.log(scene2DWallGeometry[FLOOR].length);
 
         for (var i = 0; i < scene2DWallGeometry[FLOOR].length; i++) { //each floor
@@ -1641,6 +1756,7 @@ function on2DMouseMove(event) {
 
         scene2DDrawLineGeometry.push(event.clientX, event.clientY);
         //scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+
         //scene2DDrawLine.setPoints(scene2DDrawLineGeometry);
         //scene2DFloorContainer[FLOOR].drawScene();
     }
@@ -2149,19 +2265,21 @@ function exportJSON() {
 
     //zip.file("scene3D.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3D)));
     zip.file("scene3DHouseContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseContainer)));
-    //zip.file("scene3DHouseGroundContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
+    zip.file("scene3DHouseGroundContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
 
     for (var i = 0; i < scene3DFloorContainer.length; i++) {
         zip.file("scene3DFloorContainer." + i + ".js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorContainer[i])));
     }
+    zip.file("scene3DFloorGroundContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorGroundContainer)));
 
     for (var i = 0; i < scene2DFloorContainer.length; i++) {
         //scene2D.clear();
         //scene2D.add(scene2DFloorContainer[i])
         zip.file("scene2DFloorContainer." + i + ".js", JSON.stringify(scene2DFloorContainer));
+        //zip.file("scene2DFloorContainer." + i + ".js", JSON.stringify(scene2DFloorContainer.toDatalessJSON()));
     }
 
-    //zip.file("scene3DFloorGroundContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorGroundContainer)));
+
 
     zip.file("house.jpg", imageBase64('imgHouse'), {
         base64: true
@@ -2174,7 +2292,6 @@ function exportJSON() {
     */
     zip.file("ReadMe.txt", "Saved by WebGL HousePlanner. Files can be opened by THREE.js Framework");
 
-
     var content = zip.generate({
         type: "blob"
     });
@@ -2186,31 +2303,21 @@ function exportJSON() {
     //location.href="data:application/zip;base64," + zip.generate({type:"base64"});
 
     saveAs(content, "scene.zip");
-
-    /*
-    var exporter = new THREE.ObjectExporter;
-    var obj = exporter.parse(scene3D);
-    var json = JSON.stringify(obj);
-    */
-
-    /*
-    var newwindow = window.open()
-    var document = newwindow.document; //because you need to write in the document of the window 'newwindow'
-    document.open();
-
-    document.writeln(exporter);
-    */
-    //var store = localStorage['WebGL-HousePlanner', exporter];
-    //log(json);
 }
 
 function importJSON(zipData) {
 
-    //zip = new JSZip(readerEvent.target.result);
-    //zip.load(zipData);
+    zip = new JSZip(zipData);
 
     //zip.folder("Textures").load(data);
     //var text = zip.file("hello.txt").asText();
+
+    /*
+    for (var i = 0; i < 4; i++) {
+
+        scene2DFloorContainer[i].loadFromJSON(JSON.parse(zip.file("scene2DFloorContainer." + i + ".js").asText()));
+    }
+	*/
 
     /*
     var loader = new THREE.ObjectLoader();
@@ -2351,7 +2458,68 @@ function sceneNew() {
 
     //scene3D.rotation.y += 10;
     //THREE.GeometryUtils.center();
+
+    //============================
+
+    scene2DWallGeometry[FLOOR].push([400, 200, 800, 200]);
+    scene2DWallGeometry[FLOOR].push([800, 200, 800, 500]);
+    scene2DWallGeometry[FLOOR].push([800, 500, 400, 500]);
+    scene2DWallGeometry[FLOOR].push([400, 500, 400, 200]);
+
+    var wallMesh = []
+
+    for (var i = 0; i < scene2DWallGeometry[FLOOR].length; i++) { //each floor wall
+
+        //console.log(scene2DWallGeometry[FLOOR][i][0] + "," + scene2DWallGeometry[FLOOR][i][1] + "," + scene2DWallGeometry[FLOOR][i][2] + "," + scene2DWallGeometry[FLOOR][i][3]);
+        wallMesh[i] = scene2DMakeWall([scene2DWallGeometry[FLOOR][i][0], scene2DWallGeometry[FLOOR][i][1], scene2DWallGeometry[FLOOR][i][2], scene2DWallGeometry[FLOOR][i][3]]);
+        scene2D.add(wallMesh[i]);
+    }
+
+    //var circle = scene2DMakeWallEdgeCircle(wallMesh[0].get('x1'), wallMesh[0].get('y1'), wallMesh[wallMesh.length - 1], wallMesh[0]);
+    //scene2D.add(circle);
+
+    for (var i = 0; i < wallMesh.length; i++) { //each floor wall
+        try {
+            var circle = scene2DMakeWallEdgeCircle(wallMesh[i].get('x1'), wallMesh[i].get('y1'), wallMesh[i - 1], wallMesh[i])
+            scene2D.add(circle);
+        } catch (e) {}
+    }
+    scene2D.renderAll();
+
+    scene2D.on('object:moving', function(e) {
+        var p = e.target;
+        p.line1 && p.line1.set({
+            'x2': p.left,
+            'y2': p.top
+        });
+        p.line2 && p.line2.set({
+            'x1': p.left,
+            'y1': p.top
+        });
+        p.line3 && p.line3.set({
+            'x1': p.left,
+            'y1': p.top
+        });
+        p.line4 && p.line4.set({
+            'x1': p.left,
+            'y1': p.top
+        });
+        scene2D.renderAll();
+    });
+    /*
+    scene2D.add(
+        scene2DMakeWallEdgeCircle(line.get('x1'), line.get('y1'), null, line),
+        makeCircle(line.get('x2'), line.get('y2'), line, line2, line5, line6),
+        makeCircle(line2.get('x2'), line2.get('y2'), line2, line3, line4),
+        makeCircle(line3.get('x2'), line3.get('y2'), line3),
+        makeCircle(line4.get('x2'), line4.get('y2'), line4),
+        makeCircle(line5.get('x2'), line5.get('y2'), line5),
+        makeCircle(line6.get('x2'), line6.get('y2'), line6)
+    );
+	*/
+
 }
+
 /*
 function scene3DGround(_texture, _grid) {
 
