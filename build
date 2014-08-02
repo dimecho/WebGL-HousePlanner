@@ -1,0 +1,18 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+
+#rm "js/hp.js"
+#for f in $(find ./js/src/ -name '*.js')
+#do
+#	cat "$f" >> "js/hp.js"
+#done
+#java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/houseplanner.js --js=js/hp.js
+
+java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/houseplanner.js 'js/src/**.js'
+
+cd js/
+zip houseplanner.jsz houseplanner.js
+#zip three.jsz three.js
+rm houseplanner.js
+#rm hp.js

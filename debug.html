@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>WebGL HousePlanner 3D</title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+
+  <script type="text/javascript" src="js/jquery.js?v=2.1.1"></script>
+  <script type="text/javascript" src="js/jszip.js"></script>
+  <script type="text/javascript" src="js/jdataview.js"></script>
+  <script type="text/javascript" src="js/jbinary.js"></script>
+  <script type="text/javascript" src="js/three.js?v=68"></script>
+
+  <script type="text/javascript" src="js/src/Detector.js"></script>
+
+  <script src="js/src/OrbitControls.js"></script>
+  <script src="js/src/exporters/OBJExporter.js"></script>
+  <script src="js/src/exporters/ObjectExporter.js"></script>
+  <script src="js/src/exporters/GeometryExporter.js"></script>
+  <script src="js/src/exporters/BufferGeometryExporter.js"></script>
+  <script src="js/src/exporters/MaterialExporter.js"></script>
+  <script src="js/src/ParticleEngine.js"></script>
+
+  <script src="js/src/threex.dilategeometry.js"></script>
+  <script src="js/src/threex.atmospherematerial.js"></script>
+  <script src="js/src/threex.geometricglowmesh.js"></script>
+
+  <!--
+  <script src="js/3d/extras/physics/Collisions.js"></script>
+  <script src="js/3d/extras/physics/CollisionUtils.js"></script>
+  -->
+
+  <script type="text/javascript" src="js/src/cssmenu.js"></script>
+  <script type="text/javascript" src="js/src/modernizr.js?v=custom"></script>
+  <script type="text/javascript" src="js/src/FileSaver.js"></script>
+  <script type="text/javascript" src="js/src/jspdf.js"></script>
+  <script type="text/javascript" src="js/src/draggable.js"></script>
+  <script type="text/javascript" src="js/src/jscroll.js"></script>
+  <script type="text/javascript" src="js/src/tooltipster.js"></script>
+  <script type="text/javascript" src="js/src/fabric.js"></script>
+  <script type="text/javascript" src="js/src/main.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/preloader.css"/>
+  <link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
+  <link rel="stylesheet" type="text/css" href="css/cssmenu.css">
+
+<!-- http://www.webtutorialsource.com/tutorial/show-hide-toggle-sliding-menu-css-javascript -->
+<!-- Slide Menu -->
+<style>
+
+#menuLeft3DHouse{
+    width: 240px;
+    line-height: 20px;
+    left: -180px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 99;
+}
+#menuLeft3DFloor{
+    width: 100px;
+    line-height: 20px;
+    left: -100px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 99;
+}
+
+#menuLeft2D{
+    width: 130px;
+    left: -80px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 99;
+}
+
+div.clear { clear: both; }
+
+#links-left{
+  
+  /*padding: 10px;*/
+  float: left;
+  /*border-right: 1px solid #B4B8BB;*/
+
+  background: #fff;
+
+  background: -moz-linear-gradient(#fff, #999);
+  background: -webkit-linear-gradient(#fff, #999);
+  background: -o-linear-gradient(#fff, #999);
+
+  -moz-background-clip: padding;     /* Firefox 3.6 */
+  -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
+  background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
+  border: 10px solid rgba(0,0,0,0.3);
+
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+}
+
+#tab-left{
+  width: 44px;
+  float: right;
+  list-style: none outside none;
+  margin: 0;
+  padding: 0;
+  /*position: relative;
+  z-index: 2;
+  */
+}
+
+.menuLeft3DHouse-show-left, .menuLeft3DFloor-show-left, .menuLeft2D-show-left, .hide-left{
+    /* we specify the transition length for hiding and showing */
+    transition: margin-left .4s ease-in;
+    -webkit-transition: margin-left .4s ease-in;
+}
+
+.hide-left{
+    margin-left:0px;
+}
+
+.menuLeft3DHouse-show-left{
+    margin-left:210px;
+}
+.menuLeft3DFloor-show-left{
+    margin-left:200px;
+}
+.menuLeft2D-show-left{
+    margin-left:110px;
+}
+
+#arrow-left, .bt{
+    cursor: pointer;
+}
+
+#menuRight{
+    width: 400px;
+    font-size: 12px;
+    line-height: 20px;
+    right: -350px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 99;
+}
+
+#menuWallInput{
+    width: 100px;
+    position: fixed;
+    z-index: 10;
+}
+
+#tab-right{
+    float: left;
+    list-style: none outside none;
+    margin: 0;
+    padding: 0;
+    /*
+    position: relative;
+    z-index: 99;
+    */
+}
+
+#links-right{
+    width: 80px;
+    padding: 10px;
+    float: left;
+    border-left: 1px solid #B4B8BB;
+}
+
+.show-right, .hide-right{
+    /* we specify the transition length for hiding and showing */
+    transition: margin-right .4s ease-in;
+    -webkit-transition: margin-right .4s ease-in;
+}
+
+.hide-right{
+    margin-right:0px;
+}
+
+.show-right{
+    margin-right:350px;
+}
+
+#arrow-right, .bt{
+    cursor: pointer;
+}
+
+</style>
+<script>
+function toggleRight(id) {
+    var el = document.getElementById(id);
+    var img = document.getElementById("arrow-right");
+    var box = el.getAttribute("class");
+
+    if(box == "hide-right"){
+      el.style.display="block";
+      el.setAttribute("class", "show-right");
+      delay(img, "images/arrowright.png", 400);
+    } else{
+      el.setAttribute("class", "hide-right");
+      delay(img, "images/arrowleft.png", 400);
+    }
+}
+function toggleLeft(id,open) {
+    var el = document.getElementById(id);
+    var img = document.getElementById("arrow-left");
+    var box = el.getAttribute("class");
+
+    if(box == "hide-left" || open){
+      el.style.display="block";
+      el.setAttribute("class", id + "-show-left");
+      delay(img, "images/arrowleft.png", 400);
+    }
+    else{
+      el.setAttribute("class", "hide-left");
+      delay(img, "images/arrowright.png", 400);
+    }
+}
+
+function delay(elem, src, delayTime){
+    window.setTimeout(function() {elem.setAttribute("src", src);}, delayTime);
+}
+</script>
+<!-- Slide Menu -->
+
+<!-- Top Menu -->
+<style>
+#menuTop {
+	position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 98%;	
+  height: 60px;
+  padding: 4px;
+  z-index: 2;
+   
+	border-radius: 10px;
+	background: #fff;
+	background: -moz-linear-gradient(#fff, #999);
+	background: -webkit-linear-gradient(#fff, #999);
+	background: -o-linear-gradient(#fff, #999);
+}
+</style>
+
+<script>
+
+$( document).ready(function () {
+	 //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });  	
+    $("#menuTop p").click(function(){
+    $(this).hide().after('<input type="text" class="editP" value="'+$(this).html()+'" size="10" />');
+    $('.editP').focus();
+    });
+    $('.editP').bind('blur', function(){
+       	$(this).hide().prev('#menuTop p').html($(this).val()).show();
+    });
+});
+
+</script>
+<!-- END Top Menu -->
+
+<!-- Login -->
+
+<!-- END Login -->
+
+<!-- Full Screen -->
+<script>
+// Find the right method, call on correct element
+function launchFullscreen(element) {
+  if(element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if(element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if(element.webkitRequestFullscreen) {
+    element.webkitRequestFullscreen();
+  } else if(element.msRequestFullscreen) {
+    element.msRequestFullscreen();
+  }
+}
+
+function exitFullscreen() {
+  if(document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if(document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if(document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  }
+}
+
+function dumpFullscreen() {
+  console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+  console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
+}
+
+// Events
+/*
+document.addEventListener("fullscreenchange", function(e) {
+  console.log("fullscreenchange event! ", e);
+});
+document.addEventListener("mozfullscreenchange", function(e) {
+  console.log("mozfullscreenchange event! ", e);
+});
+document.addEventListener("webkitfullscreenchange", function(e) {
+  console.log("webkitfullscreenchange event! ", e);
+});
+document.addEventListener("msfullscreenchange", function(e) {
+  console.log("msfullscreenchange event! ", e);
+});
+*/
+// Add different events for fullscreen
+
+document.addEventListener("keydown", function(e) {
+  if (e.keyCode == 13) {
+    exitFullscreen();
+  }
+}, false);
+</script>
+<!-- END Full Screen-->
+<!--
+<script type="application/x-glsl" id="sky-vertex">
+varying vec2 vUV;
+
+void main() {
+  vUV = uv;
+  vec4 pos = vec4(position, 1.0);
+  gl_Position = projectionMatrix * modelViewMatrix * pos;
+}
+</script>
+
+<script type="application/x-glsl" id="sky-fragment">
+uniform sampler2D texture;
+varying vec2 vUV;
+
+void main() {
+  vec4 sample = texture2D(texture, vUV);
+  gl_FragColor = vec4(sample.xyz, sample.w);
+}
+</script>
+-->
+<script id="vs" type="x-shader/x-vertex">
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  }
+</script>
+
+<script id="fs" type="x-shader/x-fragment">
+
+  uniform sampler2D map;
+  uniform vec3 fogColor;
+  uniform float fogNear;
+  uniform float fogFar;
+  varying vec2 vUv;
+
+  void main() {
+    float depth = gl_FragCoord.z / gl_FragCoord.w;
+    float fogFactor = smoothstep( fogNear, fogFar, depth );
+
+    gl_FragColor = texture2D( map, vUv );
+    gl_FragColor.w *= pow( gl_FragCoord.z, 20.0 );
+    gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
+  }
+</script>
+
+<!--http://www.webdesignerdepot.com/2012/10/creating-a-modal-window-with-html5-and-css3/ -->
+<!-- Dialog Box -->
+<style>
+	.modalDialog {
+		position: fixed;
+		font-family: Arial, Helvetica, sans-serif;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background: rgba(0,0,0,0.8);
+		z-index: 100;
+		opacity:0;
+		-webkit-transition: opacity 400ms ease-in;
+		-moz-transition: opacity 400ms ease-in;
+		transition: opacity 400ms ease-in;
+		pointer-events: none;
+	}
+
+	.modalDialog:target {
+		opacity:1;
+		pointer-events: auto;
+	}
+
+	.modalDialog > div {
+		width: 400px;
+		position: relative;
+		margin: 10% auto;
+		padding: 5px 20px 13px 20px;
+		border-radius: 10px;
+		background: #fff;
+		background: -moz-linear-gradient(#fff, #999);
+		background: -webkit-linear-gradient(#fff, #999);
+		background: -o-linear-gradient(#fff, #999);
+	}
+
+	.close {
+		background: #606061;
+		color: #FFFFFF;
+		line-height: 25px;
+		position: absolute;
+		right: -12px;
+		text-align: center;
+		top: -10px;
+		width: 24px;
+		text-decoration: none;
+		font-weight: bold;
+		-webkit-border-radius: 12px;
+		-moz-border-radius: 12px;
+		border-radius: 12px;
+		-moz-box-shadow: 1px 1px 3px #000;
+		-webkit-box-shadow: 1px 1px 3px #000;
+		box-shadow: 1px 1px 3px #000;
+	}
+
+	.close:hover { background: #00d9ff; }
+	</style>
+<!-- END Dialog Box -->
+
+<!-- iScroll -->
+<style type="text/css">
+#scroller * {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  -ms-touch-action: none;
+}
+
+body{
+  padding: 0;
+  margin: 0;
+  border: 0;
+  overflow:hidden;
+}
+
+#header {
+ position: absolute;
+  z-index: 2;
+  top: 50;
+  left: 55px;
+  width: 320px;
+  height: 55px;
+  background: #444;
+  padding: 0;
+}
+
+#footer {
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  left: 55px;
+  width: 320px;
+  height: 55px;
+  background: #444;
+  padding: 0;
+}
+
+#scrollWrapper {
+  position: absolute;
+  z-index: 1;
+  top: 140px;
+  bottom: 55px;
+  left: 55px;
+  width: 320px;
+  background: #fff;
+  overflow: hidden;
+}
+
+#scroller {
+  position: absolute;
+  z-index: 1;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  width: 100%;
+  
+  /*-webkit-transform: translate3d(0,0,0);*/ /*http://cantina.co/thought_leadership/ios-5-native-scrolling-grins-and-gothcas*/
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  -ms-text-size-adjust: none;
+  -o-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+.scrollerItem {
+  /*
+  position: relative;
+  width: 100%;
+  top: 0;
+  left: 0;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+ 
+  background-color: #fafafa;
+  font-size: 16px;
+  */
+
+  width:250px;
+  height:110px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border:1px solid #000000;
+  padding: 10px;
+  margin:15px;
+}
+</style>
+<!-- END iScroll -->
+
+</head>
+
+<body class="preloader">
+
+<!-- UI -->
+<!-- 
+https://github.com/codrops/IconHoverEffects
+http://fontello.com 
+http://www.flaticon.com
+-->
+<link rel="stylesheet" href="font/style.css"></head>
+<link rel="stylesheet" href="css/iconhover.css">
+
+
+<link rel="stylesheet" type="text/css" href="css/normalize.css"  />
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<link rel="stylesheet" type="text/css" href="css/style2.css" />
+
+<style>
+#dragElement {
+  width:100px;
+  height:100px;
+  z-index: 11;
+}
+
+.scroll {
+  border: 1px solid #aaa;
+  overflow-y: scroll;
+  background: #fff;
+}
+
+.jscroll-loading {
+    text-align: center;
+    background: url(images/loading.gif) no-repeat center;
+    padding: 5px 0;
+    margin-bottom: 10px;
+    font-style: italic;
+    text-indent: -9999px;
+}
+</style>
+
+<div id="openLogin" class="modalDialog">
+	<div>
+		<a href="#close" class="close">X</a>
+		<p class="validateTips"></p>
+		<form>
+		<label for="name">Username</label>
+		<input type="text" name="name" id="name" size="12">
+    <br/>
+		<label for="password">Password</label>
+		<input type="password" name="password" id="password" size="12">
+		</form>
+	</div>
+</div>
+
+<div id="openSaving" class="modalDialog">
+  <div id="savingSpinner" style="width:280px;height:80px">
+    <br/><br/><center>Please Wait - Saving ...</center>
+  </div>
+</div>
+
+<div id="openWebGLSettings" class="modalDialog">
+  <div>
+    <a href="#close" class="close">X</a>
+   
+  </div>
+</div>
+
+<div id="openThumb" class="modalDialog">
+	<div style="width:600px">
+		<a href="#close" class="close">X</a>
+		<img id="imgHouse" src="images/house.jpg" />
+	</div>
+</div>
+
+<div id="openExistingDesign" class="modalDialog">
+	<div style="width:600px; height:300px">
+		<a href="#close" class="close">X</a>
+	</div>
+</div>
+
+<div id="open3DTin" class="modalDialog" >
+  <div id="wrap" style="width:90%; height:90%;margin: 2% auto;">
+    <a href="#close" class="close" onclick="document.getElementById('iframe3DTin').src = 'about:blank'">X</a>
+    <iframe src="" frameborder="0" id="iframe3DTin" style="display: block; width:100%; height:100%;"></iframe> 
+  </div>
+</div>
+
+<!-- Slide Right Menu -->
+<div id="menuRight" class="hide-right">
+  <ul id="tab-right">
+      <li>
+          <img id="arrow-right" onclick="toggleRight('menuRight');" src="images/arrowleft.png">
+      </li>
+  </ul>
+
+  <div id="links-left" style="width:320px;">
+    <div style="display:inline-block;width:100%;vertical-align:top;padding:10px">
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+          <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
+          <!--<a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>-->
+          <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
+          <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
+          <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
+          <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
+      </div>
+      <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
+    </div>
+    <!--
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+      <a href="#" class="hi-icon icon-navigate6" title="Scroll Up"></a>
+    </div>
+    -->
+    <div id="menuRight3DHouse" style="display: none;">
+      <div class="scroll" data-ui="jscroll-default">
+        <div class="cssmenu">
+          <ul></ul>
+        </div>
+        <div class="last"><a href="javascript:void(0)"></a></div>
+      </div>
+    </div>
+
+    <div id="menuRight3DFloor" style="display: none;">
+      <div class="scroll" data-ui="jscroll-default">
+        <div class="cssmenu">
+        <ul>
+        </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="menuRight3DRoof" style="display: none;">
+      <div class="scroll" data-ui="jscroll-default">
+        <div class="cssmenu">
+        <ul>
+        </ul>
+        </div>
+      </div>
+    </div>
+                
+    <div id="menuRight2D" style="display: none;">
+      <div class="scroll" data-ui="jscroll-default">
+        <div class="cssmenu">
+        <ul>
+        </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="menuRightObjects" style="display:none;">
+      <div class="cssmenu">
+        <ul>
+          <li><a href='#' onclick="showRightCatalogMenu()"><span>&#60; Back to Catalog</span></a></li>
+        </ul>
+      </div>
+      <!--
+      <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div>
+      -->
+      <!-- TODO: Move to dynamically generate from json -->
+      <div class="scroll" data-ui="jscroll-default">
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="scrollerItem">
+        </div>
+        <div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>
+      </div>
+    </div>
+  	<!--
+  	<div id="footer">
+  	  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+  	  <a href="#" class="hi-icon icon-arrow483" title="Scroll Down"></a>
+  	  </div>
+  	</div>
+  	-->
+  </div>  
+</div>
+<!-- END Slide Right Menu -->
+
+<!-- Slide Left Menu -->
+<div id="menuLeft3DHouse" class="hide-left">
+  <ul id="tab-left">
+    <li>
+      <img id="arrow-left" onclick="toggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
+    </li>
+  </ul>
+  <div id="links-left" class='cssmenu' style="width:160px">
+        <ul>
+           <li class='active'><a href='#' onclick="FLOOR=0;show3DFloor()"><span>Basement</span></a></li>
+           <li class='has-sub'><a href='#'><span>Floor 1</span></a>
+              <ul>
+                 <li><a href='#' onclick="FLOOR=1;show3DFloor()"><span>Living Room</span></a></li>
+                 <li><a href='#' onclick="FLOOR=1;show3DFloor()"><span>Kitchen</span></a></li>
+                 <li class='last'><a href='#' onclick="FLOOR=1;show3DFloor()"><span>Garage</span></a></li>
+              </ul>
+           </li>
+           <li class='has-sub'><a href='#'><span>Floor 2</span></a>
+              <ul>
+                 <li><a href='#' onclick="FLOOR=2;show3DFloor()"><span>Bedroom 1</span></a></li>
+                 <li class='last'><a href='#' onclick="FLOOR=2;show3DFloor()"><span>Bedroom 2</span></a></li>
+              </ul>
+           </li>
+        </ul>
+  </div>
+</div>
+
+<div id="menuLeft3DFloor" class="hide-left">
+  <ul id="tab-left">
+    <li>
+      <img id="arrow-left" onclick="toggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
+    </li>
+  </ul>
+  <div id="links-left" style="width:60px">
+      <div id="deco">
+        <!-- 3D Editor Menu -->
+        <a href="#" class="hi-icon icon-images11 tooltip-right" title="Insert Picture"></a>
+        <a href="#" class="hi-icon icon-edit26 tooltip-right" title="Insert Note"></a>
+        <!-- 2D Editor Menu -->
+        <a href="#" class="hi-icon icon-vector15 tooltip-right" title="Draw Room"></a>
+        <a href="#" class="hi-icon icon-vector18 tooltip-right" title="Draw Wall"></a>
+        <a href="#" class="hi-icon icon-vector17 tooltip-right" title="Draw Curved Wall"></a>
+        <a href="#" class="hi-icon icon-cube12 tooltip-right" title="Cube"></a>
+        <a href="#" class="hi-icon icon-cylindrical7 tooltip-right" title="Cylinder"></a>
+      </div>
+  </div>
+</div>
+
+<div id="menuLeft2D" class="hide-left">
+  <ul id="tab-left">
+    <li>
+      <img id="arrow-left" onclick="toggleLeft('menuLeft2D',false);" src="images/arrowright.png">
+    </li>
+  </ul>
+  <div id="links-left" style="width:60px">
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
+        <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-draftplan tooltip" id="menuLeft2DItem0" title="Upload Draft Plan (pdf, jpg, png)"></a>
+        <a href="#" onclick="menuSelect(1,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=true;TOOL2D='freestyle'" class="hi-icon icon-draw tooltip" id="menuLeft2DItem1" title="Freestyle Sketch" ></a>
+        <a href="#" onclick="menuSelect(2,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=false;TOOL2D='vector'" class="hi-icon icon-vector tooltip" id="menuLeft2DItem2" title="Vector Corrections"></a>
+        <a href="#" onclick="menuSelect(3,'menuLeft2DItem','#ff3700');TOOL2D='square'" class="hi-icon icon-vector-square tooltip" id="menuLeft2DItem3" title="Draw Square"></a>
+        <a href="#" onclick="menuSelect(4,'menuLeft2DItem','#ff3700');TOOL2D='circle'" class="hi-icon icon-vector-circle tooltip" id="menuLeft2DItem4" title="Draw Circle"></a>
+      </div>
+  </div>
+</div>
+<!-- END Slide Right Menu -->
+
+<!-- Suppliers -->
+<div id="suppliers" class="panel" style="background-color: #fff;">
+
+		<section class="ff-container" style="margin-top:8em;">
+				<input id="select-type-all" name="radio-set-1" type="radio" class="ff-label-type-1" checked="checked" />
+				<label for="select-type-all" class="ff-label-type-all">All</label>
+				
+				<input id="select-type-1" name="radio-set-1" type="radio" class="ff-selector-type-1" />
+				<label for="select-type-1" class="ff-label-type-1">Furnishings</label>
+				
+				<input id="select-type-2" name="radio-set-1" type="radio" class="ff-selector-type-2" />
+				<label for="select-type-2" class="ff-label-type-2">Appliances</label>
+				
+				<input id="select-type-3" name="radio-set-1" type="radio" class="ff-selector-type-3" />
+				<label for="select-type-3" class="ff-label-type-3">Hardware</label>
+				
+				<div class="clr"></div>
+				
+				<ul class="ff-items">
+					<li class="ff-item-type-1 ff-item-type-2">
+						<a href="#">
+							<span>1</span>
+							<img src="images/suppliers/1.png" />
+						</a>
+					</li>
+					<li class="ff-item-type-1 ff-item-type-2">
+						<a href="#">
+							<span>2</span>
+							<img src="images/suppliers/2.png" />
+						</a>
+					</li>
+					<li class="ff-item-type-1 ff-item-type-2">
+						<a href="#">
+							<span>3</span>
+							<img src="images/suppliers/3.png" />
+						</a>
+					</li>
+					<li class="ff-item-type-3">
+						<a href="#">
+							<span>4</span>
+							<img src="images/suppliers/4.png" />
+						</a>
+					</li>
+				</ul>
+	  </section>
+  </div>
+  <!-- End Suppliers -->
+
+  <!-- Map -->
+  <div id="info" class="panel" style="background-color: #fff;">
+    <br/><br/><br/><br/><br/><br/>
+  	<center><h1>Property Info & Agent Contact</h1></center>
+  </div>
+  <!-- End Map -->
+
+  <!-- Thumbnail class="ui-widget-content" -->
+  <div id="menuTop">
+	  <div style="display:inline-block">
+		  <a href="#openThumb"><img id="_imgHouse" src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000"/></a>
+    </div>
+  	<div style="display:inline-block;vertical-align:top;width:150px">
+
+          <div style="display:inline-block">
+              <!--
+              <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+              <a id="link-portfolio" href="#info" class="hi-icon icon-info" id="menuTopItem0"></a>
+              </div>
+              -->
+            <a href="#info" id="menuTopItem0"><img src="images/info.svg" width="42" height="42" style="padding-top:5px"/></a>
+          </div>
+          <div style="display:inline-block">
+      			MLS#:<br/>
+            Agent:
+          </div>
+          <div style="display:inline-block">
+            1234<br/>
+            Alyson
+          </div>
+  	</div>
+  
+  	<div style="display:inline-block;vertical-align:top">
+  		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+  			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
+        <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem2"></a>
+        <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem3"></a>
+  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem4"></a>
+  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem5"></a>
+  			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" ></a>
+  			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
+        <a href="#openSaving" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
+        <script>
+        /*
+  			$('.tooltip-save-menu').tooltipster({
+  				interactive:true,
+          		content: $('<a href="#" class="hi-icon icon-earth16" style="color:white"></a><strong>Online</strong><br/><a href="#" onclick="exportJSON();" class="hi-icon icon-usb3" style="color:white"></a><strong>USB File</strong>')
+          	});
+        */
+  			</script>
+  			
+  			<a href="#" class="hi-icon icon-undo tooltip" title="Undo"></a>
+  			<a href="#" class="hi-icon icon-redo tooltip" title="Redo"></a>
+  			<!--
+  			<a href="#" class="hi-icon icon-profile22 tooltip-share-menu" title="Share"></a>
+  			<script>
+  			$('.tooltip-share-menu').tooltipster({
+  				interactive:true,
+          		content: $('<span><i class="hi-icon icon-printer60" style="color:white"></i></span><br/><span><i class="hi-icon icon-email" style="color:white"></i></span><br/><span><i class="hi-icon icon-social21" style="color:white"></i></span><br/><span><i class="hi-icon icon-social5" style="color:white"></i></span><br/><span><i class="hi-icon icon-social38" style="color:white"></i></span>')
+          	});
+  			</script>
+        -->
+  			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot"></a>
+  			<a href="#" onclick="launchFullscreen(document.documentElement);" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
+  			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login"></a>
+  		</div>
+  	</div>
+	</div>
+
+  <div id="menuFloorSelector" align="center">
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
+      <a href="#" onclick="selectFloor(-1)" class="hi-icon icon-previous"></a>
+    </div>
+    <div id="menuFloorSelectorText" style="display: inline-block"></div>
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
+      <a href="#" onclick="selectFloor(1)" class="hi-icon icon-next"></a>
+    </div>
+  </div>
+
+  <div id="menuMeasure">
+    <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a><div id="menuMeasureText" style="display:inline"></div>
+  </div>
+
+  <div id="menuWeather">
+    <a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" style="color:#474747"></a><div id="menuWeatherText" style="display:inline"></div>
+  </div>
+
+<!--
+<div class="apple_overlay black" id="photo1">
+  	<img src="img/property-large.jpg" />
+	<h2>Agent</h2>
+	<p>Address Location</p>
+</div>
+-->
+<!-- End Thumbnail -->
+<!-- UI -->
+
+<!-- http://threejs.org/editor -->
+<style>
+#WebGLCubeCanvas {
+    position:absolute;
+    bottom:0px;
+    left:0px;
+    border:none;
+    width:100px;
+    height:100px;
+}
+
+#printPDF {
+    position:absolute;
+    bottom:12px;
+    left:25px;
+    border:none;
+}
+
+#WebGLHelp {
+    position:absolute;
+    bottom:10px;
+    right:20px;
+    color:#474747
+    font-size: 20px;
+    cursor:help;
+}
+#WebGLInteractiveMenu {
+  display: none;
+
+  background: #fff;
+
+  background: -moz-linear-gradient(#fff, #999);
+  background: -webkit-linear-gradient(#fff, #999);
+  background: -o-linear-gradient(#fff, #999);
+
+  -moz-background-clip: padding;     /* Firefox 3.6 */
+  -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
+  background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
+  border: 10px solid rgba(0,0,0,0.3);
+
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+
+  width: 50px;
+  height: 270px;
+  text-align: center;
+
+  position:absolute;
+  top:500px;
+  left:300px;
+}
+
+#menuFloorSelector
+{
+  width:100%;
+  position: absolute;
+  top:100px;
+  left:0;
+  left:0;
+  color: #333333;
+  font-size: 20px;
+  z-index:10;
+}
+
+#menuMeasure {
+  position:absolute;
+  bottom:15px;
+  left:100px;
+  border:none;
+  color:#474747;
+}
+
+#menuWeather {
+  position:absolute;
+  bottom:15px;
+  left:200px;
+  border:none;
+  color:#474747;
+}
+
+/* ================================
+   OVAL THOUGHT BUBBLE
+** ================================ */
+
+.oval-thought {
+  position:absolute;
+  top:0px;
+  left:150px;
+
+  width:300px;
+  padding:5px 4px;
+  /*margin:1em auto 80px;*/
+  text-align:center;
+  color:#fff;
+  background:#075698;
+  /* css3 */
+  background:-webkit-gradient(linear, 0 0, 0 100%, from(#2e88c4), to(#075698));
+  background:-moz-linear-gradient(#2e88c4, #075698);
+  background:-o-linear-gradient(#2e88c4, #075698);
+  background:linear-gradient(#2e88c4, #075698);
+  /*
+  NOTES:
+  -webkit-border-radius:220px 120px; // produces oval in safari 4 and chrome 4
+  -webkit-border-radius:220px / 120px; // produces oval in chrome 4 (again!) but not supported in safari 4
+  Not correct application of the current spec, therefore, using longhand to avoid future problems with webkit corrects this
+  */
+  -webkit-border-top-left-radius:220px 80px;
+  -webkit-border-top-right-radius:220px 80px;
+  -webkit-border-bottom-right-radius:220px 80px;
+  -webkit-border-bottom-left-radius:220px 80px;
+  -moz-border-radius:220px / 80px;
+  border-radius:220px / 80px;
+}
+
+/* creates the larger circle */
+.oval-thought:before {
+  content:"";
+  position:absolute;
+  bottom:-40px;
+  left:50px;
+  width:30px;
+  height:30px;
+  background:#075698;
+  /* css3 */
+  -webkit-border-radius:30px;
+  -moz-border-radius:30px;
+  border-radius:30px;
+}
+
+/* creates the smaller circle */
+.oval-thought:after {
+  content:"";
+  position:absolute;
+  bottom:-50px;
+  left:30px;
+  width:15px;
+  height:15px;
+  background:#075698;
+  /* css3 */
+  -webkit-border-radius:15px;
+  -moz-border-radius:15px;
+  border-radius:15px;
+}
+
+.ruler, .ruler li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: inline-block;
+}
+/* IE6-7 Fix */
+.ruler, .ruler li {
+    *display: inline;
+}
+.ruler {
+  background: #fff;
+  border-radius: 2px;
+  color: #8b8b8b;
+  margin: 0;
+  height: 2em;
+  padding-right: 20px;
+  white-space: nowrap;
+  font-size:9px;
+  position: absolute;
+  top:80px;
+  left:150px;
+}
+.ruler li {
+    padding-left: 30px;
+    width: 2em;
+    margin: .64em -1em -.64em;
+    text-align: center;
+    position: relative;
+}
+.ruler li:before {
+    content: '';
+    position: absolute;
+    border-left: 1px solid #c1bfbf;
+    height: .64em;
+    top: -.64em;
+    right: 1em;
+}
+</style>
+
+<form action="objects/index.php" method="post" enctype="multipart/form-data" id="uploadForm">
+    <input type="file" name="fileInput" id="fileInput"  hidden />
+    <input type="submit" id="fileSubmit" value="Upload" hidden />
+</form>
+<div id="WebGLCanvas">
+  <div id="WebGLHelp">?</div>
+  <div id="WebGLCubeCanvas"></div>
+  <div id="WebGLInteractiveMenu">
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
+        <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
+        <a href="#" onclick="menuSelect(1,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveZ'" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem1"></a>
+        <a href="#" onclick="menuSelect(2,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='rotate'" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem2"></a>
+        <a href="#" onclick="menuSelect(3,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='resize'" class="hi-icon icon-resize tooltip" title="Resize" id="menuInteractiveItem3"></a>
+        <a href="#" onclick="" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem4"></a>
+        <a href="#" onclick="scene3DObjectSelectRemove()" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem5"></a>
+    </div>
+    <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
+      <p>Object Textures</p>
+    </blockquote>
+  </div>
+</div>
+<div id="HTMLCanvas">
+  <div id="ruler" class="ruler" data-items=''></div>
+  <a href="#" onclick="exportPDF()" id="printPDF" class="hi-icon icon-print tooltip" title="Print PDF" style="color:#474747"></a>
+  <div id="menuWallInput">
+    <div id="links-left" style="width:100px;">
+      <input type="text" name="wallInput" id="wallInput" size="9" />
+    </div>
+  </div>
+<canvas id="fabricjs"></canvas>
+</div>
+
+<script type="text/javascript" src="js/preloader.js"></script>
+<!--
+<script type="text/javascript" src="js/clippy.js"></script>
+<link rel="stylesheet" type="text/css" href="css/clippy.css" media="all">
+-->
+<!--http://www.jquerybyexample.net/2013/05/jquery-scroll-page-automatically-by-few-pixels-after-every-few-seconds.html-->
+<!--<script type="text/javascript" src="js/iscroll.js"></script>-->
+
+<script type="text/javascript">
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) return parts.pop().split(";").shift();
+}
+
+function createCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+    else var expires = "";
+    document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function getMenuItem(itemData, last) {
+    //console.log(itemData);
+    var li = "<li";
+    if (itemData.sub) {
+      li += " class='has-sub'";
+    }else if (last) {
+      li += " class='last-child'";
+    }
+    li += ">";
+
+    //var a =  $("<a>", {html:itemData.name,href:itemData.link});
+    var a = "<a";
+    if(itemData.link!=null)
+    {
+      a+=" href=\"javascript:showRightObjectMenu('" + itemData.link + "');\"";
+      //a+=" href=\"#\"";
+    }else{
+      a+=" href=\"#\"";
+    }
+    a += "><span>" + itemData.name + "</span></a>";
+
+    //console.log(a);
+    var item = $(li).append(a);
+
+    if (itemData.sub) {
+        var subList = $("<ul>");
+        $.each(itemData.sub, function(index) {
+          //console.log(this);
+          if (index == itemData.sub.length - 1) { // this is the last one
+            subList.append(getMenuItem(this,true));
+          }else{
+            subList.append(getMenuItem(this,false));
+          }
+        });
+        item.append(subList);
+    }
+    return item;
+  }
+
+var images = {};
+//var Agent;
+//var myScroll;
+
+Royal_Preloader.config({
+  mode:'text',
+  //logo:'images/leele.png',
+  text: 'WebGL HousePlanner',
+  images: images,
+  //showPercentage: true,
+  timeout:        0,
+  showInfo:       false,
+  opacity:        1,
+  background:     ['#FFFFFF'],
+  onComplete: function() {
+   
+    if (getCookie("firstTimer") == null)
+    {
+      createCookie("firstTimer","1",5);
+      /*
+      clippy.load('Bonzi', function(agent) {
+        Agent = agent;
+
+        agent.show();
+        $('#WebGLHelp').hide();
+
+        //agent.moveTo(100,100);
+        //agent.animations();
+        agent.play("Searching");
+        setTimeout(function(){agent.speak("Hi, my name is Bonzi! I am your interactive assistant")}, 8000);
+        setTimeout(function(){agent.speak("Use top menu to switch between exterior, interior and floor plan views");agent.gestureAt(500,100)}, 15000);
+        setTimeout(function(){agent.play("Pleased");agent.hide()}, 18000);
+      });
+      */
+    }
+  }
+
+    //$(".scroll").css('height', window.innerHeight - 280);
+    /*
+    var myScroll = new IScroll('#scrollWrapper', {
+      scrollX: false,
+      scrollY: true,
+      scrollbars: true,
+      mouseWheel: true,
+      //interactiveScrollbars: true,
+      //shrinkScrollbars: 'scale',
+      //fadeScrollbars: true
+    });
+    document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+    */
+});
+
+$('#clippy').click(function (event) {
+  agentToggle();
+});
+
+$('#WebGLHelp').click(function (event) {
+  agentToggle();
+});
+
+
+function agentToggle() {
+  /*
+  if (Agent == null)
+  {
+    clippy.load('Bonzi', function(agent) {
+      Agent = agent;
+      Agent.show();
+      $('#WebGLHelp').hide();
+    });
+  }else{
+    if ($('#WebGLHelp').is(':visible'))
+    {
+      Agent.hide();
+      $('#WebGLHelp').hide();
+    }else{
+      Agent.show();
+      $('#WebGLHelp').show();
+    }
+  }
+  */
+}
+</script>
+
+<!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->
+
+</body>
+</html>

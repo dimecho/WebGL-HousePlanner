@@ -5,10 +5,22 @@
   <title>WebGL HousePlanner 3D</title>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
 
-  <script src="js/jquery.js?v=2.1.1"></script>
-  <script type="text/javascript" src="js/jquery.tooltipster.js"></script>
+  <script type="text/javascript" src="js/jquery.js?v=2.1.1"></script>
+  <script type="text/javascript" src="js/jszip.js"></script>
   <script type="text/javascript" src="js/jdataview.js"></script>
   <script type="text/javascript" src="js/jbinary.js"></script>
+  <script type="text/javascript" src="js/three.js?v=68"></script>
+
+ <script>
+  jBinary.load("js/houseplanner.jsz", function(err, binary) {
+    try {
+      var zip = new JSZip(binary.read('string'));
+      $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
+    } catch (exception) {
+      $.getScript("js/houseplanner.js");
+    }
+  });
+  </script>
 
   <link rel="stylesheet" type="text/css" href="css/preloader.css"/>
   <link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
@@ -24,7 +36,7 @@
     left: -180px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
-    z-index: 1;
+    z-index: 99;
 }
 #menuLeft3DFloor{
     width: 100px;
@@ -32,7 +44,7 @@
     left: -100px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
-    z-index: 1;
+    z-index: 99;
 }
 
 #menuLeft2D{
@@ -40,7 +52,7 @@
     left: -80px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
-    z-index: 1;
+    z-index: 99;
 }
 
 div.clear { clear: both; }
@@ -109,7 +121,7 @@ div.clear { clear: both; }
     right: -350px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
-    z-index: 1;
+    z-index: 99;
 }
 
 #menuWallInput{
@@ -209,8 +221,8 @@ function delay(elem, src, delayTime){
 	background: -webkit-linear-gradient(#fff, #999);
 	background: -o-linear-gradient(#fff, #999);
 }
-
 </style>
+
 <script>
 
 $( document).ready(function () {
@@ -344,7 +356,7 @@ void main() {
 		bottom: 0;
 		left: 0;
 		background: rgba(0,0,0,0.8);
-		z-index: 99;
+		z-index: 100;
 		opacity:0;
 		-webkit-transition: opacity 400ms ease-in;
 		-moz-transition: opacity 400ms ease-in;
@@ -391,20 +403,6 @@ void main() {
 	.close:hover { background: #00d9ff; }
 	</style>
 <!-- END Dialog Box -->
-
-<script>
-    $(document).ready(function() {
-        $('.tooltip').tooltipster({
-   		animation: 'fade',
-  		delay: 200,
-   		theme: 'tooltipster-default',
-   		touchDevices: false,
-   		trigger: 'hover',
-   		position: 'bottom',
-   		contentAsHTML: true
-		});
-    });
-</script>
 
 <!-- iScroll -->
 <style type="text/css">
@@ -511,10 +509,10 @@ body{
 <!-- END iScroll -->
 
 </head>
+
 <body class="preloader">
 
 <!-- UI -->
-
 <!-- 
 https://github.com/codrops/IconHoverEffects
 http://fontello.com 
@@ -522,10 +520,8 @@ http://www.flaticon.com
 -->
 <link rel="stylesheet" href="font/style.css"></head>
 <link rel="stylesheet" href="css/iconhover.css">
-<script src="js/modernizr.custom.js"></script>
 
 
-<link rel="stylesheet" type="text/css" href="css/reset.css"  />
 <link rel="stylesheet" type="text/css" href="css/normalize.css"  />
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <link rel="stylesheet" type="text/css" href="css/style2.css" />
@@ -565,6 +561,12 @@ http://www.flaticon.com
 		<input type="password" name="password" id="password" size="12">
 		</form>
 	</div>
+</div>
+
+<div id="openSaving" class="modalDialog">
+  <div id="savingSpinner" style="width:280px;height:80px">
+    <br/><br/><center>Please Wait - Saving ...</center>
+  </div>
 </div>
 
 <div id="openWebGLSettings" class="modalDialog">
@@ -624,6 +626,7 @@ http://www.flaticon.com
         <div class="cssmenu">
           <ul></ul>
         </div>
+        <div class="last"><a href="javascript:void(0)"></a></div>
       </div>
     </div>
 
@@ -816,20 +819,30 @@ http://www.flaticon.com
 
   <!-- Thumbnail class="ui-widget-content" -->
   <div id="menuTop">
-		<div style="display: inline-block;width:108px;">
-		  <a href="#openThumb"><img id="_imgHouse" src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000;" /></a>
-	  </div>
-  	<div style="display:inline-block;width:200px;">
-  		<div style="height:55px">
-  			<div style="float:left" class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-  				<!--<a id="link-portfolio" href="#info" class="hi-icon icon-info" id="menuTopItem0"></a>-->
-          <a href="#info" id="menuTopItem0"><img src="images/info.svg" width="42" height="42" /></a>
-  			</div>
-  			<div style="padding-top:5px; line-height:140%;  float:left">MLS#: <br/>Agent: </div>
-  			<div style="padding-top:5px; line-height:140%; float:left"><p>12345</p>Alyson</div>
-  		</div>
+	  <div style="display:inline-block">
+		  <a href="#openThumb"><img id="_imgHouse" src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000"/></a>
+    </div>
+  	<div style="display:inline-block;vertical-align:top;width:150px">
+
+          <div style="display:inline-block">
+              <!--
+              <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+              <a id="link-portfolio" href="#info" class="hi-icon icon-info" id="menuTopItem0"></a>
+              </div>
+              -->
+            <a href="#info" id="menuTopItem0"><img src="images/info.svg" width="42" height="42" style="padding-top:5px"/></a>
+          </div>
+          <div style="display:inline-block">
+      			MLS#:<br/>
+            Agent:
+          </div>
+          <div style="display:inline-block">
+            1234<br/>
+            Alyson
+          </div>
   	</div>
-  	<div style="display: inline-block;vertical-align:top">
+  
+  	<div style="display:inline-block;vertical-align:top">
   		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
   			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
         <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem2"></a>
@@ -838,12 +851,14 @@ http://www.flaticon.com
   			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem5"></a>
   			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" ></a>
   			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
-        <a href="#" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
+        <a href="#openSaving" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
         <script>
+        /*
   			$('.tooltip-save-menu').tooltipster({
   				interactive:true,
           		content: $('<a href="#" class="hi-icon icon-earth16" style="color:white"></a><strong>Online</strong><br/><a href="#" onclick="exportJSON();" class="hi-icon icon-usb3" style="color:white"></a><strong>USB File</strong>')
           	});
+        */
   			</script>
   			
   			<a href="#" class="hi-icon icon-undo tooltip" title="Undo"></a>
@@ -875,11 +890,11 @@ http://www.flaticon.com
   </div>
 
   <div id="menuMeasure">
-    <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a><div id="menuMeasureText" style="display: inline"></div>
+    <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a><div id="menuMeasureText" style="display:inline"></div>
   </div>
 
   <div id="menuWeather">
-    <a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" style="color:#474747"></a><div id="menuWeatherText" style="display: inline"></div>
+    <a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" style="color:#474747"></a><div id="menuWeatherText" style="display:inline"></div>
   </div>
 
 <!--
@@ -899,8 +914,15 @@ http://www.flaticon.com
     bottom:0px;
     left:0px;
     border:none;
-    width:100;
+    width:100px;
     height:100px;
+}
+
+#printPDF {
+    position:absolute;
+    bottom:12px;
+    left:25px;
+    border:none;
 }
 
 #WebGLHelp {
@@ -947,6 +969,7 @@ http://www.flaticon.com
   left:0;
   color: #333333;
   font-size: 20px;
+  z-index:10;
 }
 
 #menuMeasure {
@@ -1028,13 +1051,51 @@ http://www.flaticon.com
   -moz-border-radius:15px;
   border-radius:15px;
 }
+
+.ruler, .ruler li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: inline-block;
+}
+/* IE6-7 Fix */
+.ruler, .ruler li {
+    *display: inline;
+}
+.ruler {
+  background: #fff;
+  border-radius: 2px;
+  color: #8b8b8b;
+  margin: 0;
+  height: 2em;
+  padding-right: 20px;
+  white-space: nowrap;
+  font-size:9px;
+  position: absolute;
+  top:80px;
+  left:150px;
+}
+.ruler li {
+    padding-left: 30px;
+    width: 2em;
+    margin: .64em -1em -.64em;
+    text-align: center;
+    position: relative;
+}
+.ruler li:before {
+    content: '';
+    position: absolute;
+    border-left: 1px solid #c1bfbf;
+    height: .64em;
+    top: -.64em;
+    right: 1em;
+}
 </style>
 
 <form action="objects/index.php" method="post" enctype="multipart/form-data" id="uploadForm">
     <input type="file" name="fileInput" id="fileInput"  hidden />
     <input type="submit" id="fileSubmit" value="Upload" hidden />
 </form>
-
 <div id="WebGLCanvas">
   <div id="WebGLHelp">?</div>
   <div id="WebGLCubeCanvas"></div>
@@ -1052,14 +1113,16 @@ http://www.flaticon.com
     </blockquote>
   </div>
 </div>
-
-<canvas id="HTMLCanvas">
+<div id="HTMLCanvas">
+  <div id="ruler" class="ruler" data-items=''></div>
+  <a href="#" onclick="exportPDF()" id="printPDF" class="hi-icon icon-print tooltip" title="Print PDF" style="color:#474747"></a>
   <div id="menuWallInput">
     <div id="links-left" style="width:100px;">
       <input type="text" name="wallInput" id="wallInput" size="9" />
     </div>
   </div>
-</canvas>
+<canvas id="fabricjs"></canvas>
+</div>
 
 <script type="text/javascript" src="js/preloader.js"></script>
 <!--
@@ -1069,11 +1132,7 @@ http://www.flaticon.com
 <!--http://www.jquerybyexample.net/2013/05/jquery-scroll-page-automatically-by-few-pixels-after-every-few-seconds.html-->
 <!--<script type="text/javascript" src="js/iscroll.js"></script>-->
 
-<script type="text/javascript" src="js/jquery.jscroll.js"></script>
-<script type="text/javascript" src="js/draggable.js"></script>
-
 <script type="text/javascript">
-
 function getCookie(name) {
   var value = "; " + document.cookie;
   var parts = value.split("; " + name + "=");
@@ -1089,7 +1148,8 @@ function createCookie(name,value,days) {
     else var expires = "";
     document.cookie = name+"="+value+expires+"; path=/";
 }
-  function getMenuItem(itemData, last) {
+
+function getMenuItem(itemData, last) {
     //console.log(itemData);
     var li = "<li";
     if (itemData.sub) {
@@ -1127,60 +1187,6 @@ function createCookie(name,value,days) {
     }
     return item;
   }
-
-$(document).ready(function()
-{
-
-  $('.scroll').jscroll({
-    //loadingHtml: '<small>Loading...</small>',
-    //padding: 20,
-    //nextSelector: 'a.jscroll-next:last',
-    //contentSelector: 'li'
-  });
-
-  //$('#dragElement').drags();
-
-  $('.tooltip-right').tooltipster({
-      animation: 'fade',
-      delay: 200,
-      theme: 'tooltipster-default',
-      touchDevices: false,
-      trigger: 'hover',
-      position: 'right'
-  });
-  $('.tooltip-top').tooltipster({
-      animation: 'fade',
-      delay: 200,
-      theme: 'tooltipster-default',
-      touchDevices: false,
-      trigger: 'hover',
-      position: 'top'
-  });
-
-  jBinary.load('./objects/Exterior/index.json', function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#menuRight3DHouse .scroll .cssmenu > ul");
-        $.each(json.menu, function () {
-          menu.append(getMenuItem(this));
-        });
-  });
-
-  jBinary.load('./objects/Interior/index.json', function(err, binary) {
-    var json = JSON.parse(binary.read('string'));
-    var menu = $("#menuRight3DFloor .scroll .cssmenu > ul");
-    $.each(json.menu, function () {
-          menu.append(getMenuItem(this));
-    });
-  });
-
-   jBinary.load('./objects/FloorPlan/index.json', function(err, binary) {
-    var json = JSON.parse(binary.read('string'));
-    var menu = $("#menuRight2D .scroll .cssmenu > ul");
-    $.each(json.menu, function () {
-          menu.append(getMenuItem(this,false));
-    });
-  });
-});
 
 var images = {};
 //var Agent;
@@ -1266,45 +1272,6 @@ function agentToggle() {
 }
 </script>
 
-<script type="text/javascript" src="js/cssmenu.js"></script>
-<script type="text/javascript" src="js/jszip.js"></script>
-<script type="text/javascript" src="js/FileSaver.js"></script>
-
-<script src="js/fabric.js"></script>
-
-<script src="js/3d/three.js"></script>
-<script src="js/3d/Detector.js"></script>
-
-<!--
-<script src="js/3d/loaders/BinaryLoader.js"></script>
-<script src="js/3d/loaders/BabylonLoader.js"></script>
-<script src="js/3d/loaders/ColladaLoader.js"></script>
-<script src="js/3d/loaders/OBJLoader.js"></script>
-<script src="js/3d/loaders/MTLLoader.js"></script>
-<script src="js/3d/loaders/OBJMTLLoader.js"></script>
--->
-
-<script src="js/3d/controls/OrbitControls.js"></script>
-
-<script src="js/3d/exporters/OBJExporter.js"></script>
-<script src="js/3d/exporters/ObjectExporter.js"></script>
-<script src="js/3d/exporters/GeometryExporter.js"></script>
-<script src="js/3d/exporters/BufferGeometryExporter.js"></script>
-<script src="js/3d/exporters/MaterialExporter.js"></script>
-<!-- <script src="js/libs/stats.min.js"></script> -->
-
-<script src="js/3d/threex.dilategeometry.js"></script>
-<script src="js/3d/threex.atmospherematerial.js"></script>
-<script src="js/3d/threex.geometricglowmesh.js"></script>
-
-<script src="js/3d/extras/physics/ParticleEngine.js"></script>
-
-<!--
-<script src="js/3d/extras/physics/Collisions.js"></script>
-<script src="js/3d/extras/physics/CollisionUtils.js"></script>
--->
-
-<script src="js/main.js"></script>
 <!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->
 
 </body>
