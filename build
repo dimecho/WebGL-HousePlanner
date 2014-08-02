@@ -7,12 +7,16 @@ cd "$(dirname "$0")"
 #do
 #	cat "$f" >> "js/hp.js"
 #done
-#java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/houseplanner.js --js=js/hp.js
+#java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/_houseplanner.js --js=js/hp.js
 
-java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/houseplanner.js 'js/src/**.js'
+java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/_houseplanner.js 'js/src/**.js'
 
 cd js/
+cat three.js >> houseplanner.js
+cat _houseplanner.js >> houseplanner.js
 zip houseplanner.jsz houseplanner.js
 #zip three.jsz three.js
+rm _houseplanner.js
 rm houseplanner.js
 #rm hp.js
+

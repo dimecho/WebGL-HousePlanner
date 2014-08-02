@@ -1,4 +1,4 @@
-/*!
+/**
  * jScroll - jQuery Plugin for Infinite Scrolling / Auto-Paging - v2.2.4
  * http://jscroll.com/
  *
