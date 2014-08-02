@@ -12,14 +12,20 @@
   <script type="text/javascript" src="js/three.js?v=68"></script>
 
  <script>
-  jBinary.load("js/houseplanner.jsz", function(err, binary) {
-    try {
-      var zip = new JSZip(binary.read('string'));
-      $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
-    } catch (exception) {
-      $.getScript("js/houseplanner.js");
-    }
-  });
+    jBinary.load("js/houseplanner.jsz", function(err, binary) {
+      try {
+        var zip = new JSZip();
+        zip.load(binary.read('string'));
+        $(document).ready(function() {
+          $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
+        });
+      } catch (exception) {
+        console.log(exception);
+        $(document).ready(function() {
+          $.getScript("js/houseplanner.js");
+        });
+      }
+    });
   </script>
 
   <link rel="stylesheet" type="text/css" href="css/preloader.css"/>
