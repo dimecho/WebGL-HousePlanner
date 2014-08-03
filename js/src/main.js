@@ -107,6 +107,7 @@ var scene2DWallRegularMaterialSelect;
 var scene2DWallBearingMaterial;
 var scene2DWallBearingMaterialSelect;
 
+var animation = [];
 var mouse;
 var clock;
 var engine;
@@ -121,71 +122,6 @@ var zip;
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
-
-$(document).ready(function() {
-
-    $('.tooltip').tooltipster({
-        animation: 'fade',
-        delay: 200,
-        theme: 'tooltipster-default',
-        touchDevices: false,
-        trigger: 'hover',
-        position: 'bottom',
-        contentAsHTML: true
-    });
-
-    $('.scroll').jscroll({
-        //loadingHtml: '<small>Loading...</small>',
-        //padding: 20,
-        //nextSelector: 'a.jscroll-next:last',
-        //contentSelector: 'li'
-    });
-
-    //$('#dragElement').drags();
-
-    $('.tooltip-right').tooltipster({
-        animation: 'fade',
-        delay: 200,
-        theme: 'tooltipster-default',
-        touchDevices: false,
-        trigger: 'hover',
-        position: 'right'
-    });
-    $('.tooltip-top').tooltipster({
-        animation: 'fade',
-        delay: 200,
-        theme: 'tooltipster-default',
-        touchDevices: false,
-        trigger: 'hover',
-        position: 'top'
-    });
-
-    jBinary.load('./objects/Exterior/index.json', function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#menuRight3DHouse .scroll .cssmenu > ul");
-        $.each(json.menu, function() {
-            menu.append(getMenuItem(this));
-        });
-    });
-
-    jBinary.load('./objects/Interior/index.json', function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#menuRight3DFloor .scroll .cssmenu > ul");
-        $.each(json.menu, function() {
-            menu.append(getMenuItem(this));
-        });
-    });
-
-    jBinary.load('./objects/FloorPlan/index.json', function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#menuRight2D .scroll .cssmenu > ul");
-        $.each(json.menu, function() {
-            menu.append(getMenuItem(this, false));
-        });
-    });
-
-    init();
-});
 
 function init() {
 
@@ -862,6 +798,10 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
         //mesh.updateMatrix();
         object.add(mesh);
 
+        //http://code.tutsplus.com/tutorials/webgl-with-threejs-models-and-animation--net-35993
+        //animation[animation.length-1] = new THREE.MorphAnimation(mesh);
+        //animation[animation.length-1].play();
+
         //THREE.Collisions.colliders.push(THREE.CollisionUtils.MeshOBB(mesh));
     };
 
@@ -1001,8 +941,8 @@ function show3DHouse() {
     sceneSpotLight.castShadow = true;
     scene3D.add(sceneSpotLight);
 
-
     scene3D.add(scene3DHouseGroundContainer);
+    scene3D.add(scene3DHouseFXContainer);
     scene3D.add(scene3DHouseContainer);
     scene3D.add(scene3DRoofContainer);
 
@@ -1294,6 +1234,7 @@ function hideElements() {
     scene3D.remove(scene3DFloorLevelGroundContainer);
 
     scene3D.remove(scene3DHouseContainer);
+    scene3D.remove(scene3DHouseFXContainer);
 
     for (var i = 0; i < scene3DFloorContainer.length; i++) {
         scene3D.remove(scene3DFloorContainer[i]);
@@ -3394,6 +3335,11 @@ function animate() {
         */
         //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
         //renderer.clear();
+
+        for (var a in animation) {
+            a.update(clock.getDelta() * 0.8);
+        }
+
         renderer.render(scene3D, camera3D);
     }
 
@@ -3605,3 +3551,92 @@ function snaptogrid(object) {
     object.x = Math.floor(object.x / 100) * 100 + 50;
     object.y = Math.floor(object.y / 100) * 100 + 50;
 }
+
+$(document).ready(function() {
+
+    $('.tooltip').tooltipster({
+        animation: 'fade',
+        delay: 200,
+        theme: 'tooltipster-default',
+        touchDevices: false,
+        trigger: 'hover',
+        position: 'bottom',
+        contentAsHTML: true
+    });
+
+    $('.scroll').jscroll({
+        loadingHtml: '',
+        //padding: 20,
+        //nextSelector: 'a.jscroll-next:last',
+        //contentSelector: 'li'
+    });
+
+    //$('#dragElement').drags();
+
+    $('.tooltip-right').tooltipster({
+        animation: 'fade',
+        delay: 200,
+        theme: 'tooltipster-default',
+        touchDevices: false,
+        trigger: 'hover',
+        position: 'right'
+    });
+    $('.tooltip-top').tooltipster({
+        animation: 'fade',
+        delay: 200,
+        theme: 'tooltipster-default',
+        touchDevices: false,
+        trigger: 'hover',
+        position: 'top'
+    });
+
+    jBinary.load('./objects/Exterior/index.json', function(err, binary) {
+        var json = JSON.parse(binary.read('string'));
+        var menu = $("#menuRight3DHouse .scroll .cssmenu > ul");
+        $.each(json.menu, function() {
+            menu.append(getMenuItem(this));
+        });
+        $("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
+            menuItemClick(this);
+        });
+    });
+
+    jBinary.load('./objects/Interior/index.json', function(err, binary) {
+        var json = JSON.parse(binary.read('string'));
+        var menu = $("#menuRight3DFloor .scroll .cssmenu > ul");
+        $.each(json.menu, function() {
+            menu.append(getMenuItem(this));
+        });
+        $("#menuRight3DFloor .scroll .cssmenu > ul > li > a").click(function(event) {
+            menuItemClick(this);
+        });
+    });
+
+    jBinary.load('./objects/FloorPlan/index.json', function(err, binary) {
+        var json = JSON.parse(binary.read('string'));
+        var menu = $("#menuRight2D .scroll .cssmenu > ul");
+        $.each(json.menu, function() {
+            menu.append(getMenuItem(this, false));
+        });
+        $("#menuRight2D .scroll .cssmenu > ul > li > a").click(function(event) {
+            menuItemClick(this);
+        });
+    });
+
+    $('.cssmenu ul ul li:odd').addClass('odd');
+    $('.cssmenu ul ul li:even').addClass('even');
+    $('.cssmenu > ul > li > a').click(function(event) {
+        menuItemClick(this);
+    });
+
+    //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });      
+    $("#menuTop p").click(function() {
+        $(this).hide().after('<input type="text" class="editP" value="' + $(this).html() + '" size="10" />');
+        $('.editP').focus();
+    });
+    $('.editP').bind('blur', function() {
+        $(this).hide().prev('#menuTop p').html($(this).val()).show();
+    });
+
+    init();
+});

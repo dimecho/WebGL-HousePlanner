@@ -89,3 +89,19 @@
 .cssmenu ul ul li:last-child {
   border: none;
 }
+
+#menuTop {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 98%; 
+  height: 60px;
+  padding: 4px;
+  z-index: 2;
+   
+  border-radius: 10px;
+  background: #fff;
+  background: -moz-linear-gradient(#fff, #999);
+  background: -webkit-linear-gradient(#fff, #999);
+  background: -o-linear-gradient(#fff, #999);
+}

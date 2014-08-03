@@ -30,7 +30,7 @@
   <script src="js/3d/extras/physics/CollisionUtils.js"></script>
   -->
 
-  <script type="text/javascript" src="js/src/cssmenu.js"></script>
+  <script type="text/javascript" src="js/src/menu.js"></script>
   <script type="text/javascript" src="js/src/modernizr.js?v=custom"></script>
   <script type="text/javascript" src="js/src/FileSaver.js"></script>
   <script type="text/javascript" src="js/src/jspdf.js"></script>
@@ -40,530 +40,135 @@
   <script type="text/javascript" src="js/src/fabric.js"></script>
   <script type="text/javascript" src="js/src/main.js"></script>
 
+  <!-- 
+  https://github.com/codrops/IconHoverEffects
+  http://fontello.com 
+  http://www.flaticon.com
+  -->
   <link rel="stylesheet" type="text/css" href="css/preloader.css"/>
   <link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
   <link rel="stylesheet" type="text/css" href="css/cssmenu.css">
+  <link rel="stylesheet" type="text/css" href="css/slidemenu.css">
+  <link rel="stylesheet" type="text/css" href="css/scroller.css">
+  <link rel="stylesheet" type="text/css" href="css/lightbox.css">
 
-<!-- http://www.webtutorialsource.com/tutorial/show-hide-toggle-sliding-menu-css-javascript -->
-<!-- Slide Menu -->
-<style>
+  <link rel="stylesheet" type="text/css" href="font/style.css">
+  <link rel="stylesheet" type="text/css" href="css/iconhover.css">
+  <link rel="stylesheet" type="text/css" href="css/normalize.css"  />
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+  <link rel="stylesheet" type="text/css" href="css/style2.css" />
 
-#menuLeft3DHouse{
-    width: 240px;
-    line-height: 20px;
-    left: -180px;
-    top: 100px; /* change this value to place the menu higher or lower */
-    position: fixed;
-    z-index: 99;
-}
-#menuLeft3DFloor{
-    width: 100px;
-    line-height: 20px;
-    left: -100px;
-    top: 100px; /* change this value to place the menu higher or lower */
-    position: fixed;
-    z-index: 99;
-}
-
-#menuLeft2D{
-    width: 130px;
-    left: -80px;
-    top: 100px; /* change this value to place the menu higher or lower */
-    position: fixed;
-    z-index: 99;
-}
-
-div.clear { clear: both; }
-
-#links-left{
-  
-  /*padding: 10px;*/
-  float: left;
-  /*border-right: 1px solid #B4B8BB;*/
-
-  background: #fff;
-
-  background: -moz-linear-gradient(#fff, #999);
-  background: -webkit-linear-gradient(#fff, #999);
-  background: -o-linear-gradient(#fff, #999);
-
-  -moz-background-clip: padding;     /* Firefox 3.6 */
-  -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
-  background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
-  border: 10px solid rgba(0,0,0,0.3);
-
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  border-radius: 10px;
-}
-
-#tab-left{
-  width: 44px;
-  float: right;
-  list-style: none outside none;
-  margin: 0;
-  padding: 0;
-  /*position: relative;
-  z-index: 2;
-  */
-}
-
-.menuLeft3DHouse-show-left, .menuLeft3DFloor-show-left, .menuLeft2D-show-left, .hide-left{
-    /* we specify the transition length for hiding and showing */
-    transition: margin-left .4s ease-in;
-    -webkit-transition: margin-left .4s ease-in;
-}
-
-.hide-left{
-    margin-left:0px;
-}
-
-.menuLeft3DHouse-show-left{
-    margin-left:210px;
-}
-.menuLeft3DFloor-show-left{
-    margin-left:200px;
-}
-.menuLeft2D-show-left{
-    margin-left:110px;
-}
-
-#arrow-left, .bt{
-    cursor: pointer;
-}
-
-#menuRight{
-    width: 400px;
-    font-size: 12px;
-    line-height: 20px;
-    right: -350px;
-    top: 100px; /* change this value to place the menu higher or lower */
-    position: fixed;
-    z-index: 99;
-}
-
-#menuWallInput{
-    width: 100px;
-    position: fixed;
-    z-index: 10;
-}
-
-#tab-right{
-    float: left;
-    list-style: none outside none;
-    margin: 0;
-    padding: 0;
-    /*
-    position: relative;
-    z-index: 99;
-    */
-}
-
-#links-right{
-    width: 80px;
-    padding: 10px;
-    float: left;
-    border-left: 1px solid #B4B8BB;
-}
-
-.show-right, .hide-right{
-    /* we specify the transition length for hiding and showing */
-    transition: margin-right .4s ease-in;
-    -webkit-transition: margin-right .4s ease-in;
-}
-
-.hide-right{
-    margin-right:0px;
-}
-
-.show-right{
-    margin-right:350px;
-}
-
-#arrow-right, .bt{
-    cursor: pointer;
-}
-
-</style>
-<script>
-function toggleRight(id) {
-    var el = document.getElementById(id);
-    var img = document.getElementById("arrow-right");
-    var box = el.getAttribute("class");
-
-    if(box == "hide-right"){
-      el.style.display="block";
-      el.setAttribute("class", "show-right");
-      delay(img, "images/arrowright.png", 400);
-    } else{
-      el.setAttribute("class", "hide-right");
-      delay(img, "images/arrowleft.png", 400);
+  <!-- Full Screen -->
+  <script>
+  // Find the right method, call on correct element
+  function launchFullscreen(element) {
+    if(element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if(element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if(element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen();
+    } else if(element.msRequestFullscreen) {
+      element.msRequestFullscreen();
     }
-}
-function toggleLeft(id,open) {
-    var el = document.getElementById(id);
-    var img = document.getElementById("arrow-left");
-    var box = el.getAttribute("class");
+  }
 
-    if(box == "hide-left" || open){
-      el.style.display="block";
-      el.setAttribute("class", id + "-show-left");
-      delay(img, "images/arrowleft.png", 400);
+  function exitFullscreen() {
+    if(document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if(document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if(document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
     }
-    else{
-      el.setAttribute("class", "hide-left");
-      delay(img, "images/arrowright.png", 400);
-    }
-}
-
-function delay(elem, src, delayTime){
-    window.setTimeout(function() {elem.setAttribute("src", src);}, delayTime);
-}
-</script>
-<!-- Slide Menu -->
-
-<!-- Top Menu -->
-<style>
-#menuTop {
-	position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 98%;	
-  height: 60px;
-  padding: 4px;
-  z-index: 2;
-   
-	border-radius: 10px;
-	background: #fff;
-	background: -moz-linear-gradient(#fff, #999);
-	background: -webkit-linear-gradient(#fff, #999);
-	background: -o-linear-gradient(#fff, #999);
-}
-</style>
-
-<script>
-
-$( document).ready(function () {
-	 //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });  	
-    $("#menuTop p").click(function(){
-    $(this).hide().after('<input type="text" class="editP" value="'+$(this).html()+'" size="10" />');
-    $('.editP').focus();
-    });
-    $('.editP').bind('blur', function(){
-       	$(this).hide().prev('#menuTop p').html($(this).val()).show();
-    });
-});
-
-</script>
-<!-- END Top Menu -->
-
-<!-- Login -->
-
-<!-- END Login -->
-
-<!-- Full Screen -->
-<script>
-// Find the right method, call on correct element
-function launchFullscreen(element) {
-  if(element.requestFullscreen) {
-    element.requestFullscreen();
-  } else if(element.mozRequestFullScreen) {
-    element.mozRequestFullScreen();
-  } else if(element.webkitRequestFullscreen) {
-    element.webkitRequestFullscreen();
-  } else if(element.msRequestFullscreen) {
-    element.msRequestFullscreen();
   }
-}
 
-function exitFullscreen() {
-  if(document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if(document.mozCancelFullScreen) {
-    document.mozCancelFullScreen();
-  } else if(document.webkitExitFullscreen) {
-    document.webkitExitFullscreen();
+  function dumpFullscreen() {
+    console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+    console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
   }
-}
 
-function dumpFullscreen() {
-  console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-  console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
-}
-
-// Events
-/*
-document.addEventListener("fullscreenchange", function(e) {
-  console.log("fullscreenchange event! ", e);
-});
-document.addEventListener("mozfullscreenchange", function(e) {
-  console.log("mozfullscreenchange event! ", e);
-});
-document.addEventListener("webkitfullscreenchange", function(e) {
-  console.log("webkitfullscreenchange event! ", e);
-});
-document.addEventListener("msfullscreenchange", function(e) {
-  console.log("msfullscreenchange event! ", e);
-});
-*/
-// Add different events for fullscreen
-
-document.addEventListener("keydown", function(e) {
-  if (e.keyCode == 13) {
-    exitFullscreen();
-  }
-}, false);
-</script>
-<!-- END Full Screen-->
-<!--
-<script type="application/x-glsl" id="sky-vertex">
-varying vec2 vUV;
-
-void main() {
-  vUV = uv;
-  vec4 pos = vec4(position, 1.0);
-  gl_Position = projectionMatrix * modelViewMatrix * pos;
-}
-</script>
-
-<script type="application/x-glsl" id="sky-fragment">
-uniform sampler2D texture;
-varying vec2 vUV;
-
-void main() {
-  vec4 sample = texture2D(texture, vUV);
-  gl_FragColor = vec4(sample.xyz, sample.w);
-}
-</script>
--->
-<script id="vs" type="x-shader/x-vertex">
-  varying vec2 vUv;
-
-  void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-  }
-</script>
-
-<script id="fs" type="x-shader/x-fragment">
-
-  uniform sampler2D map;
-  uniform vec3 fogColor;
-  uniform float fogNear;
-  uniform float fogFar;
-  varying vec2 vUv;
-
-  void main() {
-    float depth = gl_FragCoord.z / gl_FragCoord.w;
-    float fogFactor = smoothstep( fogNear, fogFar, depth );
-
-    gl_FragColor = texture2D( map, vUv );
-    gl_FragColor.w *= pow( gl_FragCoord.z, 20.0 );
-    gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
-  }
-</script>
-
-<!--http://www.webdesignerdepot.com/2012/10/creating-a-modal-window-with-html5-and-css3/ -->
-<!-- Dialog Box -->
-<style>
-	.modalDialog {
-		position: fixed;
-		font-family: Arial, Helvetica, sans-serif;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		background: rgba(0,0,0,0.8);
-		z-index: 100;
-		opacity:0;
-		-webkit-transition: opacity 400ms ease-in;
-		-moz-transition: opacity 400ms ease-in;
-		transition: opacity 400ms ease-in;
-		pointer-events: none;
-	}
-
-	.modalDialog:target {
-		opacity:1;
-		pointer-events: auto;
-	}
-
-	.modalDialog > div {
-		width: 400px;
-		position: relative;
-		margin: 10% auto;
-		padding: 5px 20px 13px 20px;
-		border-radius: 10px;
-		background: #fff;
-		background: -moz-linear-gradient(#fff, #999);
-		background: -webkit-linear-gradient(#fff, #999);
-		background: -o-linear-gradient(#fff, #999);
-	}
-
-	.close {
-		background: #606061;
-		color: #FFFFFF;
-		line-height: 25px;
-		position: absolute;
-		right: -12px;
-		text-align: center;
-		top: -10px;
-		width: 24px;
-		text-decoration: none;
-		font-weight: bold;
-		-webkit-border-radius: 12px;
-		-moz-border-radius: 12px;
-		border-radius: 12px;
-		-moz-box-shadow: 1px 1px 3px #000;
-		-webkit-box-shadow: 1px 1px 3px #000;
-		box-shadow: 1px 1px 3px #000;
-	}
-
-	.close:hover { background: #00d9ff; }
-	</style>
-<!-- END Dialog Box -->
-
-<!-- iScroll -->
-<style type="text/css">
-#scroller * {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-html {
-  -ms-touch-action: none;
-}
-
-body{
-  padding: 0;
-  margin: 0;
-  border: 0;
-  overflow:hidden;
-}
-
-#header {
- position: absolute;
-  z-index: 2;
-  top: 50;
-  left: 55px;
-  width: 320px;
-  height: 55px;
-  background: #444;
-  padding: 0;
-}
-
-#footer {
-  position: absolute;
-  z-index: 2;
-  bottom: 0;
-  left: 55px;
-  width: 320px;
-  height: 55px;
-  background: #444;
-  padding: 0;
-}
-
-#scrollWrapper {
-  position: absolute;
-  z-index: 1;
-  top: 140px;
-  bottom: 55px;
-  left: 55px;
-  width: 320px;
-  background: #fff;
-  overflow: hidden;
-}
-
-#scroller {
-  position: absolute;
-  z-index: 1;
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
-  width: 100%;
-  
-  /*-webkit-transform: translate3d(0,0,0);*/ /*http://cantina.co/thought_leadership/ios-5-native-scrolling-grins-and-gothcas*/
-  -webkit-transform: translateZ(0);
-  -moz-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  -o-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-text-size-adjust: none;
-  -moz-text-size-adjust: none;
-  -ms-text-size-adjust: none;
-  -o-text-size-adjust: none;
-  text-size-adjust: none;
-}
-
-.scrollerItem {
+  // Events
   /*
-  position: relative;
-  width: 100%;
-  top: 0;
-  left: 0;
-  -webkit-transform: translateZ(0);
-  -moz-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  -o-transform: translateZ(0);
-  transform: translateZ(0);
- 
-  background-color: #fafafa;
-  font-size: 16px;
+  document.addEventListener("fullscreenchange", function(e) {
+    console.log("fullscreenchange event! ", e);
+  });
+  document.addEventListener("mozfullscreenchange", function(e) {
+    console.log("mozfullscreenchange event! ", e);
+  });
+  document.addEventListener("webkitfullscreenchange", function(e) {
+    console.log("webkitfullscreenchange event! ", e);
+  });
+  document.addEventListener("msfullscreenchange", function(e) {
+    console.log("msfullscreenchange event! ", e);
+  });
   */
+  // Add different events for fullscreen
 
-  width:250px;
-  height:110px;
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  border-radius: 10px;
-  border:1px solid #000000;
-  padding: 10px;
-  margin:15px;
-}
-</style>
-<!-- END iScroll -->
+  document.addEventListener("keydown", function(e) {
+    if (e.keyCode == 13) {
+      exitFullscreen();
+    }
+  }, false);
+  </script>
+  <!-- END Full Screen-->
 
+  <!--
+  <script type="application/x-glsl" id="sky-vertex">
+  varying vec2 vUV;
+
+  void main() {
+    vUV = uv;
+    vec4 pos = vec4(position, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * pos;
+  }
+  </script>
+
+  <script type="application/x-glsl" id="sky-fragment">
+  uniform sampler2D texture;
+  varying vec2 vUV;
+
+  void main() {
+    vec4 sample = texture2D(texture, vUV);
+    gl_FragColor = vec4(sample.xyz, sample.w);
+  }
+  </script>
+  -->
+  <script id="vs" type="x-shader/x-vertex">
+    varying vec2 vUv;
+
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    }
+  </script>
+
+  <script id="fs" type="x-shader/x-fragment">
+
+    uniform sampler2D map;
+    uniform vec3 fogColor;
+    uniform float fogNear;
+    uniform float fogFar;
+    varying vec2 vUv;
+
+    void main() {
+      float depth = gl_FragCoord.z / gl_FragCoord.w;
+      float fogFactor = smoothstep( fogNear, fogFar, depth );
+
+      gl_FragColor = texture2D( map, vUv );
+      gl_FragColor.w *= pow( gl_FragCoord.z, 20.0 );
+      gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
+    }
+  </script>
 </head>
 
 <body class="preloader">
-
-<!-- UI -->
-<!-- 
-https://github.com/codrops/IconHoverEffects
-http://fontello.com 
-http://www.flaticon.com
--->
-<link rel="stylesheet" href="font/style.css"></head>
-<link rel="stylesheet" href="css/iconhover.css">
-
-
-<link rel="stylesheet" type="text/css" href="css/normalize.css"  />
-<link rel="stylesheet" type="text/css" href="css/style.css" />
-<link rel="stylesheet" type="text/css" href="css/style2.css" />
 
 <style>
 #dragElement {
   width:100px;
   height:100px;
   z-index: 11;
-}
-
-.scroll {
-  border: 1px solid #aaa;
-  overflow-y: scroll;
-  background: #fff;
-}
-
-.jscroll-loading {
-    text-align: center;
-    background: url(images/loading.gif) no-repeat center;
-    padding: 5px 0;
-    margin-bottom: 10px;
-    font-style: italic;
-    text-indent: -9999px;
 }
 </style>
 
@@ -634,17 +239,12 @@ http://www.flaticon.com
       </div>
       <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
     </div>
-    <!--
-    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-      <a href="#" class="hi-icon icon-navigate6" title="Scroll Up"></a>
-    </div>
-    -->
+
     <div id="menuRight3DHouse" style="display: none;">
       <div class="scroll" data-ui="jscroll-default">
         <div class="cssmenu">
           <ul></ul>
         </div>
-        <div class="last"><a href="javascript:void(0)"></a></div>
       </div>
     </div>
 
@@ -703,13 +303,6 @@ http://www.flaticon.com
         <div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>
       </div>
     </div>
-  	<!--
-  	<div id="footer">
-  	  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-  	  <a href="#" class="hi-icon icon-arrow483" title="Scroll Down"></a>
-  	  </div>
-  	</div>
-  	-->
   </div>  
 </div>
 <!-- END Slide Right Menu -->
@@ -1111,8 +704,8 @@ http://www.flaticon.com
 </style>
 
 <form action="objects/index.php" method="post" enctype="multipart/form-data" id="uploadForm">
-    <input type="file" name="fileInput" id="fileInput"  hidden />
-    <input type="submit" id="fileSubmit" value="Upload" hidden />
+  <input type="file" name="fileInput" id="fileInput"  hidden />
+  <input type="submit" id="fileSubmit" value="Upload" hidden />
 </form>
 <div id="WebGLCanvas">
   <div id="WebGLHelp">?</div>
@@ -1151,60 +744,6 @@ http://www.flaticon.com
 <!--<script type="text/javascript" src="js/iscroll.js"></script>-->
 
 <script type="text/javascript">
-function getCookie(name) {
-  var value = "; " + document.cookie;
-  var parts = value.split("; " + name + "=");
-  if (parts.length == 2) return parts.pop().split(";").shift();
-}
-
-function createCookie(name,value,days) {
-    if (days) {
-        var date = new Date();
-        date.setTime(date.getTime()+(days*24*60*60*1000));
-        var expires = "; expires="+date.toGMTString();
-    }
-    else var expires = "";
-    document.cookie = name+"="+value+expires+"; path=/";
-}
-
-function getMenuItem(itemData, last) {
-    //console.log(itemData);
-    var li = "<li";
-    if (itemData.sub) {
-      li += " class='has-sub'";
-    }else if (last) {
-      li += " class='last-child'";
-    }
-    li += ">";
-
-    //var a =  $("<a>", {html:itemData.name,href:itemData.link});
-    var a = "<a";
-    if(itemData.link!=null)
-    {
-      a+=" href=\"javascript:showRightObjectMenu('" + itemData.link + "');\"";
-      //a+=" href=\"#\"";
-    }else{
-      a+=" href=\"#\"";
-    }
-    a += "><span>" + itemData.name + "</span></a>";
-
-    //console.log(a);
-    var item = $(li).append(a);
-
-    if (itemData.sub) {
-        var subList = $("<ul>");
-        $.each(itemData.sub, function(index) {
-          //console.log(this);
-          if (index == itemData.sub.length - 1) { // this is the last one
-            subList.append(getMenuItem(this,true));
-          }else{
-            subList.append(getMenuItem(this,false));
-          }
-        });
-        item.append(subList);
-    }
-    return item;
-  }
 
 var images = {};
 //var Agent;
@@ -1258,6 +797,22 @@ Royal_Preloader.config({
     */
 });
 
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) return parts.pop().split(";").shift();
+}
+
+function createCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+    else var expires = "";
+    document.cookie = name+"="+value+expires+"; path=/";
+}
+
 $('#clippy').click(function (event) {
   agentToggle();
 });
@@ -1265,7 +820,6 @@ $('#clippy').click(function (event) {
 $('#WebGLHelp').click(function (event) {
   agentToggle();
 });
-
 
 function agentToggle() {
   /*
@@ -1288,6 +842,7 @@ function agentToggle() {
   }
   */
 }
+
 </script>
 
 <!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->

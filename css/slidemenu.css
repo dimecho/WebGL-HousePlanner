@@ -1,0 +1,137 @@
+/* http://www.webtutorialsource.com/tutorial/show-hide-toggle-sliding-menu-css-javascript */
+
+#menuLeft3DHouse{
+    width: 240px;
+    line-height: 20px;
+    left: -180px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 99;
+}
+#menuLeft3DFloor{
+    width: 100px;
+    line-height: 20px;
+    left: -100px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 99;
+}
+
+#menuLeft2D{
+    width: 130px;
+    left: -80px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 99;
+}
+
+div.clear { clear: both; }
+
+#links-left{
+  
+  /*padding: 10px;*/
+  float: left;
+  /*border-right: 1px solid #B4B8BB;*/
+
+  background: #fff;
+
+  background: -moz-linear-gradient(#fff, #999);
+  background: -webkit-linear-gradient(#fff, #999);
+  background: -o-linear-gradient(#fff, #999);
+
+  -moz-background-clip: padding;     /* Firefox 3.6 */
+  -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
+  background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
+  border: 10px solid rgba(0,0,0,0.3);
+
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+}
+
+#tab-left{
+  width: 44px;
+  float: right;
+  list-style: none outside none;
+  margin: 0;
+  padding: 0;
+  /*position: relative;
+  z-index: 2;
+  */
+}
+
+.menuLeft3DHouse-show-left, .menuLeft3DFloor-show-left, .menuLeft2D-show-left, .hide-left{
+    /* we specify the transition length for hiding and showing */
+    transition: margin-left .4s ease-in;
+    -webkit-transition: margin-left .4s ease-in;
+}
+
+.hide-left{
+    margin-left:0px;
+}
+
+.menuLeft3DHouse-show-left{
+    margin-left:210px;
+}
+.menuLeft3DFloor-show-left{
+    margin-left:200px;
+}
+.menuLeft2D-show-left{
+    margin-left:110px;
+}
+
+#arrow-left, .bt{
+    cursor: pointer;
+}
+
+#menuRight{
+    width: 400px;
+    font-size: 12px;
+    line-height: 20px;
+    right: -350px;
+    top: 100px; /* change this value to place the menu higher or lower */
+    position: fixed;
+    z-index: 99;
+}
+
+#menuWallInput{
+    width: 100px;
+    position: fixed;
+    z-index: 10;
+}
+
+#tab-right{
+    float: left;
+    list-style: none outside none;
+    margin: 0;
+    padding: 0;
+    /*
+    position: relative;
+    z-index: 99;
+    */
+}
+
+#links-right{
+    width: 80px;
+    padding: 10px;
+    float: left;
+    border-left: 1px solid #B4B8BB;
+}
+
+.show-right, .hide-right{
+    /* we specify the transition length for hiding and showing */
+    transition: margin-right .4s ease-in;
+    -webkit-transition: margin-right .4s ease-in;
+}
+
+.hide-right{
+    margin-right:0px;
+}
+
+.show-right{
+    margin-right:350px;
+}
+
+#arrow-right, .bt{
+    cursor: pointer;
+}
