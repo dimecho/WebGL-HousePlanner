@@ -149,6 +149,7 @@ function init() {
         height: window.innerHeight
     });
     if (scene2D.freeDrawingBrush) {
+        scene2D.freeDrawingBrush.name = "freedraw";
         scene2D.freeDrawingBrush.color = "#000";
         scene2D.freeDrawingBrush.width = 8; //parseInt(drawingLineWidthEl.value, 10) || 1;
         scene2D.freeDrawingBrush.shadowBlur = 0;
@@ -795,7 +796,8 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
         mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
 
         //mesh.matrixAutoUpdate = true;
-        //mesh.updateMatrix();
+        mesh.updateMatrix();
+
         object.add(mesh);
 
         //http://code.tutsplus.com/tutorials/webgl-with-threejs-models-and-animation--net-35993
@@ -1168,9 +1170,9 @@ function show2D() {
     } else if (TOOL2D == 'vector') {
         menuSelect(2, 'menuLeft2DItem', '#ff3700');
         scene2D.isDrawingMode = false;
-    } else if (TOOL2D == 'square') {
+        //} else if (TOOL2D == 'square') {
 
-    } else if (TOOL2D == 'circle') {
+        //} else if (TOOL2D == 'circle') {
 
     }
     toggleLeft('menuLeft2D', true);
@@ -1504,17 +1506,19 @@ function on2DMouseDown(event) {
     $("#menuWallInput").hide(); //TODO: analyze and store input
 
 
-    scene2DDrawLineGeometry.length = 0; //reset
+    //scene2DDrawLineGeometry.length = 0; //reset
 
-    if (TOOL2D == 'freestyle') {
+    //if (TOOL2D == 'freestyle') {
 
-        //scene2DDrawLineGeometry.push(event.clientX, event.clientY);
+    //scene2DDrawLineGeometry.push(event.clientX, event.clientY);
+    /*
         scene2DDrawLineGeometry.push({
             x: event.clientX,
             y: event.clientY
         });
+		*/
 
-        /*
+    /*
         scene2DDrawLine = new Kinetic.Line({
             points: scene2DDrawLineGeometry,
             stroke: "black",
@@ -1523,7 +1527,7 @@ function on2DMouseDown(event) {
             lineJoin: 'round'
         });
         */
-        /*
+    /*
         scene2DDrawLine = new fabric.Line(scene2DDrawLineGeometry, {
             stroke: "#000",
             strokeWidth: 5,
@@ -1531,14 +1535,14 @@ function on2DMouseDown(event) {
             //strokeDashArray: [5, 5]
         });
 		*/
-        //scene2DFloorContainer[FLOOR].add(scene2DDrawLine); //layer add line
+    //scene2DFloorContainer[FLOOR].add(scene2DDrawLine); //layer add line
 
-    } else if (TOOL2D == 'vector') {
-        //container.style.cursor = 'crosshair';
-        //}else if (TOOL2D == 'freestyle') {
-    } else {
-        //container.style.cursor = 'pointer';
-    }
+    //} else if (TOOL2D == 'vector') {
+    //container.style.cursor = 'crosshair';
+    //}else if (TOOL2D == 'freestyle') {
+    //} else {
+    //container.style.cursor = 'pointer';
+    //}
 }
 
 function on2DMouseUp(event) {
@@ -1551,15 +1555,73 @@ function on2DMouseUp(event) {
 
     if (TOOL2D == 'freestyle') {
 
-        console.log("lines to analyze: " + scene2DDrawLineGeometry.length);
+        //console.log("objects to analyze: " + scene2D.freeDrawingBrush._points);
 
-        //http://sett.ociweb.com/sett/settJun2014.html
+        scene2DDrawLineGeometry.length = 0; //reset
+
+        for (var p = 0; p < scene2D.freeDrawingBrush._points.length; p += 2) { //Convert freeDraw points into Geometry points - TODO: Simplify
+            scene2DDrawLineGeometry.push({
+                x: scene2D.freeDrawingBrush._points[p],
+                y: scene2D.freeDrawingBrush._points[p + 1]
+            });
+        }
         var objects = scene2D.getObjects();
         for (var i in objects) {
             var obj = objects[i];
-
-            //console.log(obj.id);
+            //if (obj.name == "freedraw") {
+            if (obj.type == "path" && obj.path.length > 5) { //avoid picking arrows which are path also
+                scene2D.remove(obj);
+                break;
+            }
         }
+        //scene2D.remove(scene2D.getActiveObject().get('freedraw'));
+
+        //scene2D.freeDrawingBrush._reset();
+        //scene2D.freeDrawingBrush._render();
+        //scene2D.remove(scene2D.freeDrawingBrush);
+
+        //http://sett.ociweb.com/sett/settJun2014.html
+        /*
+        var objects = scene2D.getObjects();
+        for (var i in objects) { //Find object points
+
+            var obj = objects[i];
+
+            if (obj.type == "path" && obj.path.length > 5) { //avoid picking arrows which are path also
+
+                //console.log(obj.name + "-" + obj.type + ":" + obj.path);
+
+                for (var p = 0; p < obj.path.length; p++) {
+
+                    //console.log(obj.path[p]);
+
+                    //http://jsfiddle.net/Miggl/f2RAG/
+                    switch (obj.path[p][0]) { //Convert Path to points[]
+                        case 'M':
+                        case 'L':
+                        case 'l':
+                            scene2DDrawLineGeometry.push({
+                                x: obj.left + obj.path[p][1],
+                                y: obj.top + obj.path[p][2]
+                            });
+                        case 'Q':
+                            scene2DDrawLineGeometry.push({
+                                x: obj.left + obj.path[p][3],
+                                y: obj.top + obj.path[p][4]
+                            });
+                            break;
+                    }
+
+                    //console.log("(" + obj.path.length + ")" + X + "-" + Y);
+                }
+
+                scene2D.remove(obj);
+                break;
+            }
+        }
+		*/
+        console.log("lines to analyze: " + scene2DDrawLineGeometry.length);
+
         /*
         var object = {
 		   id:   this.id,
@@ -1568,16 +1630,15 @@ function on2DMouseUp(event) {
 		 */
 
         //http://stackoverflow.com/questions/19854808/how-to-get-polygon-points-in-fabric-js
+        /*
         var polygon = scene2D.getObjects()[0]; //scene2D.getActiveObject(); //.id = 1;
         var polygonCenter = polygon.getCenterPoint();
         if (polygon.type === "line") {
-            /*
                 currentShape.set({
                     x2: pos.x,
                     y2: pos.y
                 });
                 canvas.renderAll();
-            */
         } else if (polygon.type === "polygon") {
 
             var translatedPoints = polygon.get('points').map(function(p) {
@@ -1590,16 +1651,15 @@ function on2DMouseUp(event) {
                 scene2D.getContext().strokeRect(p.x - 5, p.y - 5, 10, 10);
             });
 
-            /*
-                var points = polygon.get("points");
-                points[points.length - 1].x = pos.x - currentShape.get("left");
-                points[points.length - 1].y = pos.y - currentShape.get("top");
-                currentShape.set({
-                    points: points
-                });
-                canvas.renderAll();
-                */
+            var points = polygon.get("points");
+            points[points.length - 1].x = pos.x - currentShape.get("left");
+            points[points.length - 1].y = pos.y - currentShape.get("top");
+            currentShape.set({
+                points: points
+            });
+            canvas.renderAll();
         }
+        */
 
         var scene2DDrawLineArray = [];
         var arrayCount = 0;
@@ -1696,38 +1756,26 @@ function on2DMouseUp(event) {
                 if (magicY[c - 1] == "straight") {
 
                     //console.log(scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1]);
-                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][2] = scene2DDrawLineGeometry[n].x;
-                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][3] = scene2DDrawLineGeometry[i].y;
-                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][4] = scene2DDrawLineGeometry[n].x;
-                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][5] = scene2DDrawLineGeometry[i].y - 12;
+
+                    //add new wall points
+                    scene2DWallGeometry[FLOOR].push([scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y, scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y]);
+
                 } else {
 
-                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y);
-                    arrayPoints.push(scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y);
-                    arrayPoints.push(scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y - 12);
-                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y - 12);
-                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y); //complete
-                    arrayWalls.push(arrayPoints);
-                    scene2DWallGeometry[FLOOR].push(arrayWalls);
+                    //Modify wall last point (extend)
+                    var l = scene2DWallGeometry[FLOOR].length - 1;
+                    scene2DWallGeometry[FLOOR][l][2] = scene2DDrawLineGeometry[i].x;
+                    scene2DWallGeometry[FLOOR][l][3] = scene2DDrawLineGeometry[i].y;
                 }
 
             } else if ((magicY[c] == "up" || magicY[c] == "down")) {
 
                 if (magicY[c - 1] == "up" || magicY[c - 1] == "down") {
 
-                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][2] = scene2DDrawLineGeometry[i].x;
-                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][3] = scene2DDrawLineGeometry[n].y;
-                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][4] = scene2DDrawLineGeometry[i].x - 12;
-                    scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1][0][5] = scene2DDrawLineGeometry[n].y;
+                    //add new wall points
+                    scene2DWallGeometry[FLOOR].push([scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[n].y, scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[n].y]);
+                    //} else {
 
-                } else {
-                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y);
-                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[n].y);
-                    arrayPoints.push(scene2DDrawLineGeometry[i].x - 12, scene2DDrawLineGeometry[n].y);
-                    arrayPoints.push(scene2DDrawLineGeometry[i].x - 12, scene2DDrawLineGeometry[i].y);
-                    arrayPoints.push(scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y); //complete
-                    arrayWalls.push(arrayPoints);
-                    scene2DWallGeometry[FLOOR].push(arrayWalls);
                 }
             }
 
@@ -1736,57 +1784,13 @@ function on2DMouseUp(event) {
         }
 
         /*
-var polygon = new fabric.Polygon([
-    new fabric.Point(200,450),
-    new fabric.Point(200, 200),
-    new fabric.Point(350, 162.5),
-    new fabric.Point(350, 450)
-], {
-    left: 200,
-    top: 306.25,
-    fill: 'purple',
-    selectable: true
-});
-*/
-        //console.log(scene2DWallGeometry[FLOOR].length);
-
-        scene2DDrawLineGeometry.length = 0;
-
-
-        for (var i = 0; i < scene2DWallGeometry[FLOOR].length; i++) { //each floor
-
-            for (var p = 0; p < scene2DWallGeometry[FLOOR][i].length; p++) { //each wall
-
-                //console.log(scene2DWallGeometry[FLOOR][i][p]); //point array x,y
-                var img = new Image();
-                //img.onload = function() {
-                //}
-                img.src = "./objects/FloorPlan/Hatch Patterns/ansi31.gif"; //pattern.toDataURL();
-
-                /*
-                var shape = new Kinetic.Polygon({
-                    points: scene2DWallGeometry[FLOOR][i][p],
-                    //fill: '#fff',
-                    fillPatternImage: img,
-                    stroke: '#555',
-                    strokeWidth: 2,
-                    alpha: 1
-                });
-                scene2DFloorContainer[FLOOR].add(shape);
-                */
-
-                $("#menuWallInput").css('left', scene2DWallGeometry[FLOOR][i][p][0]);
-                $("#menuWallInput").css('top', scene2DWallGeometry[FLOOR][i][p][1]);
-                $("#menuWallInput").show();
-                //scene2DFloorContainer[FLOOR].drawScene();
-            }
-        }
-
-        //scene2DDrawLineGeometry.length = 0;
-        //scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
-        //scene2DFloorContainer[FLOOR].drawScene();
+        var img = new Image();
+        img.src = "./objects/FloorPlan/Hatch Patterns/ansi31.gif"; //pattern.toDataURL();
+        $("#menuWallInput").css('left', scene2DWallGeometry[FLOOR][i][p][0]);
+        $("#menuWallInput").css('top', scene2DWallGeometry[FLOOR][i][p][1]);
+        $("#menuWallInput").show();
+        */
     }
-
 }
 
 function on2DMouseMove(event) {
@@ -1797,15 +1801,16 @@ function on2DMouseMove(event) {
         return;
     }
     //console.log(scene2D.getPointerPosition())
-    if (TOOL2D == 'freestyle') {
-        //var mouse = canvas.getPointer(e);
-        //scene2DDrawLineGeometry.push(event.clientX, event.clientY);
+    //if (TOOL2D == 'freestyle') {
+    //var mouse = canvas.getPointer(e);
+    //scene2DDrawLineGeometry.push(event.clientX, event.clientY);
+    /*
         scene2DDrawLineGeometry.push({
             x: event.clientX,
             y: event.clientY
         });
-
-        /*
+		*/
+    /*
         for (var i = 1; i < scene2DDrawLineGeometry.length; i++) {
             var line = new fabric.Line(
                 [scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[i].y, scene2DDrawLineGeometry[i + 1].x, scene2DDrawLineGeometry[i + 1].x], {
@@ -1817,14 +1822,14 @@ function on2DMouseMove(event) {
             scene2D.add(line);
         }
         */
-        //scene2D.renderAll();
+    //scene2D.renderAll();
 
 
-        //scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
+    //scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
 
-        //scene2DDrawLine.setPoints(scene2DDrawLineGeometry);
-        //scene2DFloorContainer[FLOOR].drawScene();
-    }
+    //scene2DDrawLine.setPoints(scene2DDrawLineGeometry);
+    //scene2DFloorContainer[FLOOR].drawScene();
+    //}
 }
 
 function on3DMouseMove(event) {
@@ -2069,8 +2074,8 @@ function on3DMouseUp(event) {
 
         //container.style.cursor = 'pointer';
 
-        if (TOOL2D == 'freestyle') {
-            /*
+        //if (TOOL2D == 'freestyle') {
+        /*
             scene2D.remove(scene2DDrawLineContainer);
 
             //console.log("lines to analyze: " + scene2DDrawLineContainer.children.length);
@@ -2154,7 +2159,7 @@ function on3DMouseUp(event) {
                 //scene2D.add(scene2DDrawLineContainer);
             }
             */
-        }
+        //}
 
         //scene3D.updateMatrixWorld();
 

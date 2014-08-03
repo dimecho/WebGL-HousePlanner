@@ -2,14 +2,16 @@
 
 cd "$(dirname "$0")"
 
-#rm "js/hp.js"
-#for f in $(find ./js/src/ -name '*.js')
-#do
-#	cat "$f" >> "js/hp.js"
-#done
-#java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/_houseplanner.js --js=js/hp.js
+rm ./css/houseplanner.css
+for f in $(find ./css/src/ -name '*.css')
+do
+	#cat "$f" >> "css/houseplanner.css"
+	java -jar ./css/yuicompressor.jar --type css "$f" >> ./css/houseplanner.css
+	echo "\n" >> ./css/houseplanner.css
+done
 
-java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/_houseplanner.js 'js/src/**.js'
+#java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/_houseplanner.js --js=js/hp.js
+java -jar ./js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/_houseplanner.js 'js/src/**.js'
 
 cd js/
 cat three.js >> houseplanner.js
