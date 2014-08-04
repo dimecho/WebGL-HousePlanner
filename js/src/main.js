@@ -17,7 +17,7 @@ TODO:
 - [difficulty: 5/10  progress: 50%] 3D Floor ground base glass reflective
 - [difficulty: 6/10  progress: 0%]  3D Exterior View ability to select floors (+ flying-in animationeffect)
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
-- [difficulty: 6/10  progress: 0%]  Make House Ground editable - angle/terain/square (ex: downhill house)
+- [difficulty: 6/10  progress: 0%]  Make House Ground editable - angle/terain/square ex: downhill house http://cjcliffe.github.io/CubicVR.js/experiment/landscape_editor/landscape_edit_500m.html
 - [difficulty: 4/10  progress: 60%] Ability to save scene 3D & 2D
 - [difficulty: 5/10  progress: 1%]  Ability to open scene 3D & 2D
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
@@ -76,9 +76,12 @@ var groundGrid;
 var groundMesh;
 var glowMesh;
 
-var weatherSkyMesh;
+var weatherSkyDayMesh;
+var weatherSkyNightMesh;
 var weatherSnowMesh;
 var weatherRainMesh;
+
+var skyMesh;
 
 var RADIAN = Math.PI / 180;
 var AUTOROTATE = true;
@@ -86,7 +89,8 @@ var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
 var TOOL2D = 'vector';
-var WEATHER = 'day-sunny';
+var WEATHER = 'sunny';
+var DAY = 'day';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
 var SELECTED;
@@ -194,7 +198,7 @@ function init() {
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
 
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 60); //600 if doing a sky wrap-up
+    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 30000);
     camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 
     //camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
@@ -366,6 +370,8 @@ function init() {
     renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
+        //clearColor: 0x34583e,
+        clearAlpha: 0.5
         //preserveDrawingBuffer: false
     });
     /*
@@ -486,7 +492,7 @@ function init() {
     // move mouse and: left   click to rotate,  middle click to zoom, right  click to pan
     controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
     controls3D.minDistance = 4;
-    controls3D.maxDistance = 30; //Infinity;
+    controls3D.maxDistance = 25; //Infinity;
     //controls3D.minPolarAngle = 0; // radians
     //controls3D.maxPolarAngle = Math.PI; // radians
     controls3D.maxPolarAngle = Math.PI / 2; //Don't let to go below the ground
@@ -537,7 +543,9 @@ function init() {
     show3DHouse();
 
     selectMeasurement();
-    $('#menuWeatherText').html("Day - Sunny");
+
+    $('#menuWeatherText').html("Sunny");
+    $('#menuDayNightText').html("Day");
 
     animate();
 }
@@ -922,7 +930,6 @@ function cube(size) {
 
 function show3DHouse() {
 
-
     //Something interesting from the web (maybe someday) -> http://inear.se/urbanjungle
     //Math behind the scenes explained here http://www.inear.se/2014/03/urban-jungle-street-view/
 
@@ -930,18 +937,16 @@ function show3DHouse() {
 
     hideElements();
 
-    showWeather();
+    scene3DSetSky(DAY);
+    scene3DSetLight()
+    scene3DSetWeather();
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
     camera3D.position.set(0, 6, 20);
 
     //TODO: Loop and show based in ID name
 
-    sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
-    scene3D.add(sceneAmbientLight);
-    sceneSpotLight.intensity = 0.5;
-    sceneSpotLight.castShadow = true;
-    scene3D.add(sceneSpotLight);
+
 
     scene3D.add(scene3DHouseGroundContainer);
     scene3D.add(scene3DHouseFXContainer);
@@ -971,6 +976,7 @@ function show3DHouse() {
     menuSelect(1, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
+    $('#menuDayNight').show();
     $('#menuWeather').show();
     //scene3DHouseContainer.traverse;
 
@@ -999,7 +1005,8 @@ function show3DFloor() {
 
     hideElements();
 
-    showWeather();
+    scene3DSetBackground('blue');
+    scene3DSetLight();
 
     camera3D.position.set(0, 4, 12);
 
@@ -1007,11 +1014,6 @@ function show3DFloor() {
     //scene3D.add(scene3DContainer);
 
     //TODO: remove other floors
-    sceneAmbientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene3D.add(sceneAmbientLight);
-    sceneSpotLight.intensity = 0.4;
-    //sceneSpotLight.castShadow = false;
-    scene3D.add(sceneSpotLight);
 
     scene3D.add(scene3DFloorGroundContainer);
     scene3D.add(camera3DMirrorReflection);
@@ -1045,16 +1047,11 @@ function show3DFloorLevel() {
     SCENE = 'floorlevel';
 
     hideElements();
-    showWeather();
+
+    scene3DSetSky("day");
+    scene3DSetLight();
 
     camera3D.position.set(0, 4, 12);
-
-    sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);
-    scene3D.add(sceneAmbientLight);
-    sceneSpotLight.intensity = 0.4;
-    sceneSpotLight.castShadow = false;
-    scene3D.add(sceneSpotLight);
-    //scene3D.add(sceneHemisphereLight);
 
     scene3D.add(scene3DFloorLevelGroundContainer);
 
@@ -1075,7 +1072,8 @@ function show3DRoofDesign() {
 
     hideElements();
 
-    showWeather();
+    scene3DSetBackground('split');
+    scene3DSetLight();
 
     //camera3D.position.set(0, 4, 12);
 
@@ -1087,11 +1085,7 @@ function show3DRoofDesign() {
 
     scene3D.add(scene3DRoofContainer);
 
-    sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);
-    scene3D.add(sceneAmbientLight);
-    sceneSpotLight.intensity = 0.6;
-    sceneSpotLight.castShadow = false;
-    scene3D.add(sceneSpotLight);
+
 
     //scene3D.add(sceneHemisphereLight);
 
@@ -1112,44 +1106,34 @@ function show3DRoofDesign() {
     $('#WebGLCanvas').show();
 }
 
-function showWeather() {
+function scene3DSetWeather() {
 
-    scene3D.remove(weatherSkyMesh);
     if (engine instanceof ParticleEngine) {
         engine.destroy();
         engine = null;
     }
-    if (SCENE == 'house') {
 
-        scene3DSkyBackground(WEATHER);
+    if (WEATHER == "sunny") {
 
-        if (WEATHER == "day-sunny") {
+        scene3D.add(weatherSkyDayMesh);
 
-            scene3D.add(weatherSkyMesh);
+        //TODO: maybe add sun glare effect shader?
 
-            //TODO: maybe add sun glare effect shader?
+    } else if (WEATHER == "snowy") {
 
-        } else if (WEATHER == "day-snowy") {
+        scene3D.add(weatherSkyDayMesh);
 
-            scene3D.add(weatherSkyMesh);
-            engine = new ParticleEngine();
-            engine.setValues(weatherSnowMesh);
-            engine.initialize();
+        engine = new ParticleEngine();
+        engine.setValues(weatherSnowMesh);
+        engine.initialize();
 
-        } else if (WEATHER == "day-rainy") {
+    } else if (WEATHER == "rainy") {
 
-            scene3D.add(weatherSkyMesh);
-            engine = new ParticleEngine();
-            engine.setValues(weatherRainMesh);
-            engine.initialize();
+        scene3D.add(weatherSkyDayMesh);
 
-        } else if (WEATHER == "night") {
-
-        }
-    } else if (SCENE == 'roof') {
-        scene3DSkyBackground('quad-split');
-    } else {
-        scene3DSkyBackground('day-sunny');
+        engine = new ParticleEngine();
+        engine.setValues(weatherRainMesh);
+        engine.initialize();
     }
 }
 
@@ -1160,7 +1144,7 @@ function show2D() {
     //camera2D.position.set(0, 8, 20);
     hideElements();
 
-    scene3DSkyBackground(null);
+    scene3DSetBackground(null);
 
     //scene2D.add(scene2DFloorContainer[FLOOR]); //stage add layer
 
@@ -1215,20 +1199,18 @@ function hideElements() {
     renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
 
-    scene3D.remove(sceneAmbientLight);
-    //scene3D.remove(sceneDirectionalLight);
-    //scene3D.remove(sceneHemisphereLight);
-    scene3D.remove(sceneSpotLight);
-
     scene3D.remove(camera3DQuad[0]);
     scene3D.remove(camera3DQuad[1]);
     scene3D.remove(camera3DQuad[2]);
     scene3D.remove(camera3DQuad[3]);
     scene3D.remove(camera3DQuadGrid);
 
+
+    scene3D.remove(skyMesh);
+    scene3D.remove(weatherSkyDayMesh);
     scene3D.remove(scene3DHouseGroundContainer);
     scene3D.remove(scene3DRoofContainer);
-    scene3D.remove(weatherSkyMesh);
+    //scene3D.remove(weatherSkyDayMesh);
 
     scene3D.remove(scene3DFloorGroundContainer);
     scene3D.remove(camera3DMirrorReflection);
@@ -1263,6 +1245,7 @@ function hideElements() {
 
     $('#menuFloorSelector').hide();
     $("#menuWallInput").hide();
+    $('#menuDayNight').hide();
     $('#menuWeather').hide();
 
     scene3DObjectUnselect();
@@ -1306,29 +1289,40 @@ function selectMeasurement() {
     }
 }
 
+function selectDayNight() {
+
+    if (DAY == "day") {
+
+        DAY = "night";
+        $('#menuDayNightText').html("Night");
+
+    } else if (DAY == "night") {
+
+        DAY = "day";
+        $('#menuDayNightText').html("Day");
+    }
+    scene3DSetSky(DAY);
+    scene3DSetLight();
+}
+
 function selectWeather() {
 
-    if (WEATHER == "day-sunny") {
+    if (WEATHER == "sunny") {
 
-        WEATHER = "day-snowy";
-        $('#menuWeatherText').html("Day - Snowy");
+        WEATHER = "snowy";
+        $('#menuWeatherText').html("Snowy");
 
-    } else if (WEATHER == "day-snowy") {
+    } else if (WEATHER == "snowy") {
 
-        WEATHER = "day-rainy";
-        $('#menuWeatherText').html("Day - Rainy");
+        WEATHER = "rainy";
+        $('#menuWeatherText').html("Rainy");
 
-    } else if (WEATHER == "day-rainy") {
+    } else if (WEATHER == "rainy") {
 
-        WEATHER = "night";
-        $('#menuWeatherText').html("Night");
-
-    } else if (WEATHER == "night") {
-
-        WEATHER = "day-sunny";
-        $('#menuWeatherText').html("Day - Sunny");
+        WEATHER = "sunny";
+        $('#menuWeatherText').html("Sunny");
     }
-    showWeather();
+    scene3DSetWeather();
 }
 
 function onWindowResize() {
@@ -2827,14 +2821,14 @@ function scene3DGround(_texture, _grid) {
 */
 
 // reproduction of a demo of @mrdoob by http://mrdoob.com/lab/javascript/webgl/clouds/
-function scene3DSkyBackground(weather) {
+function scene3DSetBackground(set) {
 
     var canvas = document.createElement('canvas');
     canvas.width = window.innerWidth; //32;
     canvas.height = window.innerHeight;
     var context = canvas.getContext('2d');
 
-    if (weather == 'day-sunny' || weather == 'day-snowy' || weather == 'day-rainy') {
+    if (set == 'blue') {
 
         var gradient = context.createLinearGradient(0, 0, 0, canvas.height);
         gradient.addColorStop(0, "#1e4877");
@@ -2844,7 +2838,8 @@ function scene3DSkyBackground(weather) {
         context.fillRect(0, 0, canvas.width, canvas.height);
 
         document.body.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
-    } else if (weather == 'quad-split') {
+
+    } else if (set == 'split') {
 
         context.lineWidth = 1;
         context.beginPath();
@@ -2864,69 +2859,120 @@ function scene3DSkyBackground(weather) {
     }
 }
 
+function scene3DSetLight() {
+
+    scene3D.remove(sceneAmbientLight);
+    //scene3D.remove(sceneDirectionalLight);
+    //scene3D.remove(sceneHemisphereLight);
+    scene3D.remove(sceneSpotLight);
+
+    if (SCENE == 'house') {
+        if (DAY == 'day') {
+            sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
+            scene3D.add(sceneAmbientLight);
+
+            sceneSpotLight.intensity = 0.5;
+            sceneSpotLight.castShadow = true;
+            scene3D.add(sceneSpotLight);
+        } else {
+
+            sceneSpotLight.intensity = 0.8;
+            sceneSpotLight.castShadow = false;
+            scene3D.add(sceneSpotLight);
+        }
+    } else if (SCENE == 'roof') {
+
+        sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);
+        scene3D.add(sceneAmbientLight);
+
+        sceneSpotLight.intensity = 0.6;
+        sceneSpotLight.castShadow = false;
+        scene3D.add(sceneSpotLight);
+
+    } else if (SCENE == 'floorlevel') {
+        sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);
+        scene3D.add(sceneAmbientLight);
+        sceneSpotLight.intensity = 0.4;
+        sceneSpotLight.castShadow = false;
+        scene3D.add(sceneSpotLight);
+        //scene3D.add(sceneHemisphereLight);
+    } else if (SCENE == 'floor') {
+
+        sceneAmbientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene3D.add(sceneAmbientLight);
+        sceneSpotLight.intensity = 0.4;
+        //sceneSpotLight.castShadow = false;
+        scene3D.add(sceneSpotLight);
+    }
+}
+
+function scene3DSetSky(set) {
+
+    var path = './objects/Platform/sky/' + set + "/";
+    var sides = [path + 'px.jpg', path + 'nx.jpg', path + 'py.jpg', path + 'ny.jpg', path + 'pz.jpg', path + 'nz.jpg'];
+
+    var scCube = THREE.ImageUtils.loadTextureCube(sides);
+    //scCube.format = THREE.RGBFormat;
+
+    var shader = THREE.ShaderLib["cube"]; // prepare skybox material (shader)
+    shader.uniforms["tCube"].value = scCube;
+
+    material = new THREE.ShaderMaterial({
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: shader.uniforms,
+        depthWrite: false,
+        side: THREE.BackSide
+    });
+
+    scene3D.remove(skyMesh);
+    skyMesh = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), material);
+
+
+    if (set == 'day') {
+        skyMesh.position.y = 25;
+
+
+    } else {
+
+    }
+
+    //skyMaterial.needsUpdate = true;
+    scene3D.add(skyMesh);
+}
+
 function scene3DSky() {
 
-    //var mesh = THREEx.createSkymap('mars')
-    //scene.add( mesh )
+    //http://mrdoob.com/lab/javascript/webgl/clouds/
+    //http://gonchar.me/panorama/
+    //scene3DSetSky("day");
 
-    //TODO: Make realistic clouds from http://mrdoob.com/lab/javascript/webgl/clouds/
-
-    //texture = THREE.ImageUtils.loadTexture('./objects/Platform/Textures/S0001.jpg');
+    //=====================
     /*
-    texture = THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
-    texture.magFilter = THREE.LinearMipMapLinearFilter;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-
-    geometry = new THREE.SphereGeometry(500, 60, 40);
-
+    geometry = new THREE.SphereGeometry(40, 0, 0);
     var uniforms = {
         texture: {
             type: 't',
-            value: texture
+            value: THREE.ImageUtils.loadTexture('./images/sky/night/milkiway.jpg')
         }
     };
-
-    var fog = new THREE.Fog(0x4584b4, -100, 3000);
-    var material = new THREE.ShaderMaterial({
-        //uniforms: uniforms,
-        uniforms: {
-            "map": {
-                type: "t",
-                value: texture
-            },
-
-            "fogColor": {
-                type: "c",
-                value: fog.color
-            },
-            "fogNear": {
-                type: "f",
-                value: fog.near
-            },
-            "fogFar": {
-                type: "f",
-                value: fog.far
-            },
-        },
+    material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
         vertexShader: document.getElementById('sky-vertex').textContent,
-        fragmentShader: document.getElementById('sky-fragment').textContent,
-        depthWrite: false,
-        depthTest: false,
-        transparent: true
+        fragmentShader: document.getElementById('sky-fragment').textContent
     });
-    weatherSkyMesh = new THREE.Mesh(geometry, material);
-    weatherSkyMesh.scale.set(-1, 1, 1);
-    //skyBox.eulerOrder = 'XZY';
-    //skyBox.renderDepth = 1000.0;
 
-    //scene3D.remove(weatherSkyMesh);
-    scene3D.add(weatherSkyMesh);
+    skyNightMesh = new THREE.Mesh(geometry, material);
+    skyNightMesh.scale.set(-1, 1, 1);
+
+    //skyNightMesh.eulerOrder = 'XZY';
+    //skyNightMesh.renderDepth = 50.0;
+    scene3D.add(skyNightMesh);
     */
+    //=============
 
-    //skyGrid = new THREE.Object3D();
 
     geometry = new THREE.Geometry();
-
     texture = THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
     texture.magFilter = THREE.LinearMipMapLinearFilter;
     texture.minFilter = THREE.LinearMipMapLinearFilter;
@@ -2976,7 +3022,7 @@ function scene3DSky() {
         geometry.merge(plane.geometry, plane.matrix);
         //THREE.GeometryUtils.merge(geometry, plane);
     }
-    weatherSkyMesh = new THREE.Mesh(geometry, material);
+    weatherSkyDayMesh = new THREE.Mesh(geometry, material);
 
     weatherSnowMesh = {
         positionStyle: Type.CUBE,
@@ -3030,7 +3076,7 @@ function scene3DSky() {
 
 /*
 function scene3DFloorSky() {
-    scene3D.remove(weatherSkyMesh);
+    scene3D.remove(weatherSkyDayMesh);
 }
 */
 
@@ -3246,28 +3292,28 @@ function animate() {
 
         //if (controls3D.needsUpdate) {
 
-        weatherSkyMesh.rotation.y = camera3D.rotation.y; //spiral
-        weatherSkyMesh.rotation.z = camera3D.rotation.z; //side-to-side
-        weatherSkyMesh.rotation.x = camera3D.rotation.x; //top
-        weatherSkyMesh.position.x = camera3D.position.x / 1.5;
+        weatherSkyDayMesh.rotation.y = camera3D.rotation.y; //spiral
+        weatherSkyDayMesh.rotation.z = camera3D.rotation.z; //side-to-side
+        weatherSkyDayMesh.rotation.x = camera3D.rotation.x; //top
+        weatherSkyDayMesh.position.x = camera3D.position.x / 1.5;
 
-        //weatherSkyMesh.position.z = camera3D.position.z;
-        //weatherSkyMesh.rotation = camera3D.rotation;
+        //weatherSkyDayMesh.position.z = camera3D.position.z;
+        //weatherSkyDayMesh.rotation = camera3D.rotation;
 
 
         /*
-                if (weatherSkyMesh.position.x < 10) {
-                    weatherSkyMesh.position.x += 0.01;
-                    //weatherSkyMesh.position.z += 0.01;
+                if (weatherSkyDayMesh.position.x < 10) {
+                    weatherSkyDayMesh.position.x += 0.01;
+                    //weatherSkyDayMesh.position.z += 0.01;
                 } else {
-                    weatherSkyMesh.position.x = weatherSkyMesh.position.x - 0.01;
-                    //weatherSkyMesh.position.z -= 0.01;
+                    weatherSkyDayMesh.position.x = weatherSkyDayMesh.position.x - 0.01;
+                    //weatherSkyDayMesh.position.z -= 0.01;
                 }
             */
-        //weatherSkyMesh.position.y = (Math.random() - 0.5) * 0.2;
-        //weatherSkyMesh.position.z = (Math.random() - 0.5) * 5.0;
-        //weatherSkyMesh.rotation = Math.random() * Math.PI;
-        //weatherSkyMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
+        //weatherSkyDayMesh.position.y = (Math.random() - 0.5) * 0.2;
+        //weatherSkyDayMesh.position.z = (Math.random() - 0.5) * 5.0;
+        //weatherSkyDayMesh.rotation = Math.random() * Math.PI;
+        //weatherSkyDayMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
         // object3d.color.setHex( 0xC0C0C0 + 0x010101*Math.floor(255*(Math.random()*0.1)) );
 
         //Orientation Cube

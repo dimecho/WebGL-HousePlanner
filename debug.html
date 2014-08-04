@@ -38,6 +38,7 @@
   <script type="text/javascript" src="js/src/jscroll.js"></script>
   <script type="text/javascript" src="js/src/tooltipster.js"></script>
   <script type="text/javascript" src="js/src/fabric.js"></script>
+  <script type="text/javascript" src="js/src/screenfull.js"></script>
   <script type="text/javascript" src="js/src/main.js"></script>
 
   <!-- 
@@ -113,27 +114,6 @@
   </script>
   <!-- END Full Screen-->
 
-  <!--
-  <script type="application/x-glsl" id="sky-vertex">
-  varying vec2 vUV;
-
-  void main() {
-    vUV = uv;
-    vec4 pos = vec4(position, 1.0);
-    gl_Position = projectionMatrix * modelViewMatrix * pos;
-  }
-  </script>
-
-  <script type="application/x-glsl" id="sky-fragment">
-  uniform sampler2D texture;
-  varying vec2 vUV;
-
-  void main() {
-    vec4 sample = texture2D(texture, vUV);
-    gl_FragColor = vec4(sample.xyz, sample.w);
-  }
-  </script>
-  -->
   <script id="vs" type="x-shader/x-vertex">
     varying vec2 vUv;
 
@@ -500,12 +480,20 @@
     </div>
   </div>
 
-  <div id="menuMeasure">
-    <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" style="color:#474747"></a><div id="menuMeasureText" style="display:inline"></div>
-  </div>
+  
+   <div id="menuBottom">
+    <div id="menuMeasure">
+      <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature"></a><div id="menuMeasureText" style="display:inline-block"></div>
+    </div>
 
-  <div id="menuWeather">
-    <a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" style="color:#474747"></a><div id="menuWeatherText" style="display:inline"></div>
+    <div id="menuDayNight" >
+      <a href="#" id="menuDayNightIcon" onclick="selectDayNight()" class="hi-icon icon-landscape tooltip" title="Time"></a><div id="menuDayNightText" style="display:inline-block"></div>
+    </div>
+
+    <div id="menuWeather">
+      <a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects"></a><div id="menuWeatherText" style="display:inline-block"></div>
+    </div>
+    <div id="WebGLHelp">?</div>
   </div>
 
 <!--
@@ -520,14 +508,6 @@
 
 <!-- http://threejs.org/editor -->
 <style>
-#WebGLCubeCanvas {
-    position:absolute;
-    bottom:0px;
-    left:0px;
-    border:none;
-    width:100px;
-    height:100px;
-}
 
 #printPDF {
     position:absolute;
@@ -583,22 +563,20 @@
   z-index:10;
 }
 
-#menuMeasure {
+#menuBottom {
   position:absolute;
-  bottom:15px;
+  bottom:20px;
   left:100px;
   border:none;
-  color:#474747;
+  width:100%;
+  color:#CCCCCC
 }
-
-#menuWeather {
-  position:absolute;
-  bottom:15px;
-  left:200px;
-  border:none;
-  color:#474747;
+#menuBottom div{
+  display:inline-block;
 }
-
+#menuBottom a{
+  color:#CCCCCC
+}
 /* ================================
    OVAL THOUGHT BUBBLE
 ** ================================ */
@@ -708,8 +686,7 @@
   <input type="submit" id="fileSubmit" value="Upload" hidden />
 </form>
 <div id="WebGLCanvas">
-  <div id="WebGLHelp">?</div>
-  <div id="WebGLCubeCanvas"></div>
+  <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
   <div id="WebGLInteractiveMenu">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
         <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
