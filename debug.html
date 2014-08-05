@@ -59,61 +59,6 @@
   <link rel="stylesheet" type="text/css" href="css/src/style.css" />
   <link rel="stylesheet" type="text/css" href="css/src/style2.css" />
 
-  <!-- Full Screen -->
-  <script>
-  // Find the right method, call on correct element
-  function launchFullscreen(element) {
-    if(element.requestFullscreen) {
-      element.requestFullscreen();
-    } else if(element.mozRequestFullScreen) {
-      element.mozRequestFullScreen();
-    } else if(element.webkitRequestFullscreen) {
-      element.webkitRequestFullscreen();
-    } else if(element.msRequestFullscreen) {
-      element.msRequestFullscreen();
-    }
-  }
-
-  function exitFullscreen() {
-    if(document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if(document.mozCancelFullScreen) {
-      document.mozCancelFullScreen();
-    } else if(document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
-  }
-
-  function dumpFullscreen() {
-    console.log("document.fullscreenElement is: ", document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
-    console.log("document.fullscreenEnabled is: ", document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled);
-  }
-
-  // Events
-  /*
-  document.addEventListener("fullscreenchange", function(e) {
-    console.log("fullscreenchange event! ", e);
-  });
-  document.addEventListener("mozfullscreenchange", function(e) {
-    console.log("mozfullscreenchange event! ", e);
-  });
-  document.addEventListener("webkitfullscreenchange", function(e) {
-    console.log("webkitfullscreenchange event! ", e);
-  });
-  document.addEventListener("msfullscreenchange", function(e) {
-    console.log("msfullscreenchange event! ", e);
-  });
-  */
-  // Add different events for fullscreen
-
-  document.addEventListener("keydown", function(e) {
-    if (e.keyCode == 13) {
-      exitFullscreen();
-    }
-  }, false);
-  </script>
-  <!-- END Full Screen-->
-
   <script id="vs" type="x-shader/x-vertex">
     varying vec2 vUv;
 
@@ -164,6 +109,13 @@
 		<input type="password" name="password" id="password" size="12">
 		</form>
 	</div>
+</div>
+
+<div id="openPanoramaSelect" class="modalDialog">
+  <div style="width:600px;height:400px">
+    <a href="#close" class="close">X</a>
+   
+  </div>
 </div>
 
 <div id="openSaving" class="modalDialog">
@@ -314,6 +266,23 @@
   </div>
 </div>
 
+<div id="menuLeft3DLandscape" class="hide-left">
+  <ul id="tab-left">
+    <li>
+      <img id="arrow-left" onclick="toggleLeft('menuLeft3DLandscape',false);" src="images/arrowright.png">
+    </li>
+  </ul>
+  <div id="links-left" style="width:60px">
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
+        <a href="#openPanoramaSelect" onclick="" class="hi-icon icon-panorama tooltip" title="Panorama Image"></a>
+        <a href="#" onclick="menuSelect(0,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='rotate'" class="hi-icon icon-rotate2 tooltip" id="menuLeft3DLandscapeItem0" title="Rotate"></a>
+        <a href="#" onclick="menuSelect(1,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='angle'" class="hi-icon icon-angle tooltip" id="menuLeft3DLandscapeItem1" title="Angle"></a>
+        <a href="#" onclick="menuSelect(2,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='rise'" class="hi-icon icon-rise tooltip" id="menuLeft3DLandscapeItem2" title="Mesh Rise" ></a>
+        <a href="#" onclick="menuSelect(3,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='fall'" class="hi-icon icon-fall tooltip" id="menuLeft3DLandscapeItem3" title="Mesh Fall"></a>
+      </div>
+  </div>
+</div>
+
 <div id="menuLeft3DFloor" class="hide-left">
   <ul id="tab-left">
     <li>
@@ -351,6 +320,7 @@
       </div>
   </div>
 </div>
+
 <!-- END Slide Right Menu -->
 
 <!-- Suppliers -->
@@ -436,10 +406,11 @@
   	<div style="display:inline-block;vertical-align:top">
   		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
   			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
-        <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem2"></a>
-        <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem3"></a>
-  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem4"></a>
-  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem5"></a>
+        <a href="#" onclick="show3DLandscape()" class="hi-icon icon-terrain tooltip" title="Landscape Editor" id="menuTopItem2"></a>
+        <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
+        <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
+  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
+  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem6"></a>
   			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" ></a>
   			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
         <a href="#openSaving" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
@@ -464,7 +435,7 @@
   			</script>
         -->
   			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot"></a>
-  			<a href="#" onclick="launchFullscreen(document.documentElement);" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
+  			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
   			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login"></a>
   		</div>
   	</div>
@@ -487,7 +458,7 @@
     </div>
 
     <div id="menuDayNight" >
-      <a href="#" id="menuDayNightIcon" onclick="selectDayNight()" class="hi-icon icon-landscape tooltip" title="Time"></a><div id="menuDayNightText" style="display:inline-block"></div>
+      <a href="#" id="menuDayNightIcon" onclick="selectDayNight()" class="hi-icon icon-day tooltip" title="Day/Night"></a><div id="menuDayNightText" style="display:inline-block"></div>
     </div>
 
     <div id="menuWeather">
@@ -563,20 +534,6 @@
   z-index:10;
 }
 
-#menuBottom {
-  position:absolute;
-  bottom:20px;
-  left:100px;
-  border:none;
-  width:100%;
-  color:#CCCCCC
-}
-#menuBottom div{
-  display:inline-block;
-}
-#menuBottom a{
-  color:#CCCCCC
-}
 /* ================================
    OVAL THOUGHT BUBBLE
 ** ================================ */
@@ -722,7 +679,9 @@
 
 <script type="text/javascript">
 
-var images = {};
+var images = {
+  //'loader1': 'objects/Platform/sky/day/nx.jpg',
+};
 //var Agent;
 //var myScroll;
 

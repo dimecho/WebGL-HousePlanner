@@ -188,7 +188,7 @@ var Royal_Preloader = {
             if (Royal_Preloader._overlay) {
                 Royal_Preloader._animatePercentage(Royal_Preloader._percentage_loaded, 100);
             }
-        }, this._timeout * 1000);
+        }, this._timeout * 4000);
     },
 
     // animate text change

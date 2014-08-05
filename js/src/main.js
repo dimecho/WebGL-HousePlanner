@@ -88,6 +88,7 @@ var AUTOROTATE = true;
 var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
+var TOOL3DLANDSCAPE = 'rotate';
 var TOOL2D = 'vector';
 var WEATHER = 'sunny';
 var DAY = 'day';
@@ -198,7 +199,7 @@ function init() {
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
 
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 30000);
+    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 80);
     camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 
     //camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
@@ -537,8 +538,8 @@ function init() {
     scene.add( skyBox );
     */
 
-    scene3DSky();
     sceneNew();
+    scene3DSky();
     scene3DLight();
     show3DHouse();
 
@@ -736,7 +737,7 @@ THREE.JSONLoader.prototype.loadJson = function(data, callback, texturePath) {
 };
 */
 
-function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
+function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
 
     //http://www.smashingmagazine.com/2013/09/17/introduction-to-polygonal-modeling-and-three-js/
 
@@ -768,6 +769,8 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
     var urlTextures = "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
     var data;
 
+    //console.log("Textures:" + urlTextures);
+
     var callback = function(geometry, materials) {
         /*
         var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial({
@@ -775,10 +778,30 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
             envMap: camera3DMirrorReflection.renderTarget
         })); 
 		*/
+        //console.log(materials);
+
+        //for (var i = 0; i < materials.length; i++) {
+
+        //materials[i].map.wrapS = THREE.RepeatWrapping;
+        //materials[i].map.wrapT = THREE.RepeatWrapping;
+        //materials[i].map.repeat.set(14, 14);
+        //console.log(materials[i].map);
+        //}
 
         var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 
+        mesh.overdraw = true; //??? repeat textures?
+
         mesh.castShadow = true;
+        if (shadow)
+            mesh.receiveShadow = true;
+
+        //mesh.morphTargets = true;
+        //mesh.morphNormals = true;
+
+        //mesh.vertexColors = THREE.FaceColors;
+        //mesh.shading = THREE.FlatShading;
+
         //mesh.receiveShadow = true;
         //mesh.overdraw = true;
 
@@ -803,10 +826,15 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
         mesh.geometry.computeVertexNormals(); // requires correct face normals
         mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
 
-        //mesh.matrixAutoUpdate = true;
+        mesh.matrixAutoUpdate = true;
         mesh.updateMatrix();
 
+        //if (object instanceof THREE.Object3D) {
         object.add(mesh);
+        //} else {
+        //    console.log("settings mesh");
+        //    object = mesh;
+        //}
 
         //http://code.tutsplus.com/tutorials/webgl-with-threejs-models-and-animation--net-35993
         //animation[animation.length-1] = new THREE.MorphAnimation(mesh);
@@ -817,7 +845,7 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio) {
 
     if (js.split('.').pop() == 'jsz') //zipped json file
     {
-        zip = new JSZip();
+        var zip = new JSZip();
         var filename = js.split('/').pop().slice(0, -4);
 
         /*
@@ -946,8 +974,6 @@ function show3DHouse() {
 
     //TODO: Loop and show based in ID name
 
-
-
     scene3D.add(scene3DHouseGroundContainer);
     scene3D.add(scene3DHouseFXContainer);
     scene3D.add(scene3DHouseContainer);
@@ -999,6 +1025,28 @@ function show3DHouse() {
     $('#WebGLCanvas').show();
 }
 
+function show3DLandscape() {
+
+    SCENE = 'landscape';
+    hideElements();
+
+    scene3DSetBackground('blue');
+    scene3DSetLight();
+
+    camera3D.position.set(0, 4, 12);
+
+    scene3D.add(scene3DHouseGroundContainer);
+
+    TOOL3DLANDSCAPE = 'rotate';
+    menuSelect(0, 'menuLeft3DLandscapeItem', '#ff3700');
+    toggleLeft('menuLeft3DLandscape', true);
+
+    menuSelect(2, 'menuTopItem', '#ff3700');
+    correctMenuHeight();
+
+    $('#WebGLCanvas').show();
+}
+
 function show3DFloor() {
 
     SCENE = 'floor';
@@ -1013,9 +1061,18 @@ function show3DFloor() {
     //TODO: Loop and show based in ID name / floor
     //scene3D.add(scene3DContainer);
 
-    //TODO: remove other floors
-
     scene3D.add(scene3DFloorGroundContainer);
+    try {
+        var floorMaterial = new THREE.MeshPhongMaterial({
+            map: scene3DFloorGroundContainer.children[0].materials,
+            envMap: camera3DMirrorReflection.renderTarget,
+            reflectivity: 0.5
+        });
+        scene3DFloorGroundContainer.children[0].materials = floorMaterial;
+    } catch (ex) {
+
+    }
+
     scene3D.add(camera3DMirrorReflection);
 
     scene3D.add(scene3DFloorContainer[FLOOR]);
@@ -1033,7 +1090,8 @@ function show3DFloor() {
     //show3DFloorContainer(true);
     //show3DHouseContainer(false)
 
-    menuSelect(4, 'menuTopItem', '#ff3700');
+    menuSelect(5, 'menuTopItem', '#ff3700');
+    correctMenuHeight();
 
     //Auto open right menu
     document.getElementById('menuRight').setAttribute("class", "show-right");
@@ -1048,7 +1106,7 @@ function show3DFloorLevel() {
 
     hideElements();
 
-    scene3DSetSky("day");
+    scene3DSetBackground('blue');
     scene3DSetLight();
 
     camera3D.position.set(0, 4, 12);
@@ -1059,7 +1117,7 @@ function show3DFloorLevel() {
 
     scene3DCube.add(scene3DCubeMesh);
 
-    menuSelect(2, 'menuTopItem', '#ff3700');
+    menuSelect(3, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
     //$('#HTMLCanvas').hide();
@@ -1085,8 +1143,6 @@ function show3DRoofDesign() {
 
     scene3D.add(scene3DRoofContainer);
 
-
-
     //scene3D.add(sceneHemisphereLight);
 
     //scene3D.add( new THREE.AxisHelper(100) );
@@ -1099,42 +1155,11 @@ function show3DRoofDesign() {
 
     //scene3DCube.add(scene3DCubeMesh);
 
-    menuSelect(3, 'menuTopItem', '#ff3700');
+    menuSelect(4, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
     //$('#HTMLCanvas').hide();
     $('#WebGLCanvas').show();
-}
-
-function scene3DSetWeather() {
-
-    if (engine instanceof ParticleEngine) {
-        engine.destroy();
-        engine = null;
-    }
-
-    if (WEATHER == "sunny") {
-
-        scene3D.add(weatherSkyDayMesh);
-
-        //TODO: maybe add sun glare effect shader?
-
-    } else if (WEATHER == "snowy") {
-
-        scene3D.add(weatherSkyDayMesh);
-
-        engine = new ParticleEngine();
-        engine.setValues(weatherSnowMesh);
-        engine.initialize();
-
-    } else if (WEATHER == "rainy") {
-
-        scene3D.add(weatherSkyDayMesh);
-
-        engine = new ParticleEngine();
-        engine.setValues(weatherRainMesh);
-        engine.initialize();
-    }
 }
 
 function show2D() {
@@ -1169,7 +1194,7 @@ function show2D() {
 
     //scene2DdrawRuler();
 
-    menuSelect(5, 'menuTopItem', '#ff3700');
+    menuSelect(6, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
     //scene2DFloorContainer[FLOOR].traverse;
@@ -1179,18 +1204,6 @@ function show2D() {
     delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
     $('#HTMLCanvas').show();
-}
-
-function menuSelect(item, id, color) {
-    if (item == null) //clear all
-    {
-        for (var i = 0; i <= 5; i++) {
-            $("#" + id + i).css('color', 'black');
-        }
-    } else {
-        menuSelect(null, id, color);
-        $("#" + id + item).css('color', color); //#53C100
-    }
 }
 
 function hideElements() {
@@ -1232,6 +1245,7 @@ function hideElements() {
     $('#WebGLCanvas').hide();
 
     $('#menuLeft3DHouse').hide();
+    $('#menuLeft3DLandscape').hide();
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
 
@@ -1258,6 +1272,49 @@ function hideElements() {
     //scene2D.visible = b;
 
     //scene2DFloorContainer[0].traverse;
+}
+
+function scene3DSetWeather() {
+
+    if (engine instanceof ParticleEngine) {
+        engine.destroy();
+        engine = null;
+    }
+
+    if (WEATHER == "sunny") {
+
+        scene3D.add(weatherSkyDayMesh);
+
+        //TODO: maybe add sun glare effect shader?
+
+    } else if (WEATHER == "snowy") {
+
+        scene3D.add(weatherSkyDayMesh);
+
+        engine = new ParticleEngine();
+        engine.setValues(weatherSnowMesh);
+        engine.initialize();
+
+    } else if (WEATHER == "rainy") {
+
+        scene3D.add(weatherSkyDayMesh);
+
+        engine = new ParticleEngine();
+        engine.setValues(weatherRainMesh);
+        engine.initialize();
+    }
+}
+
+function menuSelect(item, id, color) {
+    if (item == null) //clear all
+    {
+        for (var i = 0; i <= 6; i++) {
+            $("#" + id + i).css('color', 'black');
+        }
+    } else {
+        menuSelect(null, id, color);
+        $("#" + id + item).css('color', color); //#53C100
+    }
 }
 
 function selectFloor(next) {
@@ -2466,56 +2523,13 @@ function sceneNew() {
     scene3DHouseGroundContainer.add(cylinder);
     */
 
-    //===============================================
-    //TODO: Find more efficient way to repeat texture
-    //===============================================
-    new THREE.JSONLoader().load("./objects/Platform/ground-grass.js", function(geometry, materials) {
-        var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Platform/Textures/G36096.png');
-        groundTexture.wrapS = THREE.RepeatWrapping;
-        groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set(14, 14);
-        groundTexture.anisotropy = renderer.getMaxAnisotropy(); //focus blur (16=unblured 1=blured)
+    open3DModel("Platform/floor.js", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("Landscape/round.js", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("Landscape/round.js", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true);
 
-        var groundMaterial = new THREE.MeshBasicMaterial({
-            map: groundTexture
-        });
-        mesh = new THREE.Mesh(geometry, groundMaterial);
-        mesh.receiveShadow = true;
-        //mesh.matrixAutoUpdate = true;
-        mesh.geometry.computeFaceNormals();
-        mesh.geometry.computeVertexNormals();
-        //mesh.updateMatrix();
-        scene3DHouseGroundContainer.add(mesh)
-    });
-
-    new THREE.JSONLoader().load("./objects/Platform/ground-wood.js", function(geometry, materials) {
-        var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Platform/Textures/W36786.jpg');
-        groundTexture.wrapS = THREE.RepeatWrapping;
-        groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set(10, 10);
-        groundTexture.anisotropy = renderer.getMaxAnisotropy(); //focus blur (16=unblured 1=blured)
-
-        var groundMaterial = new THREE.MeshPhongMaterial({
-            map: groundTexture,
-            envMap: camera3DMirrorReflection.renderTarget,
-            reflectivity: 0.5
-        });
-        mesh = new THREE.Mesh(geometry, groundMaterial);
-        mesh.receiveShadow = true;
-        //mesh.matrixAutoUpdate = true;
-        mesh.geometry.computeFaceNormals();
-        mesh.geometry.computeVertexNormals();
-        //mesh.updateMatrix();
-        scene3DFloorGroundContainer.add(mesh)
-        //============================
-        //camera3DMirrorReflection = new THREEx.CubeCamera(mesh);
-        //mesh.add(camera3DMirrorReflection.object3d)
-        //groundMaterial.envMap = camera3DMirrorReflection.textureCube;
-        //============================
-    });
-
-    new THREE.JSONLoader().load("./objects/Platform/ground-wood.js", function(geometry, materials) {
-        var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Platform/Textures/F56734.jpg');
+    /*
+    new THREE.JSONLoader().load("./objects/Landscape/round.js", function(geometry, materials) {
+        var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Landscape/Textures/F56734.jpg');
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set(12, 12);
@@ -2528,6 +2542,7 @@ function sceneNew() {
         mesh.receiveShadow = true;
         scene3DFloorLevelGroundContainer.add(mesh);
     });
+	*/
     //===============================================
     //open3DModel("Platform/ground-wood.js", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1); //Interior ground (defferent from floor textures)
 
@@ -2871,7 +2886,7 @@ function scene3DSetLight() {
             sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
             scene3D.add(sceneAmbientLight);
 
-            sceneSpotLight.intensity = 0.5;
+            sceneSpotLight.intensity = 0.8;
             sceneSpotLight.castShadow = true;
             scene3D.add(sceneSpotLight);
         } else {
@@ -2880,6 +2895,14 @@ function scene3DSetLight() {
             sceneSpotLight.castShadow = false;
             scene3D.add(sceneSpotLight);
         }
+    } else if (SCENE == 'landscape') {
+        sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
+        scene3D.add(sceneAmbientLight);
+
+        sceneSpotLight.intensity = 0.6;
+        sceneSpotLight.castShadow = true;
+        scene3D.add(sceneSpotLight);
+
     } else if (SCENE == 'roof') {
 
         sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);

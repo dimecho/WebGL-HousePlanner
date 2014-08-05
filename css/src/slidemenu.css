@@ -4,7 +4,7 @@
     width: 240px;
     line-height: 20px;
     left: -180px;
-    top: 100px; /* change this value to place the menu higher or lower */
+    top: 100px;
     position: fixed;
     z-index: 99;
 }
@@ -12,7 +12,15 @@
     width: 100px;
     line-height: 20px;
     left: -100px;
-    top: 100px; /* change this value to place the menu higher or lower */
+    top: 100px;
+    position: fixed;
+    z-index: 99;
+}
+
+#menuLeft3DLandscape{
+    width: 130px;
+    left: -80px;
+    top: 100px;
     position: fixed;
     z-index: 99;
 }
@@ -20,7 +28,7 @@
 #menuLeft2D{
     width: 130px;
     left: -80px;
-    top: 100px; /* change this value to place the menu higher or lower */
+    top: 100px;
     position: fixed;
     z-index: 99;
 }
@@ -60,7 +68,7 @@ div.clear { clear: both; }
   */
 }
 
-.menuLeft3DHouse-show-left, .menuLeft3DFloor-show-left, .menuLeft2D-show-left, .hide-left{
+.menuLeft3DHouse-show-left, .menuLeft3DFloor-show-left, .menuLeft3DLandscape-show-left, .menuLeft2D-show-left, .hide-left{
     /* we specify the transition length for hiding and showing */
     transition: margin-left .4s ease-in;
     -webkit-transition: margin-left .4s ease-in;
@@ -75,6 +83,9 @@ div.clear { clear: both; }
 }
 .menuLeft3DFloor-show-left{
     margin-left:200px;
+}
+.menuLeft3DLandscape-show-left{
+    margin-left:110px;
 }
 .menuLeft2D-show-left{
     margin-left:110px;

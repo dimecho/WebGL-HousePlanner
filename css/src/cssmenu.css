@@ -105,3 +105,18 @@
   background: -webkit-linear-gradient(#fff, #999);
   background: -o-linear-gradient(#fff, #999);
 }
+
+#menuBottom {
+  position:absolute;
+  bottom:20px;
+  left:100px;
+  border:none;
+  width:100%;
+  color:#CCCCCC
+}
+#menuBottom div{
+  display:inline-block;
+}
+#menuBottom a{
+  color:#CCCCCC
+}

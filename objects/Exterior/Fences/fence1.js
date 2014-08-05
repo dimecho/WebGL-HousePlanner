@@ -3,7 +3,7 @@
 	"metadata" :
 	{
 		"formatVersion" : 3.1,
-		"generatedBy"   : "Blender 2.65 Exporter",
+		"generatedBy"   : "Blender 2.7 Exporter",
 		"vertices"      : 148,
 		"faces"         : 122,
 		"normals"       : 0,
@@ -23,6 +23,7 @@
 		"blending" : "NormalBlending",
 		"colorAmbient" : [0.45292547359835567, 0.4741463731847162, 0.24498107645985812],
 		"colorDiffuse" : [0.45292547359835567, 0.4741463731847162, 0.24498107645985812],
+		"colorEmissive" : [0.0, 0.0, 0.0],
 		"colorSpecular" : [0.07365451008081436, 0.07365451008081436, 0.07365451008081436],
 		"depthTest" : true,
 		"depthWrite" : true,
@@ -53,7 +54,7 @@
 
 	"skinWeights" : [],
 
-	"animations" : []
+  "animations" : []
 
 
 }

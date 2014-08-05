@@ -7,10 +7,10 @@ do
 	rm "$f"
 done
 
-for f in $(find ./ -name '*.blend')
-do
-	rm "$(dirname "$f")/$(basename "$f" .blend).jpg"
-done
+#for f in $(find ./ -name '*.blend')
+#do
+#	rm "$(dirname "$f")/$(basename "$f" .blend).jpg"
+#done
 
 for f in $(find ./ -name '.DS_Store')
 do
