@@ -17,7 +17,7 @@ do
 	rm "$f"
 done
 
-for f in $(find ./ -name '*.jsz')
+for f in $(find ./ -name '*.js')
 do
 	rm "$f"
 done

@@ -876,7 +876,7 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
                     } else {
                         //console.log(response);
                         zip.load(response);
-                        data = zip.file(filename + ".js").asText();
+        data = zip.file(filename + ".js").asText();
                         console.log(data);
                     }
                 });
@@ -2523,9 +2523,9 @@ function sceneNew() {
     scene3DHouseGroundContainer.add(cylinder);
     */
 
-    open3DModel("Platform/floor.js", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, true);
-    open3DModel("Landscape/round.js", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true);
-    open3DModel("Landscape/round.js", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true);
 
     /*
     new THREE.JSONLoader().load("./objects/Landscape/round.js", function(geometry, materials) {
@@ -2549,13 +2549,7 @@ function sceneNew() {
     //Temporary Objects for visualization
     //TODO: load from one JSON file
 
-    open3DModel("Platform/pivotpoint.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
-
-
-    //open3DModel("Exterior/Plants/bush.js", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
-    //vector = new THREE.Vector3(-7, 0, 9);
-    //scene3DPivotPoint.position.set(vector);
-    //scene3D.add(scene3DPivotPoint);
+    open3DModel("Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
 
     open3DModel("Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1);
     open3DModel("Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
@@ -2564,8 +2558,8 @@ function sceneNew() {
     open3DModel("Exterior/Plants/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
     open3DModel("Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
     open3DModel("Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
-    open3DModel("Interior/Furniture/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
-    //open3DModel("Exterior/Cars/VWbeetle.js", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
+    open3DModel("Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
+    //open3DModel("Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
 
     //scene3D.rotation.y += 10;
     //THREE.GeometryUtils.center();

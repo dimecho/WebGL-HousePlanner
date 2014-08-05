@@ -188,7 +188,7 @@ var Royal_Preloader = {
             if (Royal_Preloader._overlay) {
                 Royal_Preloader._animatePercentage(Royal_Preloader._percentage_loaded, 100);
             }
-        }, this._timeout * 4000);
+        }, this._timeout * 1000);
     },
 
     // animate text change
@@ -307,7 +307,7 @@ var Royal_Preloader = {
         setTimeout(function() {
             Royal_Preloader._overlay.remove();
             Royal_Preloader._overlay = null;
-        }, 1000);
+        }, 5000);
     },
 
     // API
