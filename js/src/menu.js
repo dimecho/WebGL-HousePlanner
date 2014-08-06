@@ -35,7 +35,7 @@ function delay(elem, src, delayTime) {
 }
 
 function menuItemClick(self) {
-    console.log("click");
+    //console.log("click");
 
     $('.cssmenu > ul > li').removeClass('active');
     $(self).closest('li').addClass('active');
@@ -51,7 +51,7 @@ function menuItemClick(self) {
         checkElement.slideDown('normal');
     }
 
-    correctMenuHeight();
+    //correctMenuHeight();
     /*
         if (!checkElement.is('ul')) {
             var menuName = getParents(this);

@@ -307,7 +307,7 @@ var Royal_Preloader = {
         setTimeout(function() {
             Royal_Preloader._overlay.remove();
             Royal_Preloader._overlay = null;
-        }, 5000);
+        }, 1000);
     },
 
     // API

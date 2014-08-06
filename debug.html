@@ -39,6 +39,7 @@
   <script type="text/javascript" src="js/src/tooltipster.js"></script>
   <script type="text/javascript" src="js/src/fabric.js"></script>
   <script type="text/javascript" src="js/src/screenfull.js"></script>
+  <script type="text/javascript" src="js/src/alertify.js"></script>
   <script type="text/javascript" src="js/src/main.js"></script>
 
   <!-- 
@@ -58,6 +59,8 @@
   <link rel="stylesheet" type="text/css" href="css/src/normalize.css"  />
   <link rel="stylesheet" type="text/css" href="css/src/style.css" />
   <link rel="stylesheet" type="text/css" href="css/src/style2.css" />
+  <link rel="stylesheet" href="css/alertify.css" />
+  <link rel="stylesheet" href="css/alertify.default.css" />
 
   <script id="vs" type="x-shader/x-vertex">
     varying vec2 vUv;
@@ -114,7 +117,36 @@
 <div id="openPanoramaSelect" class="modalDialog">
   <div style="width:600px;height:400px">
     <a href="#close" class="close">X</a>
-   
+    <style>
+    .panoFrame{
+      display:inline-block;
+      width:120px;
+      height:120px;
+      margin:0;
+      padding:0;
+    }
+     .panoFrameBordered{
+      border:2px solid black
+    }
+    </style>
+    <div>
+      <div class="panoFrame"></div>
+      <div class="panoFrame panoFrameBordered"></div>
+      <div class="panoFrame"></div>
+      <div class="panoFrame"></div>
+    </div>
+    <div>
+      <div class="panoFrame panoFrameBordered"></div>
+      <div class="panoFrame panoFrameBordered"></div>
+      <div class="panoFrame panoFrameBordered"></div>
+      <div class="panoFrame panoFrameBordered"></div>
+    </div>
+    <div>
+      <div class="panoFrame"></div>
+      <div class="panoFrame panoFrameBordered"></div>
+      <div class="panoFrame"></div>
+      <div class="panoFrame"></div>
+    </div>
   </div>
 </div>
 
@@ -127,14 +159,14 @@
 <div id="openWebGLSettings" class="modalDialog">
   <div>
     <a href="#close" class="close">X</a>
-   
+    
   </div>
 </div>
 
 <div id="openThumb" class="modalDialog">
-	<div style="width:600px">
+	<div style="width:90%;height:90%;margin:2% auto;">
 		<a href="#close" class="close">X</a>
-		<img id="imgHouse" src="images/house.jpg" />
+		<img id="imgHouse" src="images/house.jpg" style="display:block;width:100%;height:100%;" />
 	</div>
 </div>
 
