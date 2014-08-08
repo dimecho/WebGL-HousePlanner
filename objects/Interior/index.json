@@ -20,15 +20,15 @@
         "link": null,
         "sub": [{
             "name": "Paintings",
-            "link": "Interior/Living Room/Paintings",
+            "link": "Interior/LivingRoom/Paintings",
             "sub": null
         }, {
             "name": "Plants",
-            "link": "Interior/Living Room/Plants",
+            "link": "Interior/Plants",
             "sub": null
         }, {
             "name": "Miscellaneous Items",
-            "link": "Interior/Living Room/Miscellaneous Items",
+            "link": "Interior/LivingRoom/Miscellaneous",
             "sub": null
         }]
     }, {

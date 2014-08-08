@@ -1,0 +1,12 @@
+{
+    "menu": [{
+        "name": "Small Bush",
+        "thumbnail": "Exterior/Plants/Bushes/bush.jpg",
+        "object": "Exterior/Plants/Bushes/bush.jsz",
+        "manufacturer": null,
+        "model": null,
+        "store": null,
+        "price": null,
+        "update": null
+    }]
+}

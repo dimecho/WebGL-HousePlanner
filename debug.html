@@ -89,7 +89,13 @@
     }
   </script>
 </head>
-
+<!--[if gte IE 9]>
+  <style type="text/css">
+    .gradient {
+       filter: none;
+    }
+  </style>
+<![endif]-->
 <body class="preloader">
 
 <style>
@@ -187,7 +193,7 @@
 <div id="menuRight" class="hide-right">
   <ul id="tab-right">
       <li>
-          <img id="arrow-right" onclick="toggleRight('menuRight');" src="images/arrowleft.png">
+          <img id="arrow-right" onclick="toggleRight('menuRight',false);" src="images/arrowleft.png">
       </li>
   </ul>
 
@@ -248,23 +254,8 @@
       <!--
       <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div>
       -->
-      <!-- TODO: Move to dynamically generate from json -->
       <div class="scroll" data-ui="jscroll-default">
-        <div class="scrollerItem">
-        </div>
-        <div class="scrollerItem">
-        </div>
-        <div class="scrollerItem">
-        </div>
-        <div class="scrollerItem">
-        </div>
-        <div class="scrollerItem">
-        </div>
-        <div class="scrollerItem">
-        </div>
-        <div class="scrollerItem">
-        </div>
-        <div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>
+        <!--<div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>-->
       </div>
     </div>
   </div>  
@@ -322,17 +313,10 @@
     </li>
   </ul>
   <div id="links-left" style="width:60px">
-      <div id="deco">
-        <!-- 3D Editor Menu -->
-        <a href="#" class="hi-icon icon-images11 tooltip-right" title="Insert Picture"></a>
-        <a href="#" class="hi-icon icon-edit26 tooltip-right" title="Insert Note"></a>
-        <!-- 2D Editor Menu -->
-        <a href="#" class="hi-icon icon-vector15 tooltip-right" title="Draw Room"></a>
-        <a href="#" class="hi-icon icon-vector18 tooltip-right" title="Draw Wall"></a>
-        <a href="#" class="hi-icon icon-vector17 tooltip-right" title="Draw Curved Wall"></a>
-        <a href="#" class="hi-icon icon-cube12 tooltip-right" title="Cube"></a>
-        <a href="#" class="hi-icon icon-cylindrical7 tooltip-right" title="Cylinder"></a>
-      </div>
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
+        <a href="#" onclick="" class="hi-icon icon-images11 tooltip-right" title="Insert Picture" id="menuLeft3DFloorItem0"></a>
+        <a href="#" onclick="" class="hi-icon icon-edit tooltip-right" title="Insert Note" id="menuLeft3DFloorItem0"></a>
+    </div>
   </div>
 </div>
 

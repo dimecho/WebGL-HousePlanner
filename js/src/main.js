@@ -248,6 +248,15 @@ function init() {
     camera3DQuadGrid.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
 
     //================================
+    scene2D.add(new fabric.Circle({
+        radius: 450,
+        fill: '#CCCCCC',
+        left: (window.innerWidth / 2),
+        top: (window.innerHeight / 2) + 80,
+        selectable: false,
+        opacity: 0.2
+    }));
+
     for (var x = 0; x <= scene2D.getWidth(); x += 25) {
         scene2D.add(new fabric.Line([x, 0, x, scene2D.getWidth()], {
             stroke: "#6dcff6",
@@ -1005,13 +1014,6 @@ function show3DHouse() {
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
 
-    toggleLeft('menuLeft3DHouse', true);
-
-    $('#menuRight3DHouse').show();
-    $('#menuRight').show();
-    //toggleRight('menuRight', true);
-
-
     if (TOOL3DINTERACTIVE == 'moveXY') {
         menuSelect(0, 'menuInteractiveItem', '#ff3700');
     } else if (TOOL3DINTERACTIVE == 'moveZ') {
@@ -1020,28 +1022,21 @@ function show3DHouse() {
         menuSelect(2, 'menuInteractiveItem', '#ff3700');
     }
 
-    menuSelect(1, 'menuTopItem', '#ff3700');
-    correctMenuHeight();
+
 
     $('#menuDayNight').show();
     $('#menuWeather').show();
+
+    $('#menuRight3DHouse').show();
+    toggleRight('menuRight', true);
+
+    toggleLeft('menuLeft3DHouse', true);
+
+    menuSelect(1, 'menuTopItem', '#ff3700');
+    correctMenuHeight();
+
     //scene3DHouseContainer.traverse;
 
-    //show3DHouseContainer(true)
-    //show3DFloorContainer(false);
-
-    //Auto close right menu
-    //document.getElementById('menuRight').setAttribute("class", "hide-right");
-    //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
-
-    //TODO: change menu content
-    /*
-    setTimeout(function() {
-        //do what you need here
-    }, 2000);
-    */
-    document.getElementById('menuRight').setAttribute("class", "show-right");
-    delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
 
     $('#WebGLCanvas').show();
 }
@@ -1091,7 +1086,7 @@ function show3DFloor() {
 
     try {
         var floorMaterial = new THREE.MeshPhongMaterial({
-            map: scene3DFloorGroundContainer.children[0].materials.map,
+            map: scene3DFloorGroundContainer.children[0].materials[0], //.map,
             envMap: camera3DMirrorReflection.renderTarget,
             reflectivity: 0.5
         });
@@ -1116,18 +1111,12 @@ function show3DFloor() {
     $('#menuFloorSelector').show();
 
     $('#menuRight3DFloor').show();
-    $('#menuRight').show();
+    toggleRight('menuRight', true);
 
-    //scene3DFloorContainer[FLOOR].traverse;
-    //show3DFloorContainer(true);
-    //show3DHouseContainer(false)
+    toggleLeft('menuLeft3DFloor', true);
 
     menuSelect(5, 'menuTopItem', '#ff3700');
     correctMenuHeight();
-
-    //Auto open right menu
-    document.getElementById('menuRight').setAttribute("class", "show-right");
-    delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
 
     $('#WebGLCanvas').show();
 }
@@ -1180,7 +1169,7 @@ function show3DRoofDesign() {
     //scene3D.add( new THREE.AxisHelper(100) );
 
     $('#menuRight3DRoof').show();
-    $('#menuRight').show();
+    toggleRight('menuRight', true);
     //scene3D.add(scene3DFloorLevelGroundContainer);
 
     //TODO: show extruded stuff from scene2DFloorContainer[0]
@@ -2182,13 +2171,16 @@ function on3DMouseDown(event) {
     clickTime = setTimeout(function() {
         if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
             //Auto close right menu
-            document.getElementById('menuRight').setAttribute("class", "hide-right");
-            delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+            toggleRight('menuRight', false);
+            //document.getElementById('menuRight').setAttribute("class", "hide-right");
+            //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
             //Auto close left menu
             if (SCENE == 'house') {
-                document.getElementById('menuLeft3DHouse').setAttribute("class", "hide-left");
-                delay(document.getElementById("arrow-left"), "images/arrowright.png", 400);
+                toggleLeft('menuLeft3DHouse', false);
+
+            } else if (SCENE == 'floor') {
+                toggleLeft('menuLeft3DFloor', false);
             }
         }
     }, 1400);
@@ -2311,13 +2303,15 @@ function on3DMouseUp(event) {
 
     if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0) {
         //Auto open right menu
-        document.getElementById('menuRight').setAttribute("class", "show-right");
-        delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
+        toggleRight('menuRight', true);
+        //document.getElementById('menuRight').setAttribute("class", "show-right");
+        //delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
 
         //Auto open left menu
         if (SCENE == 'house') {
-            document.getElementById('menuLeft3DHouse').setAttribute("class", "menuLeft3DHouse-show-left");
-            delay(document.getElementById("arrow-left"), "images/arrowleft.png", 400);
+            toggleLeft('menuLeft3DHouse', true);
+        } else if (SCENE == 'floor') {
+            toggleLeft('menuLeft3DFloor', true);
         }
     }
     //container.style.cursor = 'auto';
@@ -2610,15 +2604,16 @@ function scene3DFloorWallGenerate() {
             console.log(obj.type + " x1:" + obj.get('x1') + " y1:" + obj.get('y1') + " x2:" + obj.get('x2') + " y2:" + obj.get('y2'));
 
             //Translate 2D points into 3D
-            var x1 = (obj.get('x1') / window.innerWidth) * 2 - 1;
-            var y1 = -(obj.get('y1') / window.innerHeight) * 2 + 1;
-            var x2 = (obj.get('x2') / window.innerWidth) * 2 - 1;
-            var y2 = -(obj.get('y2') / window.innerHeight) * 2 + 1;
+            var x1 = (obj.get('x1') / 1200) * 2 - 1;
+            var y1 = -(obj.get('y1') / 1200) * 2 + 1;
+            var x2 = (obj.get('x2') / 1200) * 2 - 1;
+            var y2 = -(obj.get('y2') / 1200) * 2 + 1;
 
-            x1 *= 10;
-            y1 *= 10;
-            x2 *= 10;
-            y2 *= 10;
+            x1 *= 12;
+            y1 *= 12;
+            x2 *= 12;
+            y2 *= 12;
+
 
             console.log("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2)
 
@@ -2682,9 +2677,9 @@ function scene3DFloorWallGenerate() {
             var mesh = new THREE.Mesh(geometry, scene3DWallMaterial);
             mesh.rotation.x = -(90 * Math.PI / 180); //extrusion happens in Z direction, we need the wall pointing UP
 
-            //mesh.position.x = x1;
+            mesh.position.x = mesh.position.x - 2; //compensate for leftMenu
             mesh.position.y = 0;
-            //mesh.position.z = mesh.position.z - 0.5; //compensate for topMenu
+            mesh.position.z = mesh.position.z + 4; //compensate for topMenu
 
             scene3DFloorWallContainer[FLOOR].add(mesh);
         }
@@ -2749,7 +2744,7 @@ function sceneNew() {
     open3DModel("Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
 
     open3DModel("Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
-    open3DModel("Exterior/Plants/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
+    open3DModel("Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
     open3DModel("Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
     open3DModel("Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
     open3DModel("Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
@@ -3423,6 +3418,23 @@ function showRightObjectMenu(path) {
     $('#menuRight3DFloor').hide();
     $('#menuRight3DRoof').hide();
     $('#menuRight2D').hide();
+
+
+    //console.log("Get from " + path + "/index.json");
+
+    var menu = $("#menuRightObjects .scroll");
+    menu.empty();
+
+    jBinary.load("./objects/" + path + '/index.json', function(err, binary) {
+        var json = JSON.parse(binary.read('string'));
+        $.each(json.menu, function() {
+            menu.append(getMenuObjectItem(this));
+        });
+        //$("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
+        //    menuItemClick(this);
+        //});
+    });
+
     $('#menuRightObjects').show();
     //correctMenuHeight();
 }

@@ -1,13 +1,13 @@
-function toggleRight(id) {
+function toggleRight(id, open) {
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-right");
     var box = el.getAttribute("class");
 
-    if (box == "hide-right") {
+    if (img.src.indexOf("images/arrowleft.png") >= 0 || open) { //box == "hide-right"
         el.style.display = "block";
         el.setAttribute("class", "show-right");
         delay(img, "images/arrowright.png", 400);
-    } else {
+    } else if (!open) {
         el.setAttribute("class", "hide-right");
         delay(img, "images/arrowleft.png", 400);
     }
@@ -18,11 +18,11 @@ function toggleLeft(id, open) {
     var img = document.getElementById("arrow-left");
     var box = el.getAttribute("class");
 
-    if (box == "hide-left" || open) {
+    if (img.src.indexOf("images/arrowright.png") >= 0 || open) { //box == "hide-left"
         el.style.display = "block";
         el.setAttribute("class", id + "-show-left");
         delay(img, "images/arrowleft.png", 400);
-    } else {
+    } else if (!open) {
         el.setAttribute("class", "hide-left");
         delay(img, "images/arrowright.png", 400);
     }
@@ -84,7 +84,7 @@ function getMenuItem(itemData, last) {
     } else {
         a += " href=\"#\"";
     }
-    a += "><span>" + itemData.name + "</span></a>";
+    a += ">" + itemData.name + "</a>";
 
     //console.log(a);
     var item = $(li).append(a);
@@ -103,6 +103,25 @@ function getMenuItem(itemData, last) {
     }
     return item;
 }
+
+function getMenuObjectItem(itemData, last) {
+    //console.log(itemData);
+    var div = "<div class='objectItem' style='margin-let:auto;text-align:left;'>";
+
+    var img = $("<img>", {
+        id: itemData.name,
+        src: "objects/" + itemData.thumbnail,
+        href: "#",
+        //width: "100%",
+        height: "100%"
+    });
+    var divInfo = "<div class='objectItemInfo'>";
+
+    var item = $(div).append(img).append(divInfo);
+
+    return item;
+}
+
 /*
 function getParents(obj) {
     objparent = obj.parentNode;

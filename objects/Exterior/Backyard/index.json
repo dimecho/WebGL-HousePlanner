@@ -1,0 +1,12 @@
+{
+    "menu": [{
+        "name": "Children Park",
+        "thumbnail": "Exterior/Backyard/children-park.jpg",
+        "object": "Exterior/Backyard/children-park.jsz",
+        "manufacturer": null,
+        "model": null,
+        "store": null,
+        "price": null,
+        "update": null
+    }]
+}

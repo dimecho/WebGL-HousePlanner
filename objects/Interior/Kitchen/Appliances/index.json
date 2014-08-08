@@ -2,7 +2,7 @@
     "menu": [{
         "name": "Fridge 1",
         "thumbnail": "Interior/Kitchen/Appliances/fridge.jpg",
-        "link": "Interior/Kitchen/Appliances/fridge.jsz",
+        "object": "Interior/Kitchen/Appliances/fridge.jsz",
         "manufacturer": null,
         "model": null,
         "store": null,
@@ -11,7 +11,7 @@
     }, {
         "name": "Fridge 2",
         "thumbnail": "Interior/Kitchen/Appliances/fridge2.jpg",
-        "link": "Interior/Kitchen/Appliances/fridge2.jsz",
+        "object": "Interior/Kitchen/Appliances/fridge2.jsz",
         "manufacturer": null,
         "model": null,
         "store": null,

@@ -1,0 +1,21 @@
+{
+    "menu": [{
+        "name": "Ficus",
+        "thumbnail": "Interior/Plants/ficus.jpg",
+        "object": "Interior/Plants/ficus.jsz",
+        "manufacturer": null,
+        "model": null,
+        "store": null,
+        "price": null,
+        "update": null
+    }, {
+        "name": "Flowerpot",
+        "thumbnail": "Interior/Plants/flowerpot.jpg",
+        "object": "Interior/Plants/flowerpot.jsz",
+        "manufacturer": null,
+        "model": null,
+        "store": "IKEA",
+        "price": null,
+        "update": null
+    }]
+}

@@ -11,8 +11,8 @@ for f in $(find ./ -name '*.blend')
 do
 	/Applications/blender.app/Contents/MacOS/blender -b "$(dirname "$0")/$f" -F JPEG -x 1 -f 1 #-F PNG -f 1
 	mv /tmp/0001.jpg "$(dirname "$0")/$(dirname "$f")/$(basename "$f" .blend).jpg"
-	sips --resampleHeight 200 "$(dirname "$0")/$(dirname "$f")/$(basename "$f" .blend).jpg"
-	/Applications/blender.app/Contents/MacOS/blender "$f" --background --python /Applications/blender.app/Contents/MacOS/2.71/scripts/addons/io_mesh_threejs/export_threejs.py
+	sips --resampleHeight 150 "$(dirname "$0")/$(dirname "$f")/$(basename "$f" .blend).jpg"
+	#/Applications/blender.app/Contents/MacOS/blender "$f" --background --python /Applications/blender.app/Contents/MacOS/2.71/scripts/addons/io_mesh_threejs/export_threejs.py
 done
 
 for f in $(find ./ -name '*.js')

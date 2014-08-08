@@ -2,10 +2,10 @@
 # WebGL HousePlanner - 3D Home Staging #
 **version 1.0**
 
-WebGL experiment based on Three.js for generating floorplans and decorative 3D home staging.
+WebGL experiment based on Three.js (3D) and Fabric.js (2D) for generating floorplans and decorative 3D home staging online.
 
 Originally the project was created for real-estate agents to showcase WebGL abilities but dismissed due to lack of funding.
-It is currently unfinished (~10%) but has great concept ideas: exterior view, multi-floor, 3D furnishings and 2D floor plans.
+It is currently unfinished (~25%) but has great concept ideas: exterior view, multi-floor, 3D furnishings, roof designer and 2D floor plans.
 
 Now available as open-source.
 

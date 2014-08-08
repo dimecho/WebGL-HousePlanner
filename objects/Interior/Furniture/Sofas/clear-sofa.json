@@ -1,0 +1,9 @@
+{
+    "menu": [{
+        "name": "Design 1",
+        "textures": "Interior/Furniture/Sofas/Textures/clear-sofa/1/"
+    }, {
+        "name": "Design 2",
+        "textures": "Interior/Furniture/Sofas/Textures/clear-sofa/2/"
+    }]
+}
