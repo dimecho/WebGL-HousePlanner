@@ -3,8 +3,53 @@
 cd "$(dirname "$0")/../"
 
 rm "./php/update.sql"
+
+i=0
+CATEGORY=0
+
+for d in $(find ./objects -type d)
+do
+   if [[ $d != *"/Textures"* ]]
+   then
+   		NAME[$i]="$d"
+		c=0
+		for a in "${NAME[@]}"
+    	do
+    		if [[ $(dirname "$d") == "$a" ]]
+    		then
+        		CATEGORY=$c
+        		break
+        	fi
+        	c=$(($c + 1))
+    	done
+
+    	echo "${NAME[$i]}($i) -> $CATEGORY"
+
+    	if (( $CATEGORY == 0))
+    	then
+    		echo "INSERT INTO CATEGORIES (ID, SUB_ID, NAME) VALUES ($i, 0, '$(basename "$d")');" >> "./php/update.sql"
+    	else
+    		echo "INSERT INTO CATEGORIES (ID, SUB_ID, NAME) VALUES ($i, $CATEGORY, '$(basename "$d")');" >> "./php/update.sql"
+    	fi
+
+    	i=$(($i + 1))
+	fi
+done
+
+CATEGORY=0
+
 for f in $(find ./objects -name '*.jsz')
 do
-	echo "INSERT INTO OBJECTS (NAME, IMAGE, FILE) VALUES ('$(basename "$f" .jsz)', '$(dirname "$f")/$(basename "$f" .jsz).jpg', '$f');" >> "./php/update.sql"
+	c=0
+	for a in "${NAME[@]}"
+    do
+    	if [[ $(dirname "$f") == "$a" ]]
+    	then
+        	CATEGORY=$c
+        	break
+        fi
+        c=$(($c + 1))
+    done
+	echo "INSERT INTO OBJECTS (NAME, IMAGE, FILE, CATEGORY_ID) VALUES ('$(basename "$f" .jsz)', '$(dirname "$f")/$(basename "$f" .jsz).jpg', '$f', $CATEGORY);" >> "./php/update.sql"
 done
 

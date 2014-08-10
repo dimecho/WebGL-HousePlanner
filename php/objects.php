@@ -50,44 +50,77 @@ else
 {
 	require('database.php');
 
-	if (!isset($_GET['item']))
+    //header("Content-type: text/xml");
+    //$xml = new SimpleXMLElement('<xml></xml>');
+
+    header("Content-type: text/json");
+    $json=array();
+
+	if (isset($_GET['id']))
     {
-        exit;
+        //$xml->addAttribute('menu', $_GET['id']);
+
+        $sql = "SELECT * FROM CATEGORIES WHERE ID = :id";
+        $query = $pdo->prepare($sql);
+        $query->bindValue(":id", $_GET['id']);
+
+    }
+    else
+    {
+        //$xml->addAttribute('menu', 'test');
+        $sql = "SELECT * FROM CATEGORIES WHERE ID > 0 AND NAME = :menu"; // SUB_ID = 0";
+        $query = $pdo->prepare($sql);
+        $query->bindValue(":menu", $_GET['menu']);
+
+    	if($query->execute())
+    	{
+    		$row = $query->fetch(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+
+                //echo $row["ID"];
+
+                $sql = "SELECT * FROM CATEGORIES WHERE SUB_ID = :id";
+                $query = $pdo->prepare($sql);
+                $query->bindValue(":id", $row["ID"]);
+
+                $items=array();
+
+                if($query->execute())
+                {
+                    $result = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+
+                    foreach($result as $row)
+                    {
+                        $sql = "SELECT * FROM CATEGORIES WHERE SUB_ID = :id";
+                        $query = $pdo->prepare($sql);
+                        $query->bindValue(":id", $row["ID"]);
+
+                        if($query->execute())
+                        {   
+                            $result2 = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+
+                            $submenu=array();
+                            foreach($result2 as $row2)
+                            {
+                                array_push($submenu, array('name'=>$row2["NAME"],'link'=>$row2["ID"],'sub'=>NULL));
+                            }
+                            array_push($items, array('name'=>$row["NAME"],'link'=>NULL,'sub'=>$submenu));
+                        }
+                        else
+                        {
+                            array_push($items, array('name'=>$row["NAME"],'link'=>NULL,'sub'=>NULL));
+                        }
+                    }
+                }
+                else
+                {
+                    $menu=array('name'=>$row["NAME"],'link'=>$row["ID"]);
+                }
+
+            $json=array('menu'=>$items);
+    	}
     }
 
-    //header("Content-type: text/xml");
-    header("Content-type: text/json");
-
-    $sql = "SELECT * FROM CATEGORY WHERE NAME = :name";
-    $query = $pdo->prepare($sql);
-	$query->bindValue(":name", $username);
-
-	if($query->execute())
-	{
-		$result = $query->fetch(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
-	}
-
-    $xml = new SimpleXMLElement('<xml></xml>');
-    $xml->addAttribute('menu', $_GET['item']);
-
-    /*
-    $path = realpath('./'. $_GET['item']));
-	foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path)) as $filename)
-	{
-	    echo "$filename\n";
-
-	    $ext = pathinfo($filename, PATHINFO_EXTENSION);
-
-	    $member = $xml->addChild('vendor', '1');
-	    $member->addAttribute('extra', 'info');
-	    $member->addChild('category', 'Furnishings');
-
-	    $member = $xml->addChild('vendor', '2');
-	    $member = $xml->addChild('vendor', '3');
-	}
-	*/
-
-    echo json_encode($xml); //$array = json_decode($json,TRUE);
+    echo json_encode($json); //$array = json_decode($json,TRUE);
     //echo $xml->asXML();
 }
 ?>

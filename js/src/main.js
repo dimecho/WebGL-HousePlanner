@@ -3122,7 +3122,7 @@ function scene3DSetSky(set) {
 
     scene3D.remove(skyMesh);
 
-    var path = './objects/Platform/sky/' + set + "/";
+    var path = './objects/Platform/Textures/sky/' + set + "/";
     var sides = [path + 'px.jpg', path + 'nx.jpg', path + 'py.jpg', path + 'ny.jpg', path + 'pz.jpg', path + 'nz.jpg'];
 
     var scCube = THREE.ImageUtils.loadTextureCube(sides);
@@ -3418,7 +3418,7 @@ function initMenu(id,item) {
 
     if(RUNMODE == "database")
     {
-        url = "./php/objects.php?" + item;
+        url = "./php/objects.php?menu=" + item.split('/').shift();
     }else{
         url = "./objects/" + item;
     }
