@@ -76,19 +76,21 @@ var groundGrid;
 var groundMesh;
 var glowMesh;
 
+var skyMesh;
 var weatherSkyDayMesh;
 var weatherSkyNightMesh;
 var weatherSnowMesh;
 var weatherRainMesh;
 
-var skyMesh;
-
+var RUNMODE = 'local'; //database
+var VIEWMODE = 'designer' //public
 var RADIAN = Math.PI / 180;
 var AUTOROTATE = true;
 var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
 var TOOL3DLANDSCAPE = 'rotate';
+var TOOL3DFLOOR = '';
 var TOOL2D = 'vector';
 var WEATHER = 'sunny';
 var DAY = 'day';
@@ -129,7 +131,15 @@ var zip;
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
 
-function init() {
+function init(runmode,viewmode) {
+
+	RUNMODE = runmode;
+	VIEWMODE = viewmode;
+
+    if(RUNMODE == "local")
+    {
+        $("#menuTopItem14").hide();
+    }
 
     /*
 	http://www.ianww.com/blog/2012/12/16/an-introduction-to-custom-shaders-with-three-dot-js/
@@ -565,14 +575,9 @@ function init() {
     animate();
 }
 
+/*
 function loadDAE(file, object, x, y, z, xaxis, yaxis, ratio) {
-    var loader = new THREE.ColladaLoader();
-    loader.options.convertUpAxis = true;
-    /*loader.addEventListener('load', function(event) {
-        var object = event.content;
-        scene3DHouseContainer.add(object);
-        
-    });*/
+
     loader.load('./objects/dae/' + file, function(collada) {
         var dae = collada.scene;
         //var skin = collada.skins[ 0 ];
@@ -580,14 +585,14 @@ function loadDAE(file, object, x, y, z, xaxis, yaxis, ratio) {
         //dae.scale.x = dae.scale.y = dae.scale.z = 50;
         dae.updateMatrix();
 
-        /*
+        /
             var geometries = collada.dae.geometries;
             for(var propName in geometries){
                     if(geometries.hasOwnProperty(propName) && geometries[propName].mesh){
                     dae.geometry = geometries[propName].mesh.geometry3js;
                 }
             }
-        */
+        /
 
         var mesh = dae.children.filter(function(child) {
             return child instanceof THREE.Mesh;
@@ -603,19 +608,20 @@ function loadDAE(file, object, x, y, z, xaxis, yaxis, ratio) {
         mesh.rotation.y = yaxis * Math.PI / 1000;
         mesh.doubleSided = false;
 
-        /*
+        /
             if(xaxis > 0){
                  mesh.rotateOnAxis(new THREE.Vector3(0,1,0), xaxis * RADIAN);
             }
             if(yaxis > 0){
                  mesh.rotateOnAxis(new THREE.Vector3(1,0,0), yaxis * RADIAN);
             }
-            */
+        /
         //scene3DHouseContainer.add(mesh);
         //object.add(mesh);
         object.add(dae);
     });
 }
+*/
 
 function scene2DMakeWall(coords) {
     var line = new fabric.Line(coords, {
@@ -813,7 +819,8 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
         //}
 
         var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-
+        mesh.name = js;
+        
         //mesh.overdraw = true; //??? repeat textures?
 
         mesh.castShadow = true;
@@ -988,7 +995,8 @@ function show3DHouse() {
     SCENE = 'house';
 
     hideElements();
-
+    initMenu("menuRight3DHouse","Exterior/index.json");
+ 
     scene3DSetSky(DAY);
     scene3DSetLight()
     scene3DSetWeather();
@@ -1013,7 +1021,6 @@ function show3DHouse() {
     $(renderer.domElement).bind('mouseup', on3DMouseUp);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
-
     if (TOOL3DINTERACTIVE == 'moveXY') {
         menuSelect(0, 'menuInteractiveItem', '#ff3700');
     } else if (TOOL3DINTERACTIVE == 'moveZ') {
@@ -1021,15 +1028,10 @@ function show3DHouse() {
     } else if (TOOL3DINTERACTIVE == 'rotate') {
         menuSelect(2, 'menuInteractiveItem', '#ff3700');
     }
-
-
-
     $('#menuDayNight').show();
     $('#menuWeather').show();
 
-    $('#menuRight3DHouse').show();
     toggleRight('menuRight', true);
-
     toggleLeft('menuLeft3DHouse', true);
 
     menuSelect(1, 'menuTopItem', '#ff3700');
@@ -1044,6 +1046,7 @@ function show3DHouse() {
 function show3DLandscape() {
 
     SCENE = 'landscape';
+
     hideElements();
 
     //scene3DSetBackground('blue');
@@ -1058,6 +1061,7 @@ function show3DLandscape() {
     $(renderer.domElement).bind('mouseup', on3DLandscapeMouseUp);
 
     TOOL3DLANDSCAPE = 'rotate';
+
     menuSelect(0, 'menuLeft3DLandscapeItem', '#ff3700');
     toggleLeft('menuLeft3DLandscape', true);
 
@@ -1072,6 +1076,7 @@ function show3DFloor() {
     SCENE = 'floor';
 
     hideElements();
+    initMenu("menuRight3DFloor","Interior/index.json");
 
     scene3DSetBackground('blue');
     scene3DSetLight();
@@ -1110,9 +1115,7 @@ function show3DFloor() {
     $('#menuFloorSelectorText').html(scene3DFloorContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
-    $('#menuRight3DFloor').show();
     toggleRight('menuRight', true);
-
     toggleLeft('menuLeft3DFloor', true);
 
     menuSelect(5, 'menuTopItem', '#ff3700');
@@ -1150,6 +1153,7 @@ function show3DRoofDesign() {
     SCENE = 'roof';
 
     hideElements();
+    initMenu("menuRight3DRoof","Roof/index.json");
 
     scene3DSetBackground('split');
     scene3DSetLight();
@@ -1165,16 +1169,13 @@ function show3DRoofDesign() {
     scene3D.add(scene3DRoofContainer);
 
     //scene3D.add(sceneHemisphereLight);
-
     //scene3D.add( new THREE.AxisHelper(100) );
-
-    $('#menuRight3DRoof').show();
-    toggleRight('menuRight', true);
     //scene3D.add(scene3DFloorLevelGroundContainer);
 
     //TODO: show extruded stuff from scene2DFloorContainer[0]
-
     //scene3DCube.add(scene3DCubeMesh);
+
+    toggleRight('menuRight', true);
 
     menuSelect(4, 'menuTopItem', '#ff3700');
     correctMenuHeight();
@@ -1189,9 +1190,9 @@ function show2D() {
 
     //camera2D.position.set(0, 8, 20);
     hideElements();
+    initMenu("menuRight2D","FloorPlan/index.json");
 
     scene3DSetBackground(null);
-
 
     if (TOOL2D == 'freestyle') {
         menuSelect(1, 'menuLeft2DItem', '#ff3700');
@@ -1202,12 +1203,10 @@ function show2D() {
         //} else if (TOOL2D == 'square') {
 
         //} else if (TOOL2D == 'circle') {
-
     }
-    toggleLeft('menuLeft2D', true);
 
-    $('#menuRight2D').show();
-    $('#menuRight').show();
+    toggleRight('menuRight', true);
+    toggleLeft('menuLeft2D', true);
 
     $('#menuFloorSelectorText').html(scene3DFloorContainer[FLOOR].name);
     $('#menuFloorSelector').show();
@@ -2675,7 +2674,7 @@ function scene3DFloorWallGenerate() {
 
 
             var mesh = new THREE.Mesh(geometry, scene3DWallMaterial);
-            mesh.rotation.x = -(90 * Math.PI / 180); //extrusion happens in Z direction, we need the wall pointing UP
+            mesh.rotation.x = -(90 * RADIAN); //extrusion happens in Z direction, we need the wall pointing UP
 
             mesh.position.x = mesh.position.x - 2; //compensate for leftMenu
             mesh.position.y = 0;
@@ -3413,6 +3412,33 @@ function scene3DLight() {
 
 }
 
+function initMenu(id,item) {
+
+    var url = null;
+
+    if(RUNMODE == "database")
+    {
+        url = "./php/objects.php?" + item;
+    }else{
+        url = "./objects/" + item;
+    }
+
+    jBinary.load(url, function(err, binary) {
+        var json = JSON.parse(binary.read('string'));
+        var menu = $("#" + id + " .scroll .cssmenu > ul");
+        menu.empty();
+        $.each(json.menu, function() {
+            menu.append(getMenuItem(this));
+        });
+        $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
+            menuItemClick(this);
+        });
+    });
+
+    $("#" + id).show();
+    //toggleRight('menuRight', true);
+}
+
 function showRightObjectMenu(path) {
     $('#menuRight3DHouse').hide();
     $('#menuRight3DFloor').hide();
@@ -3450,6 +3476,8 @@ function showRightCatalogMenu() {
     $('#menuRightObjects').hide();
     //correctMenuHeight();
 }
+
+
 
 function scene2DWallMeasurementExternal() {
 
@@ -3889,39 +3917,6 @@ $(document).ready(function() {
         position: 'top'
     });
 
-    jBinary.load('./objects/Exterior/index.json', function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#menuRight3DHouse .scroll .cssmenu > ul");
-        $.each(json.menu, function() {
-            menu.append(getMenuItem(this));
-        });
-        $("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
-            menuItemClick(this);
-        });
-    });
-
-    jBinary.load('./objects/Interior/index.json', function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#menuRight3DFloor .scroll .cssmenu > ul");
-        $.each(json.menu, function() {
-            menu.append(getMenuItem(this));
-        });
-        $("#menuRight3DFloor .scroll .cssmenu > ul > li > a").click(function(event) {
-            menuItemClick(this);
-        });
-    });
-
-    jBinary.load('./objects/FloorPlan/index.json', function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#menuRight2D .scroll .cssmenu > ul");
-        $.each(json.menu, function() {
-            menu.append(getMenuItem(this, false));
-        });
-        $("#menuRight2D .scroll .cssmenu > ul > li > a").click(function(event) {
-            menuItemClick(this);
-        });
-    });
-
     $('.cssmenu ul ul li:odd').addClass('odd');
     $('.cssmenu ul ul li:even').addClass('even');
     $('.cssmenu > ul > li > a').click(function(event) {
@@ -3936,6 +3931,4 @@ $(document).ready(function() {
     $('.editP').bind('blur', function() {
         $(this).hide().prev('#menuTop p').html($(this).val()).show();
     });
-
-    init();
 });

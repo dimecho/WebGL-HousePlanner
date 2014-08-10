@@ -1,0 +1,27 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+
+
+for f in $(find ./ -name '*.blend')
+do
+	cd "$(dirname "$0")/$(dirname "$f")"
+
+	open -n /Applications/blender.app "$(basename "$f")"
+
+	osascript -e 'tell application "Blender" to activate'
+
+	sleep 2
+
+	cliclick -w 400 -r c:60,60 c:60,410 c:250,490 c:1600,105
+
+	sleep 1
+
+	while [ ! -f "$(basename "$f" .blend).js" ]
+	do
+	    sleep 4
+	done
+	sleep 1
+	osascript -e 'tell application "Blender" to quit'
+	#osascript -e 'repeat\nif application "Blender" is not running then exit repeat\ndelay 5\nend repeat'
+done

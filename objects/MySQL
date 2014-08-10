@@ -1,0 +1,10 @@
+#!/bin/sh
+
+cd "$(dirname "$0")/../"
+
+rm "./php/update.sql"
+for f in $(find ./objects -name '*.jsz')
+do
+	echo "INSERT INTO OBJECTS (NAME, IMAGE, FILE) VALUES ('$(basename "$f" .jsz)', '$(dirname "$f")/$(basename "$f" .jsz).jpg', '$f');" >> "./php/update.sql"
+done
+

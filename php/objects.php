@@ -1,6 +1,6 @@
 <?php 
  
- if(isset($_FILES["fileInput"]) && $_FILES["fileInput"]["error"]== UPLOAD_ERR_OK)
+if(isset($_FILES["fileInput"]) && $_FILES["fileInput"]["error"]== UPLOAD_ERR_OK)
 {
     ############ Edit settings ##############
     $UploadDirectory    = '/home/website/file_upload/uploads/'; //specify upload directory ends with / (slash)
@@ -39,7 +39,7 @@
     $NewFileName        = $Random_Number.$File_Ext; //new file name
    
     if(move_uploaded_file($_FILES['fileInput']['tmp_name'], $UploadDirectory.$NewFileName ))
-       {
+    {
         // do other stuff
         die('Success! File Uploaded.');
     }else{
@@ -48,22 +48,35 @@
 }
 else
 {
+	require('database.php');
+
+	if (!isset($_GET['item']))
+    {
+        exit;
+    }
+
     //header("Content-type: text/xml");
     header("Content-type: text/json");
+
+    $sql = "SELECT * FROM CATEGORY WHERE NAME = :name";
+    $query = $pdo->prepare($sql);
+	$query->bindValue(":name", $username);
+
+	if($query->execute())
+	{
+		$result = $query->fetch(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+	}
 
     $xml = new SimpleXMLElement('<xml></xml>');
     $xml->addAttribute('menu', $_GET['item']);
 
+    /*
     $path = realpath('./'. $_GET['item']));
 	foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path)) as $filename)
 	{
 	    echo "$filename\n";
 
 	    $ext = pathinfo($filename, PATHINFO_EXTENSION);
-
-		//$xml = simplexml_load_string($xmlstring);
-	    //$json = json_encode($xml);
-	    //$array = json_decode($json,TRUE);
 
 	    $member = $xml->addChild('vendor', '1');
 	    $member->addAttribute('extra', 'info');
@@ -72,8 +85,9 @@ else
 	    $member = $xml->addChild('vendor', '2');
 	    $member = $xml->addChild('vendor', '3');
 	}
+	*/
 
-    echo json_encode($xml);
+    echo json_encode($xml); //$array = json_decode($json,TRUE);
     //echo $xml->asXML();
 }
 ?>

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+cd "$(dirname "$0")"
+
+#for f in $(find ./ -name '*.jsz')
+#do
+	#rm "$f"
+#done
+
+for f in $(find ./ -name '*.js')
+do
+	cd "$(dirname "$0")/$(dirname "$f")"
+	#zip "${f%.*}.jsz" "${f%.*}.js"
+	zip "$(basename "$f" .js).jsz" "$(basename "$f")"
+	#tar -czf "${f%.*}.jsz" "$f"
+done
+
+#for f in $(find ./ -name '*.jsz')
+#do
+	#openssl base64 -in "$f" -out "$f.base64"
+	#base64  -i "$f" -o "$f.base64"
+#done
