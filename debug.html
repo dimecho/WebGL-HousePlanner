@@ -41,6 +41,12 @@
   <script type="text/javascript" src="js/src/screenfull.js"></script>
   <script type="text/javascript" src="js/src/alertify.js"></script>
   <script type="text/javascript" src="js/src/main.js"></script>
+  <script type="text/javascript">
+
+  $(document).ready(function() {
+    init('local','designer');
+  });
+  </script>
 
   <!-- 
   https://github.com/codrops/IconHoverEffects
@@ -314,8 +320,9 @@
   </ul>
   <div id="links-left" style="width:60px">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
-        <a href="#" onclick="" class="hi-icon icon-images11 tooltip-right" title="Insert Picture" id="menuLeft3DFloorItem0"></a>
-        <a href="#" onclick="" class="hi-icon icon-edit tooltip-right" title="Insert Note" id="menuLeft3DFloorItem0"></a>
+      <a href="#" onclick="" class="hi-icon icon-ruler tooltip-right" title="Measure twice, Cut once" id="menuLeft3DFloorItem0"></a>
+      <a href="#" onclick="" class="hi-icon icon-images11 tooltip-right" title="Insert Picture" id="menuLeft3DFloorItem1"></a>
+      <a href="#" onclick="" class="hi-icon icon-edit tooltip-right" title="Insert Note" id="menuLeft3DFloorItem2"></a>
     </div>
   </div>
 </div>
@@ -694,10 +701,6 @@
 <!--<script type="text/javascript" src="js/iscroll.js"></script>-->
 
 <script type="text/javascript">
-
-$(document).ready(function() {
-  init('local','designer');
-});
 
 var images = {
   //'loader1': 'objects/Platform/sky/day/nx.jpg',

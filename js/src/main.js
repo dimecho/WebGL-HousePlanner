@@ -2743,6 +2743,7 @@ function sceneNew() {
     open3DModel("Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
 
     open3DModel("Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
+    open3DModel("Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1);
     open3DModel("Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
     open3DModel("Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
     open3DModel("Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
@@ -3440,19 +3441,21 @@ function initMenu(id,item) {
 }
 
 function showRightObjectMenu(path) {
-    $('#menuRight3DHouse').hide();
-    $('#menuRight3DFloor').hide();
-    $('#menuRight3DRoof').hide();
-    $('#menuRight2D').hide();
-
 
     //console.log("Get from " + path + "/index.json");
+    var url = null;
 
-    var menu = $("#menuRightObjects .scroll");
-    menu.empty();
+    if(RUNMODE == "database")
+    {
+        url = "./php/objects.php?objects=" + item.split('/').shift();
+    }else{
+        url = "./objects/" + path + '/index.json';
+    }
 
-    jBinary.load("./objects/" + path + '/index.json', function(err, binary) {
+    jBinary.load(url, function(err, binary) {
         var json = JSON.parse(binary.read('string'));
+        var menu = $("#menuRightObjects .scroll");
+        menu.empty();
         $.each(json.menu, function() {
             menu.append(getMenuObjectItem(this));
         });
@@ -3460,6 +3463,11 @@ function showRightObjectMenu(path) {
         //    menuItemClick(this);
         //});
     });
+
+    $('#menuRight3DHouse').hide();
+    $('#menuRight3DFloor').hide();
+    $('#menuRight3DRoof').hide();
+    $('#menuRight2D').hide();
 
     $('#menuRightObjects').show();
     //correctMenuHeight();
@@ -3476,8 +3484,6 @@ function showRightCatalogMenu() {
     $('#menuRightObjects').hide();
     //correctMenuHeight();
 }
-
-
 
 function scene2DWallMeasurementExternal() {
 

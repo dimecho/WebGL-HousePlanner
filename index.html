@@ -16,11 +16,13 @@
         zip.load(binary.read('string'));
         $(document).ready(function() {
           $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
+          init('local','designer');
         });
       } catch (exception) {
         console.log(exception);
         $(document).ready(function() {
           $.getScript("js/houseplanner.js");
+          init('local','designer');
         });
       }
     });
@@ -286,8 +288,9 @@
   </ul>
   <div id="links-left" style="width:60px">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
-        <a href="#" onclick="" class="hi-icon icon-images11 tooltip-right" title="Insert Picture" id="menuLeft3DFloorItem0"></a>
-        <a href="#" onclick="" class="hi-icon icon-edit tooltip-right" title="Insert Note" id="menuLeft3DFloorItem0"></a>
+      <a href="#" onclick="" class="hi-icon icon-ruler tooltip-right" title="Measure twice, Cut once" id="menuLeft3DFloorItem0"></a>
+      <a href="#" onclick="" class="hi-icon icon-images11 tooltip-right" title="Insert Picture" id="menuLeft3DFloorItem1"></a>
+      <a href="#" onclick="" class="hi-icon icon-edit tooltip-right" title="Insert Note" id="menuLeft3DFloorItem2"></a>
     </div>
   </div>
 </div>
@@ -399,9 +402,9 @@
         <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
   			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
   			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem6"></a>
-  			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" ></a>
-  			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open"></a>
-        <a href="#openSaving" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save"></a>
+  			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
+  			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open" id="menuTopItem8"></a>
+        <a href="#openSaving" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save" id="menuTopItem9"></a>
         <script>
         /*
   			$('.tooltip-save-menu').tooltipster({
@@ -411,8 +414,8 @@
         */
   			</script>
   			
-  			<a href="#" class="hi-icon icon-undo tooltip" title="Undo"></a>
-  			<a href="#" class="hi-icon icon-redo tooltip" title="Redo"></a>
+  			<a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuTopItem10"></a>
+  			<a href="#" class="hi-icon icon-redo tooltip" title="Redo" id="menuTopItem11"></a>
   			<!--
   			<a href="#" class="hi-icon icon-profile22 tooltip-share-menu" title="Share"></a>
   			<script>
@@ -422,9 +425,9 @@
           	});
   			</script>
         -->
-  			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot"></a>
-  			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen"></a>
-  			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login"></a>
+  			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem12"></a>
+  			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem13"></a>
+  			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem14"></a>
   		</div>
   	</div>
 	</div>

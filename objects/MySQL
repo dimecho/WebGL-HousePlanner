@@ -7,10 +7,14 @@ rm "./php/update.sql"
 i=0
 CATEGORY=0
 
-for d in $(find ./objects -type d)
+#for d in `echo $(find ./objects -type d)`
+find  "./objects" -type d  | while read d
 do
-   if [[ $d != *"/Textures"* ]]
+    #echo "$d"
+
+   if [[ "$d" != *"/Textures"* ]]
    then
+
    		NAME[$i]="$d"
 		c=0
 		for a in "${NAME[@]}"
@@ -38,7 +42,8 @@ done
 
 CATEGORY=0
 
-for f in $(find ./objects -name '*.jsz')
+#for f in $(find ./objects -name '*.jsz')
+find  "./objects" -name '*.jsz' | while read f
 do
 	c=0
 	for a in "${NAME[@]}"

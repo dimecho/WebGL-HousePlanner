@@ -58,14 +58,29 @@ else
 
 	if (isset($_GET['id']))
     {
+    	
+    }
+	else if (isset($_GET['objects']))
+    {
         //$xml->addAttribute('menu', $_GET['id']);
 
-        $sql = "SELECT * FROM CATEGORIES WHERE ID = :id";
+        $sql = "SELECT * FROM OBJECTS WHERE CATEGORY_ID = :objects";
         $query = $pdo->prepare($sql);
-        $query->bindValue(":id", $_GET['id']);
+        $query->bindValue(":objects", $_GET['objects']);
 
+        if($query->execute())
+        {
+            $result = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+
+            $items=array();
+            foreach($result as $row)
+            {
+            	array_push($items, array('name'=>$row["NAME"],'thumbnail'=>$row["IMAGE"],'object'=>$row["FILE"],'manufacturer'=>null,'model'=>null,'store'=>null,'price'=>null));
+            }
+            $json=array('menu'=>$items);
+        }
     }
-    else
+    else if (isset($_GET['menu']))
     {
         //$xml->addAttribute('menu', 'test');
         $sql = "SELECT * FROM CATEGORIES WHERE ID > 0 AND NAME = :menu"; // SUB_ID = 0";
@@ -78,7 +93,7 @@ else
 
                 //echo $row["ID"];
 
-                $sql = "SELECT * FROM CATEGORIES WHERE SUB_ID = :id";
+                $sql = "SELECT * FROM CATEGORIES WHERE SUB_ID = :id ORDER BY CATEGORIES.ORDER ASC";
                 $query = $pdo->prepare($sql);
                 $query->bindValue(":id", $row["ID"]);
 
@@ -90,7 +105,7 @@ else
 
                     foreach($result as $row)
                     {
-                        $sql = "SELECT * FROM CATEGORIES WHERE SUB_ID = :id";
+                        $sql = "SELECT * FROM CATEGORIES WHERE SUB_ID = :id ORDER BY CATEGORIES.ORDER ASC";
                         $query = $pdo->prepare($sql);
                         $query->bindValue(":id", $row["ID"]);
 

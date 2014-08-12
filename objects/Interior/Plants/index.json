@@ -6,8 +6,7 @@
         "manufacturer": null,
         "model": null,
         "store": null,
-        "price": null,
-        "update": null
+        "price": null
     }, {
         "name": "Flowerpot",
         "thumbnail": "Interior/Plants/flowerpot.jpg",
@@ -15,7 +14,6 @@
         "manufacturer": null,
         "model": null,
         "store": "IKEA",
-        "price": null,
-        "update": null
+        "price": null
     }]
 }
