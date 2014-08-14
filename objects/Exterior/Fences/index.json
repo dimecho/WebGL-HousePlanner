@@ -1,8 +1,8 @@
 {
     "menu": [{
         "name": "Fence 1",
-        "thumbnail": "Exterior/Fences/fence1.jpg",
-        "object": "Exterior/Fences/fence1.jsz",
+        "image": "Exterior/Fences/fence1.jpg",
+        "file": "Exterior/Fences/fence1.jsz",
         "manufacturer": null,
         "model": null,
         "store": null,
@@ -10,8 +10,8 @@
         "update": null
     }, {
         "name": "Fence 2",
-        "thumbnail": "Exterior/Fences/fence2.jpg",
-        "object": "Exterior/Fences/fence2.jsz",
+        "image": "Exterior/Fences/fence2.jpg",
+        "file": "Exterior/Fences/fence2.jsz",
         "manufacturer": null,
         "model": null,
         "store": "IKEA",

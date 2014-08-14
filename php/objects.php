@@ -75,7 +75,7 @@ else
             $items=array();
             foreach($result as $row)
             {
-            	array_push($items, array('name'=>$row["NAME"],'thumbnail'=>$row["IMAGE"],'object'=>$row["FILE"],'manufacturer'=>null,'model'=>null,'store'=>null,'price'=>null));
+            	array_push($items, array('name'=>$row["NAME"],'image'=>$row["IMAGE"],'file'=>$row["FILE"],'manufacturer'=>null,'model'=>null,'store'=>null,'price'=>null));
             }
             $json=array('menu'=>$items);
         }
@@ -103,32 +103,35 @@ else
                 {
                     $result = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
 
-                    foreach($result as $row)
+                    if(count($result) > 0)
                     {
-                        $sql = "SELECT * FROM CATEGORIES WHERE SUB_ID = :id ORDER BY CATEGORIES.ORDER ASC";
-                        $query = $pdo->prepare($sql);
-                        $query->bindValue(":id", $row["ID"]);
-
-                        if($query->execute())
-                        {   
-                            $result2 = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
-
-                            $submenu=array();
-                            foreach($result2 as $row2)
-                            {
-                                array_push($submenu, array('name'=>$row2["NAME"],'link'=>$row2["ID"],'sub'=>NULL));
-                            }
-                            array_push($items, array('name'=>$row["NAME"],'link'=>NULL,'sub'=>$submenu));
-                        }
-                        else
+                        foreach($result as $row)
                         {
-                            array_push($items, array('name'=>$row["NAME"],'link'=>NULL,'sub'=>NULL));
+                            $sql = "SELECT * FROM CATEGORIES WHERE SUB_ID = :id ORDER BY CATEGORIES.ORDER ASC";
+                            $query = $pdo->prepare($sql);
+                            $query->bindValue(":id", $row["ID"]);
+
+                            if($query->execute())
+                            {   
+                                $result2 = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+                                if(count($result2) > 0)
+                                {
+                                    $submenu=array();
+                                    foreach($result2 as $row2)
+                                    {
+                                        array_push($submenu, array('name'=>$row2["NAME"],'link'=>$row2["ID"],'sub'=>NULL));
+                                    }
+                                    array_push($items, array('name'=>$row["NAME"],'link'=>NULL,'sub'=>$submenu));
+                                }else{
+                                    array_push($items, array('name'=>$row["NAME"],'link'=>$row["ID"],'sub'=>NULL));
+                                }
+                            }
                         }
                     }
-                }
-                else
-                {
-                    $menu=array('name'=>$row["NAME"],'link'=>$row["ID"]);
+                    else
+                    {
+                        $menu=array('name'=>$row["NAME"],'link'=>$row["ID"]);
+                    }
                 }
 
             $json=array('menu'=>$items);

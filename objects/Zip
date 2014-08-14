@@ -7,7 +7,8 @@ cd "$(dirname "$0")"
 	#rm "$f"
 #done
 
-for f in $(find ./ -name '*.js')
+#for f in $(find ./ -name '*.js')
+find './' -name '*.js' | while read f
 do
 	cd "$(dirname "$0")/$(dirname "$f")"
 	#zip "${f%.*}.jsz" "${f%.*}.js"

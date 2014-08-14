@@ -1,8 +1,8 @@
 {
     "menu": [{
         "name": "White Horse",
-        "thumbnail": "Exterior/Animals/white-horse.jpg",
-        "object": "Exterior/Animals/white-horse.jsz",
+        "image": "./objects/Exterior/Animals/white-horse.jpg",
+        "file": "./objects/Exterior/Animals/white-horse.jsz",
         "manufacturer": null,
         "model": null,
         "store": null,

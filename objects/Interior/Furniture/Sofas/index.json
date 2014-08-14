@@ -1,8 +1,8 @@
 {
     "menu": [{
         "name": "Clear Sofa",
-        "thumbnail": "Interior/Furniture/Sofas/clear-sofa.jpg",
-        "object": "Interior/Furniture/Sofas/clear-sofa.jsz",
+        "image": "./objects/Interior/Furniture/Sofas/clear-sofa.jpg",
+        "file": "./objects/Interior/Furniture/Sofas/clear-sofa.jsz",
         "manufacturer": null,
         "model": null,
         "store": null,
@@ -10,8 +10,8 @@
         "update": null
     }, {
         "name": "Burlap Sofa",
-        "thumbnail": "Interior/Furniture/Sofas/burlap-sofa.jpg",
-        "object": "Interior/Furniture/Sofas/burlap-sofa.jsz",
+        "image": "./objects/Interior/Furniture/Sofas/burlap-sofa.jpg",
+        "file": "./objects/Interior/Furniture/Sofas/burlap-sofa.jsz",
         "manufacturer": null,
         "model": null,
         "store": "IKEA",
@@ -19,8 +19,8 @@
         "update": null
     }, {
         "name": "Leather Sofa",
-        "thumbnail": "Interior/Furniture/Sofas/leather-sofa.jpg",
-        "object": "Interior/Furniture/Sofas/leather-sofa.jsz",
+        "image": "./objects/Interior/Furniture/Sofas/leather-sofa.jpg",
+        "file": "./objects/Interior/Furniture/Sofas/leather-sofa.jsz",
         "manufacturer": null,
         "model": null,
         "store": "IKEA",
@@ -28,8 +28,8 @@
         "update": null
     }, {
         "name": "3 Seat Sofa",
-        "thumbnail": "Interior/Furniture/Sofas/IKEA/three-seat-sofa.jpg",
-        "object": "Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz",
+        "image": "./objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jpg",
+        "file": "./objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz",
         "manufacturer": null,
         "model": null,
         "store": "IKEA",

@@ -108,16 +108,20 @@ function getMenuObjectItem(itemData, last) {
     //console.log(itemData);
     var div = "<div class='objectItem' style='margin-let:auto;text-align:left;'>";
 
+	
     var img = $("<img>", {
         id: itemData.name,
-        src: "objects/" + itemData.thumbnail,
+        src: itemData.image,
         href: "#",
         //width: "100%",
         height: "100%"
     });
+
+    var a =  $("<a>", {href:"javascript:insertSceneObject('" + itemData.file + "')"}).append(img);
+    
     var divInfo = "<div class='objectItemInfo'>";
 
-    var item = $(div).append(img).append(divInfo);
+    var item = $(div).append(a).append(divInfo);
 
     return item;
 }

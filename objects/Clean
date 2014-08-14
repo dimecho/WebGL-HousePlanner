@@ -2,7 +2,8 @@
 
 cd "$(dirname "$0")"
 
-for f in $(find ./ -name '*.blend1')
+#for f in $(find ./ -name '*.blend1')
+find './' -name '*.blend1' | while read f
 do
 	rm "$f"
 done
@@ -12,12 +13,14 @@ done
 #	rm "$(dirname "$f")/$(basename "$f" .blend).jpg"
 #done
 
-for f in $(find ./ -name '.DS_Store')
+#for f in $(find ./ -name '.DS_Store')
+find './' -name '*.DS_Store' | while read f
 do
 	rm "$f"
 done
 
-for f in $(find ./ -name '*.js')
+#for f in $(find ./ -name '*.js')
+find './' -name '*.js' | while read f
 do
 	rm "$f"
 done

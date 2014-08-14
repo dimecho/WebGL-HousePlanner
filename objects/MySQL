@@ -8,7 +8,7 @@ i=0
 CATEGORY=0
 
 #for d in `echo $(find ./objects -type d)`
-find  "./objects" -type d  | while read d
+find "./objects" -type d  | while read d
 do
     #echo "$d"
 
@@ -34,27 +34,16 @@ do
     		echo "INSERT INTO CATEGORIES (ID, SUB_ID, NAME) VALUES ($i, 0, '$(basename "$d")');" >> "./php/update.sql"
     	else
     		echo "INSERT INTO CATEGORIES (ID, SUB_ID, NAME) VALUES ($i, $CATEGORY, '$(basename "$d")');" >> "./php/update.sql"
-    	fi
+    	  
+            find "$d" -name '*.jsz' | while read f
+            do
+                if [[ $(dirname "$f") == "$d" ]]
+                then
+                    echo "INSERT INTO OBJECTS (NAME, IMAGE, FILE, CATEGORY_ID) VALUES ('$(basename "$f" .jsz)', '$(dirname "$f")/$(basename "$f" .jsz).jpg', '$f', $i);" >> "./php/update.sql"
+                fi
+            done
+        fi
 
     	i=$(($i + 1))
 	fi
 done
-
-CATEGORY=0
-
-#for f in $(find ./objects -name '*.jsz')
-find  "./objects" -name '*.jsz' | while read f
-do
-	c=0
-	for a in "${NAME[@]}"
-    do
-    	if [[ $(dirname "$f") == "$a" ]]
-    	then
-        	CATEGORY=$c
-        	break
-        fi
-        c=$(($c + 1))
-    done
-	echo "INSERT INTO OBJECTS (NAME, IMAGE, FILE, CATEGORY_ID) VALUES ('$(basename "$f" .jsz)', '$(dirname "$f")/$(basename "$f" .jsz).jpg', '$f', $CATEGORY);" >> "./php/update.sql"
-done
-

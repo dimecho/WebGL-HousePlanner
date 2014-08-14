@@ -795,8 +795,7 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
     var loader = new THREE.JSONLoader();
 
     var ext = js.split('.').pop();
-    var url = "./objects/" + js;
-    var urlTextures = "./objects/" + js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
+    var textures = js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
     var data;
 
     //console.log("Textures:" + urlTextures);
@@ -920,23 +919,23 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
 
         //jBinary works for both online and offline
 
-        jBinary.load(url, function(err, binary) {
+        jBinary.load(js, function(err, binary) {
             try {
                 zip.load(binary.read('string'));
                 data = zip.file(filename + ".js").asText();
                 data = JSON.parse(data);
                 //loader.loadJson(data, callback, urlTextures);
-                var result = loader.parse(data, urlTextures);
+                var result = loader.parse(data, textures);
                 callback(result.geometry, result.materials);
 
             } catch (exception) { //zip file was probably not found, load regular json
-                loader.load(url.slice(0, -1), callback, urlTextures);
+                loader.load(js.slice(0, -1), callback, textures);
             }
         });
 
     } else {
 
-        loader.load(url, callback, urlTextures);
+        loader.load(js, callback, textures);
     }
 }
 
@@ -2712,9 +2711,9 @@ function sceneNew() {
     scene3DHouseGroundContainer.add(cylinder);
     */
 
-    open3DModel("Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false);
-    open3DModel("Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true);
-    open3DModel("Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("./objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false);
+    open3DModel("./objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("./objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true);
 
     /*
     new THREE.JSONLoader().load("./objects/Landscape/round.js", function(geometry, materials) {
@@ -2738,18 +2737,18 @@ function sceneNew() {
     //TODO: load from one JSON file
     //=========================================
 
-    open3DModel("Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
-    open3DModel("Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1);
-    open3DModel("Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
+    open3DModel("./objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
+    open3DModel("./objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1);
+    open3DModel("./objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
 
-    open3DModel("Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
-    open3DModel("Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1);
-    open3DModel("Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
-    open3DModel("Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
-    open3DModel("Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
-    open3DModel("Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
-    //open3DModel("Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
-    //open3DModel("Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
+    open3DModel("./objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
+    open3DModel("./objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1);
+    open3DModel("./objects/Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
+    open3DModel("./objects/Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
+    open3DModel("./objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
+    open3DModel("./objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
+    //open3DModel("./objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
+    //open3DModel("./objects/Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
     //THREE.GeometryUtils.center();
 
     //============ SAMPLE DATA ================
@@ -3440,6 +3439,19 @@ function initMenu(id,item) {
     //toggleRight('menuRight', true);
 }
 
+function insertSceneObject(path) {
+
+    //TODO: feed through undo/redo function first
+    if(SCENE == 'house')
+    {
+        open3DModel(path, scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
+    }
+    else  if(SCENE == 'floor')
+    {
+        open3DModel(path, scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
+    }
+}
+
 function showRightObjectMenu(path) {
 
     //console.log("Get from " + path + "/index.json");
@@ -3447,7 +3459,7 @@ function showRightObjectMenu(path) {
 
     if(RUNMODE == "database")
     {
-        url = "./php/objects.php?objects=" + item.split('/').shift();
+        url = "./php/objects.php?objects=" + path; //item.split('/').shift();
     }else{
         url = "./objects/" + path + '/index.json';
     }

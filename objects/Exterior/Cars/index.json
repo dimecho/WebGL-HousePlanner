@@ -1,8 +1,8 @@
 {
     "menu": [{
         "name": "VW Beetle",
-        "thumbnail": "Exterior/Cars/VWbeetle.jpg",
-        "object": "Exterior/Cars/VWbeetle.jsz",
+        "image": "Exterior/Cars/VWbeetle.jpg",
+        "file": "Exterior/Cars/VWbeetle.jsz",
         "manufacturer": "VW",
         "model": "Beetle",
         "store": null,

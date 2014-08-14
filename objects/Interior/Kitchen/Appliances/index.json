@@ -1,8 +1,8 @@
 {
     "menu": [{
         "name": "Fridge 1",
-        "thumbnail": "Interior/Kitchen/Appliances/fridge.jpg",
-        "object": "Interior/Kitchen/Appliances/fridge.jsz",
+        "image": "Interior/Kitchen/Appliances/fridge.jpg",
+        "file": "Interior/Kitchen/Appliances/fridge.jsz",
         "manufacturer": null,
         "model": null,
         "store": null,
@@ -10,8 +10,8 @@
         "update": null
     }, {
         "name": "Fridge 2",
-        "thumbnail": "Interior/Kitchen/Appliances/fridge2.jpg",
-        "object": "Interior/Kitchen/Appliances/fridge2.jsz",
+        "image": "Interior/Kitchen/Appliances/fridge2.jpg",
+        "file": "Interior/Kitchen/Appliances/fridge2.jsz",
         "manufacturer": null,
         "model": null,
         "store": null,

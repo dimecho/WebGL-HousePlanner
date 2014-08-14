@@ -2,7 +2,8 @@
 
 cd "$(dirname "$0")"
 
-for f in $(find ./ -name '*.blend')
+#for f in $(find ./ -name '*.blend')
+find './' -name '*.blend' | while read f
 do
 	#open -n /Applications/blender.app  -b "$(dirname "$0")/$(dirname "$f")/$(basename "$f")"
 	/Applications/blender.app/Contents/MacOS/blender -b "$(dirname "$0")/$f" -F JPEG -x 1 -f 1 #-F PNG -f 1
