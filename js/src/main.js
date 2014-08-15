@@ -3414,16 +3414,14 @@ function scene3DLight() {
 
 function initMenu(id,item) {
 
-    var url = null;
-
     if(RUNMODE == "database")
     {
-        url = "./php/objects.php?menu=" + item.split('/').shift();
+        item = "./php/objects.php?menu=" + item.split('/').shift();
     }else{
-        url = "./objects/" + item;
+        item = "./objects/" + item;
     }
 
-    jBinary.load(url, function(err, binary) {
+    jBinary.load(item, function(err, binary) {
         var json = JSON.parse(binary.read('string'));
         var menu = $("#" + id + " .scroll .cssmenu > ul");
         menu.empty();
@@ -3441,30 +3439,42 @@ function initMenu(id,item) {
 
 function insertSceneObject(path) {
 
+    if(RUNMODE == "database")
+    {
+        $.get("./php/objects.php?id=" + path, function( data ) {
+           path=data;
+        });
+    }
+
+    var x = 0;
+    var z = 0;
+
     //TODO: feed through undo/redo function first
     if(SCENE == 'house')
     {
-        open3DModel(path, scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
+        x = scene3DHouseContainer.children[scene3DHouseContainer.children.length-1].position.x;
+        z = scene3DHouseContainer.children[scene3DHouseContainer.children.length-1].position.z + 2;
+
+        open3DModel(path, scene3DHouseContainer, x, 0, z, 0, 0, 1);
     }
     else  if(SCENE == 'floor')
     {
-        open3DModel(path, scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
+        open3DModel(path, scene3DFloorContainer[FLOOR], x, 0, z, 0, 0, 1);
     }
 }
 
 function showRightObjectMenu(path) {
 
     //console.log("Get from " + path + "/index.json");
-    var url = null;
-
+  
     if(RUNMODE == "database")
     {
-        url = "./php/objects.php?objects=" + path; //item.split('/').shift();
+        path = "./php/objects.php?objects=" + path; //item.split('/').shift();
     }else{
-        url = "./objects/" + path + '/index.json';
+        path = "./objects/" + path + '/index.json';
     }
 
-    jBinary.load(url, function(err, binary) {
+    jBinary.load(path, function(err, binary) {
         var json = JSON.parse(binary.read('string'));
         var menu = $("#menuRightObjects .scroll");
         menu.empty();

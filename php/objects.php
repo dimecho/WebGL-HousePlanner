@@ -58,7 +58,16 @@ else
 
 	if (isset($_GET['id']))
     {
-    	
+    	$sql = "SELECT * FROM OBJECTS WHERE ID = :id";
+        $query = $pdo->prepare($sql);
+        $query->bindValue(":id", $_GET['id']);
+
+        if($query->execute())
+        {
+        	$row = $query->fetch(PDO::FETCH_ASSOC);
+        	echo $row["FILE"];
+        	exit;
+        }
     }
 	else if (isset($_GET['objects']))
     {
@@ -70,12 +79,12 @@ else
 
         if($query->execute())
         {
-            $result = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+            $result = $query->fetchALL(PDO::FETCH_ASSOC);
 
             $items=array();
             foreach($result as $row)
             {
-            	array_push($items, array('name'=>$row["NAME"],'image'=>$row["IMAGE"],'file'=>$row["FILE"],'manufacturer'=>null,'model'=>null,'store'=>null,'price'=>null));
+            	array_push($items, array('name'=>$row["NAME"],'image'=>$row["IMAGE"],'file'=>$row["ID"],'manufacturer'=>null,'model'=>null,'store'=>null,'price'=>null));
             }
             $json=array('menu'=>$items);
         }
@@ -89,7 +98,7 @@ else
 
     	if($query->execute())
     	{
-    		$row = $query->fetch(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+    		$row = $query->fetch(PDO::FETCH_ASSOC);
 
                 //echo $row["ID"];
 
@@ -101,7 +110,7 @@ else
 
                 if($query->execute())
                 {
-                    $result = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+                    $result = $query->fetchALL(PDO::FETCH_ASSOC);
 
                     if(count($result) > 0)
                     {
@@ -113,7 +122,7 @@ else
 
                             if($query->execute())
                             {   
-                                $result2 = $query->fetchALL(PDO::FETCH_ASSOC); //Return next row as an array indexed by column name
+                                $result2 = $query->fetchALL(PDO::FETCH_ASSOC);
                                 if(count($result2) > 0)
                                 {
                                     $submenu=array();
