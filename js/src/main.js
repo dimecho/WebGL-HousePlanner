@@ -1961,6 +1961,14 @@ function on3DMouseMove(event) {
     if (!leftButtonDown) {
         return;
     }
+    //console.log("mouse:" + event.clientX + " window:" + window.innerWidth);
+
+    if (event.clientX > window.innerWidth - 50)
+    {
+    	//console.log("set autorotate");
+    	AUTOROTATE = true;
+    	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
+	}
 
     //if (SCENE == '2d') {
 
@@ -2132,7 +2140,9 @@ function on3DMouseDown(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
+
     AUTOROTATE = false;
+
     //renderer.antialias = false;
 
     //console.log("Mouse Down " + mouse.x + ":" + mouse.x + " " + event.clientX + "|" + window.innerWidth + ":" + event.clientY + "|" + window.innerHeight + " -> " + camera3D.position.z);
@@ -3416,7 +3426,7 @@ function initMenu(id,item) {
 
     if(RUNMODE == "database")
     {
-        item = "./php/objects.php?menu=" + item.split('/').shift();
+        item = "/php/objects.php?menu=" + item.split('/').shift();
     }else{
         item = "./objects/" + item;
     }
@@ -3441,24 +3451,48 @@ function insertSceneObject(path) {
 
     if(RUNMODE == "database")
     {
-        $.get("./php/objects.php?id=" + path, function( data ) {
-           path=data;
+        //console.log("resolve id (" + path + ") -> url");
+
+        /*
+        $.get("/php/objects.php?id=" + path, function(data) {
+        	console.log(data);
+           	path = data;
+        });
+        */
+
+        path = "/php/objects.php?id=" + path;
+
+        $.ajax({
+        	type: 'GET',
+            dataType : 'json',
+          	url: path,
+            async: false, //important
+            success: function (data) {
+                //console.log(data.file);
+                path = data.file;
+            }
         });
     }
 
     var x = 0;
     var z = 0;
+    var o = 0;
 
     //TODO: feed through undo/redo function first
     if(SCENE == 'house')
     {
-        x = scene3DHouseContainer.children[scene3DHouseContainer.children.length-1].position.x;
-        z = scene3DHouseContainer.children[scene3DHouseContainer.children.length-1].position.z + 2;
+    	o = scene3DHouseContainer.children.length-1;
+        x = scene3DHouseContainer.children[o].position.x + scene3DHouseContainer.children[o].geometry.boundingBox.max.x;
+        z = scene3DHouseContainer.children[o].position.z + scene3DHouseContainer.children[o].geometry.boundingBox.max.z;
 
+        //console.log(path + " x:" + x + " z:" + z);
         open3DModel(path, scene3DHouseContainer, x, 0, z, 0, 0, 1);
     }
     else  if(SCENE == 'floor')
     {
+    	o = scene3DFloorContainer[FLOOR].children.length-1;
+    	x = scene3DFloorContainer[FLOOR].children[o].position.x + scene3DFloorContainer[FLOOR].children[o].geometry.boundingBox.max.x;
+        z = scene3DFloorContainer[FLOOR].children[o].position.z + scene3DFloorContainer[FLOOR].children[o].geometry.boundingBox.max.z;
         open3DModel(path, scene3DFloorContainer[FLOOR], x, 0, z, 0, 0, 1);
     }
 }
@@ -3469,7 +3503,7 @@ function showRightObjectMenu(path) {
   
     if(RUNMODE == "database")
     {
-        path = "./php/objects.php?objects=" + path; //item.split('/').shift();
+        path = "/php/objects.php?objects=" + path; //item.split('/').shift();
     }else{
         path = "./objects/" + path + '/index.json';
     }

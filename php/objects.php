@@ -65,8 +65,8 @@ else
         if($query->execute())
         {
         	$row = $query->fetch(PDO::FETCH_ASSOC);
-        	echo $row["FILE"];
-        	exit;
+
+            $json=array('file'=>$row["FILE"]);
         }
     }
 	else if (isset($_GET['objects']))
@@ -147,7 +147,7 @@ else
     	}
     }
 
-    echo json_encode($json); //$array = json_decode($json,TRUE);
+    echo json_encode($json, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); //$array = json_decode($json,TRUE);
     //echo $xml->asXML();
 }
 ?>
