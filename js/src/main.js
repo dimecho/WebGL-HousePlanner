@@ -126,10 +126,13 @@ var material;
 var texture;
 var mesh;
 var zip;
+
 //var stats;
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
+
+//var colliderSystem = [];
 
 function init(runmode,viewmode) {
 
@@ -207,7 +210,6 @@ function init(runmode,viewmode) {
     scene2DWallDimentions[2] = new Array();
 
     scene3DPivotPoint = new THREE.Object3D();
-
 
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
@@ -1015,6 +1017,8 @@ function show3DHouse() {
     }
     scene3DCube.add(scene3DCubeMesh);
 
+    //initObjectCollisions(scene3DHouseContainer);
+
     //$(renderer.domElement).bind('mousemove', on3DMouseMove);
     $(renderer.domElement).bind('mousedown', on3DMouseDown);
     $(renderer.domElement).bind('mouseup', on3DMouseUp);
@@ -1182,6 +1186,31 @@ function show3DRoofDesign() {
     //$('#HTMLCanvas').hide();
     $('#WebGLCanvas').show();
 }
+
+/*
+function initObjectCollisions(container) {
+
+	//colliderSystem = new THREEx.ColliderSystem();
+	colliderSystem = new Array();
+
+	console.log("init colliderSystem (" + container.children.length + ")");
+
+	for (var i = 0; i < container.children.length; i++) {
+
+		console.log("adding " + container.children[i].name + " to collision detection");
+
+		colliderSystem.push(new Array(container.children[i].name, new THREE.Box3().setFromPoints(container.children[i].geometry.vertices)));
+
+		//var collider = THREEx.Collider.createFromObject3d(container.children[i]);
+		//colliderSystem.add(collider)
+		//collider.update();
+
+		//collider.addEventListener('contactEnter', function(otherCollider){
+		//	console.log('contactEnter', collider.object3d.name, 'with', otherCollider.object3d.name)
+		//});
+    }
+}
+*/
 
 function show2D() {
 
@@ -2019,39 +2048,107 @@ function on3DMouseMove(event) {
 
         if (TOOL3DINTERACTIVE == 'moveXY') {
 
-
             vector = new THREE.Vector3(x, y, 0.5);
             projector.unprojectVector(vector, camera3D);
             var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
             var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
-            /*
-                var c = THREE.Collisions.rayCastNearest(raycaster);
-                if (c) {
-                    console.log("Found @ distance " + c.distance.toFixed(2));
-                }
-                */
-
+            //var ray = new THREE.Ray(camera3D.position, vector.sub(camera3D.position).normalize());
+    		//var intersects = ray.intersectObject(scene3DHouseGroundContainer.children[0]);
             if (intersects.length > 0) {
-                //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
-                SELECTED.position.x = intersects[0].point.x;
-                SELECTED.position.z = intersects[0].point.z;
 
-                /*
-                    var originPoint = intersects[0].object.position.clone();
-                    for (var i = 0; i < intersects[0].object.geometry.vertices.length; i++) {
+            	var collisionContainer;
 
-                        var globalVertex = intersects[0].object.geometry.vertices[i].applyMatrix4(intersects[0].object.matrix);
-                        var directionVector = globalVertex.sub(intersects[0].object.position);
-                        var ray = new THREE.Raycaster(originPoint, directionVector.normalize());
-                        var collisionResults = ray.intersectObjects(scene3DHouseContainer.children);
+	            if (SCENE == 'house')
+	            {
+	                collisionContainer = scene3DHouseContainer; //.clone();
+	            }
+	            else if (SCENE == 'floor')
+	            {
+	                collisionContainer = scene3DFloorContainer[FLOOR]; //.clone();
+	            }
+				
+	            //collisionContainer.remove(SELECTED); //avoid detecting itself
 
-                        if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
-                            console.log("bump");
-                            break;
-                        }
-                    }
-                    */
+	            // ===== SIMPLE COLLISION DETECTION ======
+            	//http://stackoverflow.com/questions/11418762/how-to-detect-collisions-between-a-cube-and-sphere-in-three-js
+            	var futurePosition = new THREE.Vector3(intersects[0].point.x,SELECTED.position.y,intersects[0].point.z);
+            	var collision = false;
+            	for (var i = 0,len = collisionContainer.children.length; i < len; i++) {
+
+            		var distance = futurePosition.distanceToSquared(collisionContainer.children[i].position);
+
+            		if (collisionContainer.children[i].name != SELECTED.name && distance < 1)
+            		{
+            			//console.log(collisionContainer.children[i].name);
+            			collision = true;
+            			break;
+            		}
+            		//console.log(SELECTED.position.distanceToSquared(collisionContainer.children[i].position));
+        		}
+        		collisionContainer = null;
+        		// =======================================
+        		if (!collision)
+        		{
+                	//console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
+                	SELECTED.position.x = intersects[0].point.x;
+                	SELECTED.position.z = intersects[0].point.z;
+            	}
             }
+
+            /*
+            var box3 = new THREE.Box3().setFromPoints(SELECTED.geometry.vertices); // compute shape from mesh.geometry.vertices
+            var boundingBox = SELECTED.geometry.boundingBox.clone();
+			
+            for (var i = 0,len = colliderSystem.length; i < len; i++) {
+            	console.log(SELECTED.position.distanceToSquared(yourSphere.position));
+            	if (box3.isIntersectionBox(colliderSystem[i][1]))
+            	{
+            		console.log("collision with  " + colliderSystem[i][0]);
+            	}
+            	//console.log("analysis of " + colliderSystem[i]);
+        	}
+			*/
+
+            // ====== COLLISION DETECTION with RAYS ======
+            // http://webmaestro.fr/collisions-detection-three-js-raycasting/
+			/*
+            var rays = [
+                new THREE.Vector3(0, 0, 1),
+                //new THREE.Vector3(1, 0, 1),
+                //new THREE.Vector3(1, 0.5, 0),
+                //new THREE.Vector3(1, 0, -1),
+                //new THREE.Vector3(0, 0.5, -1),
+                //new THREE.Vector3(-1, 0, -1),
+                //new THREE.Vector3(-1, 0.5, 0),
+                //new THREE.Vector3(-1, 0, 1)
+            ]; // Set the rays : one vector for every potential direction
+            */
+            /*
+            var rays = [
+            	new THREE.Vector3(SELECTED.position.x + SELECTED.geometry.boundingBox.max.x, SELECTED.position.y + SELECTED.geometry.boundingBox.max.y, SELECTED.position.z + SELECTED.geometry.boundingBox.max.z),
+            	new THREE.Vector3(SELECTED.position.x - SELECTED.geometry.boundingBox.max.x, SELECTED.position.y + SELECTED.geometry.boundingBox.max.y, SELECTED.position.z - SELECTED.geometry.boundingBox.max.z)
+            ]; // Set the rays : one vector for every potential direction
+
+            var caster = new THREE.Raycaster(); // the "RayCaster", able to test for intersections
+            var distance = 0.5; // Maximum distance from the origin before we consider collision
+            //scene3D.updateMatrixWorld();
+            for (var i = 0; i < rays.length; i += 1){ // For each ray
+
+                //caster.set(SELECTED.position, rays[i]);  // We reset the raycaster to this direction
+                caster.set(SELECTED.position, rays[i].sub(SELECTED.position).normalize());  // We reset the raycaster to this direction
+                //scene3D.updateMatrixWorld(); // required, since you haven't rendered yet
+
+                //var collisions = caster.intersectObject(scene3DHouseContainer.children); // Test if we intersect with any obstacle mesh
+           
+                var collisions = caster.intersectObjects(scene3DHouseContainer.children,true); // Test if we intersect with any obstacle mesh
+           
+                if (collisions.length > 0 && collisions[0].object.name != "") // && collisions[0].distance <= distance) // And disable that direction if we do
+                {
+                    console.log("collision detected '" + collisions[0].object.name + "'");
+                }
+            }
+            */
+            // ===========================================
 
         } else if (TOOL3DINTERACTIVE == 'moveZ') {
 
@@ -3508,24 +3605,48 @@ function showRightObjectMenu(path) {
         path = "./objects/" + path + '/index.json';
     }
 
-    jBinary.load(path, function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#menuRightObjects .scroll");
-        menu.empty();
-        $.each(json.menu, function() {
-            menu.append(getMenuObjectItem(this));
-        });
-        //$("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
-        //    menuItemClick(this);
-        //});
-    });
+    var menu = $("#menuRightObjects .scroll");
+    menu.append("<div id='menuLoading' style='position:relative;left:0;top:0;width:100%;height:100%;background-color:grey;opacity:0.5'>loading...</div>");
 
     $('#menuRight3DHouse').hide();
     $('#menuRight3DFloor').hide();
     $('#menuRight3DRoof').hide();
     $('#menuRight2D').hide();
-
     $('#menuRightObjects').show();
+
+    jBinary.load(path, function(err, binary) {
+    	
+    	var empty = "<div style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</div>";
+
+        try
+        {
+            //menu.empty();
+        
+            var json = JSON.parse(binary.read('string'));
+
+            $.each(json.menu, function() {
+                if(Object.keys(json.menu).length > 0)
+                {
+                    menu.append(getMenuObjectItem(this));
+                }
+                else
+                {
+                    menu.append(empty); //database empty
+                }
+            });
+        }
+        catch(ex)
+        {
+            menu.append(empty); //local no json
+        }
+
+            //$("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
+            //    menuItemClick(this);
+            //});
+    });
+
+    $('#menuLoading').remove();
+
     //correctMenuHeight();
 }
 
@@ -3538,6 +3659,7 @@ function showRightCatalogMenu() {
     }
 
     $('#menuRightObjects').hide();
+    $("#menuRightObjects .scroll").empty(); //empty ahead of time (faster)
     //correctMenuHeight();
 }
 

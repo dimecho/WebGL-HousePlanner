@@ -104,11 +104,10 @@ function getMenuItem(itemData, last) {
     return item;
 }
 
-function getMenuObjectItem(itemData, last) {
+function getMenuObjectItem(itemData) {
     //console.log(itemData);
     var div = "<div class='objectItem' style='margin-let:auto;text-align:left;'>";
 
-	
     var img = $("<img>", {
         id: itemData.name,
         src: itemData.image,
