@@ -6,13 +6,10 @@
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
 
   <script type="text/javascript" src="js/jquery.js?v=2.1.1"></script>
-  <script type="text/javascript" src="js/jszip.js"></script>
-  <script type="text/javascript" src="js/jdataview.js"></script>
-  <script type="text/javascript" src="js/jbinary.js"></script>
+  <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
+
   <script type="text/javascript" src="js/three.js?v=68"></script>
-
   <script type="text/javascript" src="js/src/Detector.js"></script>
-
   <script src="js/src/OrbitControls.js"></script>
   <script src="js/src/exporters/OBJExporter.js"></script>
   <script src="js/src/exporters/ObjectExporter.js"></script>
@@ -436,14 +433,12 @@
   			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem6"></a>
   			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
   			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open" id="menuTopItem8"></a>
-        <a href="#openSaving" onclick="exportJSON()" class="hi-icon icon-save tooltip" title="Save" id="menuTopItem9"></a>
+        <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
         <script>
-        /*
   			$('.tooltip-save-menu').tooltipster({
   				interactive:true,
-          		content: $('<a href="#" class="hi-icon icon-earth16" style="color:white"></a><strong>Online</strong><br/><a href="#" onclick="exportJSON();" class="hi-icon icon-usb3" style="color:white"></a><strong>USB File</strong>')
-          	});
-        */
+          content: $('<a href="#" class="hi-icon icon-earth38" style="color:white"></a><br/><a href="#openSaving" onclick="exportJSON();" class="hi-icon icon-usb" style="color:white"></a>')
+        });
   			</script>
   			
   			<a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuTopItem10"></a>

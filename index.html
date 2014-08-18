@@ -6,29 +6,35 @@
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
 
   <script type="text/javascript" src="js/jquery.js?v=2.1.1"></script>
-  <script type="text/javascript" src="js/jszip.js"></script>
-  <script type="text/javascript" src="js/jdataview.js"></script>
-  <script type="text/javascript" src="js/jbinary.js"></script>
-   <script>
+  <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
+
+  <script>
     $(document).ready(function() {
       $('#HTMLCanvas').hide();
       $('#WebGLCanvas').hide();
     });
-    jBinary.load("js/houseplanner.jsz", function(err, binary) {
-      try {
-        var zip = new JSZip();
-        zip.load(binary.read('string'));
-        $(document).ready(function() {
-          $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
-          init('local','designer');
-        });
-      } catch (exception) {
-        console.log(exception);
-        $(document).ready(function() {
-          $.getScript("js/houseplanner.js");
-          init('local','designer');
-        });
-      }
+
+    $.ajax("js/houseplanner.jsz",{
+        contentType: "application/zip",
+        beforeSend: function (req) {
+          req.overrideMimeType('text/plain; charset=x-user-defined');
+        },
+        success: function(data){
+          try {
+            var zip = new JSZip(data);
+            //zip.load(binary.read('string'));
+            $(document).ready(function() {
+              $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
+              init('local','designer');
+            });
+          } catch (exception) {
+            console.log(exception);
+            $(document).ready(function() {
+              $.getScript("js/houseplanner.js");
+              init('local','designer');
+            });
+          }
+        }
     });
   </script>
 

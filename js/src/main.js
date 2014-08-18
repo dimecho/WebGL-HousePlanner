@@ -308,7 +308,7 @@ function init(runmode,viewmode) {
     scene2DDrawLineContainer.add(scene2DDrawLine);
     
 
-    texture = new THREE.ImageUtils.loadTexture('./objects/FloorPlan/P0001.png');
+    texture = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0001.png');
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(10, 10);
@@ -320,7 +320,7 @@ function init(runmode,viewmode) {
         //wireframeLinewidth: 4
     });
 
-    texture = new THREE.ImageUtils.loadTexture('./objects/FloorPlan/P0002.png');
+    texture = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0002.png');
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(4, 4);
@@ -580,7 +580,7 @@ function init(runmode,viewmode) {
 /*
 function loadDAE(file, object, x, y, z, xaxis, yaxis, ratio) {
 
-    loader.load('./objects/dae/' + file, function(collada) {
+    loader.load('objects/dae/' + file, function(collada) {
         var dae = collada.scene;
         //var skin = collada.skins[ 0 ];
         dae.scale.x = dae.scale.y = dae.scale.z = 1;
@@ -877,7 +877,6 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
 
     if (js.split('.').pop() == 'jsz') //zipped json file
     {
-        var zip = new JSZip();
         var filename = js.split('/').pop().slice(0, -4);
 
         /*
@@ -913,30 +912,34 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
                     }
                 });
 				
-                url = "./objects/" + js.slice(0, -4) + ".js";
+                url = "objects/" + js.slice(0, -4) + ".js";
                 break;
             default:
         }
 		*/
 
-        //jBinary works for both online and offline
+        $.ajax(js,{
+            contentType: "application/zip",
+            beforeSend: function (req) {
+              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+            },
+            success: function(data){
+                try {
+                    var zip = new JSZip(data);
+                    //zip.load(binary.read('string'));
+                    data = zip.file(filename + ".js").asText();
+                    data = JSON.parse(data);
+                    //loader.loadJson(data, callback, urlTextures);
+                    var result = loader.parse(data, textures);
+                    callback(result.geometry, result.materials);
 
-        jBinary.load(js, function(err, binary) {
-            try {
-                zip.load(binary.read('string'));
-                data = zip.file(filename + ".js").asText();
-                data = JSON.parse(data);
-                //loader.loadJson(data, callback, urlTextures);
-                var result = loader.parse(data, textures);
-                callback(result.geometry, result.materials);
-
-            } catch (exception) { //zip file was probably not found, load regular json
-                loader.load(js.slice(0, -1), callback, textures);
+                } catch (exception) { //zip file was probably not found, load regular json
+                    loader.load(js.slice(0, -1), callback, textures);
+                }
             }
         });
 
     } else {
-
         loader.load(js, callback, textures);
     }
 }
@@ -1897,7 +1900,7 @@ function on2DMouseUp(event) {
 
         /*
         var img = new Image();
-        img.src = "./objects/FloorPlan/Hatch Patterns/ansi31.gif"; //pattern.toDataURL();
+        img.src = "objects/FloorPlan/Hatch Patterns/ansi31.gif"; //pattern.toDataURL();
         $("#menuWallInput").css('left', scene2DWallGeometry[FLOOR][i][p][0]);
         $("#menuWallInput").css('top', scene2DWallGeometry[FLOOR][i][p][1]);
         $("#menuWallInput").show();
@@ -2818,13 +2821,13 @@ function sceneNew() {
     scene3DHouseGroundContainer.add(cylinder);
     */
 
-    open3DModel("./objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false);
-    open3DModel("./objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true);
-    open3DModel("./objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false);
+    open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true);
 
     /*
-    new THREE.JSONLoader().load("./objects/Landscape/round.js", function(geometry, materials) {
-        var groundTexture = new THREE.ImageUtils.loadTexture('./objects/Landscape/Textures/F56734.jpg');
+    new THREE.JSONLoader().load("objects/Landscape/round.js", function(geometry, materials) {
+        var groundTexture = new THREE.ImageUtils.loadTexture('objects/Landscape/Textures/F56734.jpg');
         groundTexture.wrapS = THREE.RepeatWrapping;
         groundTexture.wrapT = THREE.RepeatWrapping;
         groundTexture.repeat.set(12, 12);
@@ -2844,18 +2847,18 @@ function sceneNew() {
     //TODO: load from one JSON file
     //=========================================
 
-    open3DModel("./objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
-    open3DModel("./objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1);
-    open3DModel("./objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
+    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
+    open3DModel("objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1);
+    open3DModel("objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
 
-    open3DModel("./objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
-    open3DModel("./objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1);
-    open3DModel("./objects/Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
-    open3DModel("./objects/Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
-    open3DModel("./objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
-    open3DModel("./objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
-    //open3DModel("./objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
-    //open3DModel("./objects/Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
+    open3DModel("objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
+    open3DModel("objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1);
+    open3DModel("objects/Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
+    open3DModel("objects/Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
+    open3DModel("objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
+    open3DModel("objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
+    //open3DModel("objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
+    //open3DModel("objects/Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
     //THREE.GeometryUtils.center();
 
     //============ SAMPLE DATA ================
@@ -3229,7 +3232,7 @@ function scene3DSetSky(set) {
 
     scene3D.remove(skyMesh);
 
-    var path = './objects/Platform/Textures/sky/' + set + "/";
+    var path = 'objects/Platform/Textures/sky/' + set + "/";
     var sides = [path + 'px.jpg', path + 'nx.jpg', path + 'py.jpg', path + 'ny.jpg', path + 'pz.jpg', path + 'nz.jpg'];
 
     var scCube = THREE.ImageUtils.loadTextureCube(sides);
@@ -3523,21 +3526,26 @@ function initMenu(id,item) {
 
     if(RUNMODE == "database")
     {
-        item = "/php/objects.php?menu=" + item.split('/').shift();
+        item = "php/objects.php?menu=" + item.split('/').shift();
     }else{
-        item = "./objects/" + item;
+        item = "objects/" + item;
     }
 
-    jBinary.load(item, function(err, binary) {
-        var json = JSON.parse(binary.read('string'));
-        var menu = $("#" + id + " .scroll .cssmenu > ul");
-        menu.empty();
-        $.each(json.menu, function() {
-            menu.append(getMenuItem(this));
-        });
-        $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
-            menuItemClick(this);
-        });
+    $.ajax(item,{
+        //contentType: "json",
+        //async: false,
+        dataType: 'json',
+        success: function(json){
+            //var json = JSON.parse(data);
+            var menu = $("#" + id + " .scroll .cssmenu > ul");
+            menu.empty();
+            $.each(json.menu, function() {
+                menu.append(getMenuItem(this));
+            });
+            $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
+                menuItemClick(this);
+            });
+        }
     });
 
     $("#" + id).show();
@@ -3557,7 +3565,7 @@ function insertSceneObject(path) {
         });
         */
 
-        path = "/php/objects.php?id=" + path;
+        path = "php/objects.php?id=" + path;
 
         $.ajax({
         	type: 'GET',
@@ -3600,9 +3608,9 @@ function showRightObjectMenu(path) {
   
     if(RUNMODE == "database")
     {
-        path = "/php/objects.php?objects=" + path; //item.split('/').shift();
+        path = "php/objects.php?objects=" + path; //item.split('/').shift();
     }else{
-        path = "./objects/" + path + '/index.json';
+        path = "objects/" + path + '/index.json';
     }
 
     var menu = $("#menuRightObjects .scroll");
@@ -3614,35 +3622,33 @@ function showRightObjectMenu(path) {
     $('#menuRight2D').hide();
     $('#menuRightObjects').show();
 
-    jBinary.load(path, function(err, binary) {
-    	
-    	var empty = "<div style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</div>";
-
-        try
-        {
-            //menu.empty();
-        
-            var json = JSON.parse(binary.read('string'));
-
-            $.each(json.menu, function() {
-                if(Object.keys(json.menu).length > 0)
-                {
-                    menu.append(getMenuObjectItem(this));
-                }
-                else
-                {
-                    menu.append(empty); //database empty
-                }
-            });
-        }
-        catch(ex)
-        {
-            menu.append(empty); //local no json
-        }
-
+     $.ajax(path,{
+        dataType: 'json',
+        success: function(json){
+            var empty = "<div style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</div>";
+            try
+            {
+                //menu.empty();
+                //var json = JSON.parse(binary.read('string'));
+                $.each(json.menu, function() {
+                    if(Object.keys(json.menu).length > 0)
+                    {
+                        menu.append(getMenuObjectItem(this));
+                    }
+                    else
+                    {
+                        menu.append(empty); //database empty
+                    }
+                });
+            }
+            catch(ex)
+            {
+                menu.append(empty); //local no json
+            }
             //$("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
             //    menuItemClick(this);
             //});
+        }
     });
 
     $('#menuLoading').remove();
