@@ -28,14 +28,6 @@ TODO:
 
 //"use strict";
 
-if (!Detector.webgl) Detector.addGetWebGLMessage();
-
-// workaround for chrome bug: http://code.google.com/p/chromium/issues/detail?id=35980#c12
-if (window.innerWidth === 0) {
-    window.innerWidth = parent.innerWidth;
-    window.innerHeight = parent.innerHeight;
-}
-
 var scene3D; //ThreeJS Canvas
 var scene3DCube; //ThreeJS Canvas
 var scene2D; //HTML Canvas
@@ -137,6 +129,26 @@ var fileReader; //HTML5 local file reader
 
 function init(runmode,viewmode) {
 
+    if (!Detector.webgl)
+    {
+        //Detector.addGetWebGLMessage();
+        var html = "<br/><br/><br/><div><center><img src='images/webgl.gif' /><h1>Looks like you broke the Internet!</h1><br/><h2>...your WebGL not enabled?</h2>";
+
+        if (/MSIE (\d+\.\d+);/.test(navigator.userAgent))
+        {
+            $('body').append(html + "<br/><br/>You are running Internet Explorer, the browser does not support WebGL, please install one of these popular browsers<br/><br/><a href='http://www.mozilla.org/en-US/firefox'><img src='images/firefox.png'/></a> <a href='http://www.google.ca/chrome'><img src='images/chrome.png'/></a></center></div>");
+        }
+        else if (/Firefox[\/\s](\d+\.\d+)/.test(navigator.userAgent))
+        {
+            $('body').append(html + "<img src='images/firefox-webgl.png'/></center></div>");
+        }
+        else  if (/Version\/[\d\.]+.*Safari/.test(navigator.userAgent))
+        {
+            $('body').append(html + "<img src='images/safari-webgl.png'/></center></div>");
+        }
+        return;
+    }
+
 	RUNMODE = runmode;
 	VIEWMODE = viewmode;
 
@@ -144,6 +156,15 @@ function init(runmode,viewmode) {
     {
         $("#menuTopItem12").hide(); //Share
         $("#menuTopItem15").hide(); //Login
+    }
+
+    $("#menuTop").show();
+    $("#menuBottom").show();
+
+    // workaround for chrome bug: http://code.google.com/p/chromium/issues/detail?id=35980#c12
+    if (window.innerWidth === 0) {
+        window.innerWidth = parent.innerWidth;
+        window.innerHeight = parent.innerHeight;
     }
 
     /*

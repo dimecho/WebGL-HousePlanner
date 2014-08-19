@@ -253,7 +253,7 @@
 </div>
 
 <!-- Slide Right Menu -->
-<div id="menuRight" class="hide-right">
+<div id="menuRight" class="hide-right" style="display:none">
   <ul id="tab-right">
       <li>
           <img id="arrow-right" onclick="toggleRight('menuRight',false);" src="images/arrowleft.png">
@@ -272,7 +272,7 @@
       <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
     </div>
 
-    <div id="menuRight3DHouse" style="display: none;">
+    <div id="menuRight3DHouse">
       <div class="scroll" data-ui="jscroll-default">
         <div class="cssmenu">
           <ul></ul>
@@ -280,7 +280,7 @@
       </div>
     </div>
 
-    <div id="menuRight3DFloor" style="display: none;">
+    <div id="menuRight3DFloor">
       <div class="scroll" data-ui="jscroll-default">
         <div class="cssmenu">
         <ul>
@@ -289,7 +289,7 @@
       </div>
     </div>
 
-    <div id="menuRight3DRoof" style="display: none;">
+    <div id="menuRight3DRoof">
       <div class="scroll" data-ui="jscroll-default">
         <div class="cssmenu">
         <ul>
@@ -298,7 +298,7 @@
       </div>
     </div>
                 
-    <div id="menuRight2D" style="display: none;">
+    <div id="menuRight2D">
       <div class="scroll" data-ui="jscroll-default">
         <div class="cssmenu">
         <ul>
@@ -307,7 +307,7 @@
       </div>
     </div>
 
-    <div id="menuRightObjects" style="display:none;">
+    <div id="menuRightObjects">
       <div class="cssmenu">
         <ul>
           <li><a href='#' onclick="showRightCatalogMenu()"><span>&#60; Back to Catalog</span></a></li>
@@ -326,7 +326,7 @@
 <!-- END Slide Right Menu -->
 
 <!-- Slide Left Menu -->
-<div id="menuLeft3DHouse" class="hide-left">
+<div id="menuLeft3DHouse" class="hide-left" style="display:none">
   <ul id="tab-left">
     <li>
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
@@ -352,7 +352,7 @@
   </div>
 </div>
 
-<div id="menuLeft3DLandscape" class="hide-left">
+<div id="menuLeft3DLandscape" class="hide-left" style="display:none">
   <ul id="tab-left">
     <li>
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DLandscape',false);" src="images/arrowright.png">
@@ -369,7 +369,7 @@
   </div>
 </div>
 
-<div id="menuLeft3DFloor" class="hide-left">
+<div id="menuLeft3DFloor" class="hide-left" style="display:none">
   <ul id="tab-left">
     <li>
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
@@ -384,7 +384,7 @@
   </div>
 </div>
 
-<div id="menuLeft2D" class="hide-left">
+<div id="menuLeft2D" class="hide-left" style="display:none">
   <ul id="tab-left">
     <li>
       <img id="arrow-left" onclick="toggleLeft('menuLeft2D',false);" src="images/arrowright.png">
@@ -459,7 +459,7 @@
   <!-- End Map -->
 
   <!-- Thumbnail class="ui-widget-content" -->
-  <div id="menuTop">
+  <div id="menuTop" style="display:none">
 	  <div style="display:inline-block">
 		  <a href="#openThumb"><img id="_imgHouse" src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000"/></a>
     </div>
@@ -496,23 +496,15 @@
         <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
   			<a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuTopItem10"></a>
   			<a href="#" class="hi-icon icon-redo tooltip" title="Redo" id="menuTopItem11"></a>
-  			<!--
-  			<a href="#" class="hi-icon icon-profile22 tooltip-share-menu" title="Share"></a>
-  			<script>
-  			$('.tooltip-share-menu').tooltipster({
-  				interactive:true,
-          		content: $('<span><i class="hi-icon icon-printer60" style="color:white"></i></span><br/><span><i class="hi-icon icon-email" style="color:white"></i></span><br/><span><i class="hi-icon icon-social21" style="color:white"></i></span><br/><span><i class="hi-icon icon-social5" style="color:white"></i></span><br/><span><i class="hi-icon icon-social38" style="color:white"></i></span>')
-          	});
-  			</script>
-        -->
-  			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem12"></a>
-  			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem13"></a>
-  			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem14"></a>
+  			<a href="#" class="hi-icon icon-share tooltip-share-menu" title="Share" id="menuTopItem12"></a>
+  			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
+  			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>
+  			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
   		</div>
   	</div>
 	</div>
 
-  <div id="menuFloorSelector" align="center">
+  <div id="menuFloorSelector" align="center" style="display:none">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
       <a href="#" onclick="selectFloor(-1)" class="hi-icon icon-previous"></a>
     </div>
@@ -522,7 +514,7 @@
     </div>
   </div>
   
-   <div id="menuBottom">
+   <div id="menuBottom" style="display:none">
     <div id="menuWebGLSettings">
       <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
     </div>
@@ -715,7 +707,7 @@
   <input type="file" name="fileInput" id="fileInput"  hidden />
   <input type="submit" id="fileSubmit" value="Upload" hidden />
 </form>
-<div id="WebGLCanvas">
+<div id="WebGLCanvas" style="display:none">
   <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
   <div id="WebGLInteractiveMenu">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >

@@ -10,17 +10,6 @@
   background: #fff;
 }
 
-html {
-  -ms-touch-action: none;
-}
-
-body{
-  padding: 0;
-  margin: 0;
-  border: 0;
-  overflow:hidden;
-}
-
 #scrollWrapper {
   position: absolute;
   z-index: 1;
