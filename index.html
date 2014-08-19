@@ -146,8 +146,8 @@
       return false;
     });
     </script>
+    <br/>
     <form method="post" action="" class="forms">
-
       <input type="text" name="name" id="name" placeholder="Name" class="input-field" required />
 
       <input type="email" name="email" id="email" placeholder="E-mail" class="input-field" required />
@@ -197,15 +197,38 @@
 </div>
 
 <div id="openSaving" class="modalDialog">
-  <div id="savingSpinner" style="width:280px;height:80px">
+  <div id="savingSpinner" style="width:280px;height:200px">
     <br/><br/><center>Please Wait - Saving ...</center>
   </div>
 </div>
 
-<div id="openWebGLSettings" class="modalDialog" style="display:none">
+<div id="openWebGLSettings" class="modalDialog">
   <div>
     <a href="#close" class="close">X</a>
-    
+    <br/>
+    <form method="post" action="" class="forms">
+      <fieldset>
+        <ul class="forms-list">
+          <li>
+             <input type="checkbox" name="checkbox-0" id="checkbox-0" checked>
+             <label for="checkbox-0">Animations</label>
+          </li>
+          <li>
+             <input type="checkbox" name="checkbox-1" id="checkbox-1" checked>
+             <label for="checkbox-1">Anti-Aliasing</label>
+          </li>
+          <li>
+             <input type="checkbox" name="checkbox-2" id="checkbox-2" checked>
+             <label for="checkbox-2">Shadows</label>
+          </li>
+          <li>
+             <input type="checkbox" name="checkbox-3" id="checkbox-3" checked>
+             <label for="checkbox-3">Mirrors</label>
+          </li>
+        </ul>
+      </fieldset>
+      <input type="submit" class="btn" value="Save" />
+    </form>
   </div>
 </div>
 
@@ -238,14 +261,13 @@
   </ul>
 
   <div id="links-left" style="width:320px;">
-    <div style="display:inline-block;width:100%;vertical-align:top;padding:10px">
+    <div style="display:inline-block;width:100%;vertical-align:top;padding:8px">
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
           <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
           <!--<a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>-->
           <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
           <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
           <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
-          <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
       </div>
       <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
     </div>
@@ -336,7 +358,7 @@
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DLandscape',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width:60px">
+  <div id="links-left" style="width:80px">
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
         <a href="#openPanoramaSelect" onclick="" class="hi-icon icon-panorama tooltip" title="Panorama Image"></a>
         <a href="#" onclick="menuSelect(0,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='rotate'" class="hi-icon icon-rotate2 tooltip" id="menuLeft3DLandscapeItem0" title="Rotate"></a>
@@ -353,7 +375,7 @@
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width:60px">
+  <div id="links-left" style="width:80px">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
       <a href="#" onclick="" class="hi-icon icon-ruler tooltip-right" title="Measure twice, Cut once" id="menuLeft3DFloorItem0"></a>
       <a href="#" onclick="" class="hi-icon icon-images11 tooltip-right" title="Insert Picture" id="menuLeft3DFloorItem1"></a>
@@ -368,7 +390,7 @@
       <img id="arrow-left" onclick="toggleLeft('menuLeft2D',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width:60px">
+  <div id="links-left" style="width:80px">
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
         <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-draftplan tooltip" id="menuLeft2DItem0" title="Upload Draft Plan (pdf, jpg, png)"></a>
         <a href="#" onclick="menuSelect(1,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=true;TOOL2D='freestyle'" class="hi-icon icon-draw tooltip" id="menuLeft2DItem1" title="Freestyle Sketch" ></a>
@@ -499,9 +521,11 @@
       <a href="#" onclick="selectFloor(1)" class="hi-icon icon-next"></a>
     </div>
   </div>
-
   
    <div id="menuBottom">
+    <div id="menuWebGLSettings">
+      <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
+    </div>
     <div id="menuMeasure">
       <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature"></a><div id="menuMeasureText" style="display:inline-block"></div>
     </div>

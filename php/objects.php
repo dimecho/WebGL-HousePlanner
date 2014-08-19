@@ -1,6 +1,8 @@
-<?php 
+<?php
+
+require('database.php');
  
-if(isset($_FILES['file']) and !$_FILES['file']['error']){
+if(isset($_FILES['file']) and !$_FILES['file']['error'])
 {
     /*
     Note: You will run into errors or blank page if "memory_limit" or "upload_max_filesize" is set to low in "php.ini".
@@ -37,8 +39,6 @@ if(isset($_FILES['file']) and !$_FILES['file']['error']){
 }
 else
 {
-	require('database.php');
-
     //header("Content-type: text/xml");
     //$xml = new SimpleXMLElement('<xml></xml>');
 

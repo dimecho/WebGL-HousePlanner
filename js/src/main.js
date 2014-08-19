@@ -142,7 +142,8 @@ function init(runmode,viewmode) {
 
     if(RUNMODE == "local")
     {
-        $("#menuTopItem14").hide();
+        $("#menuTopItem12").hide(); //Share
+        $("#menuTopItem15").hide(); //Login
     }
 
     /*
@@ -4165,9 +4166,14 @@ function snaptogrid(object) {
 
 $(document).ready(function() {
 
+    $('.tooltip-share-menu').tooltipster({
+        interactive:true,
+        content: $('<a href="#" onclick="" class="hi-icon icon-html tooltip" title="Embed 3D Scene in Your Website" style="color:white"></a><br/><a href="#" class="hi-icon icon-print" style="color:white"></a><br/><a href="#" class="hi-icon icon-email" style="color:white"></a>')
+    });
+
     $('.tooltip-save-menu').tooltipster({
                 interactive:true,
-          content: $('<a href="#openLogin" onclick="exportJSONOnline();" class="hi-icon icon-earth38" style="color:white"></a><br/><a href="#openSaving" onclick="exportJSON();" class="hi-icon icon-usb" style="color:white"></a>')
+          content: $('<a href="#openLogin" onclick="exportJSONOnline();" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="exportJSON();" class="hi-icon icon-usb" style="color:white"></a>')
     });
 
     $('.tooltip').tooltipster({
