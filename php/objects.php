@@ -1,29 +1,18 @@
 <?php 
  
-if(isset($_FILES["fileInput"]) && $_FILES["fileInput"]["error"]== UPLOAD_ERR_OK)
+if(isset($_FILES['file']) and !$_FILES['file']['error']){
 {
-    ############ Edit settings ##############
-    $UploadDirectory    = '/home/website/file_upload/uploads/'; //specify upload directory ends with / (slash)
-    ##########################################
-   
     /*
-    Note : You will run into errors or blank page if "memory_limit" or "upload_max_filesize" is set to low in "php.ini".
-    Open "php.ini" file, and search for "memory_limit" or "upload_max_filesize" limit
-    and set them adequately, also check "post_max_size".
+    Note: You will run into errors or blank page if "memory_limit" or "upload_max_filesize" is set to low in "php.ini".
+    Open "php.ini" file, and search for "memory_limit" or "upload_max_filesize" limit and set them, also check "post_max_size".
     */
    
-    //check if this is an ajax request
-    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])){
+    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) //check if this is an ajax request
+    {
         die();
     }
-   
-    //Is file size is less than allowed size.
-    if ($_FILES["fileInput"]["size"] > 5242880) {
-        die("File size is too big!");
-    }
-   
-    //allowed file type Server side check
-    switch(strtolower($_FILES['fileInput']['type']))
+    
+    switch(strtolower($_FILES['file']['type'])) //allowed file type Server side check
     {
         //allowed file types
  		case 'application/zip':
@@ -33,17 +22,17 @@ if(isset($_FILES["fileInput"]) && $_FILES["fileInput"]["error"]== UPLOAD_ERR_OK)
             die('Unsupported File!'); //output error
     }
    
-    $File_Name          = strtolower($_FILES['fileInput']['name']);
+    $File_Name          = strtolower($_FILES['file']['name']);
     $File_Ext           = substr($File_Name, strrpos($File_Name, '.')); //get file extention
     $Random_Number      = rand(0, 9999999999); //Random number to be added to name.
     $NewFileName        = $Random_Number.$File_Ext; //new file name
-   
-    if(move_uploaded_file($_FILES['fileInput']['tmp_name'], $UploadDirectory.$NewFileName ))
+
+    if ($_POST['upload'] == 'scene')
     {
-        // do other stuff
-        die('Success! File Uploaded.');
-    }else{
-        die('error uploading File!');
+        if(move_uploaded_file($_FILES['file']['tmp_name'], '/home/website/houseplanner/scene/' . $NewFileName ))
+        {
+   
+        }
     }
 }
 else

@@ -38,6 +38,7 @@
   <script type="text/javascript" src="js/src/screenfull.js"></script>
   <script type="text/javascript" src="js/src/alertify.js"></script>
   <script type="text/javascript" src="js/src/main.js"></script>
+
   <script type="text/javascript">
   $(document).ready(function() {
     init('local','designer');
@@ -49,6 +50,7 @@
   http://fontello.com 
   http://www.flaticon.com
   -->
+  <link rel="stylesheet" type="text/css" href="css/src/kube.css" />
   <link rel="stylesheet" type="text/css" href="css/src/preloader.css"/>
   <link rel="stylesheet" type="text/css" href="css/src/tooltipster.css" />
   <link rel="stylesheet" type="text/css" href="css/src/cssmenu.css">
@@ -61,8 +63,9 @@
   <link rel="stylesheet" type="text/css" href="css/src/normalize.css"  />
   <link rel="stylesheet" type="text/css" href="css/src/style.css" />
   <link rel="stylesheet" type="text/css" href="css/src/style2.css" />
-  <link rel="stylesheet" href="css/alertify.css" />
-  <link rel="stylesheet" href="css/alertify.default.css" />
+  <link rel="stylesheet" type="text/css" href="css/src/alertify.core.css" media="all"/>
+  <link rel="stylesheet" type="text/css" href="css/src/alertify.default.css" />
+
 
   <script id="vs" type="x-shader/x-vertex">
     varying vec2 vUv;
@@ -111,15 +114,77 @@
 <div id="openLogin" class="modalDialog">
 	<div>
 		<a href="#close" class="close">X</a>
-		<p class="validateTips"></p>
-		<form>
-		<label for="name">Username</label>
-		<input type="text" name="name" id="name" size="12">
+    <script type="text/javascript">
+    $("#login").click(function() {
+      $.ajax("php/login.php", {
+          type: "POST",
+          data: "username=" + $("#username").val() + "&password=" + $("#password").val(),
+          success: function(html) {
+            document.getElementById('loading').style.display = 'none';
+            result = html.split('|');
+            if (result[0] == 'success') {
+              window.location.href = "index.php";
+            //} else {
+            }
+          },
+          beforeSend: function() {
+            document.getElementById('loading').style.display = 'block';
+          }
+      });
+      return false;
+    });
+    </script>
     <br/>
-		<label for="password">Password</label>
-		<input type="password" name="password" id="password" size="12">
-		</form>
+    <form method="post" action="" class="forms">
+      <label>
+        <input type="text" placeholder="Email" id="username" name="username" class="width-100" required />
+      </label>
+      <label>
+        <input type="password" placeholder="Password" id="password" name="password" class="width-100" required />
+      </label>
+      <button id="login" class="btn-green width-100">Login</button>
+      <div id="loading" style="display:none"></div>
+    </form>
+    <a href="#">Forgot password?</a><br/>
+    <a href="#">Don't have an account? <strong>Sign Up</strong></a>
 	</div>
+</div>
+
+<div id="openRegistration" class="modalDialog">
+  <div>
+    <a href="#close" class="close">X</a>
+    <script type="text/javascript">
+    $("#register").click(function() {
+      $.ajax("php/register.php", {
+          type: "POST",
+          data: "name=" + $("#name").val() + "&email=" + $("#email").val() + "&password=" + $("#password").val(),
+          success: function(html) {
+            document.getElementById('loading').style.display = 'none';
+            result = html.split('|');
+            if (result[0] == 'success') {
+              window.location.href = "index.php";
+            //} else {
+            }
+          },
+          beforeSend: function() {
+            document.getElementById('loading').style.display = 'block';
+          }
+      });
+      return false;
+    });
+    </script>
+    <form method="post" action="" class="forms">
+
+      <input type="text" name="name" id="name" placeholder="Name" class="input-field" required />
+
+      <input type="email" name="email" id="email" placeholder="E-mail" class="input-field" required />
+
+      <input type="password" name="password" id="password" placeholder="Password" class="input-field" required />
+
+      <button class="btn-login" id="register">Register</button>
+      <div id="loading" style="display:none"></div>
+    </form>
+  </div>
 </div>
 
 <div id="openPanoramaSelect" class="modalDialog">
@@ -164,7 +229,7 @@
   </div>
 </div>
 
-<div id="openWebGLSettings" class="modalDialog">
+<div id="openWebGLSettings" class="modalDialog" style="display:none">
   <div>
     <a href="#close" class="close">X</a>
     
@@ -184,7 +249,7 @@
 	</div>
 </div>
 
-<div id="open3DTin" class="modalDialog" >
+<div id="open3DTin" class="modalDialog">
   <div id="wrap" style="width:90%; height:90%;margin: 2% auto;">
     <a href="#close" class="close" onclick="document.getElementById('iframe3DTin').src = 'about:blank'">X</a>
     <iframe src="" frameborder="0" id="iframe3DTin" style="display: block; width:100%; height:100%;"></iframe> 
@@ -434,13 +499,6 @@
   			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
   			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open" id="menuTopItem8"></a>
         <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
-        <script>
-  			$('.tooltip-save-menu').tooltipster({
-  				interactive:true,
-          content: $('<a href="#" class="hi-icon icon-earth38" style="color:white"></a><br/><a href="#openSaving" onclick="exportJSON();" class="hi-icon icon-usb" style="color:white"></a>')
-        });
-  			</script>
-  			
   			<a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuTopItem10"></a>
   			<a href="#" class="hi-icon icon-redo tooltip" title="Redo" id="menuTopItem11"></a>
   			<!--
@@ -656,7 +714,7 @@
 }
 </style>
 
-<form action="objects/index.php" method="post" enctype="multipart/form-data" id="uploadForm">
+<form action="" method="post" enctype="multipart/form-data" id="uploadForm" style="display:none">
   <input type="file" name="fileInput" id="fileInput"  hidden />
   <input type="submit" id="fileSubmit" value="Upload" hidden />
 </form>
@@ -676,7 +734,7 @@
     </blockquote>
   </div>
 </div>
-<div id="HTMLCanvas">
+<div id="HTMLCanvas" style="display:none">
   <div id="ruler" class="ruler" data-items=''></div>
   <a href="#" onclick="exportPDF()" id="printPDF" class="hi-icon icon-print tooltip" title="Print PDF" style="color:#474747"></a>
   <div id="menuWallInput">
@@ -684,7 +742,7 @@
       <input type="text" name="wallInput" id="wallInput" size="9" />
     </div>
   </div>
-<canvas id="fabricjs"></canvas>
+  <canvas id="fabricjs"></canvas>
 </div>
 
 <script type="text/javascript" src="js/preloader.js"></script>

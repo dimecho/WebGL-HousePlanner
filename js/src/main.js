@@ -82,6 +82,7 @@ var weatherSkyNightMesh;
 var weatherSnowMesh;
 var weatherRainMesh;
 
+var SESSION = '';
 var RUNMODE = 'local'; //database
 var VIEWMODE = 'designer' //public
 var RADIAN = Math.PI / 180;
@@ -936,7 +937,10 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
                 } catch (exception) { //zip file was probably not found, load regular json
                     loader.load(js.slice(0, -1), callback, textures);
                 }
-            }
+            },
+            error: function(xhr, textStatus, errorThrown){
+				alertify.alert("3D Model (" + js + ") Loading Error");
+			}
         });
 
     } else {
@@ -1381,6 +1385,7 @@ function menuSelect(item, id, color) {
 function selectFloor(next) {
 
     var i = FLOOR + next;
+
     if (scene3DFloorContainer[i] instanceof THREE.Object3D) {
 
         FLOOR = i;
@@ -1393,6 +1398,17 @@ function selectFloor(next) {
         } else if (SCENE == '2d') {
             show2D();
         }
+    }else{
+    	
+		alertify.confirm("Add New Floor?", function (e) {
+		    if (e) {
+		        scene3DFloorContainer[i] = new THREE.Object3D();
+		        scene3DFloorWallContainer[i] = new THREE.Object3D();
+			    scene2DWallGeometry[i] = new Array();
+			    scene2DWallDimentions[i] = new Array();
+		    //} else { // user clicked "cancel"
+		    }
+		});
     }
 }
 
@@ -2577,13 +2593,82 @@ function exportPDF() {
             doc.output('dataurl'),
             '_blank'
         );
-*/
-
+        */
 
         //saveAs(doc.output('dataurl'), scene3DFloorContainer[FLOOR].name + ".pdf");
         //doc.save(scene3DFloorContainer[FLOOR].name + ".pdf");
         //saveAs(doc.output('blob'), scene3DFloorContainer[FLOOR].name + ".pdf");
     }
+}
+
+function exportJSONOnline() {
+
+    if(SESSION == '')
+    {
+        //window.location = "#openLogin";
+
+    }else{
+
+        //window.location = "#openSaving";
+
+    	setTimeout(function() {
+
+            var zip = new JSZip();
+
+            zip.file("scene3DHouseContainer.json", JSON.stringify(collectArrayFromContainer(scene3DHouseContainer)));
+            zip.file("scene3DHouseGroundContainer.json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
+
+            for (var i = 0; i < scene3DFloorContainer.length; i++) {
+            	zip.file("scene3DFloorContainer." + i + ".json", JSON.stringify(collectArrayFromContainer(scene3DFloorContainer[i])));
+            }
+
+            var content = zip.generate({
+                type: "blob"
+            });
+
+          	var data = new FormData();
+          	data.append('file', content);
+
+            //saveAs(content, "scene.zip");
+    		$.ajax('php/objects.php?upload=scene', {
+    		   	type: 'POST',
+    		   	contentType: 'application/octet-stream',
+    		   	//contentType: false,
+    		   	//dataType: blob.type,
+          		processData: false,
+    		   	data: data,
+    		   	success: function(data, status) {
+              		if(data.status != 'error')
+                	alert("ok");
+            	},
+            	error: function() {
+              		alert("not so ok");
+            	}
+    		});
+
+            window.location = "#close";
+
+        }, 1000);
+    }
+}
+
+function collectArrayFromContainer(container) {
+
+	var json = new Array();
+
+	for (var i = 0; i < container.children.length; i++) {
+        var obj = new Object();
+    	obj.file = container.children[i].name;
+    	obj.x = container.children[i].position.x;
+    	obj.y = container.children[i].position.y;
+    	obj.z = container.children[i].position.z;
+    	obj._x = container.children[i].rotation.x;
+    	obj._y = container.children[i].rotation.y;
+    	obj._z = container.children[i].rotation.z;
+    	//TODO: pickup scale and alternative texture location
+        json.push(obj);
+    }
+    return json;
 }
 
 function exportJSON() {
@@ -2593,14 +2678,14 @@ function exportJSON() {
 
     setTimeout(function() {
 
-        zip = new JSZip();
+        var zip = new JSZip();
 
         //zip.file("scene3D.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3D)));
-        zip.file("scene3DHouseContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseContainer)));
-        zip.file("scene3DHouseGroundContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
+        zip.file("scene3DHouseContainer.json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseContainer)));
+        zip.file("scene3DHouseGroundContainer.json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
 
         for (var i = 0; i < scene3DFloorContainer.length; i++) {
-            zip.file("scene3DFloorContainer." + i + ".js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorContainer[i])));
+            zip.file("scene3DFloorContainer." + i + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorContainer[i])));
         }
         //zip.file("scene3DFloorGroundContainer.js", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorGroundContainer)));
 
@@ -2621,20 +2706,23 @@ function exportJSON() {
         });
 
         var textures = zip.folder("Textures");
+
         /*textures.file("house.jpg", imgData, {
         base64: true
-    });
-    */
+    	});
+    	*/
+
         zip.file("ReadMe.txt", "Saved by WebGL HousePlanner. Files can be opened by THREE.js Framework");
 
         var content = zip.generate({
             type: "blob"
         });
+
         /*
-    var content = zip.generate({
-        type: "string"
-    });
-    */
+	    var content = zip.generate({
+	        type: "string"
+	    });
+	    */
         //location.href="data:application/zip;base64," + zip.generate({type:"base64"});
 
         saveAs(content, "scene.zip");
@@ -3545,7 +3633,10 @@ function initMenu(id,item) {
             $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
                 menuItemClick(this);
             });
-        }
+        },
+        error: function(xhr, textStatus, errorThrown){
+			alertify.alert("Menu (" + item + ") Loading Error");
+		}
     });
 
     $("#" + id).show();
@@ -3575,7 +3666,10 @@ function insertSceneObject(path) {
             success: function (data) {
                 //console.log(data.file);
                 path = data.file;
-            }
+            },
+            error: function(xhr, textStatus, errorThrown){
+				alertify.alert("Database Error - 3D Object Not Found");
+			}
         });
     }
 
@@ -3626,9 +3720,9 @@ function showRightObjectMenu(path) {
         dataType: 'json',
         success: function(json){
             var empty = "<div style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</div>";
+            menu.empty();
             try
             {
-                //menu.empty();
                 //var json = JSON.parse(binary.read('string'));
                 $.each(json.menu, function() {
                     if(Object.keys(json.menu).length > 0)
@@ -4070,6 +4164,11 @@ function snaptogrid(object) {
 }
 
 $(document).ready(function() {
+
+    $('.tooltip-save-menu').tooltipster({
+                interactive:true,
+          content: $('<a href="#openLogin" onclick="exportJSONOnline();" class="hi-icon icon-earth38" style="color:white"></a><br/><a href="#openSaving" onclick="exportJSON();" class="hi-icon icon-usb" style="color:white"></a>')
+    });
 
     $('.tooltip').tooltipster({
         animation: 'fade',
