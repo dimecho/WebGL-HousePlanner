@@ -146,7 +146,7 @@
       <div id="loading" style="display:none"></div>
     </form>
     <a href="#">Forgot password?</a><br/>
-    <a href="#">Don't have an account? <strong>Sign Up</strong></a>
+    <a href="#openRegistration">Don't have an account? <strong>Sign Up</strong></a>
 	</div>
 </div>
 
@@ -175,13 +175,16 @@
     </script>
     <br/>
     <form method="post" action="" class="forms">
-      <input type="text" name="name" id="name" placeholder="Name" class="input-field" required />
-
-      <input type="email" name="email" id="email" placeholder="E-mail" class="input-field" required />
-
-      <input type="password" name="password" id="password" placeholder="Password" class="input-field" required />
-
-      <button class="btn-login" id="register">Register</button>
+      <label>
+        <input type="text" name="name" id="name" placeholder="Name" class="width-100" required />
+      </label>
+      <label>
+        <input type="email" name="email" id="email" placeholder="E-mail" class="width-100" required />
+      </label>
+      <label>
+        <input type="password" name="password" id="password" placeholder="Password" class="width-100" required />
+      </label>
+      <button id="register" class="btn-green width-100">Register</button>
       <div id="loading" style="display:none"></div>
     </form>
   </div>
@@ -488,17 +491,19 @@
   <!-- Thumbnail class="ui-widget-content" -->
   <div id="menuTop" style="display:none">
 	  <div style="display:inline-block">
-		  <a href="#openThumb"><img id="_imgHouse" src="images/_house.jpg" height="55" width="100" alt="Property" style="border-radius:5px; border:1px solid;border-color:#000000"/></a>
+		  <a href="#openThumb">
+      <img id="_imgHouse" src="images/_house.jpg" alt="Property" style="width:100px;height:55px;border-radius:5px; border:1px solid;border-color:#000000"/>
+      </a>
     </div>
-  	<div style="display:inline-block;vertical-align:top;width:150px">
+  	<div style="display:inline-block;vertical-align:top;width:160px">
 
           <div style="display:inline-block">
-              <!--
-              <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-              <a id="link-portfolio" href="#info" class="hi-icon icon-info" id="menuTopItem0"></a>
-              </div>
-              -->
-            <a href="#info" id="menuTopItem0"><img src="images/info.svg" width="42" height="42" style="padding-top:5px"/></a>
+            <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+                <a id="link-portfolio" href="#info" class="hi-icon icon-info" id="menuTopItem0"></a>
+            </div>
+            <!--
+            <a href="#info" id="menuTopItem0"><img src="images/info.svg" style="width:42px;height:42px;"/></a>
+            -->
           </div>
           <div style="display:inline-block">
       			MLS#:<br/>
@@ -605,8 +610,8 @@
   -moz-border-radius: 10px;
   border-radius: 10px;
 
-  width: 50px;
-  height: 270px;
+  width: 75px;
+  height: 300px;
   text-align: center;
 
   position:absolute;

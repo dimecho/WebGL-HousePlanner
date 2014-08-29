@@ -3660,6 +3660,8 @@ function initMenu(id,item) {
 			alertify.alert("Menu (" + item + ") Loading Error");
 		}
     });
+    
+    correctMenuHeight();
 
     $("#" + id).show();
     //toggleRight('menuRight', true);
