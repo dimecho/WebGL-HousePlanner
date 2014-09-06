@@ -1,3 +1,12 @@
+body{
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
 .panel{
 	min-width: 100%;
 	height: 98%;
@@ -16,42 +25,4 @@
 .panel:target{
 	margin-top: 0%;
 	background-color: #ffcb00;
-}
-#home:target ~ #header #navigation #link-home,
-#portfolio:target ~ #header #navigation #link-portfolio,
-#about:target ~ #header #navigation #link-about,
-#contact:target ~ #header #navigation #link-contact{
-	background: #000;
-	color: #fff;
-}
-#works {
-	padding: 15px 0px;
-}
-#works li{
-	display: inline;
-}
-#works li a{
-	padding-right: 10px;
-}
-#works img {
-	box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-	padding: 12px; 
-	background: rgba(255,255,255,0.9);
-}
-#form p{
-	background: #fff;
-	color: #000;
-}
-#form input, #form textarea{
-	background: #000;
-	color: #fff;
-	border: none;
-}
-#form textarea{
-	width: 493px;
-	height: 100px;
-}
-#form label{
-	padding-right: 10px;
-	float: left;
 }
