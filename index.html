@@ -37,7 +37,8 @@
   http://fontello.com 
   http://www.flaticon.com
   -->
-  <link rel="stylesheet" type="text/css" href="font/style.css">
+  <link rel="stylesheet" type="text/css" href="css/kube.css" />
+  <link rel="stylesheet" type="text/css" href="font/style.css" />
   <link rel="stylesheet" type="text/css" href="css/houseplanner.css"/>
 
   <script id="vs" type="x-shader/x-vertex">
@@ -468,7 +469,7 @@
       <img id="_imgHouse" src="images/_house.jpg" alt="Property" style="width:100px;height:55px;border-radius:5px; border:1px solid;border-color:#000000"/>
       </a>
     </div>
-  	<div style="display:inline-block;vertical-align:top;width:160px">
+  	<div style="display:inline-block;vertical-align:top;width:180px">
 
           <div style="display:inline-block">
             <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
@@ -519,7 +520,7 @@
     </div>
   </div>
   
-   <div id="menuBottom" style="display:none">
+  <div id="menuBottom" class="hi-icon-effect-1 hi-icon-effect-1a" style="display:none">
     <div id="menuWebGLSettings">
       <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
     </div>
@@ -667,45 +668,6 @@
   -moz-border-radius:15px;
   border-radius:15px;
 }
-
-.ruler, .ruler li {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: inline-block;
-}
-/* IE6-7 Fix */
-.ruler, .ruler li {
-    *display: inline;
-}
-.ruler {
-  background: #fff;
-  border-radius: 2px;
-  color: #8b8b8b;
-  margin: 0;
-  height: 2em;
-  padding-right: 20px;
-  white-space: nowrap;
-  font-size:9px;
-  position: absolute;
-  top:80px;
-  left:150px;
-}
-.ruler li {
-    padding-left: 30px;
-    width: 2em;
-    margin: .64em -1em -.64em;
-    text-align: center;
-    position: relative;
-}
-.ruler li:before {
-    content: '';
-    position: absolute;
-    border-left: 1px solid #c1bfbf;
-    height: .64em;
-    top: -.64em;
-    right: 1em;
-}
 </style>
 
 <form action="" method="post" enctype="multipart/form-data" id="uploadForm" style="display:none">
@@ -729,7 +691,6 @@
   </div>
 </div>
 <div id="HTMLCanvas" style="display:none">
-  <div id="ruler" class="ruler" data-items=''></div>
   <a href="#" onclick="exportPDF()" id="printPDF" class="hi-icon icon-print tooltip" title="Print PDF" style="color:#474747"></a>
   <div id="menuWallInput">
     <div id="links-left" style="width:100px;">
