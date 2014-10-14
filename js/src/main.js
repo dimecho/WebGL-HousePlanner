@@ -291,7 +291,7 @@ function init(runmode,viewmode) {
         selectable: false,
         opacity: 0.2
     }));
-
+    /*
     for (var x = 0; x <= scene2D.getWidth(); x += 25) {
         scene2D.add(new fabric.Line([x, 0, x, scene2D.getWidth()], {
             stroke: "#6dcff6",
@@ -306,6 +306,32 @@ function init(runmode,viewmode) {
             //strokeDashArray: [5, 5]
         }));
     }
+	*/
+    var grid = 40;
+    // create grid
+    for (var i = 0; i < (scene2D.getWidth() / grid); i++) {
+        scene2D.add(new fabric.Line([i * grid, 0, i * grid, scene2D.getWidth()], {
+            stroke: "#6dcff6",
+            strokeWidth: 1,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        }));
+        scene2D.add(new fabric.Line([0, i * grid, scene2D.getWidth(), i * grid], {
+            stroke: "#6dcff6",
+            strokeWidth: 1,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        }));
+    }
+    //snap to grid
+    
+    scene2D.on('object:moving', function (options) {
+        options.target.set({
+            left: Math.round(options.target.left / grid) * grid,
+            top: Math.round(options.target.top / grid) * grid
+        });
+    });
+	
     //================================
 
     scene3DWallTexture = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/C0001.jpg');
@@ -1241,6 +1267,31 @@ function initObjectCollisions(container) {
 }
 */
 
+function scene2DZoom() {
+
+    /*
+    http://jsfiddle.net/Q3TMA/
+    http://jsfiddle.net/butch2k/kVukT/37/
+    */
+
+    var SCALE_FACTOR = 1;
+    var prev_zoom = SCALE_FACTOR;
+                
+    scene2D.setHeight(scene2D.getHeight() * SCALE_FACTOR);
+    scene2D.setWidth(scene2D.getWidth() * SCALE_FACTOR);
+    scene2D.calcOffset();              
+    
+    var objects = scene2D.getObjects();
+    (jQuery).each(objects,function(i,obj){
+        obj.scaleX=obj.scaleX/prev_zoom*SCALE_FACTOR;
+        obj.scaleY=obj.scaleY/prev_zoom*SCALE_FACTOR;
+        obj.left=obj.left/prev_zoom*SCALE_FACTOR;
+        obj.top=obj.top/prev_zoom*SCALE_FACTOR;
+        obj.setCoords();
+    });
+    scene2D.renderAll();
+}
+
 function show2D() {
 
     SCENE = '2d';
@@ -1585,7 +1636,8 @@ function onDocumentDoubleClick(event) {
         //if (new Date().getTime() - 150 < clickTime) { //Set pivot-point to clicked coordinates
 
         vector = new THREE.Vector3(x, y, 0.5);
-        projector.unprojectVector(vector, camera3D);
+        //projector.unprojectVector(vector, camera3D);
+        vector.unproject(camera3D);
         var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
         var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
 
@@ -2090,7 +2142,8 @@ function on3DMouseMove(event) {
         if (TOOL3DINTERACTIVE == 'moveXY') {
 
             vector = new THREE.Vector3(x, y, 0.5);
-            projector.unprojectVector(vector, camera3D);
+            //projector.unprojectVector(vector, camera3D);
+            vector.unproject(camera3D);
             var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
             var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
             //var ray = new THREE.Ray(camera3D.position, vector.sub(camera3D.position).normalize());
@@ -2482,8 +2535,10 @@ function scene3DObjectSelectMenu(x, y) {
     var percX, percY
 
     // projectVector will translate position to 2d
-    vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
-
+    //vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
+    vector = vector.setFromMatrixPosition(SELECTED.matrixWorld); //vector will give us position relative to the world
+    vector.project(camera3D); //vector will give us position relative to the world
+    
     // translate our vector so that percX=0 represents the left edge, percX=1 is the right edge, percY=0 is the top edge, and percY=1 is the bottom edge.
     percX = (vector.x + 1) / 2;
     percY = (-vector.y + 1) / 2;
@@ -2537,7 +2592,8 @@ function scene3DObjectSelect(x, y, camera) {
 
     vector = new THREE.Vector3(x, y, 0.5);
     //var projector = new THREE.Projector();
-    projector.unprojectVector(vector, camera);
+    //projector.unprojectVector(vector, camera);
+    vector.unproject(camera);
     var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
     var intersects;
     //var raycaster = projector.pickingRay(vector.clone(), camera3D);
