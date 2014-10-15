@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8"/>
   <title>WebGL HousePlanner 3D</title>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
 
   <script type="text/javascript" src="js/jquery.js?v=2.1.1"></script>
   <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
@@ -566,9 +567,8 @@
     font-size: 20px;
     cursor:help;
 }
-#WebGLInteractiveMenu {
+#WebGLWallPaintMenu, #WebGLTextureSelect {
   display: none;
-
   background: #fff;
 
   background: -moz-linear-gradient(#fff, #999);
@@ -584,13 +584,11 @@
   -moz-border-radius: 10px;
   border-radius: 10px;
 
+  text-align: center;
+  position:absolute;
+
   width: 75px;
   height: 300px;
-  text-align: center;
-
-  position:absolute;
-  top:500px;
-  left:300px;
 }
 
 #menuFloorSelector
@@ -604,70 +602,6 @@
   font-size: 20px;
   z-index:10;
 }
-
-/* ================================
-   OVAL THOUGHT BUBBLE
-** ================================ */
-
-.oval-thought {
-  position:absolute;
-  top:0px;
-  left:150px;
-
-  width:300px;
-  padding:5px 4px;
-  /*margin:1em auto 80px;*/
-  text-align:center;
-  color:#fff;
-  background:#075698;
-  /* css3 */
-  background:-webkit-gradient(linear, 0 0, 0 100%, from(#2e88c4), to(#075698));
-  background:-moz-linear-gradient(#2e88c4, #075698);
-  background:-o-linear-gradient(#2e88c4, #075698);
-  background:linear-gradient(#2e88c4, #075698);
-  /*
-  NOTES:
-  -webkit-border-radius:220px 120px; // produces oval in safari 4 and chrome 4
-  -webkit-border-radius:220px / 120px; // produces oval in chrome 4 (again!) but not supported in safari 4
-  Not correct application of the current spec, therefore, using longhand to avoid future problems with webkit corrects this
-  */
-  -webkit-border-top-left-radius:220px 80px;
-  -webkit-border-top-right-radius:220px 80px;
-  -webkit-border-bottom-right-radius:220px 80px;
-  -webkit-border-bottom-left-radius:220px 80px;
-  -moz-border-radius:220px / 80px;
-  border-radius:220px / 80px;
-}
-
-/* creates the larger circle */
-.oval-thought:before {
-  content:"";
-  position:absolute;
-  bottom:-40px;
-  left:50px;
-  width:30px;
-  height:30px;
-  background:#075698;
-  /* css3 */
-  -webkit-border-radius:30px;
-  -moz-border-radius:30px;
-  border-radius:30px;
-}
-
-/* creates the smaller circle */
-.oval-thought:after {
-  content:"";
-  position:absolute;
-  bottom:-50px;
-  left:30px;
-  width:15px;
-  height:15px;
-  background:#075698;
-  /* css3 */
-  -webkit-border-radius:15px;
-  -moz-border-radius:15px;
-  border-radius:15px;
-}
 </style>
 
 <form action="" method="post" enctype="multipart/form-data" id="uploadForm" style="display:none">
@@ -677,7 +611,9 @@
 <div id="WebGLCanvas" style="display:none">
   <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
   <div id="WebGLInteractiveMenu">
-    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;" >
+    <!--<div id="rotateSelector"></div>-->
+    <!--
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding:0px">
         <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
         <a href="#" onclick="menuSelect(1,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveZ'" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem1"></a>
         <a href="#" onclick="menuSelect(2,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='rotate'" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem2"></a>
@@ -685,9 +621,16 @@
         <a href="#" onclick="" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem4"></a>
         <a href="#" onclick="scene3DObjectSelectRemove()" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem5"></a>
     </div>
-    <blockquote id="WebGLInteractiveMenuText" class="oval-thought">
-      <p>Object Textures</p>
-    </blockquote>
+    -->
+  </div>
+  <div id="WebGLWallPaintMenu" style="width:75px;height:140px;">
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding:0px">
+      <a href="#" onclick="menuSelect(0,'menuWallItem','#ff3700');" class="hi-icon icon-paint tooltip" title="Textures" id="menuWallItem0"></a>
+      <a href="#" onclick="" onclick="menuSelect(1,'menuWallItem','#ff3700');" class="hi-icon icon-brush tooltip" title="Color" id="menuWallItem1"></a>
+    </div>
+  </div>
+  <div id="WebGLTextureSelect" style="width:400px;height:140px;">
+   <p>Object Textures</p>
   </div>
 </div>
 <div id="HTMLCanvas" style="display:none">

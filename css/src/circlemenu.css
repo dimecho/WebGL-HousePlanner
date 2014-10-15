@@ -1,0 +1,84 @@
+/* https://dl.dropboxusercontent.com/u/7861689/CSS%20experiments/Circular%20Menu/index.html */
+
+.rect{
+  display: block;
+  float:left;
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  background-repeat: no-repeat;
+  background-position: left -40px;
+  cursor: pointer;
+
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+
+  background-color: #dadada;
+
+  transition: all 0.5s ease-in-out;
+  -webkit-transition: all 0.5s ease-in-out;
+  -moz-transition: all 0.5s ease-in-out;
+  -o-transition: all 0.5s ease-in-out;
+
+  
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+
+.rect:hover{
+  -webkit-box-shadow: 0px 0px 4px rgba(204,204,204,1);
+  background-color: #c5c5c5;
+  background-position: 0 0;
+  transition: all 0.4s ease-in-out;
+  -webkit-transition: all 0.5s ease-in-out;
+  transform: scale(2,2);
+}
+
+.rect.active{
+  background-position: 0 -80px;
+  background-color: #32dc0a;
+
+  box-shadow: 0 0 6px #25f40f;
+  -webkit-box-shadow: 0 0 6px #25f40f;
+  -moz-box-shadow: 0 0 6px #25f40f;
+  -o-box-shadow: 0 0 6px #25f40f;
+
+
+  -webkit-transition: none;
+  transition: none;
+  -moz-transition: none;
+  -o-transition: none;
+
+}
+
+#WebGLInteractiveMenu{
+  display: block;
+  width: 240px;
+  height: 240px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -120px;
+  margin-top: -120px;
+  
+  background-image: url(../images/circle-m.png);
+}
+
+#rotateSelector{
+  display: block;
+  width: 140px;
+  height: 140px;
+  position: absolute;
+  top: 34px;
+  left: 34px;
+
+  background-image: url(../images/central_part_selector.png);
+  z-index: 2;
+
+  transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.25s ease-in-out;
+  -moz-transition: all 0.25s ease-in-out;
+  -o-transition: all 0.25s ease-in-out;
+}

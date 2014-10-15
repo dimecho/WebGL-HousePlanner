@@ -89,7 +89,8 @@ var WEATHER = 'sunny';
 var DAY = 'day';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
-var SELECTED;
+var SELECTEDOBJECT;
+var SELECTEDWALL;
 
 var leftButtonDown = false;
 var clickTime;
@@ -1075,8 +1076,11 @@ function show3DHouse() {
     //initObjectCollisions(scene3DHouseContainer);
 
     //$(renderer.domElement).bind('mousemove', on3DMouseMove);
-    $(renderer.domElement).bind('mousedown', on3DMouseDown);
-    $(renderer.domElement).bind('mouseup', on3DMouseUp);
+    //$(renderer.domElement).bind('mousedown', on3DMouseDown);
+    //$(renderer.domElement).bind('mouseup', on3DMouseUp);
+
+    $(renderer.domElement).bind('mousedown', on3DHouseMouseDown);
+    $(renderer.domElement).bind('mouseup', on3DHouseMouseUp);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
     if (TOOL3DINTERACTIVE == 'moveXY') {
@@ -1165,8 +1169,11 @@ function show3DFloor() {
     scene3DCube.add(scene3DCubeMesh);
 
     //$(renderer.domElement).bind('mousemove', on3DMouseMove);
-    $(renderer.domElement).bind('mousedown', on3DMouseDown);
-    $(renderer.domElement).bind('mouseup', on3DMouseUp);
+    //$(renderer.domElement).bind('mousedown', on3DMouseDown);
+    //$(renderer.domElement).bind('mouseup', on3DMouseUp);
+
+    $(renderer.domElement).bind('mousedown', on3DFloorMouseDown);
+    $(renderer.domElement).bind('mouseup', on3DFloorMouseUp);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
     //scene3DFloorContainer[0].traverse;
@@ -1368,13 +1375,16 @@ function hideElements() {
 
     scene3DCube.remove(scene3DCubeMesh);
 
-    $(renderer.domElement).unbind('mousedown', on3DMouseDown);
-    $(renderer.domElement).unbind('mouseup', on3DMouseUp);
+    //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
+    //$(renderer.domElement).unbind('mouseup', on3DMouseUp);
     $(renderer.domElement).unbind('dblclick', onDocumentDoubleClick);
 
+    $(renderer.domElement).unbind('mousedown', on3DHouseMouseDown);
+    $(renderer.domElement).unbind('mouseup', on3DHouseMouseUp);
+    $(renderer.domElement).unbind('mousedown', on3DFloorMouseDown);
+    $(renderer.domElement).unbind('mouseup', on3DFloorMouseUp);
     $(renderer.domElement).unbind('mousedown', on3DLandscapeMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DLandscapeMouseUp);
-
 
     $('#HTMLCanvas').hide();
     $('#WebGLCanvas').hide();
@@ -1383,7 +1393,6 @@ function hideElements() {
     $('#menuLeft3DLandscape').hide();
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
-
 
     $('#menuRight3DHouse').hide();
     $('#menuRight3DFloor').hide();
@@ -1710,6 +1719,26 @@ function on2DMouseDown(event) {
 
     $("#menuWallInput").hide(); //TODO: analyze and store input
 
+    //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
+    //===================================
+    /*
+        vector = new THREE.Vector3(x, y, 0.5);
+        projector = new THREE.Projector();
+        projector.unprojectVector(vector, camera2D);
+        var dir = vector.sub(camera2D.position).normalize();
+        var distance = -camera2D.position.z / dir.z;
+        var pos = camera2D.position.clone().add(dir.multiplyScalar(distance));
+    */
+
+    /*
+    var planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 0.5), 0);
+    vector = new THREE.Vector3(x, y, 0.5);
+    var raycaster = projector.pickingRay(vector, camera2D);
+    var pos = raycaster.ray.intersectPlane(planeZ);
+    //console.log("x: " + pos.x + ", y: " + pos.y);
+    //===================================
+
+    //TODO: Make eye-candy sketcher effects from mrdoob.com/projects/harmony/
 
     //scene2DDrawLineGeometry.length = 0; //reset
 
@@ -1721,7 +1750,7 @@ function on2DMouseDown(event) {
             x: event.clientX,
             y: event.clientY
         });
-		*/
+	*/
 
     /*
         scene2DDrawLine = new Kinetic.Line({
@@ -1731,7 +1760,7 @@ function on2DMouseDown(event) {
             lineCap: 'round',
             lineJoin: 'round'
         });
-        */
+    */
     /*
         scene2DDrawLine = new fabric.Line(scene2DDrawLineGeometry, {
             stroke: "#000",
@@ -1739,7 +1768,8 @@ function on2DMouseDown(event) {
             selectable: false,
             //strokeDashArray: [5, 5]
         });
-		*/
+	*/
+
     //scene2DFloorContainer[FLOOR].add(scene2DDrawLine); //layer add line
 
     //} else if (TOOL2D == 'vector') {
@@ -2026,9 +2056,8 @@ function on2DMouseMove(event) {
             );
             scene2D.add(line);
         }
-        */
+    */
     //scene2D.renderAll();
-
 
     //scene2DDrawLineGeometry.push(scene2D.getPointerPosition());
 
@@ -2076,6 +2105,59 @@ function on3DLandscapeMouseUp(event) {
     controls3D.enabled = true;
 }
 
+function on3DHouseMouseDown(event) {
+	on3DMouseDown(event);
+
+    if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
+    {
+            //Focus on 3D object
+
+            //camera3D.fov = currentFov.fov;
+            //camera3D.lookAt(intersects[0].object.position);
+            //camera3D.updateProjectionMatrix();
+
+            /*
+            var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
+            var newQuaternion = new THREE.Quaternion();
+            THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
+            camera3D.quaternion = newQuaternion;
+            camera3D.quaternion.normalize();
+            scene3D.updateMatrixWorld();
+            */
+
+            //Reset camera?
+            //var vector = new THREE.Vector3( 1, 0, 0 ); 
+            //vector.applyQuaternion( quaternion );
+
+            //scene3DObjectSelectMenu(mouse.x, mouse.y);
+
+            //$('#WebGLInteractiveMenu').show();
+
+    } else {
+        scene3D.add(scene3DPivotPoint);
+    }
+}
+
+function on3DHouseMouseUp(event) {
+	on3DMouseUp(event);
+}
+
+function on3DFloorMouseDown(event) {
+	on3DMouseDown(event);
+
+    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorContainer[FLOOR].children))
+    {
+        if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
+        {
+            scene3D.add(scene3DPivotPoint);
+        }
+    }
+}
+
+function on3DFloorMouseUp(event) {
+	on3DMouseUp(event);
+}
+
 function on3DMouseMove(event) {
 
     event.preventDefault();
@@ -2092,52 +2174,13 @@ function on3DMouseMove(event) {
     	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
 	}
 
-    //if (SCENE == '2d') {
-
-    //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
-    //===================================
-    /*
-        vector = new THREE.Vector3(x, y, 0.5);
-        projector = new THREE.Projector();
-        projector.unprojectVector(vector, camera2D);
-        var dir = vector.sub(camera2D.position).normalize();
-        var distance = -camera2D.position.z / dir.z;
-        var pos = camera2D.position.clone().add(dir.multiplyScalar(distance));
-    */
-    /*
-        var planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 0.5), 0);
-        vector = new THREE.Vector3(x, y, 0.5);
-        var raycaster = projector.pickingRay(vector, camera2D);
-        var pos = raycaster.ray.intersectPlane(planeZ);
-        //console.log("x: " + pos.x + ", y: " + pos.y);
-        //===================================
-
-            //TODO: Make eye-candy sketcher effects from mrdoob.com/projects/harmony/
-
-            if (mouse.x != 0 && mouse.y != 0) {
-
-                geometry = new THREE.Geometry();
-                geometry.vertices.push(new THREE.Vector3(mouse.x, mouse.y, 0.5));
-                geometry.vertices.push(new THREE.Vector3(pos.x, pos.y, 0.5));
-                //scene2DDrawLineGeometry.vertices.push(new THREE.Vector3(x, y, 0.5));
-                //scene2DDrawLineGeometry.computeLineDistances(); //what is this?
-                scene2DDrawLineGeometry.merge(geometry);
-
-                scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
-                //scene2DDrawLineContainer.add(scene2DDrawLine);
-                scene2D.add(scene2DDrawLineContainer);
-            }
-            mouse.x = pos.x;
-            mouse.y = pos.y;
-        */
-    //} else {
-
-    if (SELECTED != null) {
+    if (SELECTEDOBJECT != null) {
 
         var x = (event.clientX / window.innerWidth) * 2 - 1;
         var y = -(event.clientY / window.innerHeight) * 2 + 1;
 
         $('#WebGLInteractiveMenu').hide();
+        $('#WebGLTextureSelect').hide();
 
         if (TOOL3DINTERACTIVE == 'moveXY') {
 
@@ -2165,27 +2208,27 @@ function on3DMouseMove(event) {
 
 	            // ===== SIMPLE COLLISION DETECTION ======
             	//http://stackoverflow.com/questions/11418762/how-to-detect-collisions-between-a-cube-and-sphere-in-three-js
-            	var futurePosition = new THREE.Vector3(intersects[0].point.x,SELECTED.position.y,intersects[0].point.z);
+            	var futurePosition = new THREE.Vector3(intersects[0].point.x,SELECTEDOBJECT.position.y,intersects[0].point.z);
             	var collision = false;
             	for (var i = 0,len = collisionContainer.children.length; i < len; i++) {
 
             		var distance = futurePosition.distanceToSquared(collisionContainer.children[i].position);
 
-            		if (collisionContainer.children[i].name != SELECTED.name && distance < 1)
+            		if (collisionContainer.children[i].name != SELECTEDOBJECT.name && distance < 1)
             		{
             			//console.log(collisionContainer.children[i].name);
             			collision = true;
             			break;
             		}
-            		//console.log(SELECTED.position.distanceToSquared(collisionContainer.children[i].position));
+            		//console.log(SELECTEDOBJECT.position.distanceToSquared(collisionContainer.children[i].position));
         		}
         		collisionContainer = null;
         		// =======================================
         		if (!collision)
         		{
                 	//console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
-                	SELECTED.position.x = intersects[0].point.x;
-                	SELECTED.position.z = intersects[0].point.z;
+                	SELECTEDOBJECT.position.x = intersects[0].point.x;
+                	SELECTEDOBJECT.position.z = intersects[0].point.z;
             	}
             }
 
@@ -2246,20 +2289,20 @@ function on3DMouseMove(event) {
 
         } else if (TOOL3DINTERACTIVE == 'moveZ') {
 
-            if (SELECTED.position.y >= 0) {
+            if (SELECTEDOBJECT.position.y >= 0) {
 
                 if (mouse.y >= y && y > 0) {
 
-                    SELECTED.position.y -= y;
+                    SELECTEDOBJECT.position.y -= y;
 
                 } else {
 
-                    SELECTED.position.y += y;
+                    SELECTEDOBJECT.position.y += y;
                 }
 
                 //SELECTED.position.y = y;
             } else {
-                SELECTED.position.y = 0;
+                SELECTEDOBJECT.position.y = 0;
             }
 
         } else if (TOOL3DINTERACTIVE == 'rotate') {
@@ -2269,9 +2312,9 @@ function on3DMouseMove(event) {
             //SELECTED.rotation.z += x; // * Math.PI / 180;
 
             if (mouse.x >= x && x > 0) {
-                SELECTED.rotation.y += x / 4;
+                SELECTEDOBJECT.rotation.y += x / 4;
             } else {
-                SELECTED.rotation.y -= x / 4;
+                SELECTEDOBJECT.rotation.y -= x / 4;
             }
             //var axis = new THREE.Vector3(x, y, 0);
             //SELECTED.rotateOnAxis(axis, 0);
@@ -2316,7 +2359,6 @@ function on3DMouseMove(event) {
             //container.style.cursor = 'auto';
         }
         */
-
 }
 
 function on3DMouseDown(event) {
@@ -2331,41 +2373,9 @@ function on3DMouseDown(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-
     AUTOROTATE = false;
 
     //renderer.antialias = false;
-
-    //console.log("Mouse Down " + mouse.x + ":" + mouse.x + " " + event.clientX + "|" + window.innerWidth + ":" + event.clientY + "|" + window.innerHeight + " -> " + camera3D.position.z);
-    if (scene3DObjectSelect(mouse.x, mouse.y, camera3D)) {
-
-        //Focus on 3D object
-
-        //camera3D.fov = currentFov.fov;
-        //camera3D.lookAt(intersects[0].object.position);
-        //camera3D.updateProjectionMatrix();
-
-        /*
-                var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
-                var newQuaternion = new THREE.Quaternion();
-                THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
-                camera3D.quaternion = newQuaternion;
-                camera3D.quaternion.normalize();
-                scene3D.updateMatrixWorld();
-                */
-
-        //Reset camera?
-        //var vector = new THREE.Vector3( 1, 0, 0 ); 
-        //vector.applyQuaternion( quaternion );
-
-        scene3DObjectSelectMenu(mouse.x, mouse.y);
-
-        $('#WebGLInteractiveMenu').show();
-
-    } else {
-        $('#WebGLInteractiveMenu').hide();
-        scene3D.add(scene3DPivotPoint);
-    }
 
     clickTime = setTimeout(function() {
         if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
@@ -2388,7 +2398,6 @@ function on3DMouseDown(event) {
 function on3DMouseUp(event) {
 
     event.preventDefault();
-
     if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
 
     $(renderer.domElement).unbind('mousemove', on3DMouseMove);
@@ -2492,9 +2501,7 @@ function on3DMouseUp(event) {
 
     clearTimeout(clickTime); //prevents from hiding menus too fast
 
-    if (SELECTED != null) { //Restore menu after MouseMove
-        scene3DObjectSelectMenu(mouse.x, mouse.y);
-
+    if (SELECTEDOBJECT != null) { //Restore menu after MouseMove
         $('#WebGLInteractiveMenu').show();
     }
 
@@ -2519,15 +2526,15 @@ function on3DMouseUp(event) {
 function scene3DObjectSelectRemove() {
 
     if (SCENE == 'house') {
-        scene3DHouseContainer.remove(SELECTED);
+        scene3DHouseContainer.remove(SELECTEDOBJECT);
     } else if (SCENE == 'floor') {
-        scene3DFloorContainer[FLOOR].remove(SELECTED);
+        scene3DFloorContainer[FLOOR].remove(SELECTEDOBJECT);
     }
-
-    $('#WebGLInteractiveMenu').hide();
+    
+    scene3DObjectUnselect();
 }
 
-function scene3DObjectSelectMenu(x, y) {
+function scene3DObjectSelectMenu(x, y, menuID) {
 
     //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
     vector = new THREE.Vector3(x, y, 0.5);
@@ -2536,7 +2543,14 @@ function scene3DObjectSelectMenu(x, y) {
 
     // projectVector will translate position to 2d
     //vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
-    vector = vector.setFromMatrixPosition(SELECTED.matrixWorld); //vector will give us position relative to the world
+    if (SELECTEDOBJECT != null)
+    {
+    	vector = vector.setFromMatrixPosition(SELECTEDOBJECT.matrixWorld);
+	}
+	else if (SELECTEDWALL != null)
+	{
+		vector = vector.setFromMatrixPosition(SELECTEDWALL.matrixWorld);
+	}
     vector.project(camera3D); //vector will give us position relative to the world
     
     // translate our vector so that percX=0 represents the left edge, percX=1 is the right edge, percY=0 is the top edge, and percY=1 is the bottom edge.
@@ -2544,10 +2558,29 @@ function scene3DObjectSelectMenu(x, y) {
     percY = (-vector.y + 1) / 2;
 
     // scale these values to our viewport size
-    vector.x = percX * window.innerWidth - $('#WebGLInteractiveMenu').width() * 2;
-    vector.y = percY * window.innerHeight - $('#WebGLInteractiveMenu').height(); // / 2;
+    vector.x = percX * window.innerWidth; // - $(menuID).width(); // * 2;
+    vector.y = percY * window.innerHeight; //- $(menuID).height() / 2;
 
-    $('#WebGLInteractiveMenu').css('top', vector.y).css('left', vector.x);
+    $(menuID).css('top', vector.y).css('left', vector.x);
+    $(menuID).show();
+
+    if (SELECTEDOBJECT != null)
+    {
+        //$('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()-60).css('left', vector.x - $('#WebGLTextureSelect').width()/2);
+        //$('#WebGLTextureSelect').show();
+
+        $('#WebGLInteractiveMenu').bind('mousemove', on3DMouseMove);
+        $('#WebGLInteractiveMenu').bind('mousedown', on3DMouseDown);
+        $('#WebGLInteractiveMenu').bind('mouseup', on3DMouseUp);
+    }
+    else if (SELECTEDWALL != null)
+    {
+        $('#WebGLTextureSelect').css('top', vector.y).css('left', vector.x + $(menuID).width() + 30);
+        $('#WebGLTextureSelect').show();
+    }
+
+    //$('#WebGLWalPaintMenu').css('top', vector.y).css('left', vector.x);
+    //$('#WebGLWallPaintMenu').show();
 
     /*
 	var mesh = THREE.SceneUtils.createMultiMaterialObject( geometry, [
@@ -2588,18 +2621,19 @@ function scene3DObjectSelectMenu(x, y) {
     //$('#WebGLInteractiveMenu').show();
 }
 
-function scene3DObjectSelect(x, y, camera) {
+function scene3DObjectSelect(x, y, camera, children) {
 
     vector = new THREE.Vector3(x, y, 0.5);
     //var projector = new THREE.Projector();
     //projector.unprojectVector(vector, camera);
     vector.unproject(camera);
     var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-    var intersects;
+    var intersects = raycaster.intersectObjects(children);
     //var raycaster = projector.pickingRay(vector.clone(), camera3D);
     //if (scene3DHouseContainer instanceof THREE.Object3D) {
 
     //TODO: Find better way of detection - avoiding variable store
+    /*
     if (SCENE == 'house') {
         intersects = raycaster.intersectObjects(scene3DHouseContainer.children);
     } else if (SCENE == 'floor') {
@@ -2607,6 +2641,7 @@ function scene3DObjectSelect(x, y, camera) {
     } else {
         return;
     }
+	*/
 
     // INTERSECTED = the object in the scene currently closest to the camera 
     // and intersected by the Ray projected from the mouse position
@@ -2615,22 +2650,31 @@ function scene3DObjectSelect(x, y, camera) {
         //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
         controls3D.enabled = false;
 
-        if (SELECTED != intersects[0].object) {
+        //if (SELECTEDOBJECT != intersects[0].object){
+            if (children == scene3DHouseContainer.children || children == scene3DFloorContainer[FLOOR].children)
+            {
+            	scene3DObjectUnselect(); //avoid showing multiple selected objects
 
-            scene3DObjectUnselect(); //avoid showing multiple selected objects
+            	SELECTEDOBJECT = intersects[0].object;
 
-            SELECTED = intersects[0].object;
+                scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
 
-            //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
-            glowMesh = new THREEx.GeometricGlowMesh(SELECTED);
-            SELECTED.add(glowMesh.object3d);
+                //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
+            	glowMesh = new THREEx.GeometricGlowMesh(SELECTEDOBJECT);
+            	SELECTEDOBJECT.add(glowMesh.object3d);
+            }
+            else if (children == scene3DFloorWallContainer[FLOOR].children)
+            {
+            	SELECTEDWALL = intersects[0].object;
+                scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLWallPaintMenu');
+            }
 
             // example of customization of the default glowMesh
             //var insideUniforms = glowMesh.insideMesh.material.uniforms;
             //insideUniforms.glowColor.value.set('hotpink');
             //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
             //outsideUniforms.glowColor.value.set('hotpink');
-        }
+        //}
         return true;
     } else {
         scene3DObjectUnselect();
@@ -2641,13 +2685,20 @@ function scene3DObjectSelect(x, y, camera) {
 
 function scene3DObjectUnselect() {
 
-    if (SELECTED != null && glowMesh instanceof THREEx.GeometricGlowMesh) {
-        SELECTED.remove(glowMesh.object3d);
+    if (SELECTEDOBJECT != null && glowMesh instanceof THREEx.GeometricGlowMesh) {
+        SELECTEDOBJECT.remove(glowMesh.object3d);
     }
 
-    SELECTED = null;
+    SELECTEDOBJECT = null;
+    SELECTEDWALL = null;
+
+    $('#WebGLInteractiveMenu').unbind('mousemove', on3DMouseMove);
+    $('#WebGLInteractiveMenu').unbind('mousedown', on3DMouseDown);
+    $('#WebGLInteractiveMenu').unbind('mouseup', on3DMouseUp);
 
     $('#WebGLInteractiveMenu').hide();
+    $('#WebGLWallPaintMenu').hide();
+    $('#WebGLTextureSelect').hide();
 }
 
 function exportPDF() {
@@ -4259,6 +4310,66 @@ function snaptogrid(object) {
 }
 
 $(document).ready(function() {
+
+    /* https://dribbble.com/shots/872582-Circular-Menu */
+    /*
+    var sprites = [
+    { "size"        : 64},
+    { "arraySize"   : 5 }, 
+    { "path1"       : ""}, 
+    { "firstName"   : "Peter" , "lastName" : "Jones" }, ];
+    */
+
+    var numberOfIcons = 8;
+    var offsetAngleDegress = 360/numberOfIcons;
+    var offsetAngle = offsetAngleDegress * Math.PI / 180;
+    var circleOffset = $("#WebGLInteractiveMenu").width()/2;
+    var tooltips = ["Move Horizontaly", "Info", "Duplicate", "Resize", "Textures", "Rotate", "Remove", "Move Vertically"];
+    var actions = ["TOOL3DINTERACTIVE='moveXY'", "", "", "TOOL3DINTERACTIVE='resize'", "Textures", "TOOL3DINTERACTIVE='rotate'", "scene3DObjectSelectRemove()", "TOOL3DINTERACTIVE='moveZ'"];
+
+    //We need to get size of the object, which is currently isn't on page.
+    //So we gonna create a dummy, read everything we need and then delete it.
+
+    var $d = $("<div class='rect'></div>").hide().appendTo("body");
+    var iconOffset = $(".rect").width()/2;
+    $d.remove();
+
+    for(var i=0; i<numberOfIcons; i++)
+    {
+        var index = i+1;
+      
+        $("#WebGLInteractiveMenu").append('<div class="rect tooltip-top" title="' + tooltips[i] + '" id="icn'+ index +'" onclick="' + actions[i] + '"></div>');
+       
+        var x = Math.cos((offsetAngle * i) - (Math.PI/2));
+        var y = Math.sin((-offsetAngle * i)+ (Math.PI/2));
+        //console.log(offsetAngle *i * 180/Math.PI,x, y);
+
+        var dX = (circleOffset * x) + circleOffset - iconOffset;
+        var dY = (circleOffset * y) + circleOffset - iconOffset;
+
+        //console.log(circleOffset+iconOffset);
+        
+        $("#icn" + index).css({"background-image" : 'url("images/hicn' + index + '.png")',"left":dX,"bottom":dY});
+
+        //console.log('url("icn' + index + '.png")');
+    }
+
+    $("#icn1").addClass("active");
+
+    // add click handler to all circles
+    $('.rect').click(function(event)
+    {
+        event.preventDefault();
+        $('.active').removeClass("active");
+        $(this).addClass("active");
+
+        var a = (Number($(this).attr("id").substr(3))-1)*offsetAngleDegress;
+        /* $('#rotateSelector').css({"transform":"rotate(" + a + "deg)", "-webkit-transform":"rotate(" + a + "deg)"}); */
+        /* $('#rotateSelector').css({"transform":"rotate3d(0, 0, 1, " + a + "deg)", "-webkit-transform":"rotate3d(0, 0, 1, " + a + "deg)", "-o-transform":"rotate(" + a + "deg)", "-moz-transform":"rotate3d(0, 0, 1, " + a + "deg)"}); */
+        
+        //console.log(a); 
+    });
+    //=====================================
 
     $('.tooltip-share-menu').tooltipster({
         interactive:true,
