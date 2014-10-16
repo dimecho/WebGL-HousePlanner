@@ -567,7 +567,7 @@
     font-size: 20px;
     cursor:help;
 }
-#WebGLWallPaintMenu, #WebGLTextureSelect {
+#WebGLTextureSelect {
   display: none;
   background: #fff;
 
@@ -623,14 +623,22 @@
     </div>
     -->
   </div>
-  <div id="WebGLWallPaintMenu" style="width:75px;height:140px;">
-    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding:0px">
-      <a href="#" onclick="menuSelect(0,'menuWallItem','#ff3700');" class="hi-icon icon-paint tooltip" title="Textures" id="menuWallItem0"></a>
-      <a href="#" onclick="" onclick="menuSelect(1,'menuWallItem','#ff3700');" class="hi-icon icon-brush tooltip" title="Color" id="menuWallItem1"></a>
+  <div id="WebGLWallPaintMenu" style="display:none;position:absolute;width:35px;height:35px;">
+  	<a href="#" onclick="toggleTextureSelect()"><img src="images/colorwheel.svg" /></a>
+  </div>
+  <div id="WebGLColorWheelSelect" style="display:none;position:absolute;width:300px;height:300px;">
+    <div class="colorpicker">
+      <canvas id="picker" var="2" width="300" height="300"></canvas>
+      <div class="controls">
+        <div><label>R</label> <input type="text" id="rVal" /></div>
+        <div><label>G</label> <input type="text" id="gVal" /></div>
+        <div><label>B</label> <input type="text" id="bVal" /></div>
+        <div><label>RGB</label> <input type="text" id="rgbVal" /></div>
+        <div><label>HEX</label> <input type="text" id="hexVal" /></div>
+      </div>
     </div>
   </div>
-  <div id="WebGLTextureSelect" style="width:400px;height:140px;">
-   <p>Object Textures</p>
+  <div id="WebGLTextureSelect" style="width:60%;height:120px;">
   </div>
 </div>
 <div id="HTMLCanvas" style="display:none">

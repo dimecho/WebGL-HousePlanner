@@ -2566,7 +2566,7 @@ function scene3DObjectSelectMenu(x, y, menuID) {
 
     if (SELECTEDOBJECT != null)
     {
-        //$('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()-60).css('left', vector.x - $('#WebGLTextureSelect').width()/2);
+        $('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()-64).css('left', vector.x - $('#WebGLTextureSelect').width() / 2);
         //$('#WebGLTextureSelect').show();
 
         $('#WebGLInteractiveMenu').bind('mousemove', on3DMouseMove);
@@ -2575,8 +2575,9 @@ function scene3DObjectSelectMenu(x, y, menuID) {
     }
     else if (SELECTEDWALL != null)
     {
-        $('#WebGLTextureSelect').css('top', vector.y).css('left', vector.x + $(menuID).width() + 30);
-        $('#WebGLTextureSelect').show();
+        $('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()).css('left', vector.x - $('#WebGLTextureSelect').width() / 2);
+        $('#WebGLColorWheelSelect').css('top', vector.y - $('#WebGLColorWheelSelect').height()-32).css('left', vector.x - $('#WebGLColorWheelSelect').width() / 2);
+        //$('#WebGLTextureSelect').show();
     }
 
     //$('#WebGLWalPaintMenu').css('top', vector.y).css('left', vector.x);
@@ -2698,6 +2699,7 @@ function scene3DObjectUnselect() {
 
     $('#WebGLInteractiveMenu').hide();
     $('#WebGLWallPaintMenu').hide();
+    $('#WebGLColorWheelSelect').hide();
     $('#WebGLTextureSelect').hide();
 }
 
@@ -4309,6 +4311,23 @@ function snaptogrid(object) {
     object.y = Math.floor(object.y / 100) * 100 + 50;
 }
 
+function toggleTextureSelect() {
+    if ($('#WebGLTextureSelect').is(':visible'))
+    {
+        $('#WebGLTextureSelect').hide();
+        $('#WebGLColorWheelSelect').hide();
+    }
+    else
+    {
+        $('#WebGLTextureSelect').show();
+
+        if (SELECTEDWALL != null)
+        {
+            $('#WebGLColorWheelSelect').show();
+        }
+    }
+}
+
 $(document).ready(function() {
 
     /* https://dribbble.com/shots/872582-Circular-Menu */
@@ -4325,7 +4344,7 @@ $(document).ready(function() {
     var offsetAngle = offsetAngleDegress * Math.PI / 180;
     var circleOffset = $("#WebGLInteractiveMenu").width()/2;
     var tooltips = ["Move Horizontaly", "Info", "Duplicate", "Resize", "Textures", "Rotate", "Remove", "Move Vertically"];
-    var actions = ["TOOL3DINTERACTIVE='moveXY'", "", "", "TOOL3DINTERACTIVE='resize'", "Textures", "TOOL3DINTERACTIVE='rotate'", "scene3DObjectSelectRemove()", "TOOL3DINTERACTIVE='moveZ'"];
+    var actions = ["TOOL3DINTERACTIVE='moveXY'", "", "", "TOOL3DINTERACTIVE='resize'", "toggleTextureSelect()", "TOOL3DINTERACTIVE='rotate'", "scene3DObjectSelectRemove()", "TOOL3DINTERACTIVE='moveZ'"];
 
     //We need to get size of the object, which is currently isn't on page.
     //So we gonna create a dummy, read everything we need and then delete it.
