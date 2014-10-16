@@ -23,7 +23,7 @@ TODO:
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
 - [difficulty: 6/10  progress: 90%] 3D Exterior View create night scene atmosphere with proper lights
 - [difficulty: 8/10  progress: 0%]  3D Exterior View auto rotate-snap on ground angle
-- [difficulty: 4/10  progress: 1%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
+- [difficulty: 4/10  progress: 100%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
 */
 
 //"use strict";
@@ -71,6 +71,7 @@ var glowMesh;
 var skyMesh;
 var weatherSkyDayMesh;
 var weatherSkyNightMesh;
+var weatherSkyRainbowMesh;
 var weatherSnowMesh;
 var weatherRainMesh;
 
@@ -1353,6 +1354,7 @@ function hideElements() {
     scene3D.remove(skyMesh); //TODO: think of better way avoiding double remove 1 here 1 in scene3DSetSky
     scene3D.remove(weatherSkyDayMesh);
     scene3D.remove(weatherSkyNightMesh);
+    scene3D.remove(weatherSkyRainbowMesh);
     //=================================
 
     scene3D.remove(scene3DHouseGroundContainer);
@@ -1444,9 +1446,11 @@ function scene3DSetWeather() {
 
     scene3D.remove(weatherSkyDayMesh);
     scene3D.remove(weatherSkyNightMesh);
+    scene3D.remove(weatherSkyRainbowMesh);
 
     if (DAY == 'day') {
         scene3D.add(weatherSkyDayMesh);
+        scene3D.add(weatherSkyRainbowMesh);
     } else if (DAY == 'night') {
         scene3D.add(weatherSkyNightMesh);
     }
@@ -3572,9 +3576,9 @@ function scene3DSky() {
         plane.position.z = i;
         plane.rotation.z = getRandomInt(5, 10);
         plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
-        plane.updateMatrix();
-        geometry.merge(plane.geometry, plane.matrix);
-        //THREE.GeometryUtils.merge(geometry, plane);
+        //plane.updateMatrix();
+        //geometry.merge(plane.geometry, plane.matrix);
+        THREE.GeometryUtils.merge(geometry, plane);
     }
     weatherSkyDayMesh = new THREE.Mesh(geometry, material);
 
@@ -3582,6 +3586,16 @@ function scene3DSky() {
     materialNight = material.clone();
     materialNight.uniforms.map.value = texture;
     weatherSkyNightMesh = new THREE.Mesh(geometry, materialNight);
+
+    texture = new THREE.ImageUtils.loadTexture('./images/rainbow.png', null, animate);
+    materialNight = material.clone();
+    materialNight.uniforms.map.value = texture;
+    geometry = new THREE.Geometry();
+    plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
+    plane.position.x = getRandomInt(1, 18);
+    plane.position.y = getRandomInt(5, 8);
+    THREE.GeometryUtils.merge(geometry, plane);
+    weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialNight);
 
     weatherSnowMesh = {
         positionStyle: Type.CUBE,
