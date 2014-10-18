@@ -61,12 +61,12 @@ particleFragmentShader =
 // TWEEN CLASS //
 /////////////////
 
-function Tween(timeArray, valueArray) {
+function ParticleTween(timeArray, valueArray) {
     this.times = timeArray || [];
     this.values = valueArray || [];
 }
 
-Tween.prototype.lerp = function(t) {
+ParticleTween.prototype.lerp = function(t) {
     var i = 0;
     var n = this.times.length;
     while (i < n && t > this.times[i])
@@ -79,7 +79,6 @@ Tween.prototype.lerp = function(t) {
     else // its a float
         return this.values[i - 1] + p * (this.values[i] - this.values[i - 1]);
 }
-
 ///////////////////////////////////////////////////////////////////////////////
 
 ////////////////////
@@ -173,17 +172,17 @@ function ParticleEngine() {
 
     this.sizeBase = 0.0;
     this.sizeSpread = 0.0;
-    this.sizeTween = new Tween();
+    this.sizeTween = new ParticleTween();
 
     // store colors in HSL format in a THREE.Vector3 object
     // http://en.wikipedia.org/wiki/HSL_and_HSV
     this.colorBase = new THREE.Vector3(0.0, 1.0, 0.5);
     this.colorSpread = new THREE.Vector3(0.0, 0.0, 0.0);
-    this.colorTween = new Tween();
+    this.colorTween = new ParticleTween();
 
     this.opacityBase = 1.0;
     this.opacitySpread = 0.0;
-    this.opacityTween = new Tween();
+    this.opacityTween = new ParticleTween();
 
     this.blendStyle = THREE.NormalBlending; // false;
 
@@ -251,9 +250,9 @@ ParticleEngine.prototype.setValues = function(parameters) {
     if (parameters === undefined) return;
 
     // clear any previous tweens that might exist
-    this.sizeTween = new Tween();
-    this.colorTween = new Tween();
-    this.opacityTween = new Tween();
+    this.sizeTween = new ParticleTween();
+    this.colorTween = new ParticleTween();
+    this.opacityTween = new ParticleTween();
 
     for (var key in parameters)
         this[key] = parameters[key];

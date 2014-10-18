@@ -59,6 +59,8 @@ var sceneHemisphereLight;
 var controls3D;
 
 var camera3D;
+var camera3DPositionCache;
+var camera3DPivotCache;
 var camera3DQuad = [3];
 var camera3DQuadGrid;
 var camera3DCube;
@@ -79,7 +81,7 @@ var SESSION = '';
 var RUNMODE = 'local'; //database
 var VIEWMODE = 'designer' //public
 var RADIAN = Math.PI / 180;
-var AUTOROTATE = true;
+var SceneAnimate = true;
 var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
@@ -90,8 +92,9 @@ var WEATHER = 'sunny';
 var DAY = 'day';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
-var SELECTEDOBJECT;
-var SELECTEDWALL;
+var SelectedObject = null;
+var TweenAnimate = false;
+var SelectedWall = null;
 
 var leftButtonDown = false;
 var clickTime;
@@ -235,7 +238,7 @@ function init(runmode,viewmode) {
     scene2DWallDimentions[2] = new Array();
 
     scene3DPivotPoint = new THREE.Object3D();
-
+   
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
 
@@ -1679,9 +1682,9 @@ function onDocumentDoubleClick(event) {
                 angleVelocityBase: 0,
                 angleVelocitySpread: 360 * 4,
 
-                sizeTween: new Tween([0, 0.02], [1, 0.4]),
-                opacityTween: new Tween([2, 3], [1, 0]),
-                colorTween: new Tween([0.5, 2], [new THREE.Vector3(0, 1, 0.5), new THREE.Vector3(0.8, 1, 0.5)]),
+                sizeTween: new ParticleTween([0, 0.02], [1, 0.4]),
+                opacityTween: new ParticleTween([2, 3], [1, 0]),
+                colorTween: new ParticleTween([0.5, 2], [new THREE.Vector3(0, 1, 0.5), new THREE.Vector3(0.8, 1, 0.5)]),
 
                 particlesPerSecond: 30,
                 particleDeathAge: 4.0,
@@ -2173,12 +2176,12 @@ function on3DMouseMove(event) {
 
     if (event.clientX > window.innerWidth - 50)
     {
-    	//console.log("set autorotate");
-    	AUTOROTATE = true;
+    	//console.log("set SceneAnimate");
+    	SceneAnimate = true;
     	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
 	}
 
-    if (SELECTEDOBJECT != null) {
+    if (SelectedObject != null) {
 
         var x = (event.clientX / window.innerWidth) * 2 - 1;
         var y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -2212,27 +2215,27 @@ function on3DMouseMove(event) {
 
 	            // ===== SIMPLE COLLISION DETECTION ======
             	//http://stackoverflow.com/questions/11418762/how-to-detect-collisions-between-a-cube-and-sphere-in-three-js
-            	var futurePosition = new THREE.Vector3(intersects[0].point.x,SELECTEDOBJECT.position.y,intersects[0].point.z);
+            	var futurePosition = new THREE.Vector3(intersects[0].point.x,SelectedObject.position.y,intersects[0].point.z);
             	var collision = false;
             	for (var i = 0,len = collisionContainer.children.length; i < len; i++) {
 
             		var distance = futurePosition.distanceToSquared(collisionContainer.children[i].position);
 
-            		if (collisionContainer.children[i].name != SELECTEDOBJECT.name && distance < 1)
+            		if (collisionContainer.children[i].name != SelectedObject.name && distance < 1)
             		{
             			//console.log(collisionContainer.children[i].name);
             			collision = true;
             			break;
             		}
-            		//console.log(SELECTEDOBJECT.position.distanceToSquared(collisionContainer.children[i].position));
+            		//console.log(SelectedObject.position.distanceToSquared(collisionContainer.children[i].position));
         		}
         		collisionContainer = null;
         		// =======================================
         		if (!collision)
         		{
                 	//console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
-                	SELECTEDOBJECT.position.x = intersects[0].point.x;
-                	SELECTEDOBJECT.position.z = intersects[0].point.z;
+                	SelectedObject.position.x = intersects[0].point.x;
+                	SelectedObject.position.z = intersects[0].point.z;
             	}
             }
 
@@ -2293,20 +2296,20 @@ function on3DMouseMove(event) {
 
         } else if (TOOL3DINTERACTIVE == 'moveZ') {
 
-            if (SELECTEDOBJECT.position.y >= 0) {
+            if (SelectedObject.position.y >= 0) {
 
                 if (mouse.y >= y && y > 0) {
 
-                    SELECTEDOBJECT.position.y -= y;
+                    SelectedObject.position.y -= y;
 
                 } else {
 
-                    SELECTEDOBJECT.position.y += y;
+                    SelectedObject.position.y += y;
                 }
 
                 //SELECTED.position.y = y;
             } else {
-                SELECTEDOBJECT.position.y = 0;
+                SelectedObject.position.y = 0;
             }
 
         } else if (TOOL3DINTERACTIVE == 'rotate') {
@@ -2316,9 +2319,9 @@ function on3DMouseMove(event) {
             //SELECTED.rotation.z += x; // * Math.PI / 180;
 
             if (mouse.x >= x && x > 0) {
-                SELECTEDOBJECT.rotation.y += x / 4;
+                SelectedObject.rotation.y += x / 4;
             } else {
-                SELECTEDOBJECT.rotation.y -= x / 4;
+                SelectedObject.rotation.y -= x / 4;
             }
             //var axis = new THREE.Vector3(x, y, 0);
             //SELECTED.rotateOnAxis(axis, 0);
@@ -2377,7 +2380,7 @@ function on3DMouseDown(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    AUTOROTATE = false;
+    SceneAnimate = false;
 
     //renderer.antialias = false;
 
@@ -2505,7 +2508,7 @@ function on3DMouseUp(event) {
 
     clearTimeout(clickTime); //prevents from hiding menus too fast
 
-    if (SELECTEDOBJECT != null) { //Restore menu after MouseMove
+    if (SelectedObject != null) { //Restore menu after MouseMove
         $('#WebGLInteractiveMenu').show();
     }
 
@@ -2530,9 +2533,9 @@ function on3DMouseUp(event) {
 function scene3DObjectSelectRemove() {
 
     if (SCENE == 'house') {
-        scene3DHouseContainer.remove(SELECTEDOBJECT);
+        scene3DHouseContainer.remove(SelectedObject);
     } else if (SCENE == 'floor') {
-        scene3DFloorContainer[FLOOR].remove(SELECTEDOBJECT);
+        scene3DFloorContainer[FLOOR].remove(SelectedObject);
     }
     
     scene3DObjectUnselect();
@@ -2547,13 +2550,13 @@ function scene3DObjectSelectMenu(x, y, menuID) {
 
     // projectVector will translate position to 2d
     //vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
-    if (SELECTEDOBJECT != null)
+    if (SelectedObject != null)
     {
-    	vector = vector.setFromMatrixPosition(SELECTEDOBJECT.matrixWorld);
+    	vector = vector.setFromMatrixPosition(SelectedObject.matrixWorld);
 	}
-	else if (SELECTEDWALL != null)
+	else if (SelectedWall != null)
 	{
-		vector = vector.setFromMatrixPosition(SELECTEDWALL.matrixWorld);
+		vector = vector.setFromMatrixPosition(SelectedWall.matrixWorld);
 	}
     vector.project(camera3D); //vector will give us position relative to the world
     
@@ -2568,7 +2571,7 @@ function scene3DObjectSelectMenu(x, y, menuID) {
     $(menuID).css('top', vector.y).css('left', vector.x);
     $(menuID).show();
 
-    if (SELECTEDOBJECT != null)
+    if (SelectedObject != null)
     {
         $('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()-64).css('left', vector.x - $('#WebGLTextureSelect').width() / 2);
         //$('#WebGLTextureSelect').show();
@@ -2577,7 +2580,7 @@ function scene3DObjectSelectMenu(x, y, menuID) {
         $('#WebGLInteractiveMenu').bind('mousedown', on3DMouseDown);
         $('#WebGLInteractiveMenu').bind('mouseup', on3DMouseUp);
     }
-    else if (SELECTEDWALL != null)
+    else if (SelectedWall != null)
     {
         $('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()).css('left', vector.x - $('#WebGLTextureSelect').width() / 2);
         $('#WebGLColorWheelSelect').css('top', vector.y - $('#WebGLColorWheelSelect').height()-32).css('left', vector.x - $('#WebGLColorWheelSelect').width() / 2);
@@ -2655,22 +2658,31 @@ function scene3DObjectSelect(x, y, camera, children) {
         //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
         controls3D.enabled = false;
 
-        //if (SELECTEDOBJECT != intersects[0].object){
+        //if (SelectedObject != intersects[0].object){
             if (children == scene3DHouseContainer.children || children == scene3DFloorContainer[FLOOR].children)
             {
             	scene3DObjectUnselect(); //avoid showing multiple selected objects
 
-            	SELECTEDOBJECT = intersects[0].object;
-
-                scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+            	SelectedObject = intersects[0].object;
 
                 //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
-            	glowMesh = new THREEx.GeometricGlowMesh(SELECTEDOBJECT);
-            	SELECTEDOBJECT.add(glowMesh.object3d);
+
+            	camera3DPositionCache = camera3D.position.clone();
+            	camera3DPivotCache = controls3D.target.clone();
+
+            	TweenAnimate = true;
+            	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+                	TweenAnimate = false;
+                	glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
+            		SelectedObject.add(glowMesh.object3d);
+                	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+    			}).start();
+				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+	
             }
             else if (children == scene3DFloorWallContainer[FLOOR].children)
             {
-            	SELECTEDWALL = intersects[0].object;
+            	SelectedWall = intersects[0].object;
                 scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLWallPaintMenu');
             }
 
@@ -2690,12 +2702,28 @@ function scene3DObjectSelect(x, y, camera, children) {
 
 function scene3DObjectUnselect() {
 
-    if (SELECTEDOBJECT != null && glowMesh instanceof THREEx.GeometricGlowMesh) {
-        SELECTEDOBJECT.remove(glowMesh.object3d);
+    if (SelectedObject != null && glowMesh instanceof THREEx.GeometricGlowMesh) {
+        SelectedObject.remove(glowMesh.object3d);
     }
 
-    SELECTEDOBJECT = null;
-    SELECTEDWALL = null;
+    try
+    {
+		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+	    	TweenAnimate = false;
+		}).start();
+		var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+		
+		TweenAnimate = true;
+	}
+	catch (exception)
+	{
+    }
+
+    camera3DPositionCache = null;
+	camera3DPivotCache = null;
+
+    SelectedObject = null;
+    SelectedWall = null;
 
     $('#WebGLInteractiveMenu').unbind('mousemove', on3DMouseMove);
     $('#WebGLInteractiveMenu').unbind('mousedown', on3DMouseDown);
@@ -3180,12 +3208,7 @@ function sceneNew() {
 
         //wallMesh[i].tip = tip;
 
-
-
-
         /*
-      
-
         // create arrow points
         var r1 = new fabric.Triangle({
             left: line.get('x1'),
@@ -3569,16 +3592,15 @@ function scene3DSky() {
         transparent: true
     });
     var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
-    for (var i = 0; i < 20; i++) {
-
+    for (var i = 0; i < 20; i++) 
+    {
         plane.position.x = getRandomInt(-20, 20);
         plane.position.y = getRandomInt(5.5, 10);
         plane.position.z = i;
         plane.rotation.z = getRandomInt(5, 10);
         plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
-        //plane.updateMatrix();
-        //geometry.merge(plane.geometry, plane.matrix);
-        THREE.GeometryUtils.merge(geometry, plane);
+        plane.updateMatrix();
+        geometry.merge(plane.geometry, plane.matrix);
     }
     weatherSkyDayMesh = new THREE.Mesh(geometry, material);
 
@@ -3592,9 +3614,11 @@ function scene3DSky() {
     materialNight.uniforms.map.value = texture;
     geometry = new THREE.Geometry();
     plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
-    plane.position.x = getRandomInt(1, 18);
+    plane.position.x = getRandomInt(1, 15);
     plane.position.y = getRandomInt(5, 8);
-    THREE.GeometryUtils.merge(geometry, plane);
+    plane.position.z = -2;
+    plane.updateMatrix();
+    geometry.merge(plane.geometry, plane.matrix);
     weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialNight);
 
     weatherSnowMesh = {
@@ -3614,9 +3638,9 @@ function scene3DSky() {
 
         particleTexture: THREE.ImageUtils.loadTexture('./images/snowflake.png'),
 
-        sizeTween: new Tween([0.5, 1], [1, 0.6]),
+        sizeTween: new ParticleTween([0.5, 1], [1, 0.6]),
         colorBase: new THREE.Vector3(0.66, 1.0, 0.9), // H,S,L
-        opacityTween: new Tween([2, 3], [0.8, 0]),
+        opacityTween: new ParticleTween([2, 3], [0.8, 0]),
 
         particlesPerSecond: 50,
         particleDeathAge: 3.0,
@@ -3934,6 +3958,9 @@ function scene2DWallMeasurementInternal() {
 }
 
 function camera3DAnimateObjectFocus() {
+
+	//https://github.com/mrdoob/three.js/issues/1689
+
     /*
     if (keyboard.pressed("left")) {
         camera.position.x = camera3D.position.x * Math.cos(rotSpeed) + camera3D.position.z * Math.sin(.02);
@@ -3943,8 +3970,45 @@ function camera3DAnimateObjectFocus() {
         camera.position.z = camera3D.position.z * Math.cos(rotSpeed) + camera3D.position.x * Math.sin(.02);
     }
 	*/
-    camera3D.lookAt(SELECTED.position);
+
+   	/*
+    var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
+    var newQuaternion = new THREE.Quaternion();
+    THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
+    camera3D.quaternion = newQuaternion;
+    camera3D.quaternion.normalize();
+    */
+
+    /*
+	var tween = new TWEEN.Tween(camera3D.position).to({
+                x: SelectedObject.position.x,
+                y: SelectedObject.position.y,
+                z: 1
+    }).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(function () {
+                camera3D.lookAt(SelectedObject.position);
+    }).onComplete(function () {
+                camera3D.lookAt(SelectedObject.position);
+    }).start();
+	*/
+	
+	/*
+	var tween = new TWEEN.Tween(camera3D.position).to({
+	    x: SelectedObject.position.x,
+	    y: SelectedObject.position.y,
+	    z: SelectedObject.position.z
+	},2000).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(function () {
+	}).onComplete(function () {
+	    camera3D.lookAt(SelectedObject.position);
+	    TweenAnimate = false;
+	}).start();
+	*/
+	
+	
+	
+	
+    //camera3D.lookAt(SELECTED.position);
 }
+
 
 function animate() {
 
@@ -3973,7 +4037,7 @@ function animate() {
                 }
 	*/
 
-    if (AUTOROTATE) {
+    if (SceneAnimate) {
         var x = camera3D.position.x,
             y = camera3D.position.y,
             z = camera3D.position.z;
@@ -4093,29 +4157,26 @@ function animate() {
         //camera3DQuad[3].updateProjectionMatrix();
         renderer.render(scene3D, camera3DQuad[3]); //perspective
 
-    } else {
+    }else{
 
-        controls3D.update();
-        /*
-        if (SELECTED != null) {
-            //camera3DAnimateObjectFocus();
-            var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
-            var newQuaternion = new THREE.Quaternion();
-            THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
-            camera3D.quaternion = newQuaternion;
-            camera3D.quaternion.normalize();
-        }
-        */
+       	
+
         //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
         //renderer.clear();
 
         for (var a in animation) {
             a.update(clock.getDelta() * 0.8);
         }
+        
+        if (TweenAnimate)
+        {
+        	TWEEN.update();
+        }
 
+        controls3D.update();
+        
         renderer.render(scene3D, camera3D);
     }
-
     //stats.update();
     /*
         var timer = Date.now() * 0.0005;
@@ -4326,6 +4387,7 @@ function snaptogrid(object) {
 }
 
 function toggleTextureSelect() {
+
     if ($('#WebGLTextureSelect').is(':visible'))
     {
         $('#WebGLTextureSelect').hide();
@@ -4333,9 +4395,26 @@ function toggleTextureSelect() {
     }
     else
     {
+    	$('#WebGLTextureSelect').empty();
+
+    	if (SelectedWall != null)
+	    {
+	    	
+	    	var scroll =  $("<div>", {class:"scroll","data-ui":"jscroll-default"});
+    		var list =  $("<div>", {class:"objectItem",style:"width:100px;height:64px"});
+
+    		var item = $("<a>", {href:"#"}).append($("<img>", {id:"test", src:"image.png"}));
+    		
+    		list.append(item);
+    		list.append(item);
+
+    		$('#WebGLTextureSelect').append(scroll.append(list));
+    		
+	    }
+
         $('#WebGLTextureSelect').show();
 
-        if (SELECTEDWALL != null)
+        if (SelectedWall != null)
         {
             $('#WebGLColorWheelSelect').show();
         }
