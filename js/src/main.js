@@ -242,9 +242,25 @@ function init(runmode,viewmode) {
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
 
+    /*
+    https://www.udacity.com/course/viewer#!/c-cs291/l-158750187/m-169414761
+    */
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
     camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 80);
-    camera3D.lookAt(new THREE.Vector3(0, 0, 0));
+  
+    /*
+    Cutaway View - width, height, fov, near, far, orthoNear, orthoFar
+    https://github.com/mrdoob/three.js/issues/1909
+    https://github.com/chandlerprall/ThreeCSG
+    */
+    //camera3D = new THREE.CombinedCamera( window.innerWidth, window.innerHeight, 60, 0.1, 80, 1.5, 10);
+    /*
+    var tween = new TWEEN.Tween(camera3D.position).to({x:Math.cos(0.1) * 200, z:Math.sin(0.1) * 200},20000).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(function() {
+            //camera3D.updateProjectionMatrix();
+            camera3D.lookAt(scene3D.position);
+    }).start();
+    */
+    //camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 
     //camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
     //camera2D.lookAt(new THREE.Vector3(0, 0, 0));
@@ -2665,20 +2681,30 @@ function scene3DObjectSelect(x, y, camera, children) {
 
             	SelectedObject = intersects[0].object;
 
-                //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
+                //https://github.com/mrdoob/three.js/issues/1689
+
+                /*
+                var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
+                var newQuaternion = new THREE.Quaternion();
+                THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
+                camera3D.quaternion = newQuaternion;
+                camera3D.quaternion.normalize();
+                */
 
             	camera3DPositionCache = camera3D.position.clone();
             	camera3DPivotCache = controls3D.target.clone();
 
-            	TweenAnimate = true;
             	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
                 	TweenAnimate = false;
+
+                    //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
+
                 	glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
             		SelectedObject.add(glowMesh.object3d);
                 	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
     			}).start();
 				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-	
+				TweenAnimate = true;
             }
             else if (children == scene3DFloorWallContainer[FLOOR].children)
             {
@@ -2702,40 +2728,42 @@ function scene3DObjectSelect(x, y, camera, children) {
 
 function scene3DObjectUnselect() {
 
-    if (SelectedObject != null && glowMesh instanceof THREEx.GeometricGlowMesh) {
-        SelectedObject.remove(glowMesh.object3d);
-    }
-
-    try
+    if (SelectedObject != null)
     {
-		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-	    	TweenAnimate = false;
-		}).start();
-		var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-		
-		TweenAnimate = true;
+    	if (glowMesh instanceof THREEx.GeometricGlowMesh)
+    	{
+        	SelectedObject.remove(glowMesh.object3d);
+    	}
+    
+	    if (camera3DPositionCache != null)
+	    {
+			var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+		    	TweenAnimate = false;
+			}).start();
+			var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+			
+			TweenAnimate = true;
+	    }
+
+	    camera3DPositionCache = null;
+		camera3DPivotCache = null;
+
+		SelectedObject = null;
+	    SelectedWall = null;
+
+		$('#WebGLInteractiveMenu').unbind('mousemove', on3DMouseMove);
+		$('#WebGLInteractiveMenu').unbind('mousedown', on3DMouseDown);
+		$('#WebGLInteractiveMenu').unbind('mouseup', on3DMouseUp);
+
+		$('#WebGLInteractiveMenu').hide();
+		$('#WebGLWallPaintMenu').hide();
+		$('#WebGLColorWheelSelect').hide();
+		$('#WebGLTextureSelect').hide();
 	}
-	catch (exception)
-	{
-    }
-
-    camera3DPositionCache = null;
-	camera3DPivotCache = null;
-
-    SelectedObject = null;
-    SelectedWall = null;
-
-    $('#WebGLInteractiveMenu').unbind('mousemove', on3DMouseMove);
-    $('#WebGLInteractiveMenu').unbind('mousedown', on3DMouseDown);
-    $('#WebGLInteractiveMenu').unbind('mouseup', on3DMouseUp);
-
-    $('#WebGLInteractiveMenu').hide();
-    $('#WebGLWallPaintMenu').hide();
-    $('#WebGLColorWheelSelect').hide();
-    $('#WebGLTextureSelect').hide();
 }
 
 function exportPDF() {
+	
     if (!fabric.Canvas.supports('toDataURL')) {
         alert('Sorry, your browser is not supported.');
     } else {
@@ -3957,110 +3985,113 @@ function scene2DWallMeasurementInternal() {
 
 }
 
-function camera3DAnimateObjectFocus() {
-
-	//https://github.com/mrdoob/three.js/issues/1689
-
-    /*
-    if (keyboard.pressed("left")) {
-        camera.position.x = camera3D.position.x * Math.cos(rotSpeed) + camera3D.position.z * Math.sin(.02);
-        camera.position.z = camera3D.position.z * Math.cos(rotSpeed) - camera3D.position.x * Math.sin(.02);
-    } else if (keyboard.pressed("right")) {
-        camera.position.x = camera3D.position.x * Math.cos(rotSpeed) - camera3D.position.z * Math.sin(.02);
-        camera.position.z = camera3D.position.z * Math.cos(rotSpeed) + camera3D.position.x * Math.sin(.02);
-    }
-	*/
-
-   	/*
-    var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
-    var newQuaternion = new THREE.Quaternion();
-    THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
-    camera3D.quaternion = newQuaternion;
-    camera3D.quaternion.normalize();
-    */
-
-    /*
-	var tween = new TWEEN.Tween(camera3D.position).to({
-                x: SelectedObject.position.x,
-                y: SelectedObject.position.y,
-                z: 1
-    }).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(function () {
-                camera3D.lookAt(SelectedObject.position);
-    }).onComplete(function () {
-                camera3D.lookAt(SelectedObject.position);
-    }).start();
-	*/
-	
-	/*
-	var tween = new TWEEN.Tween(camera3D.position).to({
-	    x: SelectedObject.position.x,
-	    y: SelectedObject.position.y,
-	    z: SelectedObject.position.z
-	},2000).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(function () {
-	}).onComplete(function () {
-	    camera3D.lookAt(SelectedObject.position);
-	    TweenAnimate = false;
-	}).start();
-	*/
-	
-	
-	
-	
-    //camera3D.lookAt(SELECTED.position);
-}
-
-
 function animate() {
 
     requestAnimationFrame(animate);
-    //var delta = clock.getDelta(); // (time in milliseconds between each frame) in two other global variables:
-    /*
-    if ( t > 1 ) t = 0;
-        if ( skin ) {
 
-                // guess this can be done smarter...
+    var delta = clock.getDelta(); // (time in milliseconds between each frame) in two other global variables:
+ 
 
-                    // (Indeed, there are way more frames than needed and interpolation is not used at all
-                    //  could be something like - one morph per each skinning pose keyframe, or even less,
-                    //  animation could be resampled, morphing interpolation handles sparse keyframes quite well.
-                    //  Simple animation cycles like this look ok with 10-15 frames instead of 100 ;)
-
-                    for ( var i = 0; i < skin.morphTargetInfluences.length; i++ ) {
-
-                        skin.morphTargetInfluences[ i ] = 0;
-
-                    }
-
-                    skin.morphTargetInfluences[ Math.floor( t * 30 ) ] = 1;
-
-                    t += delta;
-                }
-	*/
-
-    if (SceneAnimate) {
-        var x = camera3D.position.x,
-            y = camera3D.position.y,
-            z = camera3D.position.z;
-        var rotSpeed = .01;
+    if (SceneAnimate)
+    {
+        var rotateSpeed = delta * 0.18; //.005; //Date.now() * 0.0001; //.01;
+        //var rotateSpeed = .015;
         //if (keyboard.pressed("left")){ 
-        camera3D.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
-        camera3D.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+        
+        var x = camera3D.position.x,
+            z = camera3D.position.z;
+        var cosratio = Math.cos(rotateSpeed),
+            sinratio = Math.sin(rotateSpeed);
+
+        camera3D.position.x = x * cosratio + z * sinratio;
+        camera3D.position.z = z * cosratio - x * sinratio;
+        
         //} else if (keyboard.pressed("right")){
         //camera3D.position.x = x * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
         //camera3D.position.z = z * Math.cos(rotSpeed) + x * Math.sin(rotSpeed);
         //}
 
+        //camera3D.position.x = Math.cos(rotateSpeed) * 100;
+        //camera3D.position.z = Math.sin(rotateSpeed) * 100;
+        //camera3D.position.y = 60;
+
         camera3D.lookAt(scene3D.position);
-        //} else {
-        //controls3D.update();
+    }
+    else
+    {
+        if (SCENE == 'roof') {
+            // setViewport parameters:
+            //  lower_left_x, lower_left_y, viewport_width, viewport_height
+
+            //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+            //renderer.clear();
+
+            // upper left corner
+            renderer.setViewport(0, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+            renderer.render(scene3D, camera3DQuad[0]); //top
+
+            // upper right corner
+            renderer.setViewport(0.5 * window.innerWidth, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+            renderer.render(scene3D, camera3DQuad[1]); //front 
+
+            // lower left corner
+            renderer.setViewport(0, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+            //camera3DQuad[2].updateProjectionMatrix();
+            renderer.render(scene3D, camera3DQuad[2]); //side
+
+            // lower right corner
+            renderer.setViewport(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+            //renderer.setScissor(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+            //renderer.enableScissorTest(true);
+            //camera3DQuad[3].updateProjectionMatrix();
+            renderer.render(scene3D, camera3DQuad[3]); //perspective
+            return;
+        }else if (SCENE == 'floor') {
+
+            var z = 0; //Find closest wall to the camera
+            for (var i = 0; i < scene3DHouseContainer.children.length; i++) {
+                if (scene3DHouseContainer.children[i].position.z > scene3DHouseContainer.children[z].position.z) {
+                    z = i;
+                }
+            }
+            //scene3DHouseContainer.children[0].mesh.materials[0].opacity = 0.2;
+            //TweenLite.to(mesh.material, 2, {opacity: 0.2}); //TweenLite.to(object, duration, properties);
+
+            /*
+                move the CubeCamera to the position of the object that has a reflective surface,
+                "take a picture" in each direction and apply it to the surface.
+                need to hide surface before and after so that it does not "get in the way" of the camera
+            */
+            //camera3DMirrorReflection.visible = false;
+            //camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
+            //camera3DMirrorReflection.visible = true;
+            //controls3DFloor.update();
+
+            sceneSpotLight.visible = false; //Do not reflect light
+            //scene3DFloorGroundContainer.children[0].visible = false; //because refrection camera is below the floor
+            //scene3D.remove(scene3DFloorGroundContainer); //because refrection camera is below the floor
+            camera3DMirrorReflection.updateCubeMap(renderer, scene3D); //capture the reflection
+            sceneSpotLight.visible = true;
+            //cene3D.add(scene3DFloorGroundContainer);
+            //scene3DFloorGroundContainer.children[0].visible = true;
+        }
+
+        if (engine instanceof ParticleEngine) {
+            engine.update(delta * 0.8);
+        }
+
+        for (var a in animation) {
+            a.update(delta * 0.8);
+        }
+        
+        if (TweenAnimate)
+        {
+            TWEEN.update();
+        }
     }
 
-    if (engine instanceof ParticleEngine) {
-        engine.update(clock.getDelta() * 0.8);
-    }
-
-    if (SCENE == 'house') {
-
+    if (SCENE == 'house')
+    {
         //if (controls3D.needsUpdate) {
         if (DAY == 'day') {
             weatherSkyDayMesh.rotation.y = camera3D.rotation.y; //spiral
@@ -4100,83 +4131,13 @@ function animate() {
         camera3DCube.lookAt(scene3DCube.position);
         rendererCube.render(scene3DCube, camera3DCube);
 
-    } else if (SCENE == 'floor') {
-
-        var z = 0; //Find closest wall to the camera
-        for (var i = 0; i < scene3DHouseContainer.children.length; i++) {
-            if (scene3DHouseContainer.children[i].position.z > scene3DHouseContainer.children[z].position.z) {
-                z = i;
-            }
-        }
-        //scene3DHouseContainer.children[0].mesh.materials[0].opacity = 0.2;
-        //TweenLite.to(mesh.material, 2, {opacity: 0.2}); //TweenLite.to(object, duration, properties);
-
-        /*
-            move the CubeCamera to the position of the object that has a reflective surface,
-            "take a picture" in each direction and apply it to the surface.
-            need to hide surface before and after so that it does not "get in the way" of the camera
-            */
-        //camera3DMirrorReflection.visible = false;
-        //camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
-        //camera3DMirrorReflection.visible = true;
-        //controls3DFloor.update();
-
-        sceneSpotLight.visible = false; //Do not reflect light
-        //scene3DFloorGroundContainer.children[0].visible = false; //because refrection camera is below the floor
-        //scene3D.remove(scene3DFloorGroundContainer); //because refrection camera is below the floor
-        camera3DMirrorReflection.updateCubeMap(renderer, scene3D); //capture the reflection
-        sceneSpotLight.visible = true;
-        //cene3D.add(scene3DFloorGroundContainer);
-        //scene3DFloorGroundContainer.children[0].visible = true;
     }
+    //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+    //renderer.clear();
 
-    if (SCENE == 'roof') {
-        // setViewport parameters:
-        //  lower_left_x, lower_left_y, viewport_width, viewport_height
+    controls3D.update();
+    renderer.render(scene3D, camera3D);
 
-        //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-        //renderer.clear();
-
-        // upper left corner
-        renderer.setViewport(0, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-        renderer.render(scene3D, camera3DQuad[0]); //top
-
-        // upper right corner
-        renderer.setViewport(0.5 * window.innerWidth, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-        renderer.render(scene3D, camera3DQuad[1]); //front 
-
-        // lower left corner
-        renderer.setViewport(0, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-        //camera3DQuad[2].updateProjectionMatrix();
-        renderer.render(scene3D, camera3DQuad[2]); //side
-
-        // lower right corner
-        renderer.setViewport(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-        //renderer.setScissor(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-        //renderer.enableScissorTest(true);
-        //camera3DQuad[3].updateProjectionMatrix();
-        renderer.render(scene3D, camera3DQuad[3]); //perspective
-
-    }else{
-
-       	
-
-        //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-        //renderer.clear();
-
-        for (var a in animation) {
-            a.update(clock.getDelta() * 0.8);
-        }
-        
-        if (TweenAnimate)
-        {
-        	TWEEN.update();
-        }
-
-        controls3D.update();
-        
-        renderer.render(scene3D, camera3D);
-    }
     //stats.update();
     /*
         var timer = Date.now() * 0.0005;
