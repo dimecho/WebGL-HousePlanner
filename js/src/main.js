@@ -839,6 +839,19 @@ THREE.JSONLoader.prototype.loadJson = function(data, callback, texturePath) {
 };
 */
 
+function camera3DAnimateResetView()
+{
+	if (camera3DPositionCache != null)
+	{
+		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+		    	TweenAnimate = false;
+		}).start();
+		var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+			
+		TweenAnimate = true;
+	}
+}
+
 function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
 
     //http://www.smashingmagazine.com/2013/09/17/introduction-to-polygonal-modeling-and-three-js/
@@ -889,12 +902,18 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
         //console.log(materials[i].map);
         //}
 
+        //geometry.mergeVertices(); //speed things up ?
+        geometry.computeFaceNormals();
+        geometry.computeVertexNormals(); // requires correct face normals
+        geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+
         var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
         mesh.name = js;
         
         //mesh.overdraw = true; //??? repeat textures?
 
         mesh.castShadow = true;
+
         if (shadow)
             mesh.receiveShadow = true;
 
@@ -922,11 +941,14 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
         mesh.position.x = x;
         mesh.position.y = y;
         mesh.position.z = z;
-        mesh.doubleSided = false;
+        mesh.doubleSided = true;
 
+        /*
+        mesh.geometry.mergeVertices(); //speed things up ?
         mesh.geometry.computeFaceNormals();
         mesh.geometry.computeVertexNormals(); // requires correct face normals
         mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+        */
 
         mesh.matrixAutoUpdate = true;
         mesh.updateMatrix();
@@ -2128,6 +2150,22 @@ function on3DLandscapeMouseUp(event) {
     controls3D.enabled = true;
 }
 
+$(document).on('keyup', function(event){
+
+	event.preventDefault();
+	//console.log(event)
+
+	if(SCENE == "house")
+	{
+	    if (event.which == 27)
+	    {
+	   		camera3DPositionCache = new THREE.Vector3(0, 6, 20);
+            camera3DPivotCache = new THREE.Vector3(0, 0, 0);
+            camera3DAnimateResetView();
+	    }
+	}
+});
+
 function on3DHouseMouseDown(event) {
 	on3DMouseDown(event);
 
@@ -2734,17 +2772,9 @@ function scene3DObjectUnselect() {
     	{
         	SelectedObject.remove(glowMesh.object3d);
     	}
-    
-	    if (camera3DPositionCache != null)
-	    {
-			var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-		    	TweenAnimate = false;
-			}).start();
-			var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-			
-			TweenAnimate = true;
-	    }
 
+    	camera3DAnimateResetView();
+    
 	    camera3DPositionCache = null;
 		camera3DPivotCache = null;
 
@@ -3964,6 +3994,33 @@ function showRightObjectMenu(path) {
     //correctMenuHeight();
 }
 
+function CalculateCutawayGeometry() {
+  
+    alertify.confirm("This feature is experimental and may not work properly. Continue?", function (e) {
+        if (e) {
+
+            var geometry = new THREE.BoxGeometry(20, 16, 6);
+            var mesh = new THREE.Mesh(geometry);
+            mesh.position.z = scene3DRoofContainer.children[0].position.z + scene3DRoofContainer.children[0].geometry.boundingBox.max.z / 2 ;
+
+            var SliceBSP = new ThreeBSP(mesh);
+            var RoofBSP = new ThreeBSP(scene3DRoofContainer.children[0].geometry);
+            var HouseBSP = new ThreeBSP(scene3DHouseContainer.children[0].geometry);
+
+            var CutawayBSP = RoofBSP.subtract(SliceBSP);
+            var result = CutawayBSP.toMesh(new THREE.MeshLambertMaterial({shading: THREE.SmoothShading}));
+            //result.geometry.computeVertexNormals();
+            scene3DRoofContainer.children[0].geometry = result.geometry;
+            
+            CutawayBSP = HouseBSP.subtract(SliceBSP);
+            result = CutawayBSP.toMesh(new THREE.MeshLambertMaterial({shading: THREE.SmoothShading}));
+            //result.geometry.computeVertexNormals();
+            scene3DHouseContainer.children[0].geometry = result.geometry;
+        //} else { // user clicked "cancel"
+        }
+    });
+}
+
 function showRightCatalogMenu() {
 
     if (SCENE == 'house') {
@@ -4005,7 +4062,7 @@ function animate() {
 
         camera3D.position.x = x * cosratio + z * sinratio;
         camera3D.position.z = z * cosratio - x * sinratio;
-        
+
         //} else if (keyboard.pressed("right")){
         //camera3D.position.x = x * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
         //camera3D.position.z = z * Math.cos(rotSpeed) + x * Math.sin(rotSpeed);
