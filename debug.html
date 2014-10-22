@@ -12,6 +12,8 @@
   <script type="text/javascript" src="js/three.js?v=68"></script>
   <script type="text/javascript" src="js/src/Detector.js"></script>
   <script src="js/src/OrbitControls.js"></script>
+  <script src="js/src/FirstPersonControls.js"></script>
+  <script src="js/src/TransformControls.js"></script>
   <script src="js/src/ThreeCSG.js"></script>
   <script src="js/src/exporters/OBJExporter.js"></script>
   <script src="js/src/exporters/ObjectExporter.js"></script>
@@ -361,13 +363,19 @@
 <!-- END Slide Right Menu -->
 
 <!-- Slide Left Menu -->
-<div id="menuLeft3DHouse" class="hide-left" style="display:none">
+<div id="menuLeft3DHouse" class="hide-left" style="display:none;width:240px;">
   <ul id="tab-left">
     <li>
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" class='cssmenu' style="width:160px">
+  <div id="links-left" style="width:160px;height:100px;">
+      <a href="#openThumb">
+        <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="images/_house.jpg" alt="Property" style="width:140px;height:80px;border:4px solid #FFFFFF;border-radius:2px;"/>
+      </a>
+  </div>
+
+  <div id="links-left" class='cssmenu' style="width:160px;margin-top:20px">
         <ul>
            <li class='active'><a href='#' onclick="FLOOR=0;show3DFloor()"><span>Basement</span></a></li>
            <li class='has-sub'><a href='#'><span>Floor 1</span></a>
@@ -492,53 +500,24 @@
 	  	<center><h1>Property Info & Agent Contact</h1></center>
 	</div>
 	<!-- End Map -->
-
-  	<!-- Thumbnail class="ui-widget-content" -->
-  	<div id="menuTop">
-		<div style="display:inline-block">
-			 <a href="#openThumb">
-	      	<img id="_imgHouse" src="images/_house.jpg" alt="Property" style="width:100px;height:55px;border-radius:5px; border:1px solid;border-color:#000000"/>
-      		</a>
-    	</div>
-  		<div style="display:inline-block;vertical-align:top;width:180px">
-
-          <div style="display:inline-block">
-            <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-                <a id="link-portfolio" href="#info" class="hi-icon icon-info" id="menuTopItem0"></a>
-            </div>
-            <!--
-            <a href="#info" id="menuTopItem0"><img src="images/info.svg" style="width:42px;height:42px;"/></a>
-            -->
-          </div>
-          <div style="display:inline-block">
-      			MLS#:<br/>
-            Agent:
-          </div>
-          <div style="display:inline-block">
-            1234<br/>
-            Alyson
-          </div>
-  		</div>
-  
-	  	<div style="display:inline-block;vertical-align:top">
-	  		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-	  			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
-	        <a href="#" onclick="show3DLandscape()" class="hi-icon icon-terrain tooltip" title="Landscape Editor" id="menuTopItem2"></a>
-	        <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
-	        <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
-	  			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
-	  			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem6"></a>
-	  			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
-	  			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open" id="menuTopItem8"></a>
-	        <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
-	  			<a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuTopItem10"></a>
-	  			<a href="#" class="hi-icon icon-redo tooltip" title="Redo" id="menuTopItem11"></a>
-	  			<a href="#" class="hi-icon icon-share tooltip-share-menu" title="Share" id="menuTopItem12"></a>
-	  			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
-	  			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>
-	  			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
-	  		</div>
-	  	</div>
+	<!-- Thumbnail class="ui-widget-content" -->
+	<div id="menuTop">
+		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
+      <a href="#" onclick="show3DLandscape()" class="hi-icon icon-terrain tooltip" title="Landscape Editor" id="menuTopItem2"></a>
+      <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
+      <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
+			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
+			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem6"></a>
+			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
+			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open" id="menuTopItem8"></a>
+      <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
+			<a href="#" class="hi-icon icon-share tooltip-share-menu" title="Share" id="menuTopItem12"></a>
+			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
+			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>
+			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
+      <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings" id="menuTopItem16"></a>
+		</div>
 	</div>
 
   <div id="menuFloorSelector" align="center" style="display:none">
@@ -551,25 +530,18 @@
     </div>
   </div>
   
-  <div id="menuBottom" class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-    <div id="menuWebGLSettings">
-      <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings"></a>
+  <div id="menuBottom">
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+      <a href="#" onclick="exportPDF()" class="hi-icon icon-print tooltip" title="Print PDF" id="menuBottomItem1"></a>
+      <a href="#" onclick="camera3DWalkViewToggle()" class="hi-icon icon-walk tooltip" title="Walk View" id="menuBottomItem3"></a>
+      <a href="#" onclick="CalculateCutawayGeometry()" class="hi-icon icon-cutaway tooltip" title="Cutaway View" id="menuBottomItem4"></a>
+      <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" id="menuBottomItem5"></a>
+      <a href="#" onclick="selectDayNight()" class="hi-icon icon-day tooltip" title="Day/Night" id="menuBottomItem6"></a>
+      <a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" id="menuBottomItem7"></a>
+      <a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuBottomItem8"></a>
+      <a href="#" class="hi-icon icon-redo tooltip" title="Redo" id="menuBottomItem9"></a>
+      <a href="#" class="hi-icon icon-help tooltip" title="Help" id="menuBottomItem10"></a>
     </div>
-    <div id="menuCutaway">
-      <a href="#" onclick="CalculateCutawayGeometry()" class="hi-icon icon-cutaway tooltip" title="Cutaway View"></a>
-    </div>
-    <div id="menuMeasure">
-      <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature"></a><div id="menuMeasureText" style="display:inline-block"></div>
-    </div>
-
-    <div id="menuDayNight" >
-      <a href="#" id="menuDayNightIcon" onclick="selectDayNight()" class="hi-icon icon-day tooltip" title="Day/Night"></a><div id="menuDayNightText" style="display:inline-block"></div>
-    </div>
-
-    <div id="menuWeather">
-      <a href="#" onclick="selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects"></a><div id="menuWeatherText" style="display:inline-block"></div>
-    </div>
-    <div id="WebGLHelp">?</div>
   </div>
 
 <!--
@@ -584,22 +556,6 @@
 
 <!-- http://threejs.org/editor -->
 <style>
-
-#printPDF {
-    position:absolute;
-    bottom:12px;
-    left:25px;
-    border:none;
-}
-
-#WebGLHelp {
-    position:absolute;
-    bottom:10px;
-    right:20px;
-    color:#474747
-    font-size: 20px;
-    cursor:help;
-}
 #WebGLTextureSelect {
   display: none;
   background: #fff;
@@ -675,7 +631,9 @@
   </div>
 </div>
 <div id="HTMLCanvas" style="display:none">
-  <a href="#" onclick="exportPDF()" id="printPDF" class="hi-icon icon-print tooltip" title="Print PDF" style="color:#474747"></a>
+  <div id="zoom2DLevel" style="position:absolute;left:10px;bottom:0;z-index:2">
+    <img src="images/zoom.png" />
+  </div>
   <div id="menuWallInput">
     <div id="links-left" style="width:100px;">
       <input type="text" name="wallInput" id="wallInput" size="9" />

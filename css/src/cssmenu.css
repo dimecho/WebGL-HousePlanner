@@ -92,9 +92,12 @@
 
 #menuTop{
   position: absolute;
-  top: 10px;
-  left: 20px;
-  width: 97%; 
+  top: 38px;
+
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+
   height: 60px;
   padding: 4px;
   z-index: 2;
@@ -123,8 +126,11 @@
   left: 50%;
   margin-right: -50%;
   transform: translate(-50%, -50%);
-  width: 40em;
-
+  /*
+  box-shadow: 0px 0px 0px 8px rgba(0,0,0,0.3);
+  -webkit-box-shadow: 0px 0px 0px 8px rgba(0,0,0,0.3);
+  -moz-box-shadow: 0px 0px 0px 8px rgba(0,0,0,0.3);
+  */
   height: 55px;
   z-index: 2;
   border-radius: 10px;

@@ -93,11 +93,14 @@ var DAY = 'day';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
 var SelectedObject = null;
-var TweenAnimate = false;
+
 var SelectedWall = null;
 
 var leftButtonDown = false;
 var clickTime;
+
+//var keys = { SP: 32, W: 87, A: 65, S: 83, D: 68, UP: 38, LT: 37, DN: 40, RT: 39 };
+//var keysPressed = {};
 
 //var keyboard = new THREE.KeyboardState();
 
@@ -115,7 +118,7 @@ var scene2DWallBearingMaterialSelect;
 
 var animation = [];
 var mouse;
-var clock;
+var clock = new THREE.Clock();
 var engine;
 var projector;
 var vector;
@@ -238,7 +241,24 @@ function init(runmode,viewmode) {
     scene2DWallDimentions[2] = new Array();
 
     scene3DPivotPoint = new THREE.Object3D();
-   
+
+    /*
+    (function(watchedKeyCodes) {
+        var handler = function(down) {
+            return function(e) {
+                var index = watchedKeyCodes.indexOf(e.keyCode);
+                if (index >= 0) {
+                    keysPressed[watchedKeyCodes[index]] = down; e.preventDefault();
+                }
+            };
+        }
+        $(document).keydown(handler(true));
+        $(document).keyup(handler(false));
+    })([
+        keys.SP, keys.W, keys.A, keys.S, keys.D, keys.UP, keys.LT, keys.DN, keys.RT
+    ]);
+    */
+
     //60 times more geometry
     //THREE.GeometryUtils.merge(geometry, otherGeometry);
 
@@ -496,7 +516,7 @@ function init(runmode,viewmode) {
     //renderer.setClearColor(0xffffff, 0);
     renderer.shadowMapEnabled = true;
     renderer.shadowMapAutoUpdate = true;
-    renderer.shadowMapType = THREE.PCFSoftShadowMap; //THREE.PCFShadowMap; //THREE.BasicShadowMap;
+    //renderer.shadowMapType = THREE.PCFSoftShadowMap; //THREE.PCFShadowMap; //THREE.BasicShadowMap;
     renderer.autoClear = false; //REQUIRED: for split screen
     renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
     //renderer.physicallyBasedShading = true;
@@ -585,7 +605,7 @@ function init(runmode,viewmode) {
         }
     });
     */
-
+    
     // move mouse and: left   click to rotate,  middle click to zoom, right  click to pan
     controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
     controls3D.minDistance = 3;
@@ -593,7 +613,6 @@ function init(runmode,viewmode) {
     //controls3D.minPolarAngle = 0; // radians
     //controls3D.maxPolarAngle = Math.PI; // radians
     controls3D.maxPolarAngle = Math.PI / 2; //Don't let to go below the ground
-
 
     //controls2D = new THREE.OrbitControls(camera2D, renderer.domElement);
 
@@ -839,16 +858,72 @@ THREE.JSONLoader.prototype.loadJson = function(data, callback, texturePath) {
 };
 */
 
+function camera3DWalkViewToggle()
+{
+    if (controls3D instanceof THREE.FirstPersonControls)
+    {
+        camera3DPositionCache = new THREE.Vector3(0, 6, 20);
+        camera3DPivotCache = new THREE.Vector3(0, 0, 0);
+        camera3DAnimateResetView();
+        
+        enableOrbitControls();
+
+    }else{
+        alertify.confirm("Use (W,A,S,D) or Arrow keys to move.", function (e) {
+        if (e) {
+            camera3DPositionCache = camera3D.position.clone();
+            camera3DPivotCache = controls3D.target.clone();
+
+            //TODO: anmate left and right menu hide
+
+            var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:1.5, z:18},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+            
+            var tween = new TWEEN.Tween(controls3D.target).to({x:0, y:1.5, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+
+                enableFirstPersonControls();
+
+            }).start();
+
+        }});
+    }
+}
+
+function enableOrbitControls()
+{   
+    if (controls3D instanceof THREE.OrbitControls) //do not cause error first-time
+    {
+        controls3D.enabled = false;
+    }
+    controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
+    controls3D.minDistance = 3;
+    controls3D.maxDistance = 25; //Infinity;
+    //controls3D.minPolarAngle = 0; // radians
+    //controls3D.maxPolarAngle = Math.PI; // radians
+    controls3D.maxPolarAngle = Math.PI / 2; //Don't let to go below the ground
+    controls3D.enabled = true;
+}
+function enableFirstPersonControls()
+{
+    controls3D.enabled = false;
+    controls3D = new THREE.FirstPersonControls(camera3D,renderer.domElement);
+    controls3D.movementSpeed = 5;
+    controls3D.lookSpeed = 0.1;
+    controls3D.noFly = true;
+    controls3D.lookVertical = false; //true;
+    controls3D.activeLook = true; //enable later, otherwise view jumps
+    controls3D.lon = -90;
+    controls3D.lat = 0;
+    controls3D.enabled = true;
+
+    //controls3D.target = new THREE.Vector3(0, 0, 0);
+    //camera3D.lookAt(new THREE.Vector3(0, 0, 0));
+}
 function camera3DAnimateResetView()
 {
 	if (camera3DPositionCache != null)
 	{
-		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-		    	TweenAnimate = false;
-		}).start();
+		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 		var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-			
-		TweenAnimate = true;
 	}
 }
 
@@ -1132,8 +1207,10 @@ function show3DHouse() {
     } else if (TOOL3DINTERACTIVE == 'rotate') {
         menuSelect(2, 'menuInteractiveItem', '#ff3700');
     }
-    $('#menuDayNight').show();
-    $('#menuWeather').show();
+
+    for (var i = 2; i <= 10; i++) {
+        $('#menuBottomItem' + i).show();
+    }
 
     toggleRight('menuRight', true);
     toggleLeft('menuLeft3DHouse', true);
@@ -1142,7 +1219,6 @@ function show3DHouse() {
     correctMenuHeight();
 
     //scene3DHouseContainer.traverse;
-
 
     $('#WebGLCanvas').show();
 }
@@ -1216,11 +1292,17 @@ function show3DFloor() {
 
     $(renderer.domElement).bind('mousedown', on3DFloorMouseDown);
     $(renderer.domElement).bind('mouseup', on3DFloorMouseUp);
+    $(renderer.domElement).bind('mousemove', on3DFloorMouseMove);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
     //scene3DFloorContainer[0].traverse;
     $('#menuFloorSelectorText').html(scene3DFloorContainer[FLOOR].name);
     $('#menuFloorSelector').show();
+
+    $('#menuBottomItem4').show();
+    $('#menuBottomItem8').show();
+    $('#menuBottomItem9').show();
+    $('#menuBottomItem10').show();
 
     toggleRight('menuRight', true);
     toggleLeft('menuLeft3DFloor', true);
@@ -1368,6 +1450,14 @@ function show2D() {
     $('#menuFloorSelectorText').html(scene3DFloorContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
+    $('#menuBottomItem1').show();
+    $('#menuBottomItem5').show();
+    $('#menuBottomItem8').show();
+    $('#menuBottomItem9').show();
+    $('#menuBottomItem10').show();
+
+    $('#zoom2DLevel').show();
+
     //scene2DdrawRuler();
 
     menuSelect(6, 'menuTopItem', '#ff3700');
@@ -1426,6 +1516,7 @@ function hideElements() {
     $(renderer.domElement).unbind('mouseup', on3DHouseMouseUp);
     $(renderer.domElement).unbind('mousedown', on3DFloorMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DFloorMouseUp);
+    $(renderer.domElement).unbind('mousemove', on3DFloorMouseMove);
     $(renderer.domElement).unbind('mousedown', on3DLandscapeMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DLandscapeMouseUp);
 
@@ -1446,8 +1537,12 @@ function hideElements() {
 
     $('#menuFloorSelector').hide();
     $("#menuWallInput").hide();
-    $('#menuDayNight').hide();
-    $('#menuWeather').hide();
+
+    for (var i = 1; i <= 10; i++) {
+        $('#menuBottomItem' + i).hide();
+    }
+    
+    $('#zoom2DLevel').hide();
 
     scene3DObjectUnselect();
 
@@ -1542,10 +1637,10 @@ function selectFloor(next) {
 function selectMeasurement() {
 
     if (REALSIZERATIO == 1.8311874) {
-        $('#menuMeasureText').html("Imperial");
+        //$('#menuMeasureText').html("Imperial");
         REALSIZERATIO = 1; //Imperial Ratio TODO: Get the right ratio
     } else {
-        $('#menuMeasureText').html("Metric");
+        //$('#menuMeasureText').html("Metric");
         REALSIZERATIO = 1.8311874; //Metric Ratio
     }
 }
@@ -1555,14 +1650,14 @@ function selectDayNight() {
     if (DAY == "day") {
 
         DAY = "night";
-        $('#menuDayNightText').html("Night");
-        $('#menuDayNightIcon').attr("class", "hi-icon icon-night tooltip");
+        //$('#menuDayNightText').html("Night");
+        $('#menuBottomItem5').attr("class", "hi-icon icon-night tooltip");
 
     } else if (DAY == "night") {
 
         DAY = "day";
-        $('#menuDayNightText').html("Day");
-        $('#menuDayNightIcon').attr("class", "hi-icon icon-day tooltip");
+        //$('#menuDayNightText').html("Day");
+        $('#menuBottomItem5').attr("class", "hi-icon icon-day tooltip");
     }
     scene3DSetSky(DAY);
     scene3DSetLight();
@@ -1574,17 +1669,17 @@ function selectWeather() {
     if (WEATHER == "sunny") {
 
         WEATHER = "snowy";
-        $('#menuWeatherText').html("Snowy");
+        //$('#menuWeatherText').html("Snowy");
 
     } else if (WEATHER == "snowy") {
 
         WEATHER = "rainy";
-        $('#menuWeatherText').html("Rainy");
+        //$('#menuWeatherText').html("Rainy");
 
     } else if (WEATHER == "rainy") {
 
         WEATHER = "sunny";
-        $('#menuWeatherText').html("Sunny");
+        //$('#menuWeatherText').html("Sunny");
     }
     scene3DSetWeather();
 }
@@ -1680,7 +1775,7 @@ function onDocumentDoubleClick(event) {
 
     event.preventDefault();
 
-    if (scene3D.visible) {
+    if (scene3D.visible && controls3D instanceof THREE.OrbitControls) {
 
         var x = (event.clientX / window.innerWidth) * 2 - 1;
         var y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -2080,6 +2175,11 @@ function on2DMouseMove(event) {
     if (!leftButtonDown) {
         return;
     }
+
+    
+    //scene3DHouseContainer.children[0].mesh.materials[0].opacity = 0.2;
+
+    //TweenLite.to(mesh.material, 2, {opacity: 0.2}); //TweenLite.to(object, duration, properties);
     //console.log(scene2D.getPointerPosition())
     //if (TOOL2D == 'freestyle') {
     //var mouse = canvas.getPointer(e);
@@ -2157,11 +2257,30 @@ $(document).on('keyup', function(event){
 
 	if(SCENE == "house")
 	{
-	    if (event.which == 27)
+	    if (event.which == 27) //esc
 	    {
 	   		camera3DPositionCache = new THREE.Vector3(0, 6, 20);
             camera3DPivotCache = new THREE.Vector3(0, 0, 0);
             camera3DAnimateResetView();
+	    }
+	}
+	else if(SCENE == "2d")
+	{
+		if (event.which == 37) //left arrow
+	    {
+
+	    }
+	    else if (event.which == 38) //up arrow
+	    {
+
+	   	}
+	    else if (event.which == 39) //right arrow
+	    {
+
+	    }
+	    else if (event.which == 40) //down arrow
+	    {
+
 	    }
 	}
 });
@@ -2169,32 +2288,8 @@ $(document).on('keyup', function(event){
 function on3DHouseMouseDown(event) {
 	on3DMouseDown(event);
 
-    if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
+    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
     {
-            //Focus on 3D object
-
-            //camera3D.fov = currentFov.fov;
-            //camera3D.lookAt(intersects[0].object.position);
-            //camera3D.updateProjectionMatrix();
-
-            /*
-            var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
-            var newQuaternion = new THREE.Quaternion();
-            THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
-            camera3D.quaternion = newQuaternion;
-            camera3D.quaternion.normalize();
-            scene3D.updateMatrixWorld();
-            */
-
-            //Reset camera?
-            //var vector = new THREE.Vector3( 1, 0, 0 ); 
-            //vector.applyQuaternion( quaternion );
-
-            //scene3DObjectSelectMenu(mouse.x, mouse.y);
-
-            //$('#WebGLInteractiveMenu').show();
-
-    } else {
         scene3D.add(scene3DPivotPoint);
     }
 }
@@ -2212,6 +2307,89 @@ function on3DFloorMouseDown(event) {
         {
             scene3D.add(scene3DPivotPoint);
         }
+    }
+}
+
+function on3DFloorMouseMove(event) {
+
+	event.preventDefault();
+
+    if (event.which != 1) {
+        return;
+    }
+  
+/*
+    var vector = new THREE.Vector3(0, 0, 0);
+    vector.unproject(camera3D);
+    var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+    var intersects = raycaster.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
+           
+    if (intersects.length > 0) {
+        console.log(" Hit " + intersects[0].distance);
+    }
+*/
+var line;
+	for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++) {
+
+		//http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
+        // this will give us position relative to the world
+p = sphere.matrixWorld.getPosition().clone();
+
+// projectVector will translate position to 2d
+v = projector.projectVector(p, perspectiveCamera);
+
+		//console.log("[" + i + "]" + camera3D.position.distanceTo(scene3DFloorWallContainer[FLOOR].children[i].position));
+		//for (var vertexIndex = 0; vertexIndex < scene3DFloorWallContainer[FLOOR].children[i].geometry.vertices.length; vertexIndex++)
+		//{
+			//var localVertex = mesh.vertices[0].clone();
+
+			//var globalVertex = vector.applyMatrix4(mesh.matrix);
+
+			vector = new THREE.Vector3(scene3DFloorWallContainer[FLOOR].children[i].position.x, scene3DFloorWallContainer[FLOOR].children[i].position.y, scene3DFloorWallContainer[FLOOR].children[i].position.z);
+            vector.project(new THREE.Vector3(0,0,-10));
+            var raycaster = new THREE.Raycaster(new THREE.Vector3(0,0,-10), vector.sub(new THREE.Vector3(0,0,-10)).normalize());
+
+            //var raycaster = new THREE.Ray(scene3DFloorWallContainer[FLOOR].children[i].position, new THREE.Vector3(1, 1, 1));
+            //raycaster.ray.direction.set(0, 0, -1);
+            var intersects = raycaster.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
+          	
+
+            if (intersects.length > 0) {
+            	var geometry = new THREE.Geometry();
+		        // POSITION OF MESH TO SHOOT RAYS OUT OF
+		        geometry.vertices.push( scene3DFloorWallContainer[FLOOR].children[i].position );
+		        geometry.vertices.push( intersects[0].point );
+
+		        //scene3D.remove(line);
+		        line = new THREE.Line(geometry, new THREE.LineBasicMaterial({color: 0x990000}));
+		        scene3D.add(line);
+
+             	console.log(" Hit " + intersects[0].distance);
+            }
+			//vector.unproject(camera);
+
+			//var ray = new THREE.Raycaster(geometry.position, vector.sub(geometry.position).normalize());
+
+			//var collisionResults = ray.intersectObjects(scene3DFloorWallContainer[FLOOR].children[i]);
+			//if ( collisionResults.length > 0 )
+			//{
+			//	console.log(" Hit ");
+			//	break;
+			//}
+		//}
+
+		//var point1 = this.camera.matrixWorld.getPosition().clone();
+		//var point2 = this.mesh.cubePlane3.children[0].matrixWorld.getPosition().clone();
+		//var distance = point1.distanceTo(new THREE.Vector3(0,0,2));
+
+    	var p = 0.8;
+
+    	//if (scene3DFloorWallContainer[FLOOR].children[i].position.distanceToSquared(new THREE.Vector3(0,0,2)) < 2)
+        //{
+        	p = 0.05;
+        //}
+ 
+        var tween = new TWEEN.Tween(scene3DFloorWallContainer[FLOOR].children[i].material).to({opacity:p}, 3000).start();
     }
 }
 
@@ -2428,8 +2606,10 @@ function on3DMouseDown(event) {
     if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
     //clickTime = new Date().getTime();
-
-    $(renderer.domElement).bind('mousemove', on3DMouseMove);
+    if (controls3D instanceof THREE.OrbitControls)
+    {
+        $(renderer.domElement).bind('mousemove', on3DMouseMove);
+    }
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -2705,6 +2885,7 @@ function scene3DObjectSelect(x, y, camera, children) {
     }
 	*/
 
+
     // INTERSECTED = the object in the scene currently closest to the camera 
     // and intersected by the Ray projected from the mouse position
 
@@ -2727,22 +2908,29 @@ function scene3DObjectSelect(x, y, camera, children) {
                 THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
                 camera3D.quaternion = newQuaternion;
                 camera3D.quaternion.normalize();
+                scene3D.updateMatrixWorld();
                 */
+
+                //Focus on 3D object
+            	//camera3D.fov = currentFov.fov;
+            	//camera3D.lookAt(intersects[0].object.position);
+            	//camera3D.updateProjectionMatrix();
 
             	camera3DPositionCache = camera3D.position.clone();
             	camera3DPivotCache = controls3D.target.clone();
 
             	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-                	TweenAnimate = false;
-
+                	
                     //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
 
                 	glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
             		SelectedObject.add(glowMesh.object3d);
+
                 	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+
     			}).start();
 				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-				TweenAnimate = true;
+				
             }
             else if (children == scene3DFloorWallContainer[FLOOR].children)
             {
@@ -3999,8 +4187,10 @@ function CalculateCutawayGeometry() {
     alertify.confirm("This feature is experimental and may not work properly. Continue?", function (e) {
         if (e) {
 
-            var geometry = new THREE.BoxGeometry(20, 16, 6);
+            var geometry = new THREE.BoxGeometry(20, 16, 1);
             var mesh = new THREE.Mesh(geometry);
+            
+            /*
             mesh.position.z = scene3DRoofContainer.children[0].position.z + scene3DRoofContainer.children[0].geometry.boundingBox.max.z / 2 ;
 
             var SliceBSP = new ThreeBSP(mesh);
@@ -4016,6 +4206,7 @@ function CalculateCutawayGeometry() {
             result = CutawayBSP.toMesh(new THREE.MeshLambertMaterial({shading: THREE.SmoothShading}));
             //result.geometry.computeVertexNormals();
             scene3DHouseContainer.children[0].geometry = result.geometry;
+            */
         //} else { // user clicked "cancel"
         }
     });
@@ -4046,12 +4237,9 @@ function animate() {
 
     requestAnimationFrame(animate);
 
-    var delta = clock.getDelta(); // (time in milliseconds between each frame) in two other global variables:
- 
-
     if (SceneAnimate)
     {
-        var rotateSpeed = delta * 0.18; //.005; //Date.now() * 0.0001; //.01;
+        var rotateSpeed = clock.getDelta() * 0.18; //.005; //Date.now() * 0.0001; //.01;
         //var rotateSpeed = .015;
         //if (keyboard.pressed("left")){ 
         
@@ -4105,19 +4293,10 @@ function animate() {
             return;
         }else if (SCENE == 'floor') {
 
-            var z = 0; //Find closest wall to the camera
-            for (var i = 0; i < scene3DHouseContainer.children.length; i++) {
-                if (scene3DHouseContainer.children[i].position.z > scene3DHouseContainer.children[z].position.z) {
-                    z = i;
-                }
-            }
-            //scene3DHouseContainer.children[0].mesh.materials[0].opacity = 0.2;
-            //TweenLite.to(mesh.material, 2, {opacity: 0.2}); //TweenLite.to(object, duration, properties);
-
             /*
-                move the CubeCamera to the position of the object that has a reflective surface,
-                "take a picture" in each direction and apply it to the surface.
-                need to hide surface before and after so that it does not "get in the way" of the camera
+            move the CubeCamera to the position of the object that has a reflective surface,
+            "take a picture" in each direction and apply it to the surface.
+            need to hide surface before and after so that it does not "get in the way" of the camera
             */
             //camera3DMirrorReflection.visible = false;
             //camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
@@ -4134,17 +4313,14 @@ function animate() {
         }
 
         if (engine instanceof ParticleEngine) {
-            engine.update(delta * 0.8);
-        }
-
-        for (var a in animation) {
-            a.update(delta * 0.8);
+            engine.update(clock.getDelta() * 0.8);
         }
         
-        if (TweenAnimate)
-        {
-            TWEEN.update();
+        for (var a in animation) {
+            a.update(clock.getDelta() * 0.8);
         }
+        
+        TWEEN.update();
     }
 
     if (SCENE == 'house')
@@ -4165,16 +4341,6 @@ function animate() {
         //weatherSkyDayMesh.position.z = camera3D.position.z;
         //weatherSkyDayMesh.rotation = camera3D.rotation;
 
-
-        /*
-                if (weatherSkyDayMesh.position.x < 10) {
-                    weatherSkyDayMesh.position.x += 0.01;
-                    //weatherSkyDayMesh.position.z += 0.01;
-                } else {
-                    weatherSkyDayMesh.position.x = weatherSkyDayMesh.position.x - 0.01;
-                    //weatherSkyDayMesh.position.z -= 0.01;
-                }
-            */
         //weatherSkyDayMesh.position.y = (Math.random() - 0.5) * 0.2;
         //weatherSkyDayMesh.position.z = (Math.random() - 0.5) * 5.0;
         //weatherSkyDayMesh.rotation = Math.random() * Math.PI;
@@ -4182,17 +4348,23 @@ function animate() {
         // object3d.color.setHex( 0xC0C0C0 + 0x010101*Math.floor(255*(Math.random()*0.1)) );
 
         //Orientation Cube
-        camera3DCube.position.copy(camera3D.position);
-        camera3DCube.position.sub(controls3D.center);
-        camera3DCube.position.setLength(18);
-        camera3DCube.lookAt(scene3DCube.position);
-        rendererCube.render(scene3DCube, camera3DCube);
+
+        try //FirstPersonControls.js fails this loop
+        {
+            camera3DCube.position.copy(camera3D.position);
+            camera3DCube.position.sub(controls3D.center);
+            camera3DCube.position.setLength(18);
+            camera3DCube.lookAt(scene3DCube.position);
+            rendererCube.render(scene3DCube, camera3DCube);
+        }
+        catch(err) {}
 
     }
+
     //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
     //renderer.clear();
 
-    controls3D.update();
+    controls3D.update(clock.getDelta());
     renderer.render(scene3D, camera3D);
 
     //stats.update();
@@ -4418,12 +4590,13 @@ function toggleTextureSelect() {
     	if (SelectedWall != null)
 	    {
 	    	
-	    	var scroll =  $("<div>", {class:"scroll","data-ui":"jscroll-default"});
+	    	var scroll =  $("<div>", {class:"scroll","data-ui":"jscroll-default",style:"width:100%;height:80px"});
     		var list =  $("<div>", {class:"objectItem",style:"width:100px;height:64px"});
 
-    		var item = $("<a>", {href:"#"}).append($("<img>", {id:"test", src:"image.png"}));
-    		
+    		var item = $("<a>", {href:"#"}).append($("<img>", {id:"test", src:"objects/Wall/Textures/W2367.jpg"}));
     		list.append(item);
+
+            item = $("<a>", {href:"#"}).append($("<img>", {id:"test", src:"objects/Wall/Textures/W3465.jpg"}));
     		list.append(item);
 
     		$('#WebGLTextureSelect').append(scroll.append(list));
@@ -4479,7 +4652,9 @@ $(document).ready(function() {
 
         //console.log(circleOffset+iconOffset);
         
-        $("#icn" + index).css({"background-image" : 'url("images/hicn' + index + '.png")',"left":dX,"bottom":dY});
+        $("#icn" + index).css({"background-image" : 'url("images/hicn' + index + '.png")',"left":"0","bottom":"0"});
+
+        $("#icn" + index).animate({"left":dX,"bottom":dY}, "slow");
 
         //console.log('url("icn' + index + '.png")');
     }
@@ -4544,7 +4719,8 @@ $(document).ready(function() {
         theme: 'tooltipster-default',
         touchDevices: false,
         trigger: 'hover',
-        position: 'top'
+        position: 'top',
+        contentAsHTML: true
     });
 
     $('.cssmenu ul ul li:odd').addClass('odd');

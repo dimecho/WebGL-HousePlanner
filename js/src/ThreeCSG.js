@@ -1,4 +1,3 @@
-'use strict';
 window.ThreeBSP = (function() {
 	
 	var ThreeBSP,
