@@ -68,7 +68,7 @@ var camera3DMirrorReflection;
 
 var groundGrid;
 var groundMesh;
-var glowMesh;
+//var glowMesh;
 
 var skyMesh;
 var weatherSkyDayMesh;
@@ -118,7 +118,7 @@ var scene2DWallBearingMaterialSelect;
 
 var animation = [];
 var mouse;
-var clock = new THREE.Clock();
+var clock;
 var engine;
 var projector;
 var vector;
@@ -606,18 +606,7 @@ function init(runmode,viewmode) {
     });
     */
     
-    // move mouse and: left   click to rotate,  middle click to zoom, right  click to pan
-    controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
-    controls3D.minDistance = 3;
-    controls3D.maxDistance = 25; //Infinity;
-    //controls3D.minPolarAngle = 0; // radians
-    //controls3D.maxPolarAngle = Math.PI; // radians
-    controls3D.maxPolarAngle = Math.PI / 2; //Don't let to go below the ground
-
-    //controls2D = new THREE.OrbitControls(camera2D, renderer.domElement);
-
-    controls3D.target = new THREE.Vector3(0, 0, 0); //+ object.lookAT!
-    //controls2D.target = new THREE.Vector3(0, 0, 0); //+ object.lookAT!
+   	enableOrbitControls();
 
     //mycontrols.target = new THREE.Vector3(newx, newy, newz); //flyin effect?
 
@@ -656,7 +645,7 @@ function init(runmode,viewmode) {
     sceneNew();
     scene3DSky();
     scene3DLight();
-    show3DHouse();
+    
 
     selectMeasurement();
 
@@ -664,6 +653,7 @@ function init(runmode,viewmode) {
     $('#menuDayNightText').html("Day");
 
     animate();
+    show3DHouse();
 }
 
 /*
@@ -858,6 +848,34 @@ THREE.JSONLoader.prototype.loadJson = function(data, callback, texturePath) {
 };
 */
 
+function camera3DFloorFlyIn(floor)
+{
+	//TODO: Fly into a specific section of the room
+
+	var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:10, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    var tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+
+    	FLOOR = floor;
+        show3DFloor();
+
+    }).start();
+}
+
+function camera3DFloorEnter()
+{
+	camera3D.position.set(0, 10, 0);
+	var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:10, z:12},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    var tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+}
+
+function camera3DHouseEnter()
+{
+	camera3D.position.set(0, 20, 0);
+	//controls3D.target = new THREE.Vector3(0, 50, 0);
+	var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:6, z:20},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    var tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+}
+
 function camera3DWalkViewToggle()
 {
     if (controls3D instanceof THREE.FirstPersonControls)
@@ -865,10 +883,10 @@ function camera3DWalkViewToggle()
         camera3DPositionCache = new THREE.Vector3(0, 6, 20);
         camera3DPivotCache = new THREE.Vector3(0, 0, 0);
         camera3DAnimateResetView();
-        
         enableOrbitControls();
-
-    }else{
+    }
+    else if (controls3D instanceof THREE.OrbitControls)
+    {
         alertify.confirm("Use (W,A,S,D) or Arrow keys to move.", function (e) {
         if (e) {
             camera3DPositionCache = camera3D.position.clone();
@@ -876,16 +894,37 @@ function camera3DWalkViewToggle()
 
             //TODO: anmate left and right menu hide
 
-            var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:1.5, z:18},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-            
+            var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:1.5, z:18},2000).easing(TWEEN.Easing.Quadratic.InOut).start();  
             var tween = new TWEEN.Tween(controls3D.target).to({x:0, y:1.5, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-
                 enableFirstPersonControls();
-
             }).start();
 
         }});
     }
+    else
+    {
+        alertify.alert("Not Available in Edit Mode");
+    }
+}
+
+function enableTransformControls(mode)
+{
+    //https://github.com/mrdoob/three.js/issues/4286
+
+    controls3D = new THREE.TransformControls(camera3D, renderer.domElement);
+    controls3D.addEventListener('change', render);
+
+    controls3D.attach(SelectedObject);
+    controls3D.setMode(mode);
+    //console.trace();
+
+    //$(renderer.domElement).unbind('mousemove', on3DMouseMove);
+
+    //scene3DObjectUnselect();
+    $('#WebGLInteractiveMenu').hide();
+    $('#WebGLTextureSelect').hide();
+
+    scene3D.add(controls3D);
 }
 
 function enableOrbitControls()
@@ -900,6 +939,7 @@ function enableOrbitControls()
     //controls3D.minPolarAngle = 0; // radians
     //controls3D.maxPolarAngle = Math.PI; // radians
     controls3D.maxPolarAngle = Math.PI / 2; //Don't let to go below the ground
+    controls3D.target = new THREE.Vector3(0, 0, 0); //+ object.lookAT!
     controls3D.enabled = true;
 }
 function enableFirstPersonControls()
@@ -907,7 +947,7 @@ function enableFirstPersonControls()
     controls3D.enabled = false;
     controls3D = new THREE.FirstPersonControls(camera3D,renderer.domElement);
     controls3D.movementSpeed = 5;
-    controls3D.lookSpeed = 0.1;
+    controls3D.lookSpeed = 0.15;
     controls3D.noFly = true;
     controls3D.lookVertical = false; //true;
     controls3D.activeLook = true; //enable later, otherwise view jumps
@@ -920,11 +960,11 @@ function enableFirstPersonControls()
 }
 function camera3DAnimateResetView()
 {
-	if (camera3DPositionCache != null)
+	if (camera3DPositionCache != null && controls3D instanceof THREE.OrbitControls)
 	{
 		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 		var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-	}
+    }
 }
 
 function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
@@ -1176,7 +1216,8 @@ function show3DHouse() {
     scene3DSetWeather();
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
-    camera3D.position.set(0, 6, 20);
+    //camera3D.position.set(0, 6, 20);
+    
 
     //TODO: Loop and show based in ID name
 
@@ -1221,6 +1262,7 @@ function show3DHouse() {
     //scene3DHouseContainer.traverse;
 
     $('#WebGLCanvas').show();
+    camera3DHouseEnter();
 }
 
 function show3DLandscape() {
@@ -1261,7 +1303,8 @@ function show3DFloor() {
     scene3DSetBackground('blue');
     scene3DSetLight();
 
-    camera3D.position.set(0, 10, 12);
+    //camera3D.position.set(0, 10, 12);
+    
 
     //TODO: Loop and show based in ID name / floor
     //scene3D.add(scene3DContainer);
@@ -1311,6 +1354,7 @@ function show3DFloor() {
     correctMenuHeight();
 
     $('#WebGLCanvas').show();
+    camera3DFloorEnter();
 }
 
 function show3DFloorLevel() {
@@ -1504,9 +1548,14 @@ function hideElements() {
         scene3D.remove(scene3DFloorWallContainer[i]);
     }
 
-    //scene2D.clear();
+    if (controls3D instanceof THREE.TransformControls)
+    {
+        scene3D.remove(controls3D);
+    }
 
     scene3DCube.remove(scene3DCubeMesh);
+
+    //scene2D.clear();
 
     //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
     //$(renderer.domElement).unbind('mouseup', on3DMouseUp);
@@ -1516,7 +1565,7 @@ function hideElements() {
     $(renderer.domElement).unbind('mouseup', on3DHouseMouseUp);
     $(renderer.domElement).unbind('mousedown', on3DFloorMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DFloorMouseUp);
-    $(renderer.domElement).unbind('mousemove', on3DFloorMouseMove);
+    //$(renderer.domElement).unbind('mousemove', on3DFloorMouseMove);
     $(renderer.domElement).unbind('mousedown', on3DLandscapeMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DLandscapeMouseUp);
 
@@ -2286,12 +2335,30 @@ $(document).on('keyup', function(event){
 });
 
 function on3DHouseMouseDown(event) {
-	on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
-    {
-        scene3D.add(scene3DPivotPoint);
-    }
+ 
+    	on3DMouseDown(event);
+
+        if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
+        {
+            scene3D.add(scene3DPivotPoint);
+            
+        //}
+        //else if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseGroundContainer.children))
+        //{
+            //if (SelectedObject != null)
+            //{
+                //var max = Math.max(SelectedObject.posision.x + SelectedObject.geometry.boundingBox.max.x, SelectedObject.posision.y + SelectedObject.geometry.boundingBox.max.y, SelectedObject.posision.z + SelectedObject.geometry.boundingBox.max.z);
+                //if (SelectedObject != null && (mouse.x > max || mouse.y > max))
+                //{
+                    //controls3D.detach(SelectedObject);
+                    //enableOrbitControls();
+                    //camera3DAnimateResetView();
+                    //return;
+                //}
+            //}
+        }
+
 }
 
 function on3DHouseMouseUp(event) {
@@ -2318,25 +2385,25 @@ function on3DFloorMouseMove(event) {
         return;
     }
   
-/*
-    var vector = new THREE.Vector3(0, 0, 0);
-    vector.unproject(camera3D);
-    var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
-    var intersects = raycaster.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
-           
-    if (intersects.length > 0) {
-        console.log(" Hit " + intersects[0].distance);
-    }
-*/
-var line;
-	for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++) {
+	/*
+	    var vector = new THREE.Vector3(0, 0, 0);
+	    vector.unproject(camera3D);
+	    var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+	    var intersects = raycaster.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
+	           
+	    if (intersects.length > 0) {
+	        console.log(" Hit " + intersects[0].distance);
+	    }
+	*/
+	var line;
+		for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++) {
 
-		//http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
-        // this will give us position relative to the world
-p = sphere.matrixWorld.getPosition().clone();
+			//http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
+	        // this will give us position relative to the world
+	p = sphere.matrixWorld.getPosition().clone();
 
-// projectVector will translate position to 2d
-v = projector.projectVector(p, perspectiveCamera);
+	// projectVector will translate position to 2d
+	v = projector.projectVector(p, perspectiveCamera);
 
 		//console.log("[" + i + "]" + camera3D.position.distanceTo(scene3DFloorWallContainer[FLOOR].children[i].position));
 		//for (var vertexIndex = 0; vertexIndex < scene3DFloorWallContainer[FLOOR].children[i].geometry.vertices.length; vertexIndex++)
@@ -2404,7 +2471,17 @@ function on3DMouseMove(event) {
     if (!leftButtonDown) {
         return;
     }
+
+    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
+        return;
+    }
+
     //console.log("mouse:" + event.clientX + " window:" + window.innerWidth);
+
+    camera3DCube.position.copy(camera3D.position);
+    camera3DCube.position.sub(controls3D.center);
+    camera3DCube.position.setLength(18);
+    camera3DCube.lookAt(scene3DCube.position);
 
     if (event.clientX > window.innerWidth - 50)
     {
@@ -2421,7 +2498,7 @@ function on3DMouseMove(event) {
         $('#WebGLInteractiveMenu').hide();
         $('#WebGLTextureSelect').hide();
 
-        if (TOOL3DINTERACTIVE == 'moveXY') {
+        //if (TOOL3DINTERACTIVE == 'moveXY') {
 
             vector = new THREE.Vector3(x, y, 0.5);
             //projector.unprojectVector(vector, camera3D);
@@ -2525,39 +2602,6 @@ function on3DMouseMove(event) {
             }
             */
             // ===========================================
-
-        } else if (TOOL3DINTERACTIVE == 'moveZ') {
-
-            if (SelectedObject.position.y >= 0) {
-
-                if (mouse.y >= y && y > 0) {
-
-                    SelectedObject.position.y -= y;
-
-                } else {
-
-                    SelectedObject.position.y += y;
-                }
-
-                //SELECTED.position.y = y;
-            } else {
-                SelectedObject.position.y = 0;
-            }
-
-        } else if (TOOL3DINTERACTIVE == 'rotate') {
-
-            //SELECTED.rotation.x += x * Math.PI / 180;
-            //SELECTED.rotation.y += y * Math.PI / 180;
-            //SELECTED.rotation.z += x; // * Math.PI / 180;
-
-            if (mouse.x >= x && x > 0) {
-                SelectedObject.rotation.y += x / 4;
-            } else {
-                SelectedObject.rotation.y -= x / 4;
-            }
-            //var axis = new THREE.Vector3(x, y, 0);
-            //SELECTED.rotateOnAxis(axis, 0);
-        }
     }
     /*
         mouse.x = x;
@@ -2603,17 +2647,20 @@ function on3DMouseMove(event) {
 function on3DMouseDown(event) {
 
     event.preventDefault();
+
     if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
-    //clickTime = new Date().getTime();
-    if (controls3D instanceof THREE.OrbitControls)
-    {
-        $(renderer.domElement).bind('mousemove', on3DMouseMove);
+    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
+        return;
     }
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
+    //clickTime = new Date().getTime();
+    
+    $(renderer.domElement).bind('mousemove', on3DMouseMove);
+    
     SceneAnimate = false;
 
     //renderer.antialias = false;
@@ -2636,15 +2683,34 @@ function on3DMouseDown(event) {
     }, 1400);
 }
 
+
 function on3DMouseUp(event) {
 
     event.preventDefault();
+
     if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
+
+    if (controls3D instanceof THREE.TransformControls && !TransformConstrolsHighlighted)
+    {
+
+        //console.log(TransformConstrolsHighlighted);
+        controls3D.detach(SelectedObject);
+        
+        enableOrbitControls();
+        scene3DObjectUnselect();
+
+        //$(renderer.domElement).unbind('mousemove', on3DMouseMove);
+    }
+
+    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
+        return;
+    }
 
     $(renderer.domElement).unbind('mousemove', on3DMouseMove);
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
 
     //if (SCENE == '2d') {
 
@@ -2810,9 +2876,9 @@ function scene3DObjectSelectMenu(x, y, menuID) {
         $('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()-64).css('left', vector.x - $('#WebGLTextureSelect').width() / 2);
         //$('#WebGLTextureSelect').show();
 
-        $('#WebGLInteractiveMenu').bind('mousemove', on3DMouseMove);
-        $('#WebGLInteractiveMenu').bind('mousedown', on3DMouseDown);
-        $('#WebGLInteractiveMenu').bind('mouseup', on3DMouseUp);
+        //$('#WebGLInteractiveMenu').bind('mousemove', on3DMouseMove);
+        //$('#WebGLInteractiveMenu').bind('mousedown', on3DMouseDown);
+        //$('#WebGLInteractiveMenu').bind('mouseup', on3DMouseUp);
     }
     else if (SelectedWall != null)
     {
@@ -2923,8 +2989,8 @@ function scene3DObjectSelect(x, y, camera, children) {
                 	
                     //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
 
-                	glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
-            		SelectedObject.add(glowMesh.object3d);
+                	//glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
+            		//SelectedObject.add(glowMesh.object3d);
 
                 	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
 
@@ -2954,13 +3020,16 @@ function scene3DObjectSelect(x, y, camera, children) {
 
 function scene3DObjectUnselect() {
 
-    if (SelectedObject != null)
+    if (SelectedObject != null &&  controls3D instanceof THREE.OrbitControls)
     {
+        /*
     	if (glowMesh instanceof THREEx.GeometricGlowMesh)
     	{
         	SelectedObject.remove(glowMesh.object3d);
     	}
+        */
 
+        
     	camera3DAnimateResetView();
     
 	    camera3DPositionCache = null;
@@ -2969,9 +3038,9 @@ function scene3DObjectUnselect() {
 		SelectedObject = null;
 	    SelectedWall = null;
 
-		$('#WebGLInteractiveMenu').unbind('mousemove', on3DMouseMove);
-		$('#WebGLInteractiveMenu').unbind('mousedown', on3DMouseDown);
-		$('#WebGLInteractiveMenu').unbind('mouseup', on3DMouseUp);
+		//$('#WebGLInteractiveMenu').unbind('mousemove', on3DMouseMove);
+		//$('#WebGLInteractiveMenu').unbind('mousedown', on3DMouseDown);
+		//$('#WebGLInteractiveMenu').unbind('mouseup', on3DMouseUp);
 
 		$('#WebGLInteractiveMenu').hide();
 		$('#WebGLWallPaintMenu').hide();
@@ -4236,20 +4305,23 @@ function scene2DWallMeasurementInternal() {
 function animate() {
 
     requestAnimationFrame(animate);
+    var delta = clock.getDelta();
 
     if (SceneAnimate)
     {
-        var rotateSpeed = clock.getDelta() * 0.18; //.005; //Date.now() * 0.0001; //.01;
-        //var rotateSpeed = .015;
+        var rotateSpeed = delta * 0.19; //.005; //Date.now() * 0.0001; //.01;
+        //var rotateSpeed = .005;
         //if (keyboard.pressed("left")){ 
         
         var x = camera3D.position.x,
             z = camera3D.position.z;
+
         var cosratio = Math.cos(rotateSpeed),
             sinratio = Math.sin(rotateSpeed);
 
         camera3D.position.x = x * cosratio + z * sinratio;
         camera3D.position.z = z * cosratio - x * sinratio;
+
 
         //} else if (keyboard.pressed("right")){
         //camera3D.position.x = x * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
@@ -4313,14 +4385,12 @@ function animate() {
         }
 
         if (engine instanceof ParticleEngine) {
-            engine.update(clock.getDelta() * 0.8);
+            engine.update(delta * 0.8);
         }
         
         for (var a in animation) {
-            a.update(clock.getDelta() * 0.8);
-        }
-        
-        TWEEN.update();
+            a.update(delta * 0.8);
+        } 
     }
 
     if (SCENE == 'house')
@@ -4349,23 +4419,17 @@ function animate() {
 
         //Orientation Cube
 
-        try //FirstPersonControls.js fails this loop
-        {
-            camera3DCube.position.copy(camera3D.position);
-            camera3DCube.position.sub(controls3D.center);
-            camera3DCube.position.setLength(18);
-            camera3DCube.lookAt(scene3DCube.position);
-            rendererCube.render(scene3DCube, camera3DCube);
-        }
-        catch(err) {}
-
+        rendererCube.render(scene3DCube, camera3DCube);
     }
 
     //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
     //renderer.clear();
 
-    controls3D.update(clock.getDelta());
-    renderer.render(scene3D, camera3D);
+    //controls3D.update(delta);
+    //renderer.render(scene3D, camera3D);
+    //TWEEN.update();
+
+    render();
 
     //stats.update();
     /*
@@ -4385,6 +4449,13 @@ function animate() {
     //} else if (scene2D.visible) {
     //controls2D.update();
     //renderer.render(scene2D, camera2D);
+}
+
+function render()
+{
+    controls3D.update(clock.getDelta());
+    renderer.render(scene3D, camera3D);
+    TWEEN.update();
 }
 
 function fileSelect(action) {
@@ -4628,7 +4699,7 @@ $(document).ready(function() {
     var offsetAngle = offsetAngleDegress * Math.PI / 180;
     var circleOffset = $("#WebGLInteractiveMenu").width()/2;
     var tooltips = ["Move Horizontaly", "Info", "Duplicate", "Resize", "Textures", "Rotate", "Remove", "Move Vertically"];
-    var actions = ["TOOL3DINTERACTIVE='moveXY'", "", "", "TOOL3DINTERACTIVE='resize'", "toggleTextureSelect()", "TOOL3DINTERACTIVE='rotate'", "scene3DObjectSelectRemove()", "TOOL3DINTERACTIVE='moveZ'"];
+    var actions = ["enableTransformControls('translate')", "", "", "enableTransformControls('scale')", "toggleTextureSelect()", "enableTransformControls('rotate')", "scene3DObjectSelectRemove()", ""];
 
     //We need to get size of the object, which is currently isn't on page.
     //So we gonna create a dummy, read everything we need and then delete it.

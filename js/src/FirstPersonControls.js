@@ -234,8 +234,14 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		}
 
-		this.lon += this.mouseX * actualLookSpeed;
-		if( this.lookVertical ) this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+		//this.lon += this.mouseX * actualLookSpeed;
+		//if( this.lookVertical ) this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+
+		//https://github.com/bnolan/three.js/commit/b3944fe9c41815c21da33fdf3ea8cbd9859e7088
+		var mx = Math.sin(1.0 / this.viewHalfX * this.mouseX) * this.viewHalfX,
+		my = Math.sin(1.0 / this.viewHalfY * this.mouseY) * this.viewHalfY;
+		this.lon += mx * actualLookSpeed;
+		if( this.lookVertical ) this.lat -= my * actualLookSpeed * verticalLookRatio;
 
 		this.lat = Math.max( - 85, Math.min( 85, this.lat ) );
 		this.phi = THREE.Math.degToRad( 90 - this.lat );

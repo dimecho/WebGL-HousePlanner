@@ -3,6 +3,8 @@
  */
  /*jshint sub:true*/
 
+var TransformConstrolsHighlighted = false;
+
 (function () {
 
 	var GizmoMaterial = function ( parameters ) {
@@ -18,23 +20,19 @@
 
 		this.oldColor = this.color.clone();
 		this.oldOpacity = this.opacity;
-
+		
 		this.highlight = function( highlighted ) {
 
 			if ( highlighted ) {
 
 				this.color.setRGB( 1, 1, 0 );
 				this.opacity = 1;
-
 			} else {
 
-					this.color.copy( this.oldColor );
-					this.opacity = this.oldOpacity;
-
+				this.color.copy( this.oldColor );
+				this.opacity = this.oldOpacity;
 			}
-
 		};
-
 	};
 
 	GizmoMaterial.prototype = Object.create( THREE.MeshBasicMaterial.prototype );
@@ -46,12 +44,13 @@
 		this.depthTest = false;
 		this.depthWrite = false;
 		this.transparent = true;
-		this.linewidth = 1;
+		this.linewidth = 10;
 
 		this.setValues( parameters );
 
 		this.oldColor = this.color.clone();
 		this.oldOpacity = this.opacity;
+	
 
 		this.highlight = function( highlighted ) {
 
@@ -62,13 +61,10 @@
 
 			} else {
 
-					this.color.copy( this.oldColor );
-					this.opacity = this.oldOpacity;
-
+				this.color.copy( this.oldColor );
+				this.opacity = this.oldOpacity;
 			}
-
 		};
-
 	};
 
 	GizmoLineMaterial.prototype = Object.create( THREE.LineBasicMaterial.prototype );
@@ -78,7 +74,7 @@
 		var scope = this;
 		var showPickers = false; //debug
 		var showActivePlane = false; //debug
-
+		
 		this.init = function () {
 
 			THREE.Object3D.call( this );
@@ -182,8 +178,10 @@
 				if ( child.material && child.material.highlight ){
 					if ( child.name == axis ) {
 						child.material.highlight( true );
+						return true;
 					} else {
 						child.material.highlight( false );
+						return false;
 					}
 				}
 			});
@@ -231,28 +229,28 @@
 
 		this.handleGizmos = {
 			X: [
-				[ new THREE.Mesh( arrowGeometry, new GizmoMaterial( { color: 0xff0000 } ) ), [ 0.5, 0, 0 ], [ 0, 0, -Math.PI/2 ] ],
+				[ new THREE.Mesh( arrowGeometry, new GizmoMaterial( { color: 0xff0000 } ) ), [ 0.6, 0, 0 ], [ 0, 0, -Math.PI/2 ] ],
 				[ new THREE.Line( lineXGeometry, new GizmoLineMaterial( { color: 0xff0000 } ) ) ]
 			],
 			Y: [
-				[ new THREE.Mesh( arrowGeometry, new GizmoMaterial( { color: 0x00ff00 } ) ), [ 0, 0.5, 0 ] ],
+				[ new THREE.Mesh( arrowGeometry, new GizmoMaterial( { color: 0x00ff00 } ) ), [ 0, 0.6, 0 ] ],
 				[	new THREE.Line( lineYGeometry, new GizmoLineMaterial( { color: 0x00ff00 } ) ) ]
 			],
 			Z: [
-				[ new THREE.Mesh( arrowGeometry, new GizmoMaterial( { color: 0x0000ff } ) ), [ 0, 0, 0.5 ], [ Math.PI/2, 0, 0 ] ],
+				[ new THREE.Mesh( arrowGeometry, new GizmoMaterial( { color: 0x0000ff } ) ), [ 0, 0, 0.6 ], [ Math.PI/2, 0, 0 ] ],
 				[ new THREE.Line( lineZGeometry, new GizmoLineMaterial( { color: 0x0000ff } ) ) ]
 			],
 			XYZ: [
-				[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.1, 0 ), new GizmoMaterial( { color: 0xffffff, opacity: 0.25 } ) ), [ 0, 0, 0 ], [ 0, 0, 0 ] ]
+				[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.2, 0 ), new GizmoMaterial( { color: 0xffffff, opacity: 0.25 } ) ), [ 0, 0, 0 ], [ 0, 0, 0 ] ]
 			],
 			XY: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.29, 0.29 ), new GizmoMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.15, 0.15, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.15, 0.15, 0 ] ]
 			],
 			YZ: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.29, 0.29 ), new GizmoMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.15, 0.15 ], [ 0, Math.PI/2, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.15, 0.15 ], [ 0, Math.PI/2, 0 ] ]
 			],
 			XZ: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.29, 0.29 ), new GizmoMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.15, 0, 0.15 ], [ -Math.PI/2, 0, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.15, 0, 0.15 ], [ -Math.PI/2, 0, 0 ] ]
 			]
 		};
 
@@ -267,16 +265,16 @@
 				[ new THREE.Mesh( new THREE.CylinderGeometry( 0.2, 0, 1, 4, 1, false ), new GizmoMaterial( { color: 0x0000ff, opacity: 0.25 } ) ), [ 0, 0, 0.6 ], [ Math.PI/2, 0, 0 ] ]
 			],
 			XYZ: [
-				[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.2, 0 ), new GizmoMaterial( { color: 0xffffff, opacity: 0.25 } ) ) ]
+				[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.4, 0 ), new GizmoMaterial( { color: 0xffffff, opacity: 0.25 } ) ) ]
 			],
 			XY: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.4, 0.4 ), new GizmoMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.2, 0.2, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), new GizmoMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.2, 0.2, 0 ] ]
 			],
 			YZ: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.4, 0.4 ), new GizmoMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.2, 0.2 ], [ 0, Math.PI/2, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneGeometry( 1, 1), new GizmoMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.2, 0.2 ], [ 0, Math.PI/2, 0 ] ]
 			],
 			XZ: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.4, 0.4 ), new GizmoMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.2, 0, 0.2 ], [ -Math.PI/2, 0, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ), new GizmoMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.2, 0, 0.2 ], [ -Math.PI/2, 0, 0 ] ]
 			]
 		};
 
@@ -450,7 +448,7 @@
 		THREE.TransformGizmo.call( this );
 
 		var arrowGeometry = new THREE.Geometry();
-		var mesh = new THREE.Mesh( new THREE.BoxGeometry( 0.125, 0.125, 0.125 ) );
+		var mesh = new THREE.Mesh( new THREE.BoxGeometry( 0.15, 0.15, 0.15 ) );
 		mesh.position.y = 0.5;
 		mesh.updateMatrix();
 
@@ -645,7 +643,7 @@
 			this.gizmo["translate"].hide();
 			this.gizmo["rotate"].hide();
 			this.gizmo["scale"].hide();
-
+			TransformConstrolsHighlighted = false;
 		};
 
 		this.setMode = function ( mode ) {
@@ -711,7 +709,6 @@
 				this.gizmo[_mode].update( new THREE.Euler(), eye );
 
 			this.gizmo[_mode].highlight( scope.axis );
-
 		};
 
 		function onPointerHover( event ) {
@@ -757,6 +754,7 @@
 
 				if ( intersect ) {
 
+
 					scope.dispatchEvent( mouseDownEvent );
 
 					scope.axis = intersect.object.name;
@@ -779,7 +777,7 @@
 					parentScale.setFromMatrixScale( tempMatrix.getInverse( scope.object.parent.matrixWorld ) );
 
 					offset.copy( planeIntersect.point );
-
+			
 				}
 
 			}
@@ -980,6 +978,13 @@
 			ray.set( camPosition, pointerVector.sub( camPosition ).normalize() );
 
 			var intersections = ray.intersectObjects( objects, true );
+
+			if (intersections.length > 0) {
+				TransformConstrolsHighlighted = true;
+			}else{
+				TransformConstrolsHighlighted = false;
+			}
+
 			return intersections[0] ? intersections[0] : false;
 
 		}
