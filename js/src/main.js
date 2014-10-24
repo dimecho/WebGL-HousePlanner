@@ -99,6 +99,12 @@ var SelectedWall = null;
 var leftButtonDown = false;
 var clickTime;
 
+var zoom2Dimg, 
+    zoom2Dheight = 80, 
+    zoom2Dwidth = 241, 
+    zoom2DCTX = null, 
+    zoom2DSlider = null;
+
 //var keys = { SP: 32, W: 87, A: 65, S: 83, D: 68, UP: 38, LT: 37, DN: 40, RT: 39 };
 //var keysPressed = {};
 
@@ -887,11 +893,11 @@ function camera3DWalkViewToggle()
     }
     else if (controls3D instanceof THREE.OrbitControls)
     {
-        alertify.confirm("Use (W,A,S,D) or Arrow keys to move.", function (e) {
+        alertify.confirm("", function (e) {
         if (e) {
             camera3DPositionCache = camera3D.position.clone();
             camera3DPivotCache = controls3D.target.clone();
-
+            SceneAnimate = false;
             //TODO: anmate left and right menu hide
 
             var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:1.5, z:18},2000).easing(TWEEN.Easing.Quadratic.InOut).start();  
@@ -900,6 +906,7 @@ function camera3DWalkViewToggle()
             }).start();
 
         }});
+        $('.alertify-message').append($.parseHTML("<img src='images/wasd-keyboard.jpg' /><br/><br/>Use (W,A,S,D) or arrow keys to move."));
     }
     else
     {
@@ -1442,14 +1449,14 @@ function initObjectCollisions(container) {
 }
 */
 
-function scene2DZoom() {
+function scene2DZoom(scale) {
 
     /*
     http://jsfiddle.net/Q3TMA/
     http://jsfiddle.net/butch2k/kVukT/37/
     */
 
-    var SCALE_FACTOR = 1;
+    var SCALE_FACTOR = scale;
     var prev_zoom = SCALE_FACTOR;
                 
     scene2D.setHeight(scene2D.getHeight() * SCALE_FACTOR);
@@ -1500,7 +1507,23 @@ function show2D() {
     $('#menuBottomItem9').show();
     $('#menuBottomItem10').show();
 
+    //================
+    /*
+    https://github.com/rheh/HTML5-canvas-projects/tree/master/progress
+    */
+    var zoom2DCanvas = document.getElementById('zoom2DProgress');
+    zoom2Dimg = new Image(); // Create the image resource
+    if (zoom2DCanvas.getContext) // Canvas supported?
+    {
+        zoom2DCTX = zoom2DCanvas.getContext('2d');
+        zoom2DSlider = document.getElementById('zoom2DSlider');
+        zoom2Dimg.onload = drawImage; // Setup the onload event
+        zoom2Dimg.src = 'images/progress-tiles.jpg'; // Load the image
+    } else {
+        alert("Canvas not supported!");
+    }
     $('#zoom2DLevel').show();
+    //================
 
     //scene2DdrawRuler();
 
@@ -1512,6 +1535,36 @@ function show2D() {
     delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
     $('#HTMLCanvas').show();
+}
+
+function zoom2DdrawBase(ctx) {
+
+    zoom2DCTX.drawImage(zoom2Dimg, 0, 0, zoom2Dwidth, zoom2Dheight, 0, 0, zoom2Dwidth,  zoom2Dheight);
+}
+
+function zoom2DdrawProgress(ctx) {
+
+    var x1 = 65, // X position where the progress segment starts
+        x2 = 220, // X position where the progress segment ends
+        s = zoom2DSlider.value, 
+        x3 = 0,
+        x4 = 20,
+        y1 = 35;
+        
+    x3 = (x1 + ((x2 - x1) / 100) * s);  // Calculated x position where the overalyed image should end
+
+    zoom2DCTX.drawImage(zoom2Dimg, 0, zoom2Dheight, x3,  zoom2Dheight, 0, 0, x3,  zoom2Dheight);
+
+    var scale = Math.round(s/10);
+    zoom2DCTX.fillStyle = "grey";
+    zoom2DCTX.font = "12pt Arial";
+    zoom2DCTX.fillText(scale, x4, y1);
+    //scene2DZoom(scale);
+}
+
+function drawImage() {
+    zoom2DdrawBase(zoom2DCTX); // Draw the base image - no progress
+    zoom2DdrawProgress(zoom2DCTX); // Draw the progress segment level
 }
 
 function hideElements() {

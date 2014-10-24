@@ -600,7 +600,10 @@
 </div>
 <div id="HTMLCanvas" style="display:none">
   <div id="zoom2DLevel" style="position:absolute;left:10px;bottom:0;z-index:2">
-    <img src="images/zoom.png" />
+    <form id="drawForm">
+      <input id="zoom2DSlider" type="range" min="0" max="100" value="5" onchange="drawImage();" onkeyup="drawImage();" style="width:240px" />
+    </form>
+    <canvas id="zoom2DProgress" width="270" height="80"></canvas>
   </div>
   <div id="menuWallInput">
     <div id="links-left" style="width:100px;">
