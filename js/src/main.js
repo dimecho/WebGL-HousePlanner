@@ -878,7 +878,7 @@ function camera3DNoteEnter()
 {
     if (ViewNoteText == "")
         return;
-    var tween = new TWEEN.Tween(SelectedNote.position).to({x:camera3D.position.x-0.4, y:camera3D.position.y-0.4, z:camera3D.position.z-0.4},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    var tween = new TWEEN.Tween(SelectedNote.position).to({x:camera3D.position.x-0.1, y:camera3D.position.y-1, z:camera3D.position.z-0.1},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     var tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     //var tween = new TWEEN.Tween(object.rotation).to({x:controls3D.target.x, y:controls3D.target.y, z:controls3D.target.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 }
@@ -991,7 +991,7 @@ function camera3DAnimateResetView()
     }
 }
 
-function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
+function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow) {
 
     //http://www.smashingmagazine.com/2013/09/17/introduction-to-polygonal-modeling-and-three-js/
 
@@ -1024,6 +1024,54 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
 
     //console.log("Textures:" + urlTextures);
 
+    var callbackScene = function ( result ) {
+
+        //scene3D = result.scene;
+
+        result.scene.traverse(function (object) {
+
+            if (object instanceof THREE.Mesh) { //object.material
+                try
+                {
+                    object.geometry.computeFaceNormals();
+                    object.geometry.computeVertexNormals();
+                    object.geometry.computeBoundingBox();
+                    //callback(object.geometry,object.material);
+                    
+                    objectContainer.add(object);
+                } catch (exception) {
+                    //console.log("error catch");
+                }
+            }else  if (object instanceof THREE.PointLight) {
+                console.log("light found!");
+
+                //pointLight = new THREE.PointLight( 0xffaa00 );
+                //pointLight.position.set( 0, 0, 0 );
+                scene3D.add( object );
+            }
+            /*
+            if ( object.userData.rotating === true ) {
+
+                rotatingObjects.push( object );
+            }
+
+            if ( object instanceof THREE.MorphAnimMesh ) {
+
+                morphAnimatedObjects.push( object );
+            }
+
+            if ( object instanceof THREE.SkinnedMesh ) {
+
+                if ( object.geometry.animation ) {
+
+                    var animation = new THREE.Animation( object, object.geometry.animation );
+                    animation.play();
+                }
+            }
+            */
+        });
+    }
+
     var callback = function(geometry, materials) {
         /*
         var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial({
@@ -1041,12 +1089,12 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
         //console.log(materials[i].map);
         //}
 
-        /*
+        
         //geometry.mergeVertices(); //speed things up ?
         geometry.computeFaceNormals();
         geometry.computeVertexNormals(); // requires correct face normals
         geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
-        */
+        
 
         //materials.side = THREE.DoubleSide;
 
@@ -1057,9 +1105,9 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
         towards the camera. The other side is not rendered (backface culling). But this
         performance optimization sometimes leads to wholes in the surface. When this happens
         in your surface, simply set 'doubleSided' to 'true'.
-         */
+        */
         var material = new THREE.MeshFaceMaterial(materials);
-        //material.side = THREE.DoubleSide;
+        material.side = THREE.DoubleSide;
 
         /*var material = new THREE.MeshBasicMaterial({
             map: new THREE.MeshFaceMaterial(materials),
@@ -1109,17 +1157,17 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
 
         
         //mesh.geometry.mergeVertices(); //speed things up ?
-        mesh.geometry.computeFaceNormals();
-        mesh.geometry.computeVertexNormals(); // requires correct face normals
-        mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+        //mesh.geometry.computeFaceNormals();
+        //mesh.geometry.computeVertexNormals(); // requires correct face normals
+        //mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
         
 
-        mesh.matrixAutoUpdate = true;
+        //mesh.matrixAutoUpdate = true;
         //mesh.updateMatrix();
 
 
         //if (object instanceof THREE.Object3D) {
-        object.add(mesh);
+        objectContainer.add(mesh);
 
         /*
         object.traverse( function( node ) {
@@ -1127,6 +1175,10 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
                 node.material.side = THREE.DoubleSide;
             }
         });
+
+        pointLight = new THREE.PointLight( 0xffaa00 );
+            pointLight.position.set( 0, 0, 0 );
+            scene.add( pointLight );
         */
 
         //} else {
@@ -1195,11 +1247,21 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
                     //zip.load(binary.read('string'));
                     data = zip.file(filename + ".js").asText();
                     data = JSON.parse(data);
-                    //loader.loadJson(data, callback, urlTextures);
-                    var result = loader.parse(data, textures);
-                    callback(result.geometry, result.materials);
 
+                    if (data.metadata.type == "scene")
+                    {
+                        //console.log(data.metadata.type);
+                        loader = new THREE.SceneLoader();
+                        loader.parse(data, callbackScene, textures);
+                    }
+                    else
+                    {
+                        //loader.loadJson(data, callback, urlTextures);
+                        var result = loader.parse(data, textures);
+                        callback(result.geometry, result.materials);
+                    }
                 } catch (exception) { //zip file was probably not found, load regular json
+                    console.log("error catch");
                     loader.load(js.slice(0, -1), callback, textures);
                 }
             },
