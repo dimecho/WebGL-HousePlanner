@@ -8,21 +8,21 @@ TODO:
 - [difficulty: 3/10  progress: 90%] 2D floor plan select and overlay external draft image
 - [difficulty: 8/10  progress: 10%] Toolbar edit functions for 2D floor plans
 - [difficulty: 9/10  progress: 25%] Make converter function to "extrude" 2D into 3D walls
-- [difficulty: 6/10  progress: 0%]  Make front walls 80% transparent in 3D rotation
+- [difficulty: 6/10  progress: 10%] Make front walls 80% transparent in 3D rotation
 - [difficulty: 8/10  progress: 50%] 3D movable objects and collision detection
 - [difficulty: 9/10  progress: 10%] 3D menu objects draggable with "pop-up" or star burst effect
 - [difficulty: 2/10  progress: 90%] 3D objects sub-edit menu (textures/delete/duplicate)
-- [difficulty: 2/10  progress: 40%] Categorize and populate 3D Menu items
+- [difficulty: 2/10  progress: 60%] Categorize and populate 3D Menu items
 - [difficulty: 8/10  progress: 20%] 3D Menu functions for draggable objects
 - [difficulty: 5/10  progress: 50%] 3D Floor ground base glass reflective
-- [difficulty: 6/10  progress: 0%]  3D Exterior View ability to select floors (+ flying-in animationeffect)
+- [difficulty: 6/10  progress: 80%] 3D Exterior View ability to select floors (+ flying-in animationeffect)
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
-- [difficulty: 6/10  progress: 10%]  Make House Ground editable - angle/terain/square ex: downhill house http://cjcliffe.github.io/CubicVR.js/experiment/landscape_editor/landscape_edit_500m.html
+- [difficulty: 6/10  progress: 10%] Make House Ground editable - angle/terain/square ex: downhill house http://cjcliffe.github.io/CubicVR.js/experiment/landscape_editor/landscape_edit_500m.html
 - [difficulty: 4/10  progress: 60%] Ability to save scene 3D & 2D
 - [difficulty: 5/10  progress: 1%]  Ability to open scene 3D & 2D
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
-- [difficulty: 6/10  progress: 90%] 3D Exterior View create night scene atmosphere with proper lights
-- [difficulty: 8/10  progress: 0%]  3D Exterior View auto rotate-snap on ground angle
+- [difficulty: 6/10  progress: 98%] 3D Exterior View create night scene atmosphere with proper lights
+- [difficulty: 8/10  progress: 100%]  3D Exterior View auto rotate-snap on ground angle
 - [difficulty: 4/10  progress: 100%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
 */
 
@@ -30,7 +30,7 @@ TODO:
 
 var scene3D; //ThreeJS Canvas
 var scene3DCube; //ThreeJS Canvas
-var scene2D; //HTML Canvas
+var scene2D; //FabricJS Canvas
 
 var renderer;
 var rendererCube;
@@ -46,8 +46,9 @@ var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,
 var scene3DFloorWallContainer = []; //3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 
-var scene3DPivotPoint; //3D Layer rotational pivot point - 1 object
-var scene3DCubeMesh;
+var scene3DPivotPoint; // 3D rotational pivot point - 1 object
+var scene3DNote; // Sticky note visual 3D effect - 1 object
+var scene3DCubeMesh; // Orange cube for visual orientation
 
 var sceneAmbientLight;
 var sceneDirectionalLight;
@@ -56,7 +57,7 @@ var sceneHemisphereLight;
 //var sceneParticleLight;
 //var scenePointLight;
 
-var controls3D;
+var controls3D; //Multi-Class three.js controls library objects - Orbit, FirstPerson and Transform
 
 var camera3D;
 var camera3DPositionCache;
@@ -93,8 +94,9 @@ var DAY = 'day';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
 var SelectedObject = null;
-
+var SelectedNote = null;
 var SelectedWall = null;
+var ViewNoteText = "";
 
 var leftButtonDown = false;
 var clickTime;
@@ -103,12 +105,10 @@ var zoom2Dimg,
     zoom2Dheight = 80, 
     zoom2Dwidth = 241, 
     zoom2DCTX = null, 
-    zoom2DSlider = null;
+    zoom2DSlider = null; //2D zoom control visuals
 
 //var keys = { SP: 32, W: 87, A: 65, S: 83, D: 68, UP: 38, LT: 37, DN: 40, RT: 39 };
 //var keysPressed = {};
-
-//var keyboard = new THREE.KeyboardState();
 
 var scene2DDrawLineGeometry = []; //Temporary holder for mouse click and drag drawings
 var scene2DDrawLine; //2D Line form with color/border/points
@@ -874,6 +874,23 @@ function camera3DFloorEnter()
     var tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 }
 
+function camera3DNoteEnter()
+{
+    if (ViewNoteText == "")
+        return;
+    var tween = new TWEEN.Tween(SelectedNote.position).to({x:camera3D.position.x-0.4, y:camera3D.position.y-0.4, z:camera3D.position.z-0.4},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    var tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    //var tween = new TWEEN.Tween(object.rotation).to({x:controls3D.target.x, y:controls3D.target.y, z:controls3D.target.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+}
+
+function camera3DNoteExit()
+{
+    ViewNoteText = "";
+
+    var tween = new TWEEN.Tween(SelectedNote.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    var tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    
+}
 function camera3DHouseEnter()
 {
 	camera3D.position.set(0, 20, 0);
@@ -1024,12 +1041,33 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
         //console.log(materials[i].map);
         //}
 
+        /*
         //geometry.mergeVertices(); //speed things up ?
         geometry.computeFaceNormals();
         geometry.computeVertexNormals(); // requires correct face normals
         geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+        */
 
-        var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+        //materials.side = THREE.DoubleSide;
+
+        /*
+        Create material and activate the 'doubleSided' attribute to force the
+        rendering of both sides of each face (front and back). This prevents the so called
+        'backface culling'. Usually, only the side is rendered, whose normal vector points
+        towards the camera. The other side is not rendered (backface culling). But this
+        performance optimization sometimes leads to wholes in the surface. When this happens
+        in your surface, simply set 'doubleSided' to 'true'.
+         */
+        var material = new THREE.MeshFaceMaterial(materials);
+        //material.side = THREE.DoubleSide;
+
+        /*var material = new THREE.MeshBasicMaterial({
+            map: new THREE.MeshFaceMaterial(materials),
+            side:THREE.DoubleSide
+        });
+        */
+
+        var mesh = new THREE.Mesh(geometry, material);
         mesh.name = js;
         
         //mesh.overdraw = true; //??? repeat textures?
@@ -1063,20 +1101,34 @@ function open3DModel(js, object, x, y, z, xaxis, yaxis, ratio, shadow) {
         mesh.position.x = x;
         mesh.position.y = y;
         mesh.position.z = z;
+
+        mesh.rotation.x = xaxis;
+        mesh.rotation.y = yaxis;
+     
         mesh.doubleSided = true;
 
-        /*
-        mesh.geometry.mergeVertices(); //speed things up ?
+        
+        //mesh.geometry.mergeVertices(); //speed things up ?
         mesh.geometry.computeFaceNormals();
         mesh.geometry.computeVertexNormals(); // requires correct face normals
         mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
-        */
+        
 
         mesh.matrixAutoUpdate = true;
-        mesh.updateMatrix();
+        //mesh.updateMatrix();
+
 
         //if (object instanceof THREE.Object3D) {
         object.add(mesh);
+
+        /*
+        object.traverse( function( node ) {
+            if( node.material ) {
+                node.material.side = THREE.DoubleSide;
+            }
+        });
+        */
+
         //} else {
         //    console.log("settings mesh");
         //    object = mesh;
@@ -2389,7 +2441,6 @@ $(document).on('keyup', function(event){
 
 function on3DHouseMouseDown(event) {
 
- 
     	on3DMouseDown(event);
 
         if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
@@ -2452,11 +2503,12 @@ function on3DFloorMouseMove(event) {
 		for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++) {
 
 			//http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
+            
 	        // this will give us position relative to the world
-	p = sphere.matrixWorld.getPosition().clone();
+    	p = sphere.matrixWorld.getPosition().clone();
 
-	// projectVector will translate position to 2d
-	v = projector.projectVector(p, perspectiveCamera);
+    	// projectVector will translate position to 2d
+    	v = projector.projectVector(p, perspectiveCamera);
 
 		//console.log("[" + i + "]" + camera3D.position.distanceTo(scene3DFloorWallContainer[FLOOR].children[i].position));
 		//for (var vertexIndex = 0; vertexIndex < scene3DFloorWallContainer[FLOOR].children[i].geometry.vertices.length; vertexIndex++)
@@ -2745,13 +2797,11 @@ function on3DMouseUp(event) {
 
     if (controls3D instanceof THREE.TransformControls && !TransformConstrolsHighlighted)
     {
-
         //console.log(TransformConstrolsHighlighted);
         controls3D.detach(SelectedObject);
         
         enableOrbitControls();
         scene3DObjectUnselect();
-
         //$(renderer.domElement).unbind('mousemove', on3DMouseMove);
     }
 
@@ -3013,6 +3063,18 @@ function scene3DObjectSelect(x, y, camera, children) {
         controls3D.enabled = false;
 
         //if (SelectedObject != intersects[0].object){
+            if (intersects[0].object.name == "objects/Platform/note.jsz")
+            {
+                SelectedNote = intersects[0].object;
+                camera3DPositionCache = SelectedNote.position.clone();
+                camera3DPivotCache = SelectedNote.rotation.clone();
+                
+                ViewNoteText = "test"; //TODO: get object text maybe .name will be a slit array | ???
+                camera3DNoteEnter();
+                
+                return true;
+            }
+
             if (children == scene3DHouseContainer.children || children == scene3DFloorContainer[FLOOR].children)
             {
             	scene3DObjectUnselect(); //avoid showing multiple selected objects
@@ -3073,7 +3135,7 @@ function scene3DObjectSelect(x, y, camera, children) {
 
 function scene3DObjectUnselect() {
 
-    if (SelectedObject != null &&  controls3D instanceof THREE.OrbitControls)
+    if (controls3D instanceof THREE.OrbitControls)
     {
         /*
     	if (glowMesh instanceof THREEx.GeometricGlowMesh)
@@ -3082,23 +3144,32 @@ function scene3DObjectUnselect() {
     	}
         */
 
-        
-    	camera3DAnimateResetView();
-    
+        if(SelectedNote != null)
+        {
+            camera3DNoteExit();
+            SelectedNote = null;
+        }
+        else if(SelectedObject != null)
+        {
+            camera3DAnimateResetView();
+
+            SelectedObject = null;
+            SelectedWall = null;
+
+            $('#WebGLInteractiveMenu').hide();
+            $('#WebGLWallPaintMenu').hide();
+            $('#WebGLColorWheelSelect').hide();
+            $('#WebGLTextureSelect').hide();
+        }
+
 	    camera3DPositionCache = null;
 		camera3DPivotCache = null;
-
-		SelectedObject = null;
-	    SelectedWall = null;
 
 		//$('#WebGLInteractiveMenu').unbind('mousemove', on3DMouseMove);
 		//$('#WebGLInteractiveMenu').unbind('mousedown', on3DMouseDown);
 		//$('#WebGLInteractiveMenu').unbind('mouseup', on3DMouseUp);
 
-		$('#WebGLInteractiveMenu').hide();
-		$('#WebGLWallPaintMenu').hide();
-		$('#WebGLColorWheelSelect').hide();
-		$('#WebGLTextureSelect').hide();
+
 	}
 }
 
@@ -3476,21 +3547,43 @@ function sceneNew() {
     });
 	*/
 
-
     //Temporary Objects for visualization
     //TODO: load from one JSON file
     //=========================================
 
     open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
+    //open3DModel("objects/Platform/note.jsz", scene3DNote, 0, 0, 0, 0, 0, 1);
+
     open3DModel("objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1);
     open3DModel("objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
-
     open3DModel("objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
     open3DModel("objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1);
     open3DModel("objects/Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
     open3DModel("objects/Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
     open3DModel("objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
+
     open3DModel("objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
+
+   
+
+    //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
+    var material = new THREE.MeshBasicMaterial( { color: 0x000000  } );
+    var textGeometry = new THREE.TextGeometry('cool notes, click to view', {
+        font: 'helvetiker', // Must be lowercase!
+        weight: 'normal',
+        size: 0.05,
+        height: 0.01
+    });
+    var textMesh = new THREE.Mesh(textGeometry, material);
+    //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
+    //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
+    textMesh.position.x = 1.8;
+    textMesh.position.y = 1;
+    textMesh.position.z = 0.55;
+    textMesh.rotation.y = 1.5;
+
+    scene3DFloorContainer[FLOOR].add(textMesh);
+    open3DModel("objects/Platform/note.jsz", scene3DFloorContainer[FLOOR], 1.8, 0.6, 0.18, 0, 1.5, 1);
     //open3DModel("objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
     //open3DModel("objects/Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
     //THREE.GeometryUtils.center();
@@ -4776,8 +4869,7 @@ $(document).ready(function() {
 
         //console.log(circleOffset+iconOffset);
         
-        $("#icn" + index).css({"background-image" : 'url("images/hicn' + index + '.png")',"left":"0","bottom":"0"});
-
+        $("#icn" + index).css({"background-image": 'url("images/hicn' + index + '.png")', "-webkit-animation-delay": "2s", "animation-delay": "2s"});
         $("#icn" + index).animate({"left":dX,"bottom":dY}, "slow");
 
         //console.log('url("icn' + index + '.png")');

@@ -8,7 +8,7 @@ curl -O https://raw.githubusercontent.com/mrdoob/three.js/master/utils/exporters
 curl -O https://raw.githubusercontent.com/mrdoob/three.js/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/import_threejs.py
 
 
-BLENDER_PATH=/Applications/blender.app/Contents/MacOS/2.71/scripts/addons/io_mesh_threejs/
+BLENDER_PATH=/Applications/blender.app/Contents/Resources/2.72/scripts/addons/io_mesh_threejs/
 mkdir -p "$BLENDER_PATH"
 
 cp -R __init__.py "$BLENDER_PATH"
