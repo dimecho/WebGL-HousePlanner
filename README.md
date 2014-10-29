@@ -1,4 +1,4 @@
-<center><img src="https://github.com/poofik/webgl-houseplanner/raw/master/objects/Platform/Textures/logo.png" alt="" width="128" height="128" /></center>
+<p align="center"><img src="https://github.com/poofik/webgl-houseplanner/raw/master/objects/Platform/Textures/logo.png" alt="" width="256" height="256" /></p>
 
 # WebGL HousePlanner - 3D Home Staging #
 **version 1.0**
