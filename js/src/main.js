@@ -905,13 +905,17 @@ function camera3DNoteEnter()
     var pLocal = new THREE.Vector3( 0, -0.5, -0.6 );
     var target = pLocal.applyMatrix4(camera3D.matrixWorld);
 
-    var tween = new TWEEN.Tween(SelectedNote.position).to(target,2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    var tween = new TWEEN.Tween(SelectedNote.position).to(target,2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+        $('#WebGLNote').show();
+    }).start();
     var tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 }
 
 function camera3DNoteExit()
 {
     ViewNoteText = "";
+    $('#WebGLNote').hide();
+   
     //camera3D.remove(SelectedNote);
     var tween = new TWEEN.Tween(SelectedNote.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     var tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();

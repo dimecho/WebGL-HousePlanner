@@ -517,39 +517,34 @@
   <input type="file" name="fileInput" id="fileInput"  hidden />
   <input type="submit" id="fileSubmit" value="Upload" hidden />
 </form>
+
 <div id="WebGLCanvas" style="display:none">
-  <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
-  <div id="WebGLInteractiveMenu" style="display:none;">
-    <!--<div id="rotateSelector"></div>-->
-    <!--
-    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding:0px">
-        <a href="#" onclick="menuSelect(0,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveXY'" class="hi-icon icon-move tooltip" title="Move Horizontaly" id="menuInteractiveItem0"></a>
-        <a href="#" onclick="menuSelect(1,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='moveZ'" class="hi-icon icon-updown tooltip" title="Move Vertically" id="menuInteractiveItem1"></a>
-        <a href="#" onclick="menuSelect(2,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='rotate'" class="hi-icon icon-rotate tooltip" title="Rotate" id="menuInteractiveItem2"></a>
-        <a href="#" onclick="menuSelect(3,'menuInteractiveItem','#ff3700');TOOL3DINTERACTIVE='resize'" class="hi-icon icon-resize tooltip" title="Resize" id="menuInteractiveItem3"></a>
-        <a href="#" onclick="" class="hi-icon icon-duplicate tooltip" title="Duplicate" id="menuInteractiveItem4"></a>
-        <a href="#" onclick="scene3DObjectSelectRemove()" class="hi-icon icon-delete tooltip" title="Remove" id="menuInteractiveItem5"></a>
+    <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
+    <div id="WebGLInteractiveMenu" style="display:none;"></div>
+
+    <form id="WebGLNote" style="position:absolute;left:40%;top:40%;display:none;">
+        <textarea  name="note" maxlength="1000" cols="50" rows="6" style="border:none;background-color:transparent;">A Note with dynamic text and very cool visual effects</textarea>
+    </form>
+
+    <div id="WebGLWallPaintMenu" style="display:none;position:absolute;width:35px;height:35px;">
+        <a href="#" onclick="toggleTextureSelect()"><img src="images/colorwheel.svg" /></a>
     </div>
-    -->
-  </div>
-  <div id="WebGLWallPaintMenu" style="display:none;position:absolute;width:35px;height:35px;">
-  	<a href="#" onclick="toggleTextureSelect()"><img src="images/colorwheel.svg" /></a>
-  </div>
-  <div id="WebGLColorWheelSelect" style="display:none;position:absolute;width:300px;height:300px;">
-    <div class="colorpicker">
-      <canvas id="picker" var="2" width="300" height="300"></canvas>
-      <div class="controls">
-        <div><label>R</label> <input type="text" id="rVal" /></div>
-        <div><label>G</label> <input type="text" id="gVal" /></div>
-        <div><label>B</label> <input type="text" id="bVal" /></div>
-        <div><label>RGB</label> <input type="text" id="rgbVal" /></div>
-        <div><label>HEX</label> <input type="text" id="hexVal" /></div>
-      </div>
+
+    <div id="WebGLColorWheelSelect" style="display:none;position:absolute;width:300px;height:300px;">
+        <div class="colorpicker">
+          <canvas id="picker" var="2" width="300" height="300"></canvas>
+          <div class="controls">
+            <div><label>R</label> <input type="text" id="rVal" /></div>
+            <div><label>G</label> <input type="text" id="gVal" /></div>
+            <div><label>B</label> <input type="text" id="bVal" /></div>
+            <div><label>RGB</label> <input type="text" id="rgbVal" /></div>
+            <div><label>HEX</label> <input type="text" id="hexVal" /></div>
+          </div>
+        </div>
     </div>
-  </div>
-  <div id="WebGLTextureSelect" style="display:none;width:60%;height:120px;">
-  </div>
+    <div id="WebGLTextureSelect" style="display:none;width:60%;height:120px;"></div>
 </div>
+
 <div id="HTMLCanvas" style="display:none">
   <div id="zoom2DLevel" style="position:absolute;left:10px;bottom:0;z-index:2">
     <form id="drawForm">
