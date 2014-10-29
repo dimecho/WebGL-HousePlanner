@@ -1,4 +1,4 @@
-![](https://github.com/poofik/webgl-houseplanner/raw/master/objects/Platform/Textures/logo.png =128x128)
+<center><img src="https://github.com/poofik/webgl-houseplanner/raw/master/objects/Platform/Textures/logo.png" alt="" width="128" height="128" /></center>
 
 # WebGL HousePlanner - 3D Home Staging #
 **version 1.0**
@@ -29,4 +29,4 @@ limitations under the License.
 
 WebGL HousePlanner was created by Dima Dykhman.
 
-![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot.jpg)
+->![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot.jpg)<-
