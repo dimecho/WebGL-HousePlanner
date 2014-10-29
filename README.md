@@ -1,3 +1,4 @@
+![](./objects/Platform/Textures/logo.png =128x128)
 
 # WebGL HousePlanner - 3D Home Staging #
 **version 1.0**
