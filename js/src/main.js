@@ -75,8 +75,6 @@ var skyMesh;
 var weatherSkyDayMesh;
 var weatherSkyNightMesh;
 var weatherSkyRainbowMesh;
-var weatherSnowMesh;
-var weatherRainMesh;
 
 var SESSION = '';
 var RUNMODE = 'local'; //database
@@ -101,6 +99,7 @@ var ViewNoteText = "";
 
 var leftButtonDown = false;
 var clickTime;
+var doubleClickTime;
 
 var zoom2Dimg, 
     zoom2Dheight = 80, 
@@ -124,9 +123,15 @@ var scene2DWallBearingMaterial;
 var scene2DWallBearingMaterialSelect;
 
 var animation = [];
+var particlePivot;
+var particlePivotEmitter;
+
+var particleWeather;
+
+//var particleClouds;
 var mouse;
 var clock;
-var engine;
+//var engine;
 var projector;
 var vector;
 var geometry;
@@ -248,6 +253,50 @@ function init(runmode,viewmode) {
     scene2DWallDimentions[2] = new Array();
 
     scene3DPivotPoint = new THREE.Object3D();
+
+    particlePivot = new SPE.Group({});
+    particleWeather = new SPE.Group({});
+    //weatherRainParticle = new SPE.Group({});
+
+                // Create particle emitter 0
+             particlePivotEmitter = new SPE.Emitter( {
+                type: 'cube',
+                particleCount: 30, //particlesPerSecond
+                position: new THREE.Vector3(0, 0, 0),
+                positionSpread: new THREE.Vector3( 0, 0, 0 ),
+                acceleration: new THREE.Vector3( 0, 0, 0 ),
+                accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+                velocity: new THREE.Vector3( 0, 3, 0 ),
+                velocitySpread: new THREE.Vector3(3, 0, 3),
+                sizeStart: 0,
+                sizeStartSpread: 0.02,
+                sizeMiddle: 1,
+                sizeMiddleSpread: 0,
+                sizeEnd: 1,
+                sizeEndSpread: 0.4,
+                angleStart: 0,
+                angleStartSpread: 180,
+                angleMiddle: 180,
+                angleMiddleSpread: 0,
+                angleEnd: 0,
+                angleEndSpread: 360 * 4,
+                angleAlignVelocity: false,
+                colorStart: new THREE.Color( 0xffffff ),
+                colorStartSpread: new THREE.Vector3(0, 0, 0),
+                colorMiddle: new THREE.Color( 0xffffff ),
+                colorMiddleSpread: new THREE.Vector3( 0, 0, 0 ),
+                colorEnd: new THREE.Color( 0xffffff ),
+                colorEndSpread: new THREE.Vector3(0, 0, 0),
+                opacityStart: 1,
+                opacityStartSpread: 0,
+                opacityMiddle: 0.5,
+                opacityMiddleSpread: 0,
+                opacityEnd: 0,
+                opacityEndSpread: 0,
+                duration: null,
+                alive: 0,
+                isStatic: 0
+            });
 
     /*
     (function(watchedKeyCodes) {
@@ -1016,7 +1065,7 @@ function camera3DAnimateResetView()
 	if (camera3DPositionCache != null && controls3D instanceof THREE.OrbitControls)
 	{
 		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-		var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+		//var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     }
 }
 
@@ -1794,10 +1843,15 @@ function hideElements() {
 
     scene3DObjectUnselect();
 
+    /*
     if (engine instanceof ParticleEngine) {
         engine.destroy();
         engine = null;
     }
+    */
+    scene3D.remove(particlePivot.mesh);
+    //particlePivot = new SPE.Group({});
+
     //scene3D.visible = !b;
     //scene2D.visible = b;
 
@@ -1805,11 +1859,14 @@ function hideElements() {
 }
 
 function scene3DSetWeather() {
-
+    /*
     if (engine instanceof ParticleEngine) {
         engine.destroy();
         engine = null;
     }
+    */
+    particleWeather = new SPE.Group({});
+    scene3D.remove(particleWeather.mesh);
 
     if (WEATHER == "sunny") {
 
@@ -1817,15 +1874,95 @@ function scene3DSetWeather() {
 
     } else if (WEATHER == "snowy") {
 
-        engine = new ParticleEngine();
-        engine.setValues(weatherSnowMesh);
-        engine.initialize();
+        //engine = new ParticleEngine();
+        //engine.setValues(weatherSnowMesh);
+        //engine.initialize();
+
+        /*
+    weatherSnowMesh = {
+        positionStyle: Type.CUBE,
+        positionBase: new THREE.Vector3(0, 20, 0),
+        positionSpread: new THREE.Vector3(30, 0, 30),
+
+        velocityStyle: Type.CUBE,
+        velocityBase: new THREE.Vector3(0, 5, 0),
+        velocitySpread: new THREE.Vector3(20, 20, 20),
+        accelerationBase: new THREE.Vector3(0, -10, 0),
+
+        angleBase: 0,
+        angleSpread: 50,
+        angleVelocityBase: 0,
+        angleVelocitySpread: 5,
+
+        particleTexture: THREE.ImageUtils.loadTexture('./images/snowflake.png'),
+
+        sizeTween: new ParticleTween([0.5, 1], [1, 0.6]),
+        colorBase: new THREE.Vector3(0.66, 1.0, 0.9), // H,S,L
+        opacityTween: new ParticleTween([2, 3], [0.8, 0]),
+
+        particlesPerSecond: 50,
+        particleDeathAge: 3.0,
+        emitterDeathAge: 180
+    };
+    */
+        particleWeather = new SPE.Group({
+            texture: THREE.ImageUtils.loadTexture("./images/snowflake.png"),
+            maxAge: 180,
+            hasPerspective: 1,
+            colorize: 1,
+            transparent: 1,
+            alphaTest: 0.5,
+            depthWrite: false,
+            depthTest: true,
+            blending: THREE.AdditiveBlending
+        });
+
+        var particleEmitter = new SPE.Emitter( {
+                type: 'cube',
+                particleCount: 50, //particlesPerSecond
+                position: new THREE.Vector3(0, 20, 0),
+                positionSpread: new THREE.Vector3(30, 0, 30),
+                acceleration: new THREE.Vector3(0, -10, 0),
+                accelerationSpread: new THREE.Vector3( 0, -10, 0 ),
+                velocity: new THREE.Vector3( 0, 5, 0 ),
+                velocitySpread: new THREE.Vector3(20, 20, 20),
+                sizeStart: 0.5,
+                sizeStartSpread: 1,
+                sizeMiddle: 1,
+                sizeMiddleSpread: 0.6,
+                sizeEnd: 1,
+                sizeEndSpread: 0.6,
+                angleStart: 0,
+                angleStartSpread: 50,
+                angleMiddle: 0,
+                angleMiddleSpread: 0,
+                angleEnd: 0,
+                angleEndSpread: 5,
+                angleAlignVelocity: false,
+                colorStart: new THREE.Color( 0xffffff ),
+                colorStartSpread: new THREE.Vector3(0, 0, 0),
+                colorMiddle: new THREE.Color( 0xffffff ),
+                colorMiddleSpread: new THREE.Vector3( 0, 0, 0 ),
+                colorEnd: new THREE.Color( 0xffffff ),
+                colorEndSpread: new THREE.Vector3(0, 0, 0),
+                opacityStart: 1,
+                opacityStartSpread: 0,
+                opacityMiddle: 1,
+                opacityMiddleSpread: 0,
+                opacityEnd: 1,
+                opacityEndSpread: 0,
+                duration: null,
+                alive: 3.0,
+                isStatic: 0
+        });
+        particleWeather.addEmitter(particleEmitter);
+        scene3D.add(particleWeather.mesh);
 
     } else if (WEATHER == "rainy") {
 
-        engine = new ParticleEngine();
-        engine.setValues(weatherRainMesh);
-        engine.initialize();
+        //engine = new ParticleEngine();
+        //engine.setValues(weatherRainMesh);
+        //engine.initialize();
     }
 
     scene3D.remove(weatherSkyDayMesh);
@@ -2040,10 +2177,16 @@ function onDocumentDoubleClick(event) {
 
         if (intersects.length > 0) {
 
+            clearTimeout(doubleClickTime);
+
             scene3DPivotPoint.position.set(intersects[0].point.x, 0, intersects[0].point.z);
-            scene3D.add(scene3DPivotPoint);
+            
 
             //http://stemkoski.github.io/Three.js/Particle-Engine-Fireworks.html
+
+            //particlePivot.removeEmitter(particlePivotEmitter);
+
+            /*
             engine = new ParticleEngine();
             fountain = {
                 positionStyle: Type.CUBE,
@@ -2073,13 +2216,48 @@ function onDocumentDoubleClick(event) {
             };
             engine.setValues(fountain);
             engine.initialize();
+            */
 
-            controls3D.target = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z); //having THREE.TrackballControls or THREE.OrbitControls seems to override the camera.lookAt function
+            //particlePivotEmitter.disable();
+            //particlePivotEmitter.reset();
+            //particlePivot.removeEmitter(particlePivotEmitter);
 
-            setTimeout(function() {
+            //particlePivotEmitter.position = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z);
+            
+
+            particlePivot = new SPE.Group({
+                texture: THREE.ImageUtils.loadTexture("./images/star.png"),
+                maxAge: 4.0,
+                hasPerspective: 1,
+                colorize: 1,
+                transparent: 1,
+                alphaTest: 0.5,
+                depthWrite: false,
+                depthTest: true,
+                blending: THREE.AdditiveBlending
+            });
+
+            particlePivotEmitter.disable();
+            particlePivotEmitter.position = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z),
+            particlePivot.addEmitter(particlePivotEmitter);
+
+            scene3D.add(scene3DPivotPoint);
+            scene3D.add(particlePivot.mesh);
+
+            particlePivotEmitter.enable();
+
+            var tween = new TWEEN.Tween(controls3D.target).to({x:intersects[0].point.x, y:0, z:intersects[0].point.z},800).easing(TWEEN.Easing.Quadratic.InOut).start();
+
+            //controls3D.target = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z); //having THREE.TrackballControls or THREE.OrbitControls seems to override the camera.lookAt function
+
+            doubleClickTime = setTimeout(function() {
                 scene3D.remove(scene3DPivotPoint);
-                engine.destroy();
-                engine = null;
+                //engine.destroy();
+                //engine = null;
+                particlePivotEmitter.disable();
+                scene3D.remove(particlePivot.mesh);
+                //particlePivot = new SPE.Group({});
+
             }, 4000);
         }
     }
@@ -3673,8 +3851,7 @@ function sceneNew() {
     open3DModel("objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
 
     open3DModel("objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
-
-   
+    open3DModel("objects/Interior/Kitchen/Tables/table-w-table-cloth.jsz", scene3DFloorContainer[FLOOR], -2, 0, 4, 0, 0, 1);
 
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
     var material = new THREE.MeshBasicMaterial( { color: 0x000000  } );
@@ -3706,13 +3883,13 @@ function sceneNew() {
     scene2DWallGeometry[FLOOR].push([400, 200, 1000, 200]); //x1,y1,x2,y2
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]); //w,l,h,ha,a in pixels!
 
-    scene2DWallGeometry[FLOOR].push([1000, 200, 1000, 600]);
+    scene2DWallGeometry[FLOOR].push([1000, 200, 1000, 680]);
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
 
-    scene2DWallGeometry[FLOOR].push([1000, 600, 400, 600]);
+    scene2DWallGeometry[FLOOR].push([1000, 680, 400, 680]);
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
 
-    scene2DWallGeometry[FLOOR].push([400, 600, 400, 200]);
+    scene2DWallGeometry[FLOOR].push([400, 680, 400, 200]);
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
 
     //Draw 2D Scene
@@ -4195,32 +4372,7 @@ function scene3DSky() {
     geometry.merge(plane.geometry, plane.matrix);
     weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialNight);
 
-    weatherSnowMesh = {
-        positionStyle: Type.CUBE,
-        positionBase: new THREE.Vector3(0, 20, 0),
-        positionSpread: new THREE.Vector3(30, 0, 30),
-
-        velocityStyle: Type.CUBE,
-        velocityBase: new THREE.Vector3(0, 5, 0),
-        velocitySpread: new THREE.Vector3(20, 20, 20),
-        accelerationBase: new THREE.Vector3(0, -10, 0),
-
-        angleBase: 0,
-        angleSpread: 50,
-        angleVelocityBase: 0,
-        angleVelocitySpread: 5,
-
-        particleTexture: THREE.ImageUtils.loadTexture('./images/snowflake.png'),
-
-        sizeTween: new ParticleTween([0.5, 1], [1, 0.6]),
-        colorBase: new THREE.Vector3(0.66, 1.0, 0.9), // H,S,L
-        opacityTween: new ParticleTween([2, 3], [0.8, 0]),
-
-        particlesPerSecond: 50,
-        particleDeathAge: 3.0,
-        emitterDeathAge: 180
-    };
-
+    /*
     weatherRainMesh = {
         positionStyle: Type.CUBE,
         positionBase: new THREE.Vector3(0, 20, 0),
@@ -4243,6 +4395,7 @@ function scene3DSky() {
         particleDeathAge: 2.5,
         emitterDeathAge: 60
     };
+    */
 }
 
 /*
@@ -4643,9 +4796,13 @@ function animate() {
             //scene3DFloorGroundContainer.children[0].visible = true;
         }
 
-        if (engine instanceof ParticleEngine) {
-            engine.update(delta * 0.8);
-        }
+        //if (engine instanceof ParticleEngine) {
+        //    engine.update(delta * 0.8);
+        //}
+        //if (particlePivot instanceof SPE.Group) {
+            particlePivot.tick(delta);
+            particleWeather.tick(delta);
+        //}
         
         for (var a in animation) {
             a.update(delta * 0.8);
@@ -4943,6 +5100,27 @@ function toggleTextureSelect() {
 }
 
 $(document).ready(function() {
+
+    /*
+     $.ajax("objects/Platform/floorplan1.dxf",{
+            contentType: "application/text",
+            beforeSend: function (req) {
+              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+            },
+            success: function(data){
+
+                var parser = new DXFParser(data);
+                console.log(parser);
+            },
+            error: function(xhr, textStatus, errorThrown){
+                alertify.alert("DXF (" + js + ") Loading Error");
+            }
+        });
+    */
+  
+    //wireframe = new Wireframe();
+    //wireframe.build(parser);
+
 
     /* https://dribbble.com/shots/872582-Circular-Menu */
     /*
