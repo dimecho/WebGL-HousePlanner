@@ -114,6 +114,7 @@ var scene2DDrawLineGeometry = []; //Temporary holder for mouse click and drag dr
 var scene2DDrawLine; //2D Line form with color/border/points
 //var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
 var scene2DWallGeometry = []; //Multidymentional array, many floors have many walls and walls have many geomertry points
+var scene2DWallMesh = []; //Fabric.js line data
 var scene2DWallDimentions = []; //Multidymentional array, contains real-life (visual) dimentions for scene2DWallGeometry [width,length,height,height-angle,angle]
 var scene3DWallTexture; //Wall Default Texture
 
@@ -761,6 +762,7 @@ function loadDAE(file, object, x, y, z, xaxis, yaxis, ratio) {
 */
 
 function scene2DMakeWall(coords) {
+    
     var line = new fabric.Line(coords, {
         fill: 'black',
         stroke: 'black',
@@ -770,7 +772,32 @@ function scene2DMakeWall(coords) {
         strokeLineCap: 'round',
         selectable: true
     });
+    
+
+    //Need Path for dynamic curved lines
+    /*
+    var line = new fabric.Path('M 65 0 Q 100, 100, 200, 0', {
+        fill: 'black',
+        stroke: 'black',
+        strokeWidth: 12,
+        lockRotation: true,
+        perPixelTargetFind: true,
+        strokeLineCap: 'round',
+        selectable: true
+    });
+
+    line.path[0][1] = coords[0];
+    line.path[0][2] = coords[0];
+
+    line.path[1][1] = coords[1];
+    line.path[1][2] = coords[2];
+
+    line.path[1][3] = coords[3];
+    line.path[1][4] = coords[0];
+    */
+
     line.name = 'wall';
+
     /*
     line.toObject = function() {
         return {
@@ -783,6 +810,7 @@ function scene2DMakeWall(coords) {
 }
 
 function scene2DMakeWallEdgeCircle(left, top, line1, line2, line3, line4) {
+
     var c = new fabric.Circle({
         left: left,
         top: top,
@@ -1680,10 +1708,10 @@ function show2D() {
     scene3DSetBackground(null);
 
     if (TOOL2D == 'freestyle') {
-        menuSelect(1, 'menuLeft2DItem', '#ff3700');
+        menuSelect(2, 'menuLeft2DItem', '#ff3700');
         scene2D.isDrawingMode = true;
     } else if (TOOL2D == 'vector') {
-        menuSelect(2, 'menuLeft2DItem', '#ff3700');
+        menuSelect(3, 'menuLeft2DItem', '#ff3700');
         scene2D.isDrawingMode = false;
         //} else if (TOOL2D == 'square') {
 
@@ -3880,26 +3908,46 @@ function sceneNew() {
 
     //============ SAMPLE DATA ================
 
-    scene2DWallGeometry[FLOOR].push([400, 200, 1000, 200]); //x1,y1,x2,y2
+    scene2DWallGeometry[FLOOR].push([400, 200, 1000, 200, 0]); //x1,y1,x2,y2,curve
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]); //w,l,h,ha,a in pixels!
 
-    scene2DWallGeometry[FLOOR].push([1000, 200, 1000, 680]);
+    scene2DWallGeometry[FLOOR].push([1000, 200, 1000, 680, 0]);
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
 
-    scene2DWallGeometry[FLOOR].push([1000, 680, 400, 680]);
+    scene2DWallGeometry[FLOOR].push([1000, 680, 400, 680, 0]);
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
 
-    scene2DWallGeometry[FLOOR].push([400, 680, 400, 200]);
+    scene2DWallGeometry[FLOOR].push([400, 680, 400, 200, 0]);
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
 
-    //Draw 2D Scene
+    scene2DArrayToLineWalls();
 
-    var wallMesh = []
+    scene2DCalculateWallLength();
+
+    scene2D.renderAll();
+    
+    /*
+    scene2D.add(
+        scene2DMakeWallEdgeCircle(line.get('x1'), line.get('y1'), null, line),
+        makeCircle(line.get('x2'), line.get('y2'), line, line2, line5, line6),
+        makeCircle(line2.get('x2'), line2.get('y2'), line2, line3, line4),
+        makeCircle(line3.get('x2'), line3.get('y2'), line3),
+        makeCircle(line4.get('x2'), line4.get('y2'), line4),
+        makeCircle(line5.get('x2'), line5.get('y2'), line5),
+        makeCircle(line6.get('x2'), line6.get('y2'), line6)
+    );
+	*/
+}
+
+function scene2DArrayToLineWalls() {
+
+    scene2DWallMesh= []
 
     for (var i = 0; i < scene2DWallGeometry[FLOOR].length; i++) { //each floor wall
 
         //console.log(scene2DWallGeometry[FLOOR][i][0] + "," + scene2DWallGeometry[FLOOR][i][1] + "," + scene2DWallGeometry[FLOOR][i][2] + "," + scene2DWallGeometry[FLOOR][i][3]);
-        wallMesh[i] = scene2DMakeWall([scene2DWallGeometry[FLOOR][i][0], scene2DWallGeometry[FLOOR][i][1], scene2DWallGeometry[FLOOR][i][2], scene2DWallGeometry[FLOOR][i][3]]);
+        scene2DWallMesh[i] = scene2DMakeWall([scene2DWallGeometry[FLOOR][i][0], scene2DWallGeometry[FLOOR][i][1], scene2DWallGeometry[FLOOR][i][2], scene2DWallGeometry[FLOOR][i][3]]);
+        scene2DWallMesh[i].hasControls = false;
 
         var xOffset = -10;
         var yOffset = -20;
@@ -3908,6 +3956,7 @@ function sceneNew() {
         if (scene2DWallGeometry[FLOOR][i][1] != scene2DWallGeometry[FLOOR][i][3])
             angleOffset = -180;
 
+        /*
         var line = new fabric.Line([scene2DWallGeometry[FLOOR][i][0] - 10, scene2DWallGeometry[FLOOR][i][1] - 20, scene2DWallGeometry[FLOOR][i][2] + 10, scene2DWallGeometry[FLOOR][i][3] - 20], {
             fill: 'blue',
             stroke: 'black',
@@ -3916,7 +3965,9 @@ function sceneNew() {
             selectable: false
         });
         scene2D.add(line);
-
+        */
+      
+        /*
         var text = new fabric.Text('10m x 15cm', {
             fontFamily: 'Arial',
             fontSize: 12,
@@ -3932,7 +3983,9 @@ function sceneNew() {
         var radianAngle = (Math.atan2(dy, dx) + PI2) % PI2;
         text.setAngle(radianAngle);
         scene2D.add(text);
+        */
 
+        /*
         var tip = [];
         for (var a = 0; a < 2; a++) {
             tip[a] = new fabric.Path('M 0 0 L -10 10 M 0 0 L 10 10 z', {
@@ -3956,46 +4009,7 @@ function sceneNew() {
             scene2D.add(tip[a]);
             tip[a].bringToFront();
         }
-
-        //wallMesh[i].tip = tip;
-
-        /*
-        // create arrow points
-        var r1 = new fabric.Triangle({
-            left: line.get('x1'),
-            top: line.get('y1'),
-            opacity: 1,
-            width: 20,
-            height: 20,
-            fill: '#000'
-        });
-        r1.lockScalingX = r1.lockScalingY = r1.lockRotation = true;
-        r1.lockRotation = true;
-        r1.hasControls = false;
-        r1.arrow = wallMesh[i];
-        r1.setAngle('-45');
-        r1.point_type = 'arrow_start';
-        scene2D.add(r1);
-        */
-
-        scene2D.add(wallMesh[i]);
-
-        //canvas.setActiveObject(line);
-    }
-
-    //var circle = scene2DMakeWallEdgeCircle(wallMesh[0].get('x1'), wallMesh[0].get('y1'), wallMesh[wallMesh.length - 1], wallMesh[0]);
-    //scene2D.add(circle);
-
-    for (var i = 0; i < wallMesh.length; i++) { //each floor wall
-        try {
-            var circle = scene2DMakeWallEdgeCircle(wallMesh[i].get('x1'), wallMesh[i].get('y1'), wallMesh[i - 1], wallMesh[i])
-            circle.point_type = 'edge';
-            scene2D.add(circle);
-        } catch (e) {}
-    }
-    scene2D.renderAll();
-
-    scene2D.on('object:moving', function(e) {
+        scene2D.on('object:moving', function(e) {
         var p = e.target;
 
         if (p.point_type === 'arrow_start') {
@@ -4093,18 +4107,133 @@ function sceneNew() {
             scene2D.renderAll();
         }
     });
-    /*
-    scene2D.add(
-        scene2DMakeWallEdgeCircle(line.get('x1'), line.get('y1'), null, line),
-        makeCircle(line.get('x2'), line.get('y2'), line, line2, line5, line6),
-        makeCircle(line2.get('x2'), line2.get('y2'), line2, line3, line4),
-        makeCircle(line3.get('x2'), line3.get('y2'), line3),
-        makeCircle(line4.get('x2'), line4.get('y2'), line4),
-        makeCircle(line5.get('x2'), line5.get('y2'), line5),
-        makeCircle(line6.get('x2'), line6.get('y2'), line6)
-    );
-	*/
+        */
 
+        //wallMesh[i].tip = tip;
+
+        /*
+        // create arrow points
+        var r1 = new fabric.Triangle({
+            left: line.get('x1'),
+            top: line.get('y1'),
+            opacity: 1,
+            width: 20,
+            height: 20,
+            fill: '#000'
+        });
+        r1.lockScalingX = r1.lockScalingY = r1.lockRotation = true;
+        r1.lockRotation = true;
+        r1.hasControls = false;
+        r1.arrow = wallMesh[i];
+        r1.setAngle('-45');
+        r1.point_type = 'arrow_start';
+        scene2D.add(r1);
+        */
+
+        scene2D.add(scene2DWallMesh[i]);
+
+        //canvas.setActiveObject(line);
+    }
+
+    scene2D.on('object:moving', function(e) {
+        var p = e.target;
+
+        if (p.point_type === 'edge') {
+
+            p.line1 && p.line1.set({
+                'x2': p.left,
+                'y2': p.top
+            });
+            p.line2 && p.line2.set({
+                'x1': p.left,
+                'y1': p.top
+            });
+            p.line3 && p.line3.set({
+                'x1': p.left,
+                'y1': p.top
+            });
+            p.line4 && p.line4.set({
+                'x1': p.left,
+                'y1': p.top
+            });
+            scene2D.renderAll();
+        }
+        else if (p.name == "pivot")
+        {
+            if (p.line2)
+            {
+                p.line2.path[1][1] = p.left;
+                p.line2.path[1][2] = p.top;
+            }
+        }
+    });
+
+    scene2D.on('object:selected', function(e) {
+        var p = e.target;
+    });
+
+    scene2D.on('before:selection:cleared', function(e) {
+        var p = e.target;
+    });
+
+    for (var i = 1; i <= scene2DWallMesh.length; i++) { //each floor wall
+
+        var circle;
+        var pivot;
+        
+        try
+        {
+            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[i].get('x1'), scene2DWallMesh[i].get('y1'), scene2DWallMesh[i - 1], scene2DWallMesh[i]);
+            pivot = scene2DMakeWallPivotCircle(scene2DWallMesh[i].get('x2')-scene2DWallMesh[i].get('x1')/2, scene2DWallMesh[i].get('y1') - 10, null, scene2DWallMesh[i], null);
+            
+        } catch (e) {
+
+            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[0].get('x1'), scene2DWallMesh[0].get('y1'), scene2DWallMesh[i-1], scene2DWallMesh[0]);
+        }
+
+        circle.point_type = 'edge';
+        pivot.name = "pivot";
+
+        scene2D.add(circle);
+        //scene2D.add(pivot);
+    }
+}
+
+function scene2DMakeWallPivotCircle(left, top, line1, line2, line3) {
+    var c = new fabric.Circle({
+      left: left,
+      top: top,
+      strokeWidth: 2,
+      radius: 5,
+      fill: '#fff',
+      stroke: '#666'
+    });
+
+    c.hasBorders = c.hasControls = false;
+
+    c.line1 = line1;
+    c.line2 = line2;
+    c.line3 = line3;
+
+    return c;
+}
+
+function scene2DCalculateWallLength() {
+
+    for (var i = 0; i < scene2DWallMesh.length; i++)
+    {
+        var xOffset = -10;
+        var yOffset = -20;
+
+        var line = new fabric.Line([scene2DWallMesh[i].get('x1') + xOffset, scene2DWallMesh[i].get('y1') + yOffset, scene2DWallMesh[i].get('x2') + xOffset, scene2DWallMesh[i].get('y2') + yOffset], {
+            fill: 'blue',
+            stroke: 'black',
+            strokeWidth: 1,
+            hasControls: false,
+            selectable: false
+        });
+        scene2D.add(line);
+    }
 }
 
 /*
@@ -4884,6 +5013,10 @@ function fileSelect(action) {
 
             $('#fileInput').bind('change', handleFile2DImageSelect);
 
+        }else if (action == '2dautocad') {
+
+            $('#fileInput').bind('change', handleFile2DAutoCADConvert);
+
         } else if (action == '3dobject') {
 
             //Determine if local or submit through webserver
@@ -5009,6 +5142,21 @@ function handleFile3DObjectSelect(event) {
     }
 }
 
+function handleFile2DAutoCADConvert(event) {
+
+    fileReader = new FileReader();
+    fileReader.onerror = errorHandler;
+   
+    fileReader.onload = function(e) {
+        var parser = new DXFParser(e.target.result);
+        console.log(parser);
+    }
+    fileReader.readAsText(event.target.files[0]);
+    //fileReader.readAsDataURL(event.target.files[0]);
+
+    $('#fileInput').unbind('change', handleFile2DAutoCADConvert);
+}
+
 function handleFile2DImageSelect(event) {
 
     if (!event.target.files[0].type.match('image.*')) {
@@ -5026,7 +5174,6 @@ function handleFile2DImageSelect(event) {
 
     /*
 	fileReader.onloadstart = function(e) {
-	      
 	};
 	*/
 
@@ -5052,6 +5199,8 @@ function handleFile2DImageSelect(event) {
     // Read image file as a binary string.
     fileReader.readAsDataURL(event.target.files[0]);
     //fileReader.readAsBinaryString(event.target.files[0]);
+
+    $('#fileInput').unbind('change', handleFile2DImageSelect);
 }
 /*
 box.on("dragend", function(){
@@ -5108,7 +5257,7 @@ $(document).ready(function() {
               req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
             },
             success: function(data){
-
+                console.log(data);
                 var parser = new DXFParser(data);
                 console.log(parser);
             },

@@ -15,7 +15,8 @@
 	text-align: center;
 	position: relative;
 	z-index: 1;
-	color: #000;
+	color: #000000;
+    opacity: 0.9;
 	text-decoration:none
 }
 
