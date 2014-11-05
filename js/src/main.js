@@ -253,51 +253,55 @@ function init(runmode,viewmode) {
     scene2DWallDimentions[1] = new Array();
     scene2DWallDimentions[2] = new Array();
 
+    scene2DWallMesh[0] = new Array();
+    scene2DWallMesh[1] = new Array();
+    scene2DWallMesh[2] = new Array();
+
     scene3DPivotPoint = new THREE.Object3D();
 
     particlePivot = new SPE.Group({});
     particleWeather = new SPE.Group({});
     //weatherRainParticle = new SPE.Group({});
 
-                // Create particle emitter 0
-             particlePivotEmitter = new SPE.Emitter( {
-                type: 'cube',
-                particleCount: 30, //particlesPerSecond
-                position: new THREE.Vector3(0, 0, 0),
-                positionSpread: new THREE.Vector3( 0, 0, 0 ),
-                acceleration: new THREE.Vector3( 0, 0, 0 ),
-                accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
-                velocity: new THREE.Vector3( 0, 3, 0 ),
-                velocitySpread: new THREE.Vector3(3, 0, 3),
-                sizeStart: 0,
-                sizeStartSpread: 0.02,
-                sizeMiddle: 1,
-                sizeMiddleSpread: 0,
-                sizeEnd: 1,
-                sizeEndSpread: 0.4,
-                angleStart: 0,
-                angleStartSpread: 180,
-                angleMiddle: 180,
-                angleMiddleSpread: 0,
-                angleEnd: 0,
-                angleEndSpread: 360 * 4,
-                angleAlignVelocity: false,
-                colorStart: new THREE.Color( 0xffffff ),
-                colorStartSpread: new THREE.Vector3(0, 0, 0),
-                colorMiddle: new THREE.Color( 0xffffff ),
-                colorMiddleSpread: new THREE.Vector3( 0, 0, 0 ),
-                colorEnd: new THREE.Color( 0xffffff ),
-                colorEndSpread: new THREE.Vector3(0, 0, 0),
-                opacityStart: 1,
-                opacityStartSpread: 0,
-                opacityMiddle: 0.5,
-                opacityMiddleSpread: 0,
-                opacityEnd: 0,
-                opacityEndSpread: 0,
-                duration: null,
-                alive: 0,
-                isStatic: 0
-            });
+    // Create particle emitter 0
+    particlePivotEmitter = new SPE.Emitter( {
+        type: 'cube',
+        particleCount: 30, //particlesPerSecond
+        position: new THREE.Vector3(0, 0, 0),
+        positionSpread: new THREE.Vector3( 0, 0, 0 ),
+        acceleration: new THREE.Vector3( 0, 0, 0 ),
+        accelerationSpread: new THREE.Vector3( 0, 0, 0 ),
+        velocity: new THREE.Vector3( 0, 3, 0 ),
+        velocitySpread: new THREE.Vector3(3, 0, 3),
+        sizeStart: 0,
+        sizeStartSpread: 0.02,
+        sizeMiddle: 1,
+        sizeMiddleSpread: 0,
+        sizeEnd: 1,
+        sizeEndSpread: 0.4,
+        angleStart: 0,
+        angleStartSpread: 180,
+        angleMiddle: 180,
+        angleMiddleSpread: 0,
+        angleEnd: 0,
+        angleEndSpread: 360 * 4,
+        angleAlignVelocity: false,
+        colorStart: new THREE.Color( 0xffffff ),
+        colorStartSpread: new THREE.Vector3(0, 0, 0),
+        colorMiddle: new THREE.Color( 0xffffff ),
+        colorMiddleSpread: new THREE.Vector3( 0, 0, 0 ),
+        colorEnd: new THREE.Color( 0xffffff ),
+        colorEndSpread: new THREE.Vector3(0, 0, 0),
+        opacityStart: 1,
+        opacityStartSpread: 0,
+        opacityMiddle: 0.5,
+        opacityMiddleSpread: 0,
+        opacityEnd: 0,
+        opacityEndSpread: 0,
+        duration: null,
+        alive: 0,
+        isStatic: 0
+    });
 
     /*
     (function(watchedKeyCodes) {
@@ -379,58 +383,6 @@ function init(runmode,viewmode) {
 
     camera3DQuadGrid = new THREE.GridHelper(25, 1);
     camera3DQuadGrid.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
-
-    //================================
-    scene2D.add(new fabric.Circle({
-        radius: 450,
-        fill: '#CCCCCC',
-        left: (window.innerWidth / 2),
-        top: (window.innerHeight / 2) + 80,
-        selectable: false,
-        opacity: 0.2
-    }));
-    /*
-    for (var x = 0; x <= scene2D.getWidth(); x += 25) {
-        scene2D.add(new fabric.Line([x, 0, x, scene2D.getWidth()], {
-            stroke: "#6dcff6",
-            strokeWidth: 1,
-            selectable: false,
-            //strokeDashArray: [5, 5]
-        }));
-        scene2D.add(new fabric.Line([0, x, scene2D.getWidth(), x], {
-            stroke: "#6dcff6",
-            strokeWidth: 1,
-            selectable: false,
-            //strokeDashArray: [5, 5]
-        }));
-    }
-	*/
-    var grid = 40;
-    // create grid
-    for (var i = 0; i < (scene2D.getWidth() / grid); i++) {
-        scene2D.add(new fabric.Line([i * grid, 0, i * grid, scene2D.getWidth()], {
-            stroke: "#6dcff6",
-            strokeWidth: 1,
-            selectable: false,
-            //strokeDashArray: [5, 5]
-        }));
-        scene2D.add(new fabric.Line([0, i * grid, scene2D.getWidth(), i * grid], {
-            stroke: "#6dcff6",
-            strokeWidth: 1,
-            selectable: false,
-            //strokeDashArray: [5, 5]
-        }));
-    }
-    //snap to grid
-    
-    scene2D.on('object:moving', function (options) {
-        options.target.set({
-            left: Math.round(options.target.left / grid) * grid,
-            top: Math.round(options.target.top / grid) * grid
-        });
-    });
-	
-    //================================
 
     scene3DWallTexture = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/C0001.jpg');
     scene3DWallTexture.wrapS = THREE.RepeatWrapping;
@@ -624,6 +576,7 @@ function init(runmode,viewmode) {
             clearTimeout
     })();
 
+    /*
     scene2D.on('mouse:down', function(event) {
         on2DMouseDown(event.e);
     });
@@ -633,6 +586,7 @@ function init(runmode,viewmode) {
     scene2D.on('mouse:up', function(event) {
         on2DMouseUp(event.e);
     });
+    */
 
     //$("#HTMLCanvas").bind('mousedown', on2DMouseDown);
     //$("#HTMLCanvas").bind('mouseup', on2DMouseUp);
@@ -826,24 +780,6 @@ function scene2DMakeWallEdgeCircle(left, top, line1, line2, line3, line4) {
     c.line3 = line3;
     c.line4 = line4;
     return c;
-}
-
-function scene2DdrawRuler() {
-    line_length = window.innerWidth - 100;
-    $("#ruler[data-items]").val(line_length);
-
-    $("#ruler[data-items]").each(function() {
-        var ruler = $(this).empty(),
-            len = Number($("#ruler[data-items]").val()) / 38 || 0,
-            item = $(document.createElement("li")),
-            i;
-        ruler.append(item.clone().text(1));
-
-        for (i = 1; i < len; i++) {
-            ruler.append(item.clone().text(i * 2));
-        }
-        ruler.append(item.clone().text(i * 2));
-    });
 }
 
 /*
@@ -1554,6 +1490,7 @@ function show3DFloor() {
     }
 
     scene3DFloorWallGenerate();
+
     scene3D.add(scene3DFloorContainer[FLOOR]); //furnishings
     scene3D.add(scene3DFloorWallContainer[FLOOR]); //walls
 
@@ -1730,6 +1667,72 @@ function show2D() {
     $('#menuBottomItem9').show();
     $('#menuBottomItem10').show();
 
+    scene2DMakeGrid();
+
+    for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++) {
+            scene2D.add(scene2DWallMesh[FLOOR][i]);
+    }
+
+    scene2D.on('object:moving', function(e) {
+        var p = e.target;
+
+        if (p.point_type === 'edge') {
+
+            p.line1 && p.line1.set({
+                'x2': p.left,
+                'y2': p.top
+            });
+            p.line2 && p.line2.set({
+                'x1': p.left,
+                'y1': p.top
+            });
+            p.line3 && p.line3.set({
+                'x1': p.left,
+                'y1': p.top
+            });
+            p.line4 && p.line4.set({
+                'x1': p.left,
+                'y1': p.top
+            });
+            scene2D.renderAll();
+        }
+        else if (p.name == "pivot")
+        {
+            if (p.line2)
+            {
+                p.line2.path[1][1] = p.left;
+                p.line2.path[1][2] = p.top;
+            }
+        }
+    });
+
+    for (var i = 1; i <= scene2DWallMesh[FLOOR].length; i++) { //each floor wall
+
+        var circle;
+        var pivot;
+        
+        try
+        {
+            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][i].get('x1'), scene2DWallMesh[FLOOR][i].get('y1'), scene2DWallMesh[FLOOR][i - 1], scene2DWallMesh[FLOOR][i]);
+            pivot = scene2DMakeWallPivotCircle(scene2DWallMesh[FLOOR][i].get('x2')-scene2DWallMesh[FLOOR][i].get('x1')/2, scene2DWallMesh[FLOOR][i].get('y1') - 10, null, scene2DWallMesh[FLOOR][i], null);
+            
+        } catch (e) {
+
+            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][0].get('x1'), scene2DWallMesh[FLOOR][0].get('y1'), scene2DWallMesh[FLOOR][i-1], scene2DWallMesh[FLOOR][0]);
+        }
+
+        circle.point_type = 'edge';
+        pivot.name = "pivot";
+
+        scene2D.add(circle);
+        //scene2D.add(pivot);
+    }
+    //scene2DArrayToLineWalls();
+
+    //scene2DCalculateWallLength();
+
+    scene2D.renderAll();
+
     //================
     /*
     https://github.com/rheh/HTML5-canvas-projects/tree/master/progress
@@ -1791,7 +1794,7 @@ function drawImage() {
 }
 
 function hideElements() {
-    //console.log("hideElements " + b);
+    console.log("hideElements");
 
     renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
@@ -1831,7 +1834,29 @@ function hideElements() {
 
     scene3DCube.remove(scene3DCubeMesh);
 
-    //scene2D.clear();
+    //console.log(scene2D._objects.length);
+ 
+    /*
+    var objects = scene2D.getObjects();
+    for (var i in objects)
+    {
+        var obj = objects[i];
+
+        if (obj.name == "wall" || obj.name == "pivot" || obj.point_type == "edge") {
+            scene2D.remove(obj);
+        }
+    }
+    */
+    //TODO: make this more efficient
+    
+    while(scene2D._objects.length > 0)
+    {
+        for (var i = 0; i < scene2D._objects.length; i++) {
+            scene2D.remove(scene2D.item(i));
+        }
+    }
+    
+    //console.log(scene2DWallMesh[FLOOR].length);
 
     //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
     //$(renderer.domElement).unbind('mouseup', on3DMouseUp);
@@ -1884,6 +1909,59 @@ function hideElements() {
     //scene2D.visible = b;
 
     //scene2DFloorContainer[0].traverse;
+}
+
+function scene2DMakeGrid() {
+
+    scene2D.add(new fabric.Circle({
+        radius: 450,
+        fill: '#CCCCCC',
+        left: (window.innerWidth / 2),
+        top: (window.innerHeight / 2) + 80,
+        selectable: false,
+        opacity: 0.2
+    }));
+
+    /*
+    for (var x = 0; x <= scene2D.getWidth(); x += 25) {
+        scene2D.add(new fabric.Line([x, 0, x, scene2D.getWidth()], {
+            stroke: "#6dcff6",
+            strokeWidth: 1,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        }));
+        scene2D.add(new fabric.Line([0, x, scene2D.getWidth(), x], {
+            stroke: "#6dcff6",
+            strokeWidth: 1,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        }));
+    }
+    */
+    var grid = 40;
+    // create grid
+    for (var i = 0; i < (scene2D.getWidth() / grid); i++) {
+        scene2D.add(new fabric.Line([i * grid, 0, i * grid, scene2D.getWidth()], {
+            stroke: "#6dcff6",
+            strokeWidth: 1,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        }));
+        scene2D.add(new fabric.Line([0, i * grid, scene2D.getWidth(), i * grid], {
+            stroke: "#6dcff6",
+            strokeWidth: 1,
+            selectable: false,
+            //strokeDashArray: [5, 5]
+        }));
+    }
+    //snap to grid
+    
+    scene2D.on('object:moving', function (options) {
+        options.target.set({
+            left: Math.round(options.target.left / grid) * grid,
+            top: Math.round(options.target.top / grid) * grid
+        });
+    });
 }
 
 function scene3DSetWeather() {
@@ -3723,7 +3801,7 @@ function scene3DFloorWallGenerate() {
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset all walls
 
     //TODO: Generate directly from SVG 2D points!
-    var objects = scene2D.getObjects();
+    var objects = scene2DWallMesh[FLOOR]; //scene2D.getObjects();
 
     for (var i in objects) {
         var obj = objects[i];
@@ -3919,12 +3997,8 @@ function sceneNew() {
 
     scene2DWallGeometry[FLOOR].push([400, 680, 400, 200, 0]);
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
-
+    
     scene2DArrayToLineWalls();
-
-    scene2DCalculateWallLength();
-
-    scene2D.renderAll();
     
     /*
     scene2D.add(
@@ -3941,13 +4015,13 @@ function sceneNew() {
 
 function scene2DArrayToLineWalls() {
 
-    scene2DWallMesh= []
+    scene2DWallMesh[FLOOR] = [];
 
     for (var i = 0; i < scene2DWallGeometry[FLOOR].length; i++) { //each floor wall
 
         //console.log(scene2DWallGeometry[FLOOR][i][0] + "," + scene2DWallGeometry[FLOOR][i][1] + "," + scene2DWallGeometry[FLOOR][i][2] + "," + scene2DWallGeometry[FLOOR][i][3]);
-        scene2DWallMesh[i] = scene2DMakeWall([scene2DWallGeometry[FLOOR][i][0], scene2DWallGeometry[FLOOR][i][1], scene2DWallGeometry[FLOOR][i][2], scene2DWallGeometry[FLOOR][i][3]]);
-        scene2DWallMesh[i].hasControls = false;
+        scene2DWallMesh[FLOOR][i] = scene2DMakeWall([scene2DWallGeometry[FLOOR][i][0], scene2DWallGeometry[FLOOR][i][1], scene2DWallGeometry[FLOOR][i][2], scene2DWallGeometry[FLOOR][i][3]]);
+        scene2DWallMesh[FLOOR][i].hasControls = false;
 
         var xOffset = -10;
         var yOffset = -20;
@@ -4130,44 +4204,14 @@ function scene2DArrayToLineWalls() {
         scene2D.add(r1);
         */
 
-        scene2D.add(scene2DWallMesh[i]);
+        //scene2D.add(scene2DWallMesh[FLOOR][i]);
 
         //canvas.setActiveObject(line);
     }
 
-    scene2D.on('object:moving', function(e) {
-        var p = e.target;
 
-        if (p.point_type === 'edge') {
 
-            p.line1 && p.line1.set({
-                'x2': p.left,
-                'y2': p.top
-            });
-            p.line2 && p.line2.set({
-                'x1': p.left,
-                'y1': p.top
-            });
-            p.line3 && p.line3.set({
-                'x1': p.left,
-                'y1': p.top
-            });
-            p.line4 && p.line4.set({
-                'x1': p.left,
-                'y1': p.top
-            });
-            scene2D.renderAll();
-        }
-        else if (p.name == "pivot")
-        {
-            if (p.line2)
-            {
-                p.line2.path[1][1] = p.left;
-                p.line2.path[1][2] = p.top;
-            }
-        }
-    });
-
+/*
     scene2D.on('object:selected', function(e) {
         var p = e.target;
     });
@@ -4175,28 +4219,7 @@ function scene2DArrayToLineWalls() {
     scene2D.on('before:selection:cleared', function(e) {
         var p = e.target;
     });
-
-    for (var i = 1; i <= scene2DWallMesh.length; i++) { //each floor wall
-
-        var circle;
-        var pivot;
-        
-        try
-        {
-            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[i].get('x1'), scene2DWallMesh[i].get('y1'), scene2DWallMesh[i - 1], scene2DWallMesh[i]);
-            pivot = scene2DMakeWallPivotCircle(scene2DWallMesh[i].get('x2')-scene2DWallMesh[i].get('x1')/2, scene2DWallMesh[i].get('y1') - 10, null, scene2DWallMesh[i], null);
-            
-        } catch (e) {
-
-            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[0].get('x1'), scene2DWallMesh[0].get('y1'), scene2DWallMesh[i-1], scene2DWallMesh[0]);
-        }
-
-        circle.point_type = 'edge';
-        pivot.name = "pivot";
-
-        scene2D.add(circle);
-        //scene2D.add(pivot);
-    }
+*/
 }
 
 function scene2DMakeWallPivotCircle(left, top, line1, line2, line3) {
@@ -4220,12 +4243,12 @@ function scene2DMakeWallPivotCircle(left, top, line1, line2, line3) {
 
 function scene2DCalculateWallLength() {
 
-    for (var i = 0; i < scene2DWallMesh.length; i++)
+    for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++)
     {
         var xOffset = -10;
         var yOffset = -20;
 
-        var line = new fabric.Line([scene2DWallMesh[i].get('x1') + xOffset, scene2DWallMesh[i].get('y1') + yOffset, scene2DWallMesh[i].get('x2') + xOffset, scene2DWallMesh[i].get('y2') + yOffset], {
+        var line = new fabric.Line([scene2DWallMesh[FLOOR][i].get('x1') + xOffset, scene2DWallMesh[FLOOR][i].get('y1') + yOffset, scene2DWallMesh[FLOOR][i].get('x2') + xOffset, scene2DWallMesh[FLOOR][i].get('y2') + yOffset], {
             fill: 'blue',
             stroke: 'black',
             strokeWidth: 1,
