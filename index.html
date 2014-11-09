@@ -86,6 +86,24 @@
 }
 </style>
 
+<div id="openScene" class="modalDialog">
+  <div>
+    <a href="#close" class="close">X</a>
+    <style>
+    .sceneFrame{
+      border:2px solid black;
+      width:120px;
+      height:120px;
+      margin:0;
+      padding:0;
+    }
+    </style>
+    <div class="sceneFrame">
+      
+    </div>
+  </div>
+</div>
+
 <div id="openLogin" class="modalDialog">
 	<div>
 		<a href="#close" class="close">X</a>
@@ -405,10 +423,12 @@
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
         <a href="#" onclick="fileSelect('2dautocad')" class="hi-icon icon-dxf tooltip" id="menuLeft2DItem0" title="Upload AutoCAD DXF"></a>
         <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-jpg tooltip" id="menuLeft2DItem1" title="Upload Draft Plan (pdf, jpg, png)"></a>
-        <a href="#" onclick="menuSelect(1,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=true;TOOL2D='freestyle'" class="hi-icon icon-draw tooltip" id="menuLeft2DItem2" title="Freestyle Sketch" ></a>
-        <a href="#" onclick="menuSelect(2,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=false;TOOL2D='vector'" class="hi-icon icon-vector tooltip" id="menuLeft2DItem3" title="Vector Corrections"></a>
-        <a href="#" onclick="menuSelect(3,'menuLeft2DItem','#ff3700');TOOL2D='square'" class="hi-icon icon-vector-square tooltip" id="menuLeft2DItem4" title="Draw Square"></a>
-        <a href="#" onclick="menuSelect(4,'menuLeft2DItem','#ff3700');TOOL2D='circle'" class="hi-icon icon-vector-circle tooltip" id="menuLeft2DItem5" title="Draw Circle"></a>
+        <a href="#" onclick="menuSelect(2,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=true;TOOL2D='freestyle'" class="hi-icon icon-draw tooltip" id="menuLeft2DItem2" title="Freestyle Sketch" ></a>
+        <a href="#" onclick="menuSelect(3,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=false;TOOL2D='vector'" class="hi-icon icon-vector tooltip" id="menuLeft2DItem3" title="Vector Corrections"></a>
+          <a href="#" onclick="menuSelect(4,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=false;TOOL2D='line'" class="hi-icon icon-vector-line tooltip" id="menuLeft2DItem4" title="Draw Line"></a>
+        <a href="#" onclick="menuSelect(5,'menuLeft2DItem','#ff3700');TOOL2D='square'" class="hi-icon icon-vector-square tooltip" id="menuLeft2DItem5" title="Draw Square"></a>
+        <a href="#" onclick="menuSelect(6,'menuLeft2DItem','#ff3700');TOOL2D='circle'" class="hi-icon icon-vector-circle tooltip" id="menuLeft2DItem6" title="Draw Circle"></a>
+        <a href="#" onclick="menuSelect(7,'menuLeft2DItem','#ff3700');TOOL2D='triangle'" class="hi-icon icon-vector-triangle tooltip" id="menuLeft2DItem7" title="Draw Triangle"></a>
       </div>
   </div>
 </div>
@@ -549,7 +569,7 @@
 <div id="HTMLCanvas" style="display:none">
   <div id="zoom2DLevel" style="position:absolute;left:10px;bottom:0;z-index:2">
     <form id="drawForm">
-      <input id="zoom2DSlider" type="range" min="0" max="100" value="5" onchange="drawImage();" onkeyup="drawImage();" style="width:240px" />
+      <input id="zoom2DSlider" type="range" min="10" max="50" value="10" onchange="drawImage();" onkeyup="drawImage();" style="width:240px" />
     </form>
     <canvas id="zoom2DProgress" width="270" height="80"></canvas>
   </div>

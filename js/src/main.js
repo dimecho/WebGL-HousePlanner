@@ -106,6 +106,7 @@ var zoom2Dimg,
     zoom2Dwidth = 241, 
     zoom2DCTX = null, 
     zoom2DSlider = null; //2D zoom control visuals
+var zoom2D = 1; // Global remembering previous zoom factor
 
 //var keys = { SP: 32, W: 87, A: 65, S: 83, D: 68, UP: 38, LT: 37, DN: 40, RT: 39 };
 //var keysPressed = {};
@@ -115,6 +116,7 @@ var scene2DDrawLine; //2D Line form with color/border/points
 //var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
 var scene2DWallGeometry = []; //Multidymentional array, many floors have many walls and walls have many geomertry points
 var scene2DWallMesh = []; //Fabric.js line data
+var scene2DDrawLine; //Fabric.Line - used by mousedown/mousemove/mouseup
 var scene2DWallDimentions = []; //Multidymentional array, contains real-life (visual) dimentions for scene2DWallGeometry [width,length,height,height-angle,angle]
 var scene3DWallTexture; //Wall Default Texture
 
@@ -217,6 +219,8 @@ function init(runmode,viewmode) {
         scene2D.freeDrawingBrush.width = 8; //parseInt(drawingLineWidthEl.value, 10) || 1;
         scene2D.freeDrawingBrush.shadowBlur = 0;
     }
+    fabric.isTouchSupported = false;
+
     //$('#canvas_container').css('overflow-x', 'scroll');
     //$('#canvas_container').css('overflow-y', 'scroll'); //'hidden');
 
@@ -576,17 +580,19 @@ function init(runmode,viewmode) {
             clearTimeout
     })();
 
-    /*
+    
     scene2D.on('mouse:down', function(event) {
         on2DMouseDown(event.e);
     });
+    
     scene2D.on('mouse:move', function(event) {
         on2DMouseMove(event.e);
     });
+
     scene2D.on('mouse:up', function(event) {
         on2DMouseUp(event.e);
     });
-    */
+    
 
     //$("#HTMLCanvas").bind('mousedown', on2DMouseDown);
     //$("#HTMLCanvas").bind('mouseup', on2DMouseUp);
@@ -726,29 +732,26 @@ function scene2DMakeWall(coords) {
         strokeLineCap: 'round',
         selectable: true
     });
-    
 
-    //Need Path for dynamic curved lines
+    //Curved Walls !!! YEah!
     /*
-    var line = new fabric.Path('M 65 0 Q 100, 100, 200, 0', {
-        fill: 'black',
-        stroke: 'black',
-        strokeWidth: 12,
-        lockRotation: true,
-        perPixelTargetFind: true,
-        strokeLineCap: 'round',
-        selectable: true
-    });
+    var line = new fabric.Path('M 0 0 Q 100, 100, 0, 0', { fill: '', strokeWidth: 12, stroke: 'black' });
 
-    line.path[0][1] = coords[0];
-    line.path[0][2] = coords[0];
+    line.path[0][1] = 0;
+    line.path[0][2] = 0;
 
-    line.path[1][1] = coords[1];
-    line.path[1][2] = coords[2];
+    line.path[1][1] = 10; //curve left
+    line.path[1][2] = 10; //curve right
 
-    line.path[1][3] = coords[3];
-    line.path[1][4] = coords[0];
+    line.path[1][3] = coords[2]-coords[0];
+    line.path[1][4] = coords[3]-coords[1];
+
+    line.set({ left: coords[0], top: coords[1] });
     */
+    
+    //line.set({ fill: 'red', stroke: 'green', opacity: 0.5 });
+
+   
 
     line.name = 'wall';
 
@@ -893,6 +896,24 @@ function camera3DNoteAdd()
   //TODO: bring up 3d note up close and html form
 }
 
+function scene3DFloorInsertPicture()
+{
+    camera3DPositionCache = camera3D.position.clone();
+    camera3DPivotCache = controls3D.target.clone();
+
+    camera3DInsertPictureEnter();
+}
+
+function camera3DInsertPictureEnter()
+{
+    var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:10, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+}
+
+function camera3DInsertPictureExit()
+{
+    var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+}
+
 function camera3DPictureEnter()
 {
     var pLocal = new THREE.Vector3( 0, -1.75, -0.4 );
@@ -907,7 +928,6 @@ function camera3DPictureExit()
     var tween = new TWEEN.Tween(SelectedPicture.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     var tween = new TWEEN.Tween(SelectedPicture.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 }
-
 
 function camera3DNoteEnter()
 {
@@ -934,6 +954,7 @@ function camera3DNoteExit()
     var tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     
 }
+
 function camera3DHouseEnter()
 {
 	camera3D.position.set(0, 20, 0);
@@ -1609,29 +1630,31 @@ function initObjectCollisions(container) {
 }
 */
 
-function scene2DZoom(scale) {
+function scene2DZoom(SCALE_FACTOR) {
 
     /*
     http://jsfiddle.net/Q3TMA/
     http://jsfiddle.net/butch2k/kVukT/37/
     */
-
-    var SCALE_FACTOR = scale;
-    var prev_zoom = SCALE_FACTOR;
-                
+    console.log(SCALE_FACTOR);
+    
     scene2D.setHeight(scene2D.getHeight() * SCALE_FACTOR);
     scene2D.setWidth(scene2D.getWidth() * SCALE_FACTOR);
     scene2D.calcOffset();              
     
     var objects = scene2D.getObjects();
-    (jQuery).each(objects,function(i,obj){
-        obj.scaleX=obj.scaleX/prev_zoom*SCALE_FACTOR;
-        obj.scaleY=obj.scaleY/prev_zoom*SCALE_FACTOR;
-        obj.left=obj.left/prev_zoom*SCALE_FACTOR;
-        obj.top=obj.top/prev_zoom*SCALE_FACTOR;
+    for (var i in objects)
+    {
+        var obj = objects[i];
+        obj.scaleX=obj.scaleX/zoom2D*SCALE_FACTOR;
+        obj.scaleY=obj.scaleY/zoom2D*SCALE_FACTOR;
+        obj.left=obj.left/zoom2D*SCALE_FACTOR;
+        obj.top=obj.top/zoom2D*SCALE_FACTOR;
         obj.setCoords();
-    });
+    }
     scene2D.renderAll();
+    
+    zoom2D = SCALE_FACTOR;
 }
 
 function show2D() {
@@ -1675,6 +1698,8 @@ function show2D() {
 
     scene2D.on('object:moving', function(e) {
         var p = e.target;
+
+        scene2D.remove(scene2DDrawLine); //quickfix
 
         if (p.point_type === 'edge') {
 
@@ -1785,7 +1810,8 @@ function zoom2DdrawProgress(ctx) {
     zoom2DCTX.fillStyle = "grey";
     zoom2DCTX.font = "12pt Arial";
     zoom2DCTX.fillText(scale, x4, y1);
-    //scene2DZoom(scale);
+
+    scene2DZoom(scale);
 }
 
 function drawImage() {
@@ -1794,7 +1820,7 @@ function drawImage() {
 }
 
 function hideElements() {
-    console.log("hideElements");
+    //console.log("hideElements");
 
     renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
     renderer.clear();
@@ -2383,7 +2409,36 @@ function on2DMouseDown(event) {
             //BUTTON_RIGHT
     }
     */
-    if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
+    //if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
+
+    if (TOOL2D == 'line')
+    {
+        if(scene2DDrawLine instanceof fabric.Line) {
+
+            scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length] = scene2DMakeWall([scene2DDrawLine.get('x1'), scene2DDrawLine.get('y1'), scene2DDrawLine.get('x2'), scene2DDrawLine.get('y2')]);
+            scene2D.add(scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length-1]);
+
+            scene2D.remove(scene2DDrawLine);
+            //scene2D.renderAll();
+            scene2DDrawLine = null;
+
+        }else{
+
+            //TODO: Check for intersect objects
+
+            var pointer = scene2D.getPointer(event);
+
+            scene2DDrawLine = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2D.add(scene2DDrawLine);
+        }
+    }
 
     //$("#HTMLCanvas").bind('mousemove', on2DMouseMove);
     // fabric.util.addListener(fabric.document, 'dblclick', dblClickHandler);
@@ -2456,7 +2511,7 @@ function on2DMouseUp(event) {
 
     event.preventDefault();
 
-    if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
+    //if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
 
     //$("#HTMLCanvas").unbind('mousemove', on2DMouseMove);
 
@@ -2704,10 +2759,17 @@ function on2DMouseMove(event) {
 
     event.preventDefault();
 
-    if (!leftButtonDown) {
-        return;
-    }
+    //if (!leftButtonDown) {
+    //    return;
+    //}
 
+    if (TOOL2D == 'line' && scene2DDrawLine instanceof fabric.Line) {
+        scene2DDrawLine.set({
+            x2: event.clientX,
+            y2: event.clientY
+        });
+        scene2D.renderAll();
+    }
     
     //scene3DHouseContainer.children[0].mesh.materials[0].opacity = 0.2;
 
@@ -3796,6 +3858,8 @@ fabric.Canvas.prototype.getItemByName = function(name) {
     return object;
 };
 
+
+
 function scene3DFloorWallGenerate() {
 
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset all walls
@@ -4249,7 +4313,7 @@ function scene2DCalculateWallLength() {
         var yOffset = -20;
 
         var line = new fabric.Line([scene2DWallMesh[FLOOR][i].get('x1') + xOffset, scene2DWallMesh[FLOOR][i].get('y1') + yOffset, scene2DWallMesh[FLOOR][i].get('x2') + xOffset, scene2DWallMesh[FLOOR][i].get('y2') + yOffset], {
-            fill: 'blue',
+            fill: '',
             stroke: 'black',
             strokeWidth: 1,
             hasControls: false,
