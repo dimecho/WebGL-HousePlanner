@@ -16,6 +16,7 @@
   <script src="js/src/TransformControls.js"></script>
   <script src="js/src/SceneLoader.js"></script>
   <script src="js/src/ThreeCSG.js"></script>
+  <script src="js/src/CSS3DRenderer.js"></script>
   <script src="js/src/exporters/OBJExporter.js"></script>
   <script src="js/src/exporters/ObjectExporter.js"></script>
   <script src="js/src/exporters/GeometryExporter.js"></script>
@@ -288,9 +289,9 @@
 </div>
 
 <div id="openThumb" class="modalDialog">
-	<div style="width:90%;height:90%;margin:2% auto;">
-		<a href="#close" class="close">X</a>
-		<img id="imgHouse" src="images/house.jpg" style="display:block;width:100%;height:100%;" />
+	<div style="width:80%;height:90%;margin:2% auto;">
+		<a href="#close" class="close" onclick="disposePanorama('PanoramaHouseCanvas')">X</a>
+    <div id="PanoramaHouseCanvas" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
 	</div>
 </div>
 
@@ -388,8 +389,8 @@
     </li>
   </ul>
   <div id="links-left" style="width:160px;height:100px;">
-      <a href="#openThumb">
-        <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="images/_house.jpg" alt="Property" style="width:140px;height:80px;border:4px solid #FFFFFF;border-radius:2px;"/>
+      <a href="#openThumb" onclick="initPanorama('PanoramaHouseCanvas','3427')">
+        <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="images/house.jpg" alt="Property" style="width:140px;height:80px;border:4px solid #FFFFFF;border-radius:2px;"/>
       </a>
   </div>
 

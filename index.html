@@ -256,9 +256,9 @@
 </div>
 
 <div id="openThumb" class="modalDialog">
-	<div style="width:90%;height:90%;margin:2% auto;">
-		<a href="#close" class="close">X</a>
-		<img id="imgHouse" src="images/house.jpg" style="display:block;width:100%;height:100%;" />
+	<div style="width:80%;height:90%;margin:2% auto;">
+		<a href="#close" class="close" onclick="disposePanorama('PanoramaHouseCanvas')">X</a>
+    <div id="PanoramaHouseCanvas" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
 	</div>
 </div>
 
@@ -356,8 +356,8 @@
     </li>
   </ul>
   <div id="links-left" style="width:160px;height:100px;">
-      <a href="#openThumb">
-        <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="images/_house.jpg" alt="Property" style="width:140px;height:80px;border:4px solid #FFFFFF;border-radius:2px;"/>
+      <a href="#openThumb" onclick="initPanorama('PanoramaHouseCanvas','3427')">
+        <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="images/house.jpg" alt="Property" style="width:140px;height:80px;border:4px solid #FFFFFF;border-radius:2px;"/>
       </a>
   </div>
 
@@ -407,8 +407,7 @@
   <div id="links-left" style="width:80px">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
       <a href="#" onclick="" class="hi-icon icon-ruler tooltip-right" title="Measure twice, Cut once" id="menuLeft3DFloorItem0"></a>
-      <a href="#" onclick="" class="hi-icon icon-images11 tooltip-right" title="Insert Picture" id="menuLeft3DFloorItem1"></a>
-      <a href="#" onclick="" class="hi-icon icon-edit tooltip-right" title="Insert Note" id="menuLeft3DFloorItem2"></a>
+      <a href="#" onclick="scene3DFloorInsertPicture()" class="hi-icon icon-images11 tooltip-right" title="Insert Picture" id="menuLeft3DFloorItem1"></a>
     </div>
   </div>
 </div>

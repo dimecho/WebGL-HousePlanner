@@ -30,10 +30,12 @@ TODO:
 
 var scene3D; //ThreeJS Canvas
 var scene3DCube; //ThreeJS Canvas
+var scene3DPanorama; //ThreeJS Canvas
 var scene2D; //FabricJS Canvas
 
 var renderer;
 var rendererCube;
+var rendererPanorama;
 var rendererMenu;
 
 var scene3DRoofContainer; //Contains Roof Design
@@ -65,6 +67,7 @@ var camera3DPivotCache;
 var camera3DQuad = [3];
 var camera3DQuadGrid;
 var camera3DCube;
+var camera3DPanorama;
 var camera3DMirrorReflection;
 
 var groundGrid;
@@ -132,7 +135,9 @@ var particlePivotEmitter;
 var particleWeather;
 
 //var particleClouds;
-var mouse;
+var mouse; //THREE.Vector2()
+var touch; //THREE.Vector2()
+var target; //THREE.Vector3();
 var clock;
 //var engine;
 var projector;
@@ -233,6 +238,8 @@ function init(runmode,viewmode) {
     //zip = new JSZip();
     clock = new THREE.Clock();
     mouse = new THREE.Vector2();
+    touch = new THREE.Vector2();
+    target = new THREE.Vector3();
 
     scene3DRoofContainer = new THREE.Object3D();
     scene3DHouseContainer = new THREE.Object3D();
@@ -332,7 +339,7 @@ function init(runmode,viewmode) {
     */
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
     camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 80);
-  
+
     /*
     Cutaway View - width, height, fov, near, far, orthoNear, orthoFar
     https://github.com/mrdoob/three.js/issues/1909
@@ -663,7 +670,6 @@ function init(runmode,viewmode) {
     scene3DSky();
     scene3DLight();
     
-
     selectMeasurement();
 
     $('#menuWeatherText').html("Sunny");
@@ -671,6 +677,148 @@ function init(runmode,viewmode) {
 
     animate();
     show3DHouse();
+}
+
+function disposePanorama(id)
+{
+    document.removeEventListener( 'mousedown', onPanoramaMouseDown, false );
+    document.removeEventListener( 'mousewheel', onPanoramaMouseWheel, false );
+
+    document.removeEventListener( 'touchstart', onPanoramaTouchStart, false );
+    document.removeEventListener( 'touchmove', onPanoramaTouchMove, false );
+
+    document.getElementById(id).removeChild(rendererPanorama.domElement);
+
+    rendererPanorama = null;
+    camera3DPanorama = null;
+    scene3DPanorama = null;
+}
+
+function initPanorama(id,files)
+{
+    scene3DPanorama = new THREE.Scene();
+    camera3DPanorama = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+
+    rendererPanorama = new THREE.CSS3DRenderer();
+
+    rendererPanorama.setSize( window.innerWidth*0.78, window.innerHeight*0.85);
+    document.getElementById(id).appendChild(rendererPanorama.domElement);
+
+    //controls3DPanorama = new THREE.OrbitControls(camera3DPanorama, rendererPanorama.domElement);
+    //controls3DPanorama.target = new THREE.Vector3(0, 0, 0);
+    //controls3DPanorama.enabled = true;
+    
+    document.addEventListener( 'mousedown', onPanoramaMouseDown, false );
+    document.addEventListener( 'mousewheel', onPanoramaMouseWheel, false );
+
+    document.addEventListener( 'touchstart', onPanoramaTouchStart, false );
+    document.addEventListener( 'touchmove', onPanoramaTouchMove, false );
+
+    mouse = new THREE.Vector2();
+    touch = new THREE.Vector2();
+
+    var sides = [
+        {
+            url: 'panoramas/' + files + '/right.jpg',
+            position: [ -512, 0, 0 ],
+            rotation: [ 0, Math.PI / 2, 0 ]
+        },
+        {
+            url: 'panoramas/' +files + '/left.jpg',
+            position: [ 512, 0, 0 ],
+            rotation: [ 0, -Math.PI / 2, 0 ]
+        },
+        {
+            url: 'panoramas/' + files + '/top.jpg',
+            position: [ 0,  512, 0 ],
+            rotation: [ Math.PI / 2, 0, Math.PI ]
+        },
+        {
+            url: 'panoramas/' + files + '/bottom.jpg',
+            position: [ 0, -512, 0 ],
+            rotation: [ - Math.PI / 2, 0, Math.PI ]
+        },
+        {
+            url: 'panoramas/' + files + '/front.jpg',
+            position: [ 0, 0,  512 ],
+            rotation: [ 0, Math.PI, 0 ]
+        },
+        {
+            url: 'panoramas/' + files + '/back.jpg',
+            position: [ 0, 0, -512 ],
+            rotation: [ 0, 0, 0 ]
+        }
+    ];
+
+    for ( var i = 0; i < sides.length; i ++ ) {
+
+        var side = sides[i];
+
+        var element = document.createElement('img');
+        element.width = 1026; // 2 pixels extra to close the gap.
+        element.src = side.url;
+
+        var object = new THREE.CSS3DObject(element);
+        object.position.fromArray(side.position);
+        object.rotation.fromArray(side.rotation);
+        scene3DPanorama.add(object);
+    }
+
+    animatePanorama();
+
+    //TODO: update onWindowResize();
+}
+
+function onPanoramaMouseDown( event ) {
+
+    event.preventDefault();
+
+    document.addEventListener( 'mousemove', onPanoramaMouseMove, false );
+    document.addEventListener( 'mouseup', onPanoramaMouseUp, false );
+}
+
+function onPanoramaMouseMove( event ) {
+
+    var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+    var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+
+    mouse.x -= movementX * 0.1;
+    mouse.y += movementY * 0.1;
+}
+
+function onPanoramaMouseUp( event ) {
+
+    document.removeEventListener( 'mousemove', onPanoramaMouseMove );
+    document.removeEventListener( 'mouseup', onPanoramaMouseUp );
+}
+
+function onPanoramaMouseWheel( event ) {
+
+    camera3DPanorama.fov -= event.wheelDeltaY * 0.05;
+    camera3DPanorama.updateProjectionMatrix();
+}
+
+function onPanoramaTouchStart( event ) {
+
+    event.preventDefault();
+
+    var touches = event.touches[0];
+
+    touch.x = touches.screenX;
+    touch.y = touches.screenY;
+}
+
+function onPanoramaTouchMove( event ) {
+
+    event.preventDefault();
+
+    var touches = event.touches[ 0 ];
+
+    mouse.x -= ( touches.screenX - touch.x ) * 0.1;
+    mouse.y += ( touches.screenY - touch.y ) * 0.1;
+
+    touch.x = touches.screenX;
+    touch.y = touches.screenY;
 }
 
 /*
@@ -2941,7 +3089,8 @@ function on3DFloorMouseMove(event) {
 	*/
 
 	var line;
-		for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++) {
+    /*
+	for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++) {
 
 			//http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
             
@@ -3004,6 +3153,7 @@ function on3DFloorMouseMove(event) {
  
         var tween = new TWEEN.Tween(scene3DFloorWallContainer[FLOOR].children[i].material).to({opacity:p}, 3000).start();
     }
+    */
 }
 
 function on3DFloorMouseUp(event) {
@@ -4930,7 +5080,38 @@ function scene2DWallMeasurementInternal() {
 
 }
 
+function animatePanorama() {
+
+    if (rendererPanorama instanceof THREE.CSS3DRenderer)
+    {
+        requestAnimationFrame(animatePanorama);
+        var delta = clock.getDelta();
+
+        mouse.x +=  0.1;
+        mouse.y = Math.max( - 85, Math.min(85, mouse.y));
+        var phi = THREE.Math.degToRad(90 - mouse.y);
+        var theta = THREE.Math.degToRad( mouse.x );
+
+        target.x = Math.sin( phi ) * Math.cos( theta );
+        target.y = Math.cos( phi );
+        target.z = Math.sin( phi ) * Math.sin( theta );
+
+        camera3DPanorama.lookAt(target);
+        
+        rendererPanorama.render(scene3DPanorama, camera3DPanorama);
+    }
+    else
+    {
+        animate();
+    }
+}
+
 function animate() {
+
+    if (rendererPanorama instanceof THREE.CSS3DRenderer)
+    {
+        return;
+    }
 
     requestAnimationFrame(animate);
     var delta = clock.getDelta();
@@ -5061,8 +5242,10 @@ function animate() {
     //renderer.render(scene3D, camera3D);
     //TWEEN.update();
 
-    render();
-
+    controls3D.update(delta);
+    renderer.render(scene3D, camera3D);
+    TWEEN.update();
+    
     //stats.update();
     /*
         var timer = Date.now() * 0.0005;
@@ -5081,13 +5264,6 @@ function animate() {
     //} else if (scene2D.visible) {
     //controls2D.update();
     //renderer.render(scene2D, camera2D);
-}
-
-function render()
-{
-    controls3D.update(clock.getDelta());
-    renderer.render(scene3D, camera3D);
-    TWEEN.update();
 }
 
 function fileSelect(action) {
