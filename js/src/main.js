@@ -75,8 +75,9 @@ var groundMesh;
 //var glowMesh;
 
 var skyMesh;
-var weatherSkyDayMesh;
-var weatherSkyNightMesh;
+//var weatherSkyDayMesh;
+//var weatherSkyNightMesh;
+var weatherSkyMesh;
 var weatherSkyRainbowMesh;
 
 var SESSION = '';
@@ -139,6 +140,7 @@ var mouse; //THREE.Vector2()
 var touch; //THREE.Vector2()
 var target; //THREE.Vector3();
 var clock;
+var _animate = false;
 //var engine;
 var projector;
 var vector;
@@ -667,7 +669,7 @@ function init(runmode,viewmode) {
     */
 
     sceneNew();
-    scene3DSky();
+    //scene3DSky();
     scene3DLight();
     
     selectMeasurement();
@@ -675,7 +677,6 @@ function init(runmode,viewmode) {
     $('#menuWeatherText').html("Sunny");
     $('#menuDayNightText').html("Day");
 
-    animate();
     show3DHouse();
 }
 
@@ -1545,6 +1546,7 @@ function show3DHouse() {
  
     scene3DSetSky(DAY);
     scene3DSetLight()
+
     scene3DSetWeather();
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
@@ -1594,6 +1596,8 @@ function show3DHouse() {
     //scene3DHouseContainer.traverse;
 
     $('#WebGLCanvas').show();
+
+    animate();
     camera3DHouseEnter();
 }
 
@@ -1624,6 +1628,7 @@ function show3DLandscape() {
     correctMenuHeight();
 
     $('#WebGLCanvas').show();
+    animate();
 }
 
 function show3DFloor() {
@@ -1640,7 +1645,6 @@ function show3DFloor() {
 
     //camera3D.position.set(0, 10, 12);
     
-
     //TODO: Loop and show based in ID name / floor
     //scene3D.add(scene3DContainer);
 
@@ -1690,6 +1694,8 @@ function show3DFloor() {
     correctMenuHeight();
 
     $('#WebGLCanvas').show();
+
+    animate();
     camera3DFloorEnter();
 }
 
@@ -1715,6 +1721,7 @@ function show3DFloorLevel() {
 
     //$('#HTMLCanvas').hide();
     $('#WebGLCanvas').show();
+    animate();
 }
 
 function show3DRoofDesign() {
@@ -1751,6 +1758,7 @@ function show3DRoofDesign() {
 
     //$('#HTMLCanvas').hide();
     $('#WebGLCanvas').show();
+    animate();
 }
 
 /*
@@ -1980,8 +1988,7 @@ function hideElements() {
     scene3D.remove(camera3DQuadGrid);
 
     scene3D.remove(skyMesh); //TODO: think of better way avoiding double remove 1 here 1 in scene3DSetSky
-    scene3D.remove(weatherSkyDayMesh);
-    scene3D.remove(weatherSkyNightMesh);
+    scene3D.remove(weatherSkyMesh);
     scene3D.remove(weatherSkyRainbowMesh);
     //=================================
 
@@ -2245,16 +2252,95 @@ function scene3DSetWeather() {
         //engine.initialize();
     }
 
-    scene3D.remove(weatherSkyDayMesh);
-    scene3D.remove(weatherSkyNightMesh);
+    scene3D.remove(weatherSkyMesh);
     scene3D.remove(weatherSkyRainbowMesh);
 
-    if (DAY == 'day') {
-        scene3D.add(weatherSkyDayMesh);
-        scene3D.add(weatherSkyRainbowMesh);
-    } else if (DAY == 'night') {
-        scene3D.add(weatherSkyNightMesh);
+    geometry = new THREE.Geometry();
+    texture = new THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
+    texture.magFilter = THREE.LinearMipMapLinearFilter;
+    texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+    /*
+    texture = THREE.ImageUtils.loadTexture("./images/cloud.png");
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearMipMapLinearFilter;
+    */
+
+    var fog = new THREE.Fog(0x4584b4, -100, 1000);
+
+    material = new THREE.ShaderMaterial({
+        uniforms: {
+            "map": {
+                type: "t",
+                //value: texture
+            },
+
+            "fogColor": {
+                type: "c",
+                value: fog.color
+            },
+            "fogNear": {
+                type: "f",
+                value: fog.near
+            },
+            "fogFar": {
+                type: "f",
+                value: fog.far
+            },
+        },
+        vertexShader: document.getElementById('vs').textContent,
+        fragmentShader: document.getElementById('fs').textContent,
+        depthWrite: false,
+        depthTest: false,
+        transparent: true
+    });
+    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
+    for (var i = 0; i < 20; i++) 
+    {
+        plane.position.x = getRandomInt(-20, 20);
+        plane.position.y = getRandomInt(5.5, 10);
+        plane.position.z = i;
+        plane.rotation.z = getRandomInt(5, 10);
+        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
+        plane.updateMatrix();
+        geometry.merge(plane.geometry, plane.matrix);
     }
+    //weatherSkyDayMesh = new THREE.Mesh(geometry, material);
+
+    if (DAY == 'day') {
+        //scene3D.add(weatherSkyDayMesh);
+        texture = new THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
+        texture.magFilter = THREE.LinearMipMapLinearFilter;
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        material.uniforms.map.value = texture;
+        weatherSkyMesh = new THREE.Mesh(geometry, material);
+
+        texture = new THREE.ImageUtils.loadTexture('./images/rainbow.png', null, animate);
+        materialRainbow = material.clone();
+        materialRainbow.uniforms.map.value = texture;
+        geometry = new THREE.Geometry();
+        plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
+        plane.position.x = getRandomInt(1, 15);
+        plane.position.y = getRandomInt(5, 8);
+        plane.position.z = -2;
+        plane.updateMatrix();
+        geometry.merge(plane.geometry, plane.matrix);
+        weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialRainbow);
+
+        scene3D.add(weatherSkyRainbowMesh);
+    }
+    else if (DAY == 'night')
+    {
+        texture = new THREE.ImageUtils.loadTexture('./images/cloud2.png', null, animate);
+        texture.magFilter = THREE.LinearMipMapLinearFilter;
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+
+        //materialNight = material.clone();
+        material.uniforms.map.value = texture;
+        weatherSkyMesh = new THREE.Mesh(geometry, material);
+    }
+
+    scene3D.add(weatherSkyMesh);
 }
 
 function menuSelect(item, id, color) {
@@ -2466,7 +2552,7 @@ function onDocumentDoubleClick(event) {
 
             //particlePivot.removeEmitter(particlePivotEmitter);
 
-            /*
+        /*
             engine = new ParticleEngine();
             fountain = {
                 positionStyle: Type.CUBE,
@@ -3182,7 +3268,7 @@ function on3DMouseMove(event) {
     if (event.clientX > window.innerWidth - 50)
     {
     	//console.log("set SceneAnimate");
-    	SceneAnimate = true;
+    	SceneAnimate = true; animate();
     	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
 	}
 
@@ -4670,73 +4756,6 @@ function scene3DSky() {
     //=============
 
 
-    geometry = new THREE.Geometry();
-    texture = new THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
-    texture.magFilter = THREE.LinearMipMapLinearFilter;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-
-    /*
-    texture = THREE.ImageUtils.loadTexture("./images/cloud.png");
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-	*/
-
-    var fog = new THREE.Fog(0x4584b4, -100, 1000);
-    material = new THREE.ShaderMaterial({
-        uniforms: {
-            "map": {
-                type: "t",
-                value: texture
-            },
-
-            "fogColor": {
-                type: "c",
-                value: fog.color
-            },
-            "fogNear": {
-                type: "f",
-                value: fog.near
-            },
-            "fogFar": {
-                type: "f",
-                value: fog.far
-            },
-        },
-        vertexShader: document.getElementById('vs').textContent,
-        fragmentShader: document.getElementById('fs').textContent,
-        depthWrite: false,
-        depthTest: false,
-        transparent: true
-    });
-    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
-    for (var i = 0; i < 20; i++) 
-    {
-        plane.position.x = getRandomInt(-20, 20);
-        plane.position.y = getRandomInt(5.5, 10);
-        plane.position.z = i;
-        plane.rotation.z = getRandomInt(5, 10);
-        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
-        plane.updateMatrix();
-        geometry.merge(plane.geometry, plane.matrix);
-    }
-    weatherSkyDayMesh = new THREE.Mesh(geometry, material);
-
-    texture = new THREE.ImageUtils.loadTexture('./images/cloud2.png', null, animate);
-    materialNight = material.clone();
-    materialNight.uniforms.map.value = texture;
-    weatherSkyNightMesh = new THREE.Mesh(geometry, materialNight);
-
-    texture = new THREE.ImageUtils.loadTexture('./images/rainbow.png', null, animate);
-    materialNight = material.clone();
-    materialNight.uniforms.map.value = texture;
-    geometry = new THREE.Geometry();
-    plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
-    plane.position.x = getRandomInt(1, 15);
-    plane.position.y = getRandomInt(5, 8);
-    plane.position.z = -2;
-    plane.updateMatrix();
-    geometry.merge(plane.geometry, plane.matrix);
-    weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialNight);
 
     /*
     weatherRainMesh = {
@@ -5106,164 +5125,233 @@ function animatePanorama() {
     }
 }
 
-function animate() {
+function animateRotate() {
 
-    if (rendererPanorama instanceof THREE.CSS3DRenderer)
-    {
+    if (!_animate)
         return;
-    }
 
-    requestAnimationFrame(animate);
+    if(!SceneAnimate)
+        animate();
+
+    requestAnimationFrame(animateRotate);
     var delta = clock.getDelta();
 
-    if (SceneAnimate)
-    {
-        var rotateSpeed = delta * 0.19; //.005; //Date.now() * 0.0001; //.01;
-        //var rotateSpeed = .005;
-        //if (keyboard.pressed("left")){ 
-        
-        var x = camera3D.position.x,
-            z = camera3D.position.z;
+    var rotateSpeed = delta * 0.19; //.005; //Date.now() * 0.0001; //.01;
+    //var rotateSpeed = .005;
+    //if (keyboard.pressed("left")){ 
+    
+    var x = camera3D.position.x,
+        z = camera3D.position.z;
 
-        var cosratio = Math.cos(rotateSpeed),
-            sinratio = Math.sin(rotateSpeed);
+    var cosratio = Math.cos(rotateSpeed),
+        sinratio = Math.sin(rotateSpeed);
 
-        camera3D.position.x = x * cosratio + z * sinratio;
-        camera3D.position.z = z * cosratio - x * sinratio;
+    camera3D.position.x = x * cosratio + z * sinratio;
+    camera3D.position.z = z * cosratio - x * sinratio;
 
+    //} else if (keyboard.pressed("right")){
+    //camera3D.position.x = x * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
+    //camera3D.position.z = z * Math.cos(rotSpeed) + x * Math.sin(rotSpeed);
+    //}
 
-        //} else if (keyboard.pressed("right")){
-        //camera3D.position.x = x * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
-        //camera3D.position.z = z * Math.cos(rotSpeed) + x * Math.sin(rotSpeed);
-        //}
+    //camera3D.position.x = Math.cos(rotateSpeed) * 100;
+    //camera3D.position.z = Math.sin(rotateSpeed) * 100;
+    //camera3D.position.y = 60;
 
-        //camera3D.position.x = Math.cos(rotateSpeed) * 100;
-        //camera3D.position.z = Math.sin(rotateSpeed) * 100;
-        //camera3D.position.y = 60;
+    camera3D.lookAt(scene3D.position);
 
-        camera3D.lookAt(scene3D.position);
-    }
-    else
-    {
-        if (SCENE == 'roof') {
-            // setViewport parameters:
-            //  lower_left_x, lower_left_y, viewport_width, viewport_height
-
-            //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-            //renderer.clear();
-
-            // upper left corner
-            renderer.setViewport(0, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-            renderer.render(scene3D, camera3DQuad[0]); //top
-
-            // upper right corner
-            renderer.setViewport(0.5 * window.innerWidth, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-            renderer.render(scene3D, camera3DQuad[1]); //front 
-
-            // lower left corner
-            renderer.setViewport(0, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-            //camera3DQuad[2].updateProjectionMatrix();
-            renderer.render(scene3D, camera3DQuad[2]); //side
-
-            // lower right corner
-            renderer.setViewport(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-            //renderer.setScissor(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-            //renderer.enableScissorTest(true);
-            //camera3DQuad[3].updateProjectionMatrix();
-            renderer.render(scene3D, camera3DQuad[3]); //perspective
-            return;
-        }else if (SCENE == 'floor') {
-
-            /*
-            move the CubeCamera to the position of the object that has a reflective surface,
-            "take a picture" in each direction and apply it to the surface.
-            need to hide surface before and after so that it does not "get in the way" of the camera
-            */
-            //camera3DMirrorReflection.visible = false;
-            //camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
-            //camera3DMirrorReflection.visible = true;
-            //controls3DFloor.update();
-
-            sceneSpotLight.visible = false; //Do not reflect light
-            //scene3DFloorGroundContainer.children[0].visible = false; //because refrection camera is below the floor
-            //scene3D.remove(scene3DFloorGroundContainer); //because refrection camera is below the floor
-            camera3DMirrorReflection.updateCubeMap(renderer, scene3D); //capture the reflection
-            sceneSpotLight.visible = true;
-            //cene3D.add(scene3DFloorGroundContainer);
-            //scene3DFloorGroundContainer.children[0].visible = true;
-        }
-
-        //if (engine instanceof ParticleEngine) {
-        //    engine.update(delta * 0.8);
-        //}
-        //if (particlePivot instanceof SPE.Group) {
-            particlePivot.tick(delta);
-            particleWeather.tick(delta);
-        //}
-        
-        for (var a in animation) {
-            a.update(delta * 0.8);
-        } 
-    }
-
-    if (SCENE == 'house')
-    {
-        //if (controls3D.needsUpdate) {
-        if (DAY == 'day') {
-            weatherSkyDayMesh.rotation.y = camera3D.rotation.y; //spiral
-            weatherSkyDayMesh.rotation.z = camera3D.rotation.z; //side-to-side
-            weatherSkyDayMesh.rotation.x = camera3D.rotation.x; //top
-            weatherSkyDayMesh.position.x = camera3D.position.x / 1.5;
-        } else if (DAY == 'night') {
-            weatherSkyNightMesh.rotation.y = camera3D.rotation.y; //spiral
-            weatherSkyNightMesh.rotation.z = camera3D.rotation.z; //side-to-side
-            weatherSkyNightMesh.rotation.x = camera3D.rotation.x; //top
-            weatherSkyNightMesh.position.x = camera3D.position.x / 1.5;
-        }
-
-        //weatherSkyDayMesh.position.z = camera3D.position.z;
-        //weatherSkyDayMesh.rotation = camera3D.rotation;
-
-        //weatherSkyDayMesh.position.y = (Math.random() - 0.5) * 0.2;
-        //weatherSkyDayMesh.position.z = (Math.random() - 0.5) * 5.0;
-        //weatherSkyDayMesh.rotation = Math.random() * Math.PI;
-        //weatherSkyDayMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
-        // object3d.color.setHex( 0xC0C0C0 + 0x010101*Math.floor(255*(Math.random()*0.1)) );
-
-        //Orientation Cube
-
-        rendererCube.render(scene3DCube, camera3DCube);
-    }
-
-    //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-    //renderer.clear();
-
-    //controls3D.update(delta);
-    //renderer.render(scene3D, camera3D);
-    //TWEEN.update();
+    animateClouds();
 
     controls3D.update(delta);
     renderer.render(scene3D, camera3D);
     TWEEN.update();
-    
+}
+
+function animateFloor()
+{
+    if (!_animate)
+        return;
+
+    requestAnimationFrame(animateFloor);
+    var delta = clock.getDelta();
+    /*
+    move the CubeCamera to the position of the object that has a reflective surface,
+    "take a picture" in each direction and apply it to the surface.
+    need to hide surface before and after so that it does not "get in the way" of the camera
+    */
+    //camera3DMirrorReflection.visible = false;
+    //camera3DMirrorReflection.updateCubeMap(renderer, scene3D);
+    //camera3DMirrorReflection.visible = true;
+    //controls3DFloor.update();
+
+    sceneSpotLight.visible = false; //Do not reflect light
+    //scene3DFloorGroundContainer.children[0].visible = false; //because refrection camera is below the floor
+    //scene3D.remove(scene3DFloorGroundContainer); //because refrection camera is below the floor
+    camera3DMirrorReflection.updateCubeMap(renderer, scene3D); //capture the reflection
+    sceneSpotLight.visible = true;
+    //cene3D.add(scene3DFloorGroundContainer);
+    //scene3DFloorGroundContainer.children[0].visible = true;
+
+    particlePivot.tick(delta);
+
+    controls3D.update(delta);
+    renderer.render(scene3D, camera3D);
+    TWEEN.update();
+}
+
+function animateLandscape()
+{
+    if (!_animate)
+        return;
+
+    requestAnimationFrame(animateHouse);
+    var delta = clock.getDelta();
+
+    controls3D.update(delta);
+    renderer.render(scene3D, camera3D);
+    TWEEN.update();
+}
+
+function animateClouds()
+{
+    /*
+    if (DAY == 'day') {
+        weatherSkyDayMesh.rotation.y = camera3D.rotation.y; //spiral
+        weatherSkyDayMesh.rotation.z = camera3D.rotation.z; //side-to-side
+        weatherSkyDayMesh.rotation.x = camera3D.rotation.x; //top
+        weatherSkyDayMesh.position.x = camera3D.position.x / 1.5;
+    } else if (DAY == 'night') {
+        weatherSkyNightMesh.rotation.y = camera3D.rotation.y; //spiral
+        weatherSkyNightMesh.rotation.z = camera3D.rotation.z; //side-to-side
+        weatherSkyNightMesh.rotation.x = camera3D.rotation.x; //top
+        weatherSkyNightMesh.position.x = camera3D.position.x / 1.5;
+    }
+    */
+    weatherSkyMesh.rotation.y = camera3D.rotation.y; //spiral
+    weatherSkyMesh.rotation.z = camera3D.rotation.z; //side-to-side
+    weatherSkyMesh.rotation.x = camera3D.rotation.x; //top
+    weatherSkyMesh.position.x = camera3D.position.x / 1.5;
+
+    //weatherSkyDayMesh.position.z = camera3D.position.z;
+    //weatherSkyDayMesh.rotation = camera3D.rotation;
+
+    //weatherSkyDayMesh.position.y = (Math.random() - 0.5) * 0.2;
+    //weatherSkyDayMesh.position.z = (Math.random() - 0.5) * 5.0;
+    //weatherSkyDayMesh.rotation = Math.random() * Math.PI;
+    //weatherSkyDayMesh.scale.multiplyScalar(1 / 30 * (Math.random() * 0.4 + 0.8))
+    // object3d.color.setHex( 0xC0C0C0 + 0x010101*Math.floor(255*(Math.random()*0.1)) );
+}
+
+function animateHouse()
+{
+    if (!_animate)
+        return;
+
+    requestAnimationFrame(animateHouse);
+    var delta = clock.getDelta();
+
+    particlePivot.tick(delta);
+    particleWeather.tick(delta);
+
+    animateClouds();
+
+    rendererCube.render(scene3DCube, camera3DCube);
+
+    for (var a in animation) {
+        a.update(delta * 0.8);
+    }
+
+    controls3D.update(delta);
+    renderer.render(scene3D, camera3D);
+    TWEEN.update();
+
     //stats.update();
     /*
-        var timer = Date.now() * 0.0005;
+    var timer = Date.now() * 0.0005;
 
-        camera.position.x = Math.cos( timer ) * 10;
-        camera.position.y = 2;
-        camera.position.z = Math.sin( timer ) * 10;
+    camera.position.x = Math.cos( timer ) * 10;
+    camera.position.y = 2;
+    camera.position.z = Math.sin( timer ) * 10;
 
-        camera.lookAt( scene.position );
+    camera.lookAt( scene.position );
 
-        particleLight.position.x = Math.sin( timer * 4 ) * 3009;
-        particleLight.position.y = Math.cos( timer * 5 ) * 4000;
-        particleLight.position.z = Math.cos( timer * 4 ) * 3009;
-    	*/
+    particleLight.position.x = Math.sin( timer * 4 ) * 3009;
+    particleLight.position.y = Math.cos( timer * 5 ) * 4000;
+    particleLight.position.z = Math.cos( timer * 4 ) * 3009;
+    */
 
     //} else if (scene2D.visible) {
     //controls2D.update();
     //renderer.render(scene2D, camera2D);
+}
+
+function animateRoof()
+{
+    if (!_animate)
+        return;
+
+    requestAnimationFrame(animateRoof);
+
+    // setViewport parameters:
+    //  lower_left_x, lower_left_y, viewport_width, viewport_height
+
+    //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+    //renderer.clear();
+
+    // upper left corner
+    renderer.setViewport(0, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+    renderer.render(scene3D, camera3DQuad[0]); //top
+
+    // upper right corner
+    renderer.setViewport(0.5 * window.innerWidth, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+    renderer.render(scene3D, camera3DQuad[1]); //front 
+
+    // lower left corner
+    renderer.setViewport(0, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+    //camera3DQuad[2].updateProjectionMatrix();
+    renderer.render(scene3D, camera3DQuad[2]); //side
+
+    // lower right corner
+    renderer.setViewport(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+    //renderer.setScissor(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
+    //renderer.enableScissorTest(true);
+    //camera3DQuad[3].updateProjectionMatrix();
+    renderer.render(scene3D, camera3DQuad[3]); //perspective
+}
+
+function animate()
+{
+    _animate = false;
+
+    setTimeout(function()  //..wait for other loops to detect _animate = false
+    {
+        if (SCENE == 'house')
+        {
+            _animate = true;
+
+            if (SceneAnimate)
+            {
+                animateRotate();
+            }else{
+                animateHouse();
+            }
+        }
+        else if (SCENE == 'floor')
+        {
+            _animate = true;
+            animateFloor();
+        }
+        else if (SCENE == 'landscape' || SCENE == 'floorlevel')
+        {
+            _animate = true;
+            animateLandscape();
+        }
+        else if (SCENE == 'roof')
+        {
+            _animate = true;
+            animateRoof();
+        }
+    }, 50);
 }
 
 function fileSelect(action) {
