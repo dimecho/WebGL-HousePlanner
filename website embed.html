@@ -62,14 +62,14 @@
 <body>
   <div id="openHousePlanner" class="modalDialog" >
     <div id="wrap">
-      <a href="#close" class="close">X</a>
-      <iframe src="index.html" frameborder="0" id="iframe"></iframe> 
+      <a href="#close" class="close" onclick="document.getElementById('iframe').src = 'about:blank'">X</a>
+      <iframe src="" frameborder="0" id="iframe"></iframe> 
     </div>
   </div>
   <br/><br/><br/><br/>
   <center>
     <h1>
-      <a href="#openHousePlanner">Open HousePlanner</a>
+      <a href="#openHousePlanner" onclick="document.getElementById('iframe').src = 'index.html'">Open HousePlanner</a>
     </h1>
   </center>
 </body>

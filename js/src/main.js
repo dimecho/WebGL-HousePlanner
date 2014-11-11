@@ -77,6 +77,8 @@ var groundMesh;
 var skyMesh;
 //var weatherSkyDayMesh;
 //var weatherSkyNightMesh;
+var weatherSkyGeometry;
+var weatherSkyMaterial;
 var weatherSkyMesh;
 var weatherSkyRainbowMesh;
 
@@ -140,7 +142,7 @@ var mouse; //THREE.Vector2()
 var touch; //THREE.Vector2()
 var target; //THREE.Vector3();
 var clock;
-var _animate = false;
+var _animate = 1; 
 //var engine;
 var projector;
 var vector;
@@ -230,7 +232,6 @@ function init(runmode,viewmode) {
 
     //$('#canvas_container').css('overflow-x', 'scroll');
     //$('#canvas_container').css('overflow-y', 'scroll'); //'hidden');
-
 
     //scene2D.renderAll();
     fabric.Object.prototype.originX = fabric.Object.prototype.originY = 'center';
@@ -501,6 +502,47 @@ function init(runmode,viewmode) {
     //scene3DCubeMesh = new THREE.Mesh(cubeG, material);
     scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
 
+
+    var fog = new THREE.Fog(0x4584b4, -100, 1000);
+    weatherSkyMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            "map": {
+                type: "t",
+                //value: texture
+            },
+
+            "fogColor": {
+                type: "c",
+                value: fog.color
+            },
+            "fogNear": {
+                type: "f",
+                value: fog.near
+            },
+            "fogFar": {
+                type: "f",
+                value: fog.far
+            },
+        },
+        vertexShader: document.getElementById('vs').textContent,
+        fragmentShader: document.getElementById('fs').textContent,
+        depthWrite: false,
+        depthTest: false,
+        transparent: true
+    });
+
+    weatherSkyGeometry = new THREE.Geometry();
+    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
+    for (var i = 0; i < 20; i++) 
+    {
+        plane.position.x = getRandomInt(-20, 20);
+        plane.position.y = getRandomInt(5.5, 10);
+        plane.position.z = i;
+        plane.rotation.z = getRandomInt(5, 10);
+        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
+        plane.updateMatrix();
+        weatherSkyGeometry.merge(plane.geometry, plane.matrix);
+    }
     //THREE.GeometryUtils.merge(geometry, mesh);
 
     //scene2D.add(new THREE.GridHelper(100, 10));
@@ -510,6 +552,7 @@ function init(runmode,viewmode) {
     //scene2D.fillRect(0, 0, 1, 1);
 
     renderer = new THREE.WebGLRenderer({
+        devicePixelRatio: window.devicePixelRatio || 1,
         antialias: true,
         alpha: true,
         //clearColor: 0x34583e,
@@ -682,27 +725,35 @@ function init(runmode,viewmode) {
 
 function disposePanorama(id)
 {
-    document.removeEventListener( 'mousedown', onPanoramaMouseDown, false );
-    document.removeEventListener( 'mousewheel', onPanoramaMouseWheel, false );
+    if (rendererPanorama instanceof THREE.WebGLRenderer)
+    {
+        document.removeEventListener( 'mousedown', onPanoramaMouseDown, false );
+        document.removeEventListener( 'mousewheel', onPanoramaMouseWheel, false );
 
-    document.removeEventListener( 'touchstart', onPanoramaTouchStart, false );
-    document.removeEventListener( 'touchmove', onPanoramaTouchMove, false );
+        document.removeEventListener( 'touchstart', onPanoramaTouchStart, false );
+        document.removeEventListener( 'touchmove', onPanoramaTouchMove, false );
 
-    document.getElementById(id).removeChild(rendererPanorama.domElement);
+        document.getElementById(id).removeChild(rendererPanorama.domElement);
+    }
+    
+    $('#' + id).hide();
 
     rendererPanorama = null;
     camera3DPanorama = null;
     scene3DPanorama = null;
 }
 
-function initPanorama(id,files)
+function initPanorama(id,files,W,H)
 {
     scene3DPanorama = new THREE.Scene();
     camera3DPanorama = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 
-    rendererPanorama = new THREE.CSS3DRenderer();
+    rendererPanorama = new THREE.WebGLRenderer({
+        devicePixelRatio: window.devicePixelRatio || 1,
+        antialias: false
+    });
 
-    rendererPanorama.setSize( window.innerWidth*0.78, window.innerHeight*0.85);
+    rendererPanorama.setSize(window.innerWidth*W, window.innerHeight*H);
     document.getElementById(id).appendChild(rendererPanorama.domElement);
 
     //controls3DPanorama = new THREE.OrbitControls(camera3DPanorama, rendererPanorama.domElement);
@@ -719,51 +770,47 @@ function initPanorama(id,files)
     touch = new THREE.Vector2();
 
     var sides = [
-        {
-            url: 'panoramas/' + files + '/right.jpg',
-            position: [ -512, 0, 0 ],
-            rotation: [ 0, Math.PI / 2, 0 ]
-        },
-        {
-            url: 'panoramas/' +files + '/left.jpg',
-            position: [ 512, 0, 0 ],
-            rotation: [ 0, -Math.PI / 2, 0 ]
-        },
-        {
-            url: 'panoramas/' + files + '/top.jpg',
-            position: [ 0,  512, 0 ],
-            rotation: [ Math.PI / 2, 0, Math.PI ]
-        },
-        {
-            url: 'panoramas/' + files + '/bottom.jpg',
-            position: [ 0, -512, 0 ],
-            rotation: [ - Math.PI / 2, 0, Math.PI ]
-        },
-        {
-            url: 'panoramas/' + files + '/front.jpg',
-            position: [ 0, 0,  512 ],
-            rotation: [ 0, Math.PI, 0 ]
-        },
-        {
-            url: 'panoramas/' + files + '/back.jpg',
-            position: [ 0, 0, -512 ],
-            rotation: [ 0, 0, 0 ]
-        }
+        new THREE.MeshBasicMaterial({
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/right.jpg'),
+            side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/left.jpg'),
+            side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/top.jpg'),
+            side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+          map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/bottom.jpg'),
+          side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/front.jpg'),
+           side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/back.jpg'),
+           side: THREE.BackSide
+        }),
     ];
 
-    for ( var i = 0; i < sides.length; i ++ ) {
+    var geometry = new THREE.BoxGeometry(512,512,512);
+    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(sides));
+    scene3DPanorama.add(mesh);
 
-        var side = sides[i];
+    /*
+    var geometry = new THREE.SphereGeometry( 500, 60, 40 );
+    geometry.applyMatrix( new THREE.Matrix4().makeScale( -1, 1, 1 ) );
+    var material = new THREE.MeshBasicMaterial( {
+        map: THREE.ImageUtils.loadTexture( 'textures/2294472375_24a3b8ef46_o.jpg' )
+    } );
+    mesh = new THREE.Mesh( geometry, material );
+    scene3DPanorama.add(mesh);
+    */
 
-        var element = document.createElement('img');
-        element.width = 1026; // 2 pixels extra to close the gap.
-        element.src = side.url;
-
-        var object = new THREE.CSS3DObject(element);
-        object.position.fromArray(side.position);
-        object.rotation.fromArray(side.rotation);
-        scene3DPanorama.add(object);
-    }
+    $('#' + id).show();
 
     animatePanorama();
 
@@ -795,7 +842,19 @@ function onPanoramaMouseUp( event ) {
 
 function onPanoramaMouseWheel( event ) {
 
-    camera3DPanorama.fov -= event.wheelDeltaY * 0.05;
+    if (event.wheelDeltaY)
+    {
+        camera3DPanorama.fov -= event.wheelDeltaY * 0.05;
+    }
+    else if (event.wheelDelta)  // Opera / Explorer 9
+    {
+        camera3DPanorama.fov -= event.wheelDelta * 0.05;
+    }
+    else if (event.detail) // Firefox
+    {
+        camera3DPanorama.fov += event.detail * 1.0;
+    }
+
     camera3DPanorama.updateProjectionMatrix();
 }
 
@@ -1068,12 +1127,17 @@ function camera3DPictureEnter()
     var pLocal = new THREE.Vector3( 0, -1.75, -0.4 );
     var target = pLocal.applyMatrix4(camera3D.matrixWorld);
 
-    var tween = new TWEEN.Tween(SelectedPicture.position).to(target,2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    var tween = new TWEEN.Tween(SelectedPicture.position).to(target,2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+            initPanorama('WebGLPanorama','3428',0.70,0.64);
+        }).start();
+
     var tween = new TWEEN.Tween(SelectedPicture.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 }
 
 function camera3DPictureExit()
 {
+    disposePanorama('WebGLPanorama');
+
     var tween = new TWEEN.Tween(SelectedPicture.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     var tween = new TWEEN.Tween(SelectedPicture.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 }
@@ -1101,7 +1165,6 @@ function camera3DNoteExit()
     //camera3D.remove(SelectedNote);
     var tween = new TWEEN.Tween(SelectedNote.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     var tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-    
 }
 
 function camera3DHouseEnter()
@@ -1538,7 +1601,8 @@ function show3DHouse() {
 
     //Something interesting from the web (maybe someday) -> http://inear.se/urbanjungle
     //Math behind the scenes explained here http://www.inear.se/2014/03/urban-jungle-street-view/
-
+    
+    _animate = -1;
     SCENE = 'house';
 
     hideElements();
@@ -1603,6 +1667,7 @@ function show3DHouse() {
 
 function show3DLandscape() {
 
+    _animate = -1;
     SCENE = 'landscape';
 
     hideElements();
@@ -1633,6 +1698,7 @@ function show3DLandscape() {
 
 function show3DFloor() {
 
+    _animate = -1;
     SCENE = 'floor';
 
     hideElements();
@@ -1701,6 +1767,7 @@ function show3DFloor() {
 
 function show3DFloorLevel() {
 
+     _animate = -1;
     SCENE = 'floorlevel';
 
     hideElements();
@@ -1726,6 +1793,7 @@ function show3DFloorLevel() {
 
 function show3DRoofDesign() {
 
+    _animate = -1;
     SCENE = 'roof';
 
     hideElements();
@@ -2051,6 +2119,8 @@ function hideElements() {
     $(renderer.domElement).unbind('mousedown', on3DLandscapeMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DLandscapeMouseUp);
 
+    disposePanorama('WebGLPanorama');
+
     $('#HTMLCanvas').hide();
     $('#WebGLCanvas').hide();
 
@@ -2255,71 +2325,20 @@ function scene3DSetWeather() {
     scene3D.remove(weatherSkyMesh);
     scene3D.remove(weatherSkyRainbowMesh);
 
-    geometry = new THREE.Geometry();
-    texture = new THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
-    texture.magFilter = THREE.LinearMipMapLinearFilter;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-
-    /*
-    texture = THREE.ImageUtils.loadTexture("./images/cloud.png");
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearMipMapLinearFilter;
-    */
-
-    var fog = new THREE.Fog(0x4584b4, -100, 1000);
-
-    material = new THREE.ShaderMaterial({
-        uniforms: {
-            "map": {
-                type: "t",
-                //value: texture
-            },
-
-            "fogColor": {
-                type: "c",
-                value: fog.color
-            },
-            "fogNear": {
-                type: "f",
-                value: fog.near
-            },
-            "fogFar": {
-                type: "f",
-                value: fog.far
-            },
-        },
-        vertexShader: document.getElementById('vs').textContent,
-        fragmentShader: document.getElementById('fs').textContent,
-        depthWrite: false,
-        depthTest: false,
-        transparent: true
-    });
-    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
-    for (var i = 0; i < 20; i++) 
-    {
-        plane.position.x = getRandomInt(-20, 20);
-        plane.position.y = getRandomInt(5.5, 10);
-        plane.position.z = i;
-        plane.rotation.z = getRandomInt(5, 10);
-        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
-        plane.updateMatrix();
-        geometry.merge(plane.geometry, plane.matrix);
-    }
-    //weatherSkyDayMesh = new THREE.Mesh(geometry, material);
-
     if (DAY == 'day') {
         //scene3D.add(weatherSkyDayMesh);
-        texture = new THREE.ImageUtils.loadTexture('./images/cloud.png', null, animate);
-        texture.magFilter = THREE.LinearMipMapLinearFilter;
+        texture = new THREE.ImageUtils.loadTexture('images/cloud.png');
+        texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
         texture.minFilter = THREE.LinearMipMapLinearFilter;
-        material.uniforms.map.value = texture;
-        weatherSkyMesh = new THREE.Mesh(geometry, material);
+        weatherSkyMaterial.uniforms.map.value = texture;
+        weatherSkyMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
 
-        texture = new THREE.ImageUtils.loadTexture('./images/rainbow.png', null, animate);
-        materialRainbow = material.clone();
+        texture = new THREE.ImageUtils.loadTexture('images/rainbow.png');
+        var materialRainbow = weatherSkyMaterial.clone();
         materialRainbow.uniforms.map.value = texture;
+
         geometry = new THREE.Geometry();
-        plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
+        var plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
         plane.position.x = getRandomInt(1, 15);
         plane.position.y = getRandomInt(5, 8);
         plane.position.z = -2;
@@ -2331,13 +2350,11 @@ function scene3DSetWeather() {
     }
     else if (DAY == 'night')
     {
-        texture = new THREE.ImageUtils.loadTexture('./images/cloud2.png', null, animate);
-        texture.magFilter = THREE.LinearMipMapLinearFilter;
+        texture = new THREE.ImageUtils.loadTexture('images/cloud2.png');
+        texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
         texture.minFilter = THREE.LinearMipMapLinearFilter;
-
-        //materialNight = material.clone();
-        material.uniforms.map.value = texture;
-        weatherSkyMesh = new THREE.Mesh(geometry, material);
+        weatherSkyMaterial.uniforms.map.value = texture;
+        weatherSkyMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
     }
 
     scene3D.add(weatherSkyMesh);
@@ -5101,7 +5118,7 @@ function scene2DWallMeasurementInternal() {
 
 function animatePanorama() {
 
-    if (rendererPanorama instanceof THREE.CSS3DRenderer)
+    if (rendererPanorama instanceof THREE.WebGLRenderer)
     {
         requestAnimationFrame(animatePanorama);
         var delta = clock.getDelta();
@@ -5116,6 +5133,8 @@ function animatePanorama() {
         target.z = Math.sin( phi ) * Math.sin( theta );
 
         camera3DPanorama.lookAt(target);
+
+        //camera3DPanorama.position.copy(camera3DPanorama.target).negate(); // distortion
         
         rendererPanorama.render(scene3DPanorama, camera3DPanorama);
     }
@@ -5127,7 +5146,7 @@ function animatePanorama() {
 
 function animateRotate() {
 
-    if (!_animate)
+    if (_animate != 0)
         return;
 
     if(!SceneAnimate)
@@ -5162,14 +5181,14 @@ function animateRotate() {
 
     animateClouds();
 
-    controls3D.update(delta);
+    //controls3D.update(delta);
     renderer.render(scene3D, camera3D);
     TWEEN.update();
 }
 
 function animateFloor()
 {
-    if (!_animate)
+    if (_animate != 2)
         return;
 
     requestAnimationFrame(animateFloor);
@@ -5201,7 +5220,7 @@ function animateFloor()
 
 function animateLandscape()
 {
-    if (!_animate)
+    if (_animate != 4)
         return;
 
     requestAnimationFrame(animateHouse);
@@ -5244,7 +5263,7 @@ function animateClouds()
 
 function animateHouse()
 {
-    if (!_animate)
+    if (_animate != 1)
         return;
 
     requestAnimationFrame(animateHouse);
@@ -5287,7 +5306,7 @@ function animateHouse()
 
 function animateRoof()
 {
-    if (!_animate)
+    if (_animate != 3)
         return;
 
     requestAnimationFrame(animateRoof);
@@ -5321,37 +5340,35 @@ function animateRoof()
 
 function animate()
 {
-    _animate = false;
+    //Look into Threading this with WebWorkers > http://www.html5rocks.com/en/tutorials/workers/basics/
 
-    setTimeout(function()  //..wait for other loops to detect _animate = false
+    if (SCENE == 'house')
     {
-        if (SCENE == 'house')
+        if (SceneAnimate)
         {
-            _animate = true;
-
-            if (SceneAnimate)
-            {
-                animateRotate();
-            }else{
-                animateHouse();
-            }
+            _animate = 0;
+            animateRotate();
+        }else{
+            _animate = 1;
+            animateHouse();
+            //camera3DHouseEnter();
         }
-        else if (SCENE == 'floor')
-        {
-            _animate = true;
-            animateFloor();
-        }
-        else if (SCENE == 'landscape' || SCENE == 'floorlevel')
-        {
-            _animate = true;
-            animateLandscape();
-        }
-        else if (SCENE == 'roof')
-        {
-            _animate = true;
-            animateRoof();
-        }
-    }, 50);
+    }
+    else if (SCENE == 'floor')
+    {
+        _animate = 2;
+        animateFloor();
+    }
+    else if (SCENE == 'landscape' || SCENE == 'floorlevel')
+    {
+        _animate = 4;
+        animateLandscape();
+    }
+    else if (SCENE == 'roof')
+    {
+        _animate = 3;
+        animateRoof();
+    }
 }
 
 function fileSelect(action) {

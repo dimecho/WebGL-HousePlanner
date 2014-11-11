@@ -257,8 +257,8 @@
 
 <div id="openThumb" class="modalDialog">
 	<div style="width:80%;height:90%;margin:2% auto;">
-		<a href="#close" class="close" onclick="disposePanorama('PanoramaHouseCanvas')">X</a>
-    <div id="PanoramaHouseCanvas" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
+		<a href="#close" class="close" onclick="disposePanorama('WebGLPanoramaHouse')">X</a>
+    <div id="WebGLPanoramaHouse" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
 	</div>
 </div>
 
@@ -344,7 +344,7 @@
         <!--<div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>-->
       </div>
     </div>
-  </div>  
+  </div>
 </div>
 <!-- END Slide Right Menu -->
 
@@ -356,7 +356,7 @@
     </li>
   </ul>
   <div id="links-left" style="width:160px;height:100px;">
-      <a href="#openThumb" onclick="initPanorama('PanoramaHouseCanvas','3427')">
+      <a href="#openThumb" onclick="initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
         <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="images/house.jpg" alt="Property" style="width:140px;height:80px;border:4px solid #FFFFFF;border-radius:2px;"/>
       </a>
   </div>
@@ -545,6 +545,9 @@
     <form id="WebGLNote" style="position:absolute;left:40%;top:40%;display:none;">
         <textarea  name="note" maxlength="1000" cols="50" rows="6" style="border:none;background-color:transparent;">A Note with dynamic text and very cool visual effects</textarea>
     </form>
+
+    <div id="WebGLPanorama" style="position:absolute;left:10%;bottom:50px;display:none;">
+    </div>
 
     <div id="WebGLWallPaintMenu" style="display:none;position:absolute;width:35px;height:35px;">
         <a href="#" onclick="toggleTextureSelect()"><img src="images/colorwheel.svg" /></a>
