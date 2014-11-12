@@ -45,7 +45,8 @@ var scene3DHouseFXContainer; //Visual Effects container (user not editable/anima
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,tables)
-var scene3DFloorWallContainer = []; //3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
+var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
+var scene3DFloorTileContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 
 var scene3DPivotPoint; // 3D rotational pivot point - 1 object
@@ -251,6 +252,8 @@ function init(runmode,viewmode) {
     scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DFloorLevelGroundContainer = new THREE.Object3D();
 
+    //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
+    //==============================================
     scene3DFloorContainer[0] = new THREE.Object3D();
     scene3DFloorContainer[1] = new THREE.Object3D();
     scene3DFloorContainer[2] = new THREE.Object3D();
@@ -258,6 +261,10 @@ function init(runmode,viewmode) {
     scene3DFloorWallContainer[0] = new THREE.Object3D();
     scene3DFloorWallContainer[1] = new THREE.Object3D();
     scene3DFloorWallContainer[2] = new THREE.Object3D();
+
+    scene3DFloorTileContainer[0] = new THREE.Object3D();
+    scene3DFloorTileContainer[1] = new THREE.Object3D();
+    scene3DFloorTileContainer[2] = new THREE.Object3D();
 
     scene2DWallGeometry[0] = new Array();
     scene2DWallGeometry[1] = new Array();
@@ -270,6 +277,7 @@ function init(runmode,viewmode) {
     scene2DWallMesh[0] = new Array();
     scene2DWallMesh[1] = new Array();
     scene2DWallMesh[2] = new Array();
+    //==============================================
 
     scene3DPivotPoint = new THREE.Object3D();
 
@@ -1626,6 +1634,7 @@ function show3DHouse() {
 
     for (var i = 0; i < scene3DFloorContainer.length; i++) {
         scene3D.add(scene3DFloorContainer[i]);
+        scene3D.add(scene3DFloorTileContainer[i]);
     }
     scene3DCube.add(scene3DCubeMesh);
 
@@ -1732,6 +1741,7 @@ function show3DFloor() {
 
     scene3D.add(scene3DFloorContainer[FLOOR]); //furnishings
     scene3D.add(scene3DFloorWallContainer[FLOOR]); //walls
+    scene3D.add(scene3DFloorTileContainer[FLOOR]); //floor ground
 
     scene3DCube.add(scene3DCubeMesh);
 
@@ -2074,6 +2084,7 @@ function hideElements() {
     for (var i = 0; i < scene3DFloorContainer.length; i++) {
         scene3D.remove(scene3DFloorContainer[i]);
         scene3D.remove(scene3DFloorWallContainer[i]);
+        scene3D.remove(scene3DFloorTileContainer[i]);
     }
 
     if (controls3D instanceof THREE.TransformControls)
@@ -2394,6 +2405,7 @@ function selectFloor(next) {
 		    if (e) {
 		        scene3DFloorContainer[i] = new THREE.Object3D();
 		        scene3DFloorWallContainer[i] = new THREE.Object3D();
+                scene3DFloorTileContainer[i] = new THREE.Object3D();
 			    scene2DWallGeometry[i] = new Array();
 			    scene2DWallDimentions[i] = new Array();
 		    //} else { // user clicked "cancel"
@@ -4111,11 +4123,14 @@ fabric.Canvas.prototype.getItemByName = function(name) {
     return object;
 };
 
-
+function scene3DFloorTileGenerate() {
+    //TODO: make mesh from wall positions
+    scene3DFloorTileContainer[FLOOR] = new THREE.Object3D(); //reset
+}
 
 function scene3DFloorWallGenerate() {
 
-    scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset all walls
+    scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
 
     //TODO: Generate directly from SVG 2D points!
     var objects = scene2DWallMesh[FLOOR]; //scene2D.getObjects();
@@ -4267,6 +4282,8 @@ function sceneNew() {
 
     open3DModel("objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1);
     open3DModel("objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
+    open3DModel("objects/Platform/floor1.jsz", scene3DFloorTileContainer[FLOOR], 0, 0.1, 0, 0, 0, 1);
+
     open3DModel("objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
     open3DModel("objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1);
     open3DModel("objects/Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
