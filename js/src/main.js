@@ -4320,16 +4320,17 @@ function sceneNew() {
 
     //============ SAMPLE DATA ================
 
-    scene2DWallGeometry[FLOOR].push([400, 200, 1000, 200, 0]); //x1,y1,x2,y2,curve
-    //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]); //w,l,h,ha,a in pixels!
+    scene2DWallGeometry[FLOOR].push([480, 180, 660, 180, 0]); //x1,y1,x2,y2,curve
+    scene2DWallGeometry[FLOOR].push([660, 180, 660, 140, 0]);
+    scene2DWallGeometry[FLOOR].push([660, 140, 1040, 140, 0]);
 
-    scene2DWallGeometry[FLOOR].push([1000, 200, 1000, 680, 0]);
-    //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
+    scene2DWallGeometry[FLOOR].push([1040, 150, 1040, 540, 0]);
+    scene2DWallGeometry[FLOOR].push([1040, 540, 930, 540, 0]);
+    scene2DWallGeometry[FLOOR].push([930, 540, 930, 650, 0]);
 
-    scene2DWallGeometry[FLOOR].push([1000, 680, 400, 680, 0]);
-    //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
+    scene2DWallGeometry[FLOOR].push([930, 650, 480, 650, 0]);
 
-    scene2DWallGeometry[FLOOR].push([400, 680, 400, 200, 0]);
+    scene2DWallGeometry[FLOOR].push([480, 650, 480, 180, 0]);
     //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
     
     scene2DArrayToLineWalls();
