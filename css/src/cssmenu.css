@@ -92,11 +92,11 @@
 
 #menuTop{
   position: absolute;
-  top: 38px;
-
-  left: 50%;
-  margin-right: -50%;
-  transform: translate(-50%, -50%);
+  top: 10px;
+  left: 20%;
+  margin-left: auto;
+  margin-right: auto;
+  width: 60%;
 
   height: 60px;
   padding: 4px;
@@ -120,17 +120,18 @@
 
 #menuBottom {
   position: absolute;
+  bottom:10px;
+  left: 30%;
+  margin-left: auto;
+  margin-right: auto;
+  width: 40%;
 
-  bottom:-20px;
-
-  left: 50%;
-  margin-right: -50%;
-  transform: translate(-50%, -50%);
   /*
   box-shadow: 0px 0px 0px 8px rgba(0,0,0,0.3);
   -webkit-box-shadow: 0px 0px 0px 8px rgba(0,0,0,0.3);
   -moz-box-shadow: 0px 0px 0px 8px rgba(0,0,0,0.3);
   */
+
   height: 55px;
   z-index: 2;
   border-radius: 10px;
@@ -155,7 +156,5 @@
   color:#CCCCCC
 }
 */
-#menuBottom div{
-  display:inline-block;
-}
+
 

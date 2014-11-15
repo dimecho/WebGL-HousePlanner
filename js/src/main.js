@@ -92,7 +92,7 @@ var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
 var TOOL3DLANDSCAPE = 'rotate';
-var TOOL3DFLOOR = '';
+var TOOL3DFLOOR = 'measure';
 var TOOL2D = 'vector';
 var WEATHER = 'sunny';
 var DAY = 'day';
@@ -229,7 +229,7 @@ function init(runmode,viewmode) {
         scene2D.freeDrawingBrush.width = 8; //parseInt(drawingLineWidthEl.value, 10) || 1;
         scene2D.freeDrawingBrush.shadowBlur = 0;
     }
-    fabric.isTouchSupported = false;
+    fabric.isTouchSupported = true;
 
     //$('#canvas_container').css('overflow-x', 'scroll');
     //$('#canvas_container').css('overflow-y', 'scroll'); //'hidden');
@@ -1112,6 +1112,13 @@ function camera3DNoteAdd()
   //TODO: bring up 3d note up close and html form
 }
 
+function scene3DFloorInsertAR()
+{
+    if (typeof NyARRgbRaster_Canvas2D == 'undefined') $.getScript("js/JSARToolKit.js", function(data, textStatus, jqxhr) {
+        
+    });
+}
+
 function scene3DFloorInsertPicture()
 {
     camera3DPositionCache = camera3D.position.clone();
@@ -1219,7 +1226,7 @@ function enableTransformControls(mode)
     //https://github.com/mrdoob/three.js/issues/4286
 
     controls3D = new THREE.TransformControls(camera3D, renderer.domElement);
-    controls3D.addEventListener('change', render);
+    //controls3D.addEventListener('change', renderer.render);
 
     controls3D.attach(SelectedObject);
     controls3D.setMode(mode);
@@ -1436,7 +1443,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow) 
         mesh.rotation.x = xaxis;
         mesh.rotation.y = yaxis;
      
-        mesh.doubleSided = true;
+        //mesh.doubleSided = true;
 
         
         //mesh.geometry.mergeVertices(); //speed things up ?
@@ -1670,8 +1677,8 @@ function show3DHouse() {
 
     $('#WebGLCanvas').show();
 
-    animate();
     camera3DHouseEnter();
+    animate();
 }
 
 function show3DLandscape() {
@@ -1767,6 +1774,7 @@ function show3DFloor() {
     toggleLeft('menuLeft3DFloor', true);
 
     menuSelect(5, 'menuTopItem', '#ff3700');
+    menuSelect(0,'menuLeft3DFloorItem','#ff3700');
     correctMenuHeight();
 
     $('#WebGLCanvas').show();
@@ -2340,11 +2348,12 @@ function scene3DSetWeather() {
         //scene3D.add(weatherSkyDayMesh);
         texture = new THREE.ImageUtils.loadTexture('images/cloud.png');
         texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
         weatherSkyMaterial.uniforms.map.value = texture;
         weatherSkyMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
 
         texture = new THREE.ImageUtils.loadTexture('images/rainbow.png');
+        texture.minFilter = THREE.LinearFilter;
         var materialRainbow = weatherSkyMaterial.clone();
         materialRainbow.uniforms.map.value = texture;
 
@@ -2363,7 +2372,7 @@ function scene3DSetWeather() {
     {
         texture = new THREE.ImageUtils.loadTexture('images/cloud2.png');
         texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
         weatherSkyMaterial.uniforms.map.value = texture;
         weatherSkyMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
     }
@@ -3507,6 +3516,7 @@ function on3DMouseUp(event) {
         controls3D.detach(SelectedObject);
         
         enableOrbitControls();
+
         scene3DObjectUnselect();
         //$(renderer.domElement).unbind('mousemove', on3DMouseMove);
     }
@@ -3740,113 +3750,115 @@ function scene3DObjectSelectMenu(x, y, menuID) {
 
 function scene3DObjectSelect(x, y, camera, children) {
 
-    vector = new THREE.Vector3(x, y, 0.5);
-    //var projector = new THREE.Projector();
-    //projector.unprojectVector(vector, camera);
-    vector.unproject(camera);
-    var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-    var intersects = raycaster.intersectObjects(children);
-    //var raycaster = projector.pickingRay(vector.clone(), camera3D);
-    //if (scene3DHouseContainer instanceof THREE.Object3D) {
+    //if (controls3D instanceof THREE.OrbitControls){
+        vector = new THREE.Vector3(x, y, 0.5);
+        //var projector = new THREE.Projector();
+        //projector.unprojectVector(vector, camera);
+        vector.unproject(camera);
+        var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+        var intersects = raycaster.intersectObjects(children);
+        //var raycaster = projector.pickingRay(vector.clone(), camera3D);
+        //if (scene3DHouseContainer instanceof THREE.Object3D) {
 
-    //TODO: Find better way of detection - avoiding variable store
-    /*
-    if (SCENE == 'house') {
-        intersects = raycaster.intersectObjects(scene3DHouseContainer.children);
-    } else if (SCENE == 'floor') {
-        intersects = raycaster.intersectObjects(scene3DFloorContainer[FLOOR].children);
-    } else {
-        return;
-    }
-	*/
+        //TODO: Find better way of detection - avoiding variable store
+        /*
+        if (SCENE == 'house') {
+            intersects = raycaster.intersectObjects(scene3DHouseContainer.children);
+        } else if (SCENE == 'floor') {
+            intersects = raycaster.intersectObjects(scene3DFloorContainer[FLOOR].children);
+        } else {
+            return;
+        }
+    	*/
 
 
-    // INTERSECTED = the object in the scene currently closest to the camera 
-    // and intersected by the Ray projected from the mouse position
+        // INTERSECTED = the object in the scene currently closest to the camera 
+        // and intersected by the Ray projected from the mouse position
 
-    if (intersects.length > 0) { // case if mouse is not currently over an object
-        //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
-        controls3D.enabled = false;
+        if (intersects.length > 0) { // case if mouse is not currently over an object
+            //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
+            controls3D.enabled = false;
 
-        //if (SelectedObject != intersects[0].object){
-            if (intersects[0].object.name.indexOf("Platform/note.jsz") >= 0)
-            {
-                SelectedNote = intersects[0].object;
-                camera3DPositionCache = SelectedNote.position.clone();
-                camera3DPivotCache = SelectedNote.rotation.clone();
-                
-                ViewNoteText = "test"; //TODO: get object text maybe .name will be a slit array | ???
-                camera3DNoteEnter();
-                
-                return true;
-            }
-            else if (intersects[0].object.name.indexOf("Platform/camera.jsz") >= 0)
-            {
-                SelectedPicture = intersects[0].object;
-                camera3DPositionCache = SelectedPicture.position.clone();
-                camera3DPivotCache = SelectedPicture.rotation.clone();
-                
-                camera3DPictureEnter();
-                
-                return true;
-            }
+            //if (SelectedObject != intersects[0].object){
+                if (intersects[0].object.name.indexOf("Platform/note.jsz") >= 0)
+                {
+                    SelectedNote = intersects[0].object;
+                    camera3DPositionCache = SelectedNote.position.clone();
+                    camera3DPivotCache = SelectedNote.rotation.clone();
+                    
+                    ViewNoteText = "test"; //TODO: get object text maybe .name will be a slit array | ???
+                    camera3DNoteEnter();
+                    
+                    return true;
+                }
+                else if (intersects[0].object.name.indexOf("Platform/camera.jsz") >= 0)
+                {
+                    SelectedPicture = intersects[0].object;
+                    camera3DPositionCache = SelectedPicture.position.clone();
+                    camera3DPivotCache = SelectedPicture.rotation.clone();
+                    
+                    camera3DPictureEnter();
+                    
+                    return true;
+                }
 
-            if (children == scene3DHouseContainer.children || children == scene3DFloorContainer[FLOOR].children)
-            {
-            	scene3DObjectUnselect(); //avoid showing multiple selected objects
+                if (children == scene3DHouseContainer.children || children == scene3DFloorContainer[FLOOR].children)
+                {
+                	scene3DObjectUnselect(); //avoid showing multiple selected objects
 
-            	SelectedObject = intersects[0].object;
+                	SelectedObject = intersects[0].object;
 
-                //https://github.com/mrdoob/three.js/issues/1689
+                    //https://github.com/mrdoob/three.js/issues/1689
 
-                /*
-                var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
-                var newQuaternion = new THREE.Quaternion();
-                THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
-                camera3D.quaternion = newQuaternion;
-                camera3D.quaternion.normalize();
-                scene3D.updateMatrixWorld();
-                */
+                    /*
+                    var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
+                    var newQuaternion = new THREE.Quaternion();
+                    THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
+                    camera3D.quaternion = newQuaternion;
+                    camera3D.quaternion.normalize();
+                    scene3D.updateMatrixWorld();
+                    */
 
-                //Focus on 3D object
-            	//camera3D.fov = currentFov.fov;
-            	//camera3D.lookAt(intersects[0].object.position);
-            	//camera3D.updateProjectionMatrix();
+                    //Focus on 3D object
+                	//camera3D.fov = currentFov.fov;
+                	//camera3D.lookAt(intersects[0].object.position);
+                	//camera3D.updateProjectionMatrix();
 
-            	camera3DPositionCache = camera3D.position.clone();
-            	camera3DPivotCache = controls3D.target.clone();
+                	camera3DPositionCache = camera3D.position.clone();
+                	camera3DPivotCache = controls3D.target.clone();
 
-            	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-                	
-                    //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
+                	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+                    	
+                        //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
 
-                	//glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
-            		//SelectedObject.add(glowMesh.object3d);
+                    	//glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
+                		//SelectedObject.add(glowMesh.object3d);
 
-                	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+                    	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
 
-    			}).start();
-				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-				
-            }
-            else if (children == scene3DFloorWallContainer[FLOOR].children)
-            {
-            	SelectedWall = intersects[0].object;
-                scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLWallPaintMenu');
-            }
+        			}).start();
+    				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    				
+                }
+                else if (children == scene3DFloorWallContainer[FLOOR].children)
+                {
+                	SelectedWall = intersects[0].object;
+                    scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLWallPaintMenu');
+                }
 
-            // example of customization of the default glowMesh
-            //var insideUniforms = glowMesh.insideMesh.material.uniforms;
-            //insideUniforms.glowColor.value.set('hotpink');
-            //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
-            //outsideUniforms.glowColor.value.set('hotpink');
-        //}
-        return true;
-    } else {
-        scene3DObjectUnselect();
-        controls3D.enabled = true;
-        return false;
-    }
+                // example of customization of the default glowMesh
+                //var insideUniforms = glowMesh.insideMesh.material.uniforms;
+                //insideUniforms.glowColor.value.set('hotpink');
+                //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
+                //outsideUniforms.glowColor.value.set('hotpink');
+            //}
+            return true;
+        } else {
+            scene3DObjectUnselect();
+            controls3D.enabled = true;
+            return false;
+        }
+    //}
 }
 
 function scene3DObjectUnselect() {
@@ -3889,38 +3901,56 @@ function scene3DObjectUnselect() {
 		//$('#WebGLInteractiveMenu').unbind('mousemove', on3DMouseMove);
 		//$('#WebGLInteractiveMenu').unbind('mousedown', on3DMouseDown);
 		//$('#WebGLInteractiveMenu').unbind('mouseup', on3DMouseUp);
-
-
 	}
 }
-
+/*
+jQuery.loadScript = function (url, callback) {
+    jQuery.ajax({
+        url: url,
+        dataType: 'script',
+        success: callback,
+        async: true
+    });
+}
+*/
 function exportPDF() {
 	
     if (!fabric.Canvas.supports('toDataURL')) {
         alert('Sorry, your browser is not supported.');
     } else {
-        var doc = new jsPDF('l', 'in', [8.5, 11]);
 
-        doc.setFontSize(40);
-        doc.text(4.5, 1, scene3DFloorContainer[FLOOR].name);
+        if (typeof jsPDF == 'undefined') $.getScript("js/jspdf.js", function(data, textStatus, jqxhr) {
+        //if (typeof jsPDF == 'undefined') $.loadScript("js/jspdf.js", function(){
+            /*
+            console.log(data); //data returned
+            console.log(textStatus); //success
+            console.log(jqxhr.status); //200
+            console.log('Load was performed.');
+            */
 
-        var image = scene2D.toDataURL("image/jpeg"); //.replace("data:image/png;base64,", "");
-        doc.addImage(image, 'JPEG', 0, 1.5, 11, 7);
+            var doc = new jsPDF('l', 'in', [8.5, 11]);
 
-        //var image = scene2D.toSVG();
-        //doc.addImage(image, 'PNG', 15, 40, 180, 180);
+            doc.setFontSize(40);
+            doc.text(4.5, 1, scene3DFloorContainer[FLOOR].name);
 
-        doc.output('dataurl');
-        /*
-        window.open(
-            doc.output('dataurl'),
-            '_blank'
-        );
-        */
+            var image = scene2D.toDataURL("image/jpeg"); //.replace("data:image/png;base64,", "");
+            doc.addImage(image, 'JPEG', 0, 1.5, 11, 7);
 
-        //saveAs(doc.output('dataurl'), scene3DFloorContainer[FLOOR].name + ".pdf");
-        //doc.save(scene3DFloorContainer[FLOOR].name + ".pdf");
-        //saveAs(doc.output('blob'), scene3DFloorContainer[FLOOR].name + ".pdf");
+            //var image = scene2D.toSVG();
+            //doc.addImage(image, 'PNG', 15, 40, 180, 180);
+
+            doc.output('dataurl');
+            /*
+            window.open(
+                doc.output('dataurl'),
+                '_blank'
+            );
+            */
+
+            //saveAs(doc.output('dataurl'), scene3DFloorContainer[FLOOR].name + ".pdf");
+            //doc.save(scene3DFloorContainer[FLOOR].name + ".pdf");
+            //saveAs(doc.output('blob'), scene3DFloorContainer[FLOOR].name + ".pdf");
+        });
     }
 }
 
@@ -5201,7 +5231,7 @@ function animateRotate() {
 
     //controls3D.update(delta);
     renderer.render(scene3D, camera3D);
-    TWEEN.update();
+    //TWEEN.update();
 }
 
 function animateFloor()
@@ -5287,17 +5317,19 @@ function animateHouse()
     requestAnimationFrame(animateHouse);
     var delta = clock.getDelta();
 
-    particlePivot.tick(delta);
-    particleWeather.tick(delta);
+    if (controls3D instanceof THREE.OrbitControls)
+    {
+        particlePivot.tick(delta);
+        particleWeather.tick(delta);
 
-    animateClouds();
+        animateClouds();
 
-    rendererCube.render(scene3DCube, camera3DCube);
+        rendererCube.render(scene3DCube, camera3DCube);
 
-    for (var a in animation) {
-        a.update(delta * 0.8);
+        for (var a in animation) {
+            a.update(delta * 0.8);
+        }
     }
-
     controls3D.update(delta);
     renderer.render(scene3D, camera3D);
     TWEEN.update();
@@ -5365,6 +5397,8 @@ function animate()
         if (SceneAnimate)
         {
             _animate = 0;
+            camera3D.position.set(0, 6, 20);
+            TWEEN.removeAll(); //avoid any tween checks whilre rotating (faster)
             animateRotate();
         }else{
             _animate = 1;
