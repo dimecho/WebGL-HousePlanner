@@ -44,7 +44,9 @@ var scene3DHouseGroundContainer; //Grass Ground - 1 object
 var scene3DHouseFXContainer; //Visual Effects container (user not editable/animated) - fying bugs/birds/rainbows
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
-var scene3DFloorContainer = []; //Contains all Floor 3D objects by floor (sofas,tables)
+var scene3DFloorFurnitureContainer = []; //Three.js Contains all Floor 3D objects by floor (sofas,tables)
+var scene3DFloorOtherContainer = []; //Three.js Contains all other objects, cameras, notes
+var scene3DFloorMeasurementsContainer = []; //Three.js Contains all Floor 3D object and reated measurement lines & text
 var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
 var scene3DFloorTileContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
@@ -254,29 +256,18 @@ function init(runmode,viewmode) {
 
     //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
     //==============================================
-    scene3DFloorContainer[0] = new THREE.Object3D();
-    scene3DFloorContainer[1] = new THREE.Object3D();
-    scene3DFloorContainer[2] = new THREE.Object3D();
+    for(var i=0; i<=2; i++)
+    {
+        scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
+        scene3DFloorOtherContainer[i] = new THREE.Object3D();
+        scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
+        scene3DFloorWallContainer[i] = new THREE.Object3D();
+        scene3DFloorTileContainer[i] = new THREE.Object3D();
 
-    scene3DFloorWallContainer[0] = new THREE.Object3D();
-    scene3DFloorWallContainer[1] = new THREE.Object3D();
-    scene3DFloorWallContainer[2] = new THREE.Object3D();
-
-    scene3DFloorTileContainer[0] = new THREE.Object3D();
-    scene3DFloorTileContainer[1] = new THREE.Object3D();
-    scene3DFloorTileContainer[2] = new THREE.Object3D();
-
-    scene2DWallGeometry[0] = new Array();
-    scene2DWallGeometry[1] = new Array();
-    scene2DWallGeometry[2] = new Array();
-
-    scene2DWallDimentions[0] = new Array();
-    scene2DWallDimentions[1] = new Array();
-    scene2DWallDimentions[2] = new Array();
-
-    scene2DWallMesh[0] = new Array();
-    scene2DWallMesh[1] = new Array();
-    scene2DWallMesh[2] = new Array();
+        scene2DWallGeometry[i] = new Array();
+        scene2DWallDimentions[i] = new Array();
+        scene2DWallMesh[i] = new Array();
+    }
     //==============================================
 
     scene3DPivotPoint = new THREE.Object3D();
@@ -777,37 +768,62 @@ function initPanorama(id,files,W,H)
     mouse = new THREE.Vector2();
     touch = new THREE.Vector2();
 
+    var geometry = new THREE.BoxGeometry(512,512,512);
+    //Low Resolution
     var sides = [
         new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/right.jpg'),
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_right.jpg'),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/left.jpg'),
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_left.jpg'),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/top.jpg'),
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_top.jpg'),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-          map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/bottom.jpg'),
+          map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_bottom.jpg'),
           side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/front.jpg'),
+           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_front.jpg'),
            side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/back.jpg'),
+           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_back.jpg'),
            side: THREE.BackSide
         }),
     ];
-
-    var geometry = new THREE.BoxGeometry(512,512,512);
     var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(sides));
     scene3DPanorama.add(mesh);
 
+    var opts = {
+      lines: 13, // The number of lines to draw
+      length: 20, // The length of each line
+      width: 10, // The line thickness
+      radius: 30, // The radius of the inner circle
+      corners: 1, // Corner roundness (0..1)
+      color: '#000', // #rgb or #rrggbb or array of colors
+      speed: 1, // Rounds per second
+      trail: 60, // Afterglow percentage
+      className: 'spinner', // The CSS class to assign to the spinner
+      top: '50%', // Top position relative to parent
+      left: '50%' // Left position relative to parent
+    };
+    var spinner = new Spinner(opts).spin();
+    document.getElementById(id).appendChild(spinner.el);
+
+    //High Resolution
+    var textureloader = new THREE.TextureLoader();
+    textureloader.load('panoramas/' + files + '/right.jpg', function (texture) { sides[0].map=texture });
+    textureloader.load('panoramas/' + files + '/left.jpg', function (texture) { sides[1].map=texture });
+    textureloader.load('panoramas/' + files + '/top.jpg', function (texture) { sides[2].map=texture });
+    textureloader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture });
+    textureloader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture });
+    textureloader.load('panoramas/' + files + '/back.jpg', function (texture) {  sides[5].map = texture; document.getElementById(id).removeChild(spinner.el) });
+    
     /*
     var geometry = new THREE.SphereGeometry( 500, 60, 40 );
     geometry.applyMatrix( new THREE.Matrix4().makeScale( -1, 1, 1 ) );
@@ -1639,8 +1655,8 @@ function show3DHouse() {
     scene3D.add(scene3DHouseContainer);
     scene3D.add(scene3DRoofContainer);
 
-    for (var i = 0; i < scene3DFloorContainer.length; i++) {
-        scene3D.add(scene3DFloorContainer[i]);
+    for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
+        scene3D.add(scene3DFloorFurnitureContainer[i]);
         scene3D.add(scene3DFloorTileContainer[i]);
     }
     scene3DCube.add(scene3DCubeMesh);
@@ -1739,16 +1755,23 @@ function show3DFloor() {
             envMap: camera3DMirrorReflection.renderTarget,
             reflectivity: 0.5
         });
-        scene3DFloorGroundContainer.children[0].materials = floorMaterial;
+        scene3DFloorGroundContainer.children[0].materials[0] = floorMaterial;
     } catch (ex) {
-
     }
 
     scene3DFloorWallGenerate();
 
-    scene3D.add(scene3DFloorContainer[FLOOR]); //furnishings
+    scene3D.add(scene3DFloorFurnitureContainer[FLOOR]); //furnishings
+
+    if(TOOL3DFLOOR == 'measure')
+    {
+        scene3DFloorMeasurementsGenerate();
+        scene3D.add(scene3DFloorMeasurementsContainer[FLOOR]);
+    }
+
     scene3D.add(scene3DFloorWallContainer[FLOOR]); //walls
     scene3D.add(scene3DFloorTileContainer[FLOOR]); //floor ground
+    scene3D.add(scene3DFloorOtherContainer[FLOOR]); //notes
 
     scene3DCube.add(scene3DCubeMesh);
 
@@ -1761,8 +1784,8 @@ function show3DFloor() {
     $(renderer.domElement).bind('mousemove', on3DFloorMouseMove);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
-    //scene3DFloorContainer[0].traverse;
-    $('#menuFloorSelectorText').html(scene3DFloorContainer[FLOOR].name);
+    //scene3DFloorFurnitureContainer[0].traverse;
+    $('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
     $('#menuBottomItem4').show();
@@ -1923,7 +1946,7 @@ function show2D() {
     toggleRight('menuRight', true);
     toggleLeft('menuLeft2D', true);
 
-    $('#menuFloorSelectorText').html(scene3DFloorContainer[FLOOR].name);
+    $('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
     $('#menuBottomItem1').show();
@@ -2089,10 +2112,12 @@ function hideElements() {
     scene3D.remove(scene3DHouseContainer);
     scene3D.remove(scene3DHouseFXContainer);
 
-    for (var i = 0; i < scene3DFloorContainer.length; i++) {
-        scene3D.remove(scene3DFloorContainer[i]);
+    for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
+        scene3D.remove(scene3DFloorFurnitureContainer[i]);
+        scene3D.remove(scene3DFloorMeasurementsContainer[i]);
         scene3D.remove(scene3DFloorWallContainer[i]);
         scene3D.remove(scene3DFloorTileContainer[i]);
+        scene3D.remove(scene3DFloorOtherContainer[i]);
     }
 
     if (controls3D instanceof THREE.TransformControls)
@@ -2396,7 +2421,7 @@ function selectFloor(next) {
 
     var i = FLOOR + next;
 
-    if (scene3DFloorContainer[i] instanceof THREE.Object3D) {
+    if (scene3DFloorFurnitureContainer[i] instanceof THREE.Object3D) {
 
         FLOOR = i;
 
@@ -2412,9 +2437,11 @@ function selectFloor(next) {
     	
 		alertify.confirm("Add New Floor?", function (e) {
 		    if (e) {
-		        scene3DFloorContainer[i] = new THREE.Object3D();
+		        scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
+                scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
 		        scene3DFloorWallContainer[i] = new THREE.Object3D();
                 scene3DFloorTileContainer[i] = new THREE.Object3D();
+                scene3DFloorOtherContainer[i] = new THREE.Object3D();
 			    scene2DWallGeometry[i] = new Array();
 			    scene2DWallDimentions[i] = new Array();
 		    //} else { // user clicked "cancel"
@@ -3184,11 +3211,14 @@ function on3DHouseMouseUp(event) {
 function on3DFloorMouseDown(event) {
 	on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorContainer[FLOOR].children))
+    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorOtherContainer[FLOOR].children))
     {
-        if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
+        if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR].children))
         {
-            scene3D.add(scene3DPivotPoint);
+            if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
+            {
+                scene3D.add(scene3DPivotPoint);
+            }
         }
     }
 }
@@ -3337,7 +3367,7 @@ function on3DMouseMove(event) {
 	            }
 	            else if (SCENE == 'floor')
 	            {
-	                collisionContainer = scene3DFloorContainer[FLOOR]; //.clone();
+	                collisionContainer = scene3DFloorFurnitureContainer[FLOOR]; //.clone();
 	            }
 				
 	            //collisionContainer.remove(SELECTED); //avoid detecting itself
@@ -3654,7 +3684,7 @@ function scene3DObjectSelectRemove() {
     if (SCENE == 'house') {
         scene3DHouseContainer.remove(SelectedObject);
     } else if (SCENE == 'floor') {
-        scene3DFloorContainer[FLOOR].remove(SelectedObject);
+        scene3DFloorFurnitureContainer[FLOOR].remove(SelectedObject);
     }
     
     scene3DObjectUnselect();
@@ -3750,6 +3780,8 @@ function scene3DObjectSelectMenu(x, y, menuID) {
 
 function scene3DObjectSelect(x, y, camera, children) {
 
+    //TODO: > http://stemkoski.github.io/Three.js/Outline.html
+
     //if (controls3D instanceof THREE.OrbitControls){
         vector = new THREE.Vector3(x, y, 0.5);
         //var projector = new THREE.Projector();
@@ -3765,7 +3797,7 @@ function scene3DObjectSelect(x, y, camera, children) {
         if (SCENE == 'house') {
             intersects = raycaster.intersectObjects(scene3DHouseContainer.children);
         } else if (SCENE == 'floor') {
-            intersects = raycaster.intersectObjects(scene3DFloorContainer[FLOOR].children);
+            intersects = raycaster.intersectObjects(scene3DFloorFurnitureContainer[FLOOR].children);
         } else {
             return;
         }
@@ -3802,7 +3834,7 @@ function scene3DObjectSelect(x, y, camera, children) {
                     return true;
                 }
 
-                if (children == scene3DHouseContainer.children || children == scene3DFloorContainer[FLOOR].children)
+                if (children == scene3DHouseContainer.children || children == scene3DFloorFurnitureContainer[FLOOR].children)
                 {
                 	scene3DObjectUnselect(); //avoid showing multiple selected objects
 
@@ -3827,7 +3859,7 @@ function scene3DObjectSelect(x, y, camera, children) {
                 	camera3DPositionCache = camera3D.position.clone();
                 	camera3DPivotCache = controls3D.target.clone();
 
-                	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+                	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},1800).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
                     	
                         //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
 
@@ -3838,7 +3870,8 @@ function scene3DObjectSelect(x, y, camera, children) {
 
         			}).start();
     				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-    				
+                    //var tween = new TWEEN.Tween(camera3D.lookAt).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+           
                 }
                 else if (children == scene3DFloorWallContainer[FLOOR].children)
                 {
@@ -3931,7 +3964,7 @@ function exportPDF() {
             var doc = new jsPDF('l', 'in', [8.5, 11]);
 
             doc.setFontSize(40);
-            doc.text(4.5, 1, scene3DFloorContainer[FLOOR].name);
+            doc.text(4.5, 1, scene3DFloorFurnitureContainer[FLOOR].name);
 
             var image = scene2D.toDataURL("image/jpeg"); //.replace("data:image/png;base64,", "");
             doc.addImage(image, 'JPEG', 0, 1.5, 11, 7);
@@ -3947,9 +3980,9 @@ function exportPDF() {
             );
             */
 
-            //saveAs(doc.output('dataurl'), scene3DFloorContainer[FLOOR].name + ".pdf");
-            //doc.save(scene3DFloorContainer[FLOOR].name + ".pdf");
-            //saveAs(doc.output('blob'), scene3DFloorContainer[FLOOR].name + ".pdf");
+            //saveAs(doc.output('dataurl'), scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
+            //doc.save(scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
+            //saveAs(doc.output('blob'), scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
         });
     }
 }
@@ -3981,7 +4014,7 @@ function saveScene(online) {
 
         var exportHouseContainerJSON = "scene3DHouseContainer";
         var exportHouseGroundContainerJSON = "scene3DHouseGroundContainer";
-        var exportFloorContainerJSON = "scene3DFloorContainer";
+        var exportFloorContainerJSON = "scene3DFloorFurnitureContainer";
 
 		if (online) //save only 3d object's absolute location, position & orientation
 		{
@@ -3999,16 +4032,16 @@ function saveScene(online) {
 
 			zip.file(exportHouseGroundContainerJSON + ".json", "");
 
-			for (var i = 0; i < scene3DFloorContainer.length; i++)
+			for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++)
         	{
         		JSONString = {};
 
-				for (var o = 0; o < scene3DFloorContainer[i].children.length; o++)
+				for (var o = 0; o < scene3DFloorFurnitureContainer[i].children.length; o++)
 				{
-					JSONString["file"] = scene3DFloorContainer[i].children[o].name;
-					JSONString["x"] = scene3DFloorContainer[i].children[o].position.x;
-					JSONString["y"] = scene3DFloorContainer[i].children[o].position.y;
-					JSONString["z"] = scene3DFloorContainer[i].children[o].position.z;
+					JSONString["file"] = scene3DFloorFurnitureContainer[i].children[o].name;
+					JSONString["x"] = scene3DFloorFurnitureContainer[i].children[o].position.x;
+					JSONString["y"] = scene3DFloorFurnitureContainer[i].children[o].position.y;
+					JSONString["z"] = scene3DFloorFurnitureContainer[i].children[o].position.z;
 					//TODO: Save angle and rotation degree
 	    		}
             	zip.file(exportFloorContainerJSON + "." + i + ".json", "");
@@ -4026,9 +4059,9 @@ function saveScene(online) {
 			zip.file(exportHouseContainerJSON + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseContainer)));
 			zip.file(exportHouseGroundContainerJSON + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
 
-			for (var i = 0; i < scene3DFloorContainer.length; i++) 
+			for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) 
         	{
-            	zip.file(exportFloorContainerJSON + "." + i + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorContainer[i])));
+            	zip.file(exportFloorContainerJSON + "." + i + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorFurnitureContainer[i])));
         	}
 
         	zip.file("ReadMe.txt", "Saved by WebGL HousePlanner. Files can be opened by THREE.js Framework");
@@ -4158,6 +4191,105 @@ function scene3DFloorTileGenerate() {
     scene3DFloorTileContainer[FLOOR] = new THREE.Object3D(); //reset
 }
 
+function scene3DFloorMeasurementsAjust() {
+
+}
+
+function scene3DFloorMeasurementsGenerate() {
+
+    scene3DFloorMeasurementsContainer[FLOOR] = new THREE.Object3D(); //reset
+
+    material = new THREE.LineBasicMaterial({
+        color: 0x000000,
+        linewidth: 2
+    });
+
+    for (var i = 0; i < scene3DFloorFurnitureContainer[FLOOR].children.length; i++) {
+
+       
+        try{
+             
+            geometry = new THREE.Geometry();
+            //TODO: if y > 0
+            var x1 = scene3DFloorFurnitureContainer[FLOOR].children[i].position.x - scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.z;
+            var z1 = scene3DFloorFurnitureContainer[FLOOR].children[i].position.z - scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.x;
+            var x2 = scene3DFloorFurnitureContainer[FLOOR].children[i].position.x + scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.z;
+            var z2 = scene3DFloorFurnitureContainer[FLOOR].children[i].position.z + scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.x;
+            //var arrow = new THREE.ArrowHelper(direction, firstVector, computeDistance(node1, node2) - 32, co);
+
+            //horizontal
+            geometry.vertices.push(new THREE.Vector3(x1+0.2, 0.1, z1));
+            geometry.vertices.push(new THREE.Vector3(x2-0.2, 0.1, z1));
+
+            //vertical
+            geometry.vertices.push(new THREE.Vector3(x1, 0.1, z1+0.2));
+            geometry.vertices.push(new THREE.Vector3(x1, 0.1, z2-0.2));
+        
+            //var offset = scene3DFloorFurnitureContainer[FLOOR].children[i].centroid.clone();
+            //geometry.applyMatrix(new THREE.Matrix4().makeTranslation( -offset.x, 0, -offset.z ) );
+            //objMesh.position.copy( objMesh.centroid );
+            /*
+            geometry.vertices[0] = v(x1,y1,z1);
+            geometry.vertices[1] = v(x2,y2,z2);
+
+            this.drawingLine.geometry.vertices[this.drawingLine.geometry.vertices.length-1].position.x = voxelPosition.x;
+            this.drawingLine.geometry.vertices[this.drawingLine.geometry.vertices.length-1].position.z = voxelPosition.z;
+            this.drawingLine.geometry.__dirtyVertices = true;
+            */
+            //var line = new THREE.Line(geometry, material);
+           
+
+            var line = new THREE.Line(geometry, material, THREE.LinePieces);
+            //line.type = THREE.Lines;
+            line.dynamic = true;
+
+            var l = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.x * 100;
+            var w = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.z * 100;
+            //var h = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.y * 102;
+
+            var geometryTextL = new THREE.TextGeometry(Math.round(w) + ' cm', {
+                font: 'helvetiker', // Must be lowercase!
+                weight: 'normal',
+                size: 0.25,
+                height: 0.01
+            });
+            var geometryTextW = new THREE.TextGeometry(Math.round(l) + ' cm', {
+                font: 'helvetiker', // Must be lowercase!
+                weight: 'normal',
+                size: 0.25,
+                height: 0.01
+            });
+           
+            //geometry.merge(textGeometry);
+            //textGeometry.merge(line.geometry);
+            
+            var textMeshL = new THREE.Mesh(geometryTextL, material);
+            textMeshL.position.x = scene3DFloorFurnitureContainer[FLOOR].children[i].position.x;
+            textMeshL.position.y = 0.1;
+            textMeshL.position.z = z1 - 0.1;
+            textMeshL.rotation.x = -1.5;
+
+            var textMeshW = new THREE.Mesh(geometryTextW, material);
+            textMeshW.position.x = x1 - 0.1;
+            textMeshW.position.y = 0.1;
+            textMeshW.position.z = scene3DFloorFurnitureContainer[FLOOR].children[i].position.z;
+            textMeshW.rotation.x = -1.55;
+            textMeshW.rotation.z = 1.6;
+
+            //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
+
+            scene3DFloorMeasurementsContainer[FLOOR].add(textMeshL);
+            scene3DFloorMeasurementsContainer[FLOOR].add(textMeshW);
+            scene3DFloorMeasurementsContainer[FLOOR].add(line);
+
+            console.log("Calculating " + scene3DFloorFurnitureContainer[FLOOR].children[i].name + " measurements " + scene3DFloorFurnitureContainer[FLOOR].children[i].position.x + ":" + scene3DFloorFurnitureContainer[FLOOR].children[i].position.z + " " + scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.x + ":" + scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.z);
+           
+
+        }catch(exception){}
+    }
+
+
+}
 function scene3DFloorWallGenerate() {
 
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
@@ -4262,15 +4394,15 @@ function sceneNew() {
     }
     */
 
-    //for (var i = 0; i < scene3DFloorContainer.length; i++) {
-    //    scene3D.remove(scene3DFloorContainer[i]);
+    //for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
+    //    scene3D.remove(scene3DFloorFurnitureContainer[i]);
     //}
 
     scene3DHouseContainer.name = "12345|Alyson";
 
-    scene3DFloorContainer[0].name = "Basement";
-    scene3DFloorContainer[1].name = "Floor1";
-    scene3DFloorContainer[2].name = "Floor2";
+    scene3DFloorFurnitureContainer[0].name = "Basement";
+    scene3DFloorFurnitureContainer[1].name = "Floor1";
+    scene3DFloorFurnitureContainer[2].name = "Floor2";
 
     //open3DModel("Platform/ground-grass.js", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1); //Exterior ground
     /*
@@ -4320,8 +4452,8 @@ function sceneNew() {
     open3DModel("objects/Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
     open3DModel("objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
 
-    open3DModel("objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorContainer[FLOOR], 0, 0, 0, 0, 0, 1);
-    open3DModel("objects/Interior/Kitchen/Tables/table-w-table-cloth.jsz", scene3DFloorContainer[FLOOR], -2, 0, 4, 0, 0, 1);
+    open3DModel("objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorFurnitureContainer[FLOOR], 0, 0, 0, 0, 0, 1);
+    open3DModel("objects/Interior/Kitchen/Tables/table-w-table-cloth.jsz", scene3DFloorFurnitureContainer[FLOOR], -2, 0, 4, 0, 0, 1);
 
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
     var material = new THREE.MeshBasicMaterial( { color: 0x000000  } );
@@ -4339,12 +4471,12 @@ function sceneNew() {
     textMesh.position.z = 0.55;
     textMesh.rotation.y = 1.5;
 
-    scene3DFloorContainer[FLOOR].add(textMesh);
-    open3DModel("objects/Platform/note.jsz", scene3DFloorContainer[FLOOR], 1.8, 0.6, 0.18, 0, 1.5, 1);
+    scene3DFloorFurnitureContainer[FLOOR].add(textMesh);
+    open3DModel("objects/Platform/note.jsz", scene3DFloorOtherContainer[FLOOR], 1.8, 0.6, 0.18, 0, 1.5, 1);
 
-    open3DModel("objects/Platform/camera.jsz", scene3DFloorContainer[FLOOR], 5, 0, -3, 0, 2.5, 1);
+    open3DModel("objects/Platform/camera.jsz", scene3DFloorOtherContainer[FLOOR], 5, 0, -3, 0, 2.5, 1);
 
-    //open3DModel("objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
+    //open3DModel("objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorFurnitureContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
     //open3DModel("objects/Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
     //THREE.GeometryUtils.center();
 
@@ -5052,10 +5184,10 @@ function insertSceneObject(path) {
     }
     else  if(SCENE == 'floor')
     {
-    	o = scene3DFloorContainer[FLOOR].children.length-1;
-    	x = scene3DFloorContainer[FLOOR].children[o].position.x + scene3DFloorContainer[FLOOR].children[o].geometry.boundingBox.max.x;
-        z = scene3DFloorContainer[FLOOR].children[o].position.z + scene3DFloorContainer[FLOOR].children[o].geometry.boundingBox.max.z;
-        open3DModel(path, scene3DFloorContainer[FLOOR], x, 0, z, 0, 0, 1);
+    	o = scene3DFloorFurnitureContainer[FLOOR].children.length-1;
+    	x = scene3DFloorFurnitureContainer[FLOOR].children[o].position.x + scene3DFloorFurnitureContainer[FLOOR].children[o].geometry.boundingBox.max.x;
+        z = scene3DFloorFurnitureContainer[FLOOR].children[o].position.z + scene3DFloorFurnitureContainer[FLOOR].children[o].geometry.boundingBox.max.z;
+        open3DModel(path, scene3DFloorFurnitureContainer[FLOOR], x, 0, z, 0, 0, 1);
     }
 }
 
