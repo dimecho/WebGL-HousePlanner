@@ -44,9 +44,9 @@ var scene3DHouseGroundContainer; //Grass Ground - 1 object
 var scene3DHouseFXContainer; //Visual Effects container (user not editable/animated) - fying bugs/birds/rainbows
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
-var scene3DFloorFurnitureContainer = []; //Three.js Contains all Floor 3D objects by floor (sofas,tables)
-var scene3DFloorOtherContainer = []; //Three.js Contains all other objects, cameras, notes
-var scene3DFloorMeasurementsContainer = []; //Three.js Contains all Floor 3D object and reated measurement lines & text
+var scene3DFloorFurnitureContainer = []; //Three.js contains all Floor 3D objects by floor (sofas,tables)
+var scene3DFloorOtherContainer = []; //Three.js contains all other objects, cameras, notes
+var scene3DFloorMeasurementsContainer = []; //Three.js contains floor measurements: angles, wall size - lines & text (note: objects have their own measurement meshes)
 var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
 var scene3DFloorTileContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
@@ -1297,7 +1297,7 @@ function camera3DAnimateResetView()
     }
 }
 
-function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow) {
+function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, note) {
 
     //http://www.smashingmagazine.com/2013/09/17/introduction-to-polygonal-modeling-and-three-js/
 
@@ -1397,9 +1397,9 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow) 
 
         
         //geometry.mergeVertices(); //speed things up ?
-        geometry.computeFaceNormals();
-        geometry.computeVertexNormals(); // requires correct face normals
-        geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+        //geometry.computeFaceNormals();
+        //geometry.computeVertexNormals(); // requires correct face normals
+        //geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
         
 
         //materials.side = THREE.DoubleSide;
@@ -1463,17 +1463,142 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow) 
 
         
         //mesh.geometry.mergeVertices(); //speed things up ?
-        //mesh.geometry.computeFaceNormals();
-        //mesh.geometry.computeVertexNormals(); // requires correct face normals
-        //mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+        mesh.geometry.computeFaceNormals();
+        mesh.geometry.computeVertexNormals(); // requires correct face normals
+        mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
         
 
-        //mesh.matrixAutoUpdate = true;
-        //mesh.updateMatrix();
+        mesh.matrixAutoUpdate = true;
+        mesh.updateMatrix();
 
+        var object = new THREE.Object3D();
 
-        //if (object instanceof THREE.Object3D) {
-        objectContainer.add(mesh);
+        object.add(mesh);
+        
+        if(objectContainer == scene3DFloorFurnitureContainer[FLOOR]) {
+            material = new THREE.LineBasicMaterial({
+                color: 0x000000,
+                linewidth: 2
+            });
+            geometry = new THREE.Geometry();
+
+            var x1 = mesh.position.x - mesh.geometry.boundingBox.max.z;
+            var z1 = mesh.position.z - mesh.geometry.boundingBox.max.x;
+            var x2 = mesh.position.x + mesh.geometry.boundingBox.max.z;
+            var z2 = mesh.position.z + mesh.geometry.boundingBox.max.x;
+           
+            //TODO: if y > 0
+            //var arrow = new THREE.ArrowHelper(direction, firstVector, computeDistance(node1, node2) - 32, co);
+
+            //horizontal
+            geometry.vertices.push(new THREE.Vector3(x1+0.2, 0.1, z1));
+            geometry.vertices.push(new THREE.Vector3(x2-0.2, 0.1, z1));
+
+            //vertical
+            geometry.vertices.push(new THREE.Vector3(x1, 0.1, z1+0.2));
+            geometry.vertices.push(new THREE.Vector3(x1, 0.1, z2-0.2));
+
+            //var offset = scene3DFloorFurnitureContainer[FLOOR].children[i].centroid.clone();
+            //geometry.applyMatrix(new THREE.Matrix4().makeTranslation( -offset.x, 0, -offset.z ) );
+            //objMesh.position.copy( objMesh.centroid );
+ 
+            //var line = new THREE.Line(geometry, material);
+
+            var line = new THREE.Line(geometry, material, THREE.LinePieces);
+            //line.dynamic = true;
+
+            var realLifeDimentions = new Array();
+            var geometryText = new Array();
+            realLifeDimentions[0] = mesh.geometry.boundingBox.max.x * 200;
+            realLifeDimentions[1] = mesh.geometry.boundingBox.max.z * 200;
+            //realLifeDimentions[2]  = mesh.geometry.boundingBox.max.y * 200;
+            
+            for (var u = 0; u <= 1; u++)
+            {
+                var units = "";
+
+                if (realLifeDimentions[u] > 100)
+                {
+                    units = (realLifeDimentions[u]/100).toFixed(2) + " m";
+                }else{
+                    units = Math.round(realLifeDimentions[u]) + " cm";
+                }
+
+                geometryText[u] = new THREE.TextGeometry(units, {
+                    font: 'helvetiker', // Must be lowercase!
+                    weight: 'normal',
+                    size: 0.2,
+                    height: 0.01
+                });
+                geometryText[u].computeBoundingBox();
+            }
+            
+            var textMeshL = new THREE.Mesh(geometryText[0], material);
+            textMeshL.position.x = mesh.position.x - geometryText[0].boundingBox.max.x/2;
+            textMeshL.position.y = 0.1;
+            textMeshL.position.z = z1 - 0.1;
+            textMeshL.rotation.x = -1.5;
+
+            var textMeshW = new THREE.Mesh(geometryText[1], material);
+            textMeshW.position.x = x1 - 0.1;
+            textMeshW.position.y = 0.1;
+            textMeshW.position.z = mesh.position.z + geometryText[1].boundingBox.max.x/2;
+            textMeshW.rotation.x = -1.55;
+            textMeshW.rotation.z = 1.6;
+
+            //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
+
+            //object.add(textMeshL);
+            //object.add(textMeshW);
+            
+
+            line.add(textMeshL);
+            line.add(textMeshW);
+
+            object.add(line);
+
+            //textMeshL.visible = false;
+            //textMeshW.visible = false;
+            line.visible = false;
+
+            //console.log("Calculating " + mesh.name + " measurements " + mesh.position.x + ":" + mesh.position.z + " " + mesh.geometry.boundingBox.max.x + ":" + mesh.geometry.boundingBox.max.z);
+           
+        }
+        
+        if(note != null)
+        {
+            //var object = new THREE.Object3D();
+
+            material = new THREE.MeshBasicMaterial( { color: 0x000000  } );
+            geometry = new THREE.TextGeometry(note, {
+                font: 'helvetiker', // Must be lowercase!
+                weight: 'normal',
+                size: 0.05,
+                height: 0.01
+            });
+            var textMesh = new THREE.Mesh(geometry, material);
+            //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
+            //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
+            textMesh.position.x = 1.25;
+            textMesh.position.y = 0.5;
+            textMesh.position.z = 0.05;
+            textMesh.rotation.y = 1.5;
+            //textMesh.name = "text"
+
+            open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
+
+            object.add(textMesh);
+            //console.log( js + " Add Note: " + note);
+
+            //objectContainer.add(object);
+            //objectContainer.add(mesh);
+
+        //}else{
+            //if (object instanceof THREE.Object3D) {
+            //objectContainer.add(mesh);
+        }
+
+        objectContainer.add(object);
 
         /*
         object.traverse( function( node ) {
@@ -1766,7 +1891,10 @@ function show3DFloor() {
     if(TOOL3DFLOOR == 'measure')
     {
         scene3DFloorMeasurementsGenerate();
-        scene3D.add(scene3DFloorMeasurementsContainer[FLOOR]);
+        //scene3D.add(scene3DFloorMeasurementsContainer[FLOOR]);
+        for (var i = 0; i < scene3DFloorFurnitureContainer[FLOOR].children.length; i++) {
+            scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible = true;
+        }
     }
 
     scene3D.add(scene3DFloorWallContainer[FLOOR]); //walls
@@ -2467,13 +2595,13 @@ function selectDayNight() {
 
         DAY = "night";
         //$('#menuDayNightText').html("Night");
-        $('#menuBottomItem5').attr("class", "hi-icon icon-night tooltip");
+        $('#menuBottomItem6').attr("class", "hi-icon icon-night tooltip");
 
     } else if (DAY == "night") {
 
         DAY = "day";
         //$('#menuDayNightText').html("Day");
-        $('#menuBottomItem5').attr("class", "hi-icon icon-day tooltip");
+        $('#menuBottomItem6').attr("class", "hi-icon icon-day tooltip");
     }
     scene3DSetSky(DAY);
     scene3DSetLight();
@@ -3778,7 +3906,7 @@ function scene3DObjectSelectMenu(x, y, menuID) {
     //$('#WebGLInteractiveMenu').show();
 }
 
-function scene3DObjectSelect(x, y, camera, children) {
+function scene3DObjectSelect(x, y, camera, objectchildren) {
 
     //TODO: > http://stemkoski.github.io/Three.js/Outline.html
 
@@ -3788,7 +3916,8 @@ function scene3DObjectSelect(x, y, camera, children) {
         //projector.unprojectVector(vector, camera);
         vector.unproject(camera);
         var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-        var intersects = raycaster.intersectObjects(children);
+        var intersects = raycaster.intersectObjects(objectchildren,true); //recursive! pickup objects within objects (example: notes)
+
         //var raycaster = projector.pickingRay(vector.clone(), camera3D);
         //if (scene3DHouseContainer instanceof THREE.Object3D) {
 
@@ -3834,7 +3963,7 @@ function scene3DObjectSelect(x, y, camera, children) {
                     return true;
                 }
 
-                if (children == scene3DHouseContainer.children || children == scene3DFloorFurnitureContainer[FLOOR].children)
+                if (objectchildren == scene3DHouseContainer.children || objectchildren == scene3DFloorFurnitureContainer[FLOOR].children)
                 {
                 	scene3DObjectUnselect(); //avoid showing multiple selected objects
 
@@ -4191,105 +4320,39 @@ function scene3DFloorTileGenerate() {
     scene3DFloorTileContainer[FLOOR] = new THREE.Object3D(); //reset
 }
 
-function scene3DFloorMeasurementsAjust() {
-
-}
-
-function scene3DFloorMeasurementsGenerate() {
-
-    scene3DFloorMeasurementsContainer[FLOOR] = new THREE.Object3D(); //reset
-
-    material = new THREE.LineBasicMaterial({
+function scene3DFloorMeasurementsGenerate()
+{
+     material = new THREE.LineBasicMaterial({
         color: 0x000000,
         linewidth: 2
     });
 
-    for (var i = 0; i < scene3DFloorFurnitureContainer[FLOOR].children.length; i++) {
+    for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++) {
 
-       
-        try{
-             
-            geometry = new THREE.Geometry();
-            //TODO: if y > 0
-            var x1 = scene3DFloorFurnitureContainer[FLOOR].children[i].position.x - scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.z;
-            var z1 = scene3DFloorFurnitureContainer[FLOOR].children[i].position.z - scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.x;
-            var x2 = scene3DFloorFurnitureContainer[FLOOR].children[i].position.x + scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.z;
-            var z2 = scene3DFloorFurnitureContainer[FLOOR].children[i].position.z + scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.x;
-            //var arrow = new THREE.ArrowHelper(direction, firstVector, computeDistance(node1, node2) - 32, co);
-
-            //horizontal
-            geometry.vertices.push(new THREE.Vector3(x1+0.2, 0.1, z1));
-            geometry.vertices.push(new THREE.Vector3(x2-0.2, 0.1, z1));
-
-            //vertical
-            geometry.vertices.push(new THREE.Vector3(x1, 0.1, z1+0.2));
-            geometry.vertices.push(new THREE.Vector3(x1, 0.1, z2-0.2));
-        
-            //var offset = scene3DFloorFurnitureContainer[FLOOR].children[i].centroid.clone();
-            //geometry.applyMatrix(new THREE.Matrix4().makeTranslation( -offset.x, 0, -offset.z ) );
-            //objMesh.position.copy( objMesh.centroid );
-            /*
-            geometry.vertices[0] = v(x1,y1,z1);
-            geometry.vertices[1] = v(x2,y2,z2);
-
-            this.drawingLine.geometry.vertices[this.drawingLine.geometry.vertices.length-1].position.x = voxelPosition.x;
-            this.drawingLine.geometry.vertices[this.drawingLine.geometry.vertices.length-1].position.z = voxelPosition.z;
-            this.drawingLine.geometry.__dirtyVertices = true;
-            */
-            //var line = new THREE.Line(geometry, material);
-           
-
-            var line = new THREE.Line(geometry, material, THREE.LinePieces);
-            //line.type = THREE.Lines;
-            line.dynamic = true;
-
-            var l = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.x * 100;
-            var w = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.z * 100;
-            //var h = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.y * 102;
-
-            var geometryTextL = new THREE.TextGeometry(Math.round(w) + ' cm', {
-                font: 'helvetiker', // Must be lowercase!
-                weight: 'normal',
-                size: 0.25,
-                height: 0.01
-            });
-            var geometryTextW = new THREE.TextGeometry(Math.round(l) + ' cm', {
-                font: 'helvetiker', // Must be lowercase!
-                weight: 'normal',
-                size: 0.25,
-                height: 0.01
-            });
-           
-            //geometry.merge(textGeometry);
-            //textGeometry.merge(line.geometry);
-            
-            var textMeshL = new THREE.Mesh(geometryTextL, material);
-            textMeshL.position.x = scene3DFloorFurnitureContainer[FLOOR].children[i].position.x;
-            textMeshL.position.y = 0.1;
-            textMeshL.position.z = z1 - 0.1;
-            textMeshL.rotation.x = -1.5;
-
-            var textMeshW = new THREE.Mesh(geometryTextW, material);
-            textMeshW.position.x = x1 - 0.1;
-            textMeshW.position.y = 0.1;
-            textMeshW.position.z = scene3DFloorFurnitureContainer[FLOOR].children[i].position.z;
-            textMeshW.rotation.x = -1.55;
-            textMeshW.rotation.z = 1.6;
-
-            //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
-
-            scene3DFloorMeasurementsContainer[FLOOR].add(textMeshL);
-            scene3DFloorMeasurementsContainer[FLOOR].add(textMeshW);
-            scene3DFloorMeasurementsContainer[FLOOR].add(line);
-
-            console.log("Calculating " + scene3DFloorFurnitureContainer[FLOOR].children[i].name + " measurements " + scene3DFloorFurnitureContainer[FLOOR].children[i].position.x + ":" + scene3DFloorFurnitureContainer[FLOOR].children[i].position.z + " " + scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.x + ":" + scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.boundingBox.max.z);
-           
-
-        }catch(exception){}
     }
+}
 
+function scene3DFloorMeasurementShow() {
+    var show = true;
+    for (var i = 0; i < scene3DFloorFurnitureContainer[FLOOR].children.length; i++) {
+        scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible = !scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible;
+        show = scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible;
+    }
+    if (show)
+    {
+        menuSelect(0,'menuLeft3DFloorItem','#ff3700');
+        TOOL3DFLOOR='measure';
+    }else{
+        menuSelect(0,'menuLeft3DFloorItem','black');
+        TOOL3DFLOOR='';
+    }
+}
+
+function scene3DFloorObjectWallMeasurementAjust() {
 
 }
+
+
 function scene3DFloorWallGenerate() {
 
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
@@ -4414,9 +4477,9 @@ function sceneNew() {
     scene3DHouseGroundContainer.add(cylinder);
     */
 
-    open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false);
-    open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true);
-    open3DModel("objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true);
+    open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
+    open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
+    open3DModel("objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
 
     /*
     new THREE.JSONLoader().load("objects/Landscape/round.js", function(geometry, materials) {
@@ -4439,23 +4502,24 @@ function sceneNew() {
     //TODO: load from one JSON file
     //=========================================
 
-    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1);
+    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1, false, null);
     //open3DModel("objects/Platform/note.jsz", scene3DNote, 0, 0, 0, 0, 0, 1);
 
-    open3DModel("objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1);
-    open3DModel("objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1);
-    open3DModel("objects/Platform/floor1.jsz", scene3DFloorTileContainer[FLOOR], 0, 0.1, 0, 0, 0, 1);
+    open3DModel("objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1, true, null);
+    open3DModel("objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1, true, null);
+    open3DModel("objects/Platform/floor1.jsz", scene3DFloorTileContainer[FLOOR], 0, 0.1, 0, 0, 0, 1, true, null);
 
-    open3DModel("objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1);
-    open3DModel("objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1);
-    open3DModel("objects/Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1);
-    open3DModel("objects/Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1);
-    open3DModel("objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1);
+    open3DModel("objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1, true, null);
+    open3DModel("objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1, true, null);
+    open3DModel("objects/Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1, true, null);
+    open3DModel("objects/Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1, true, null);
+    open3DModel("objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1, true, null);
 
-    open3DModel("objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorFurnitureContainer[FLOOR], 0, 0, 0, 0, 0, 1);
-    open3DModel("objects/Interior/Kitchen/Tables/table-w-table-cloth.jsz", scene3DFloorFurnitureContainer[FLOOR], -2, 0, 4, 0, 0, 1);
+    open3DModel("objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorFurnitureContainer[FLOOR], 0, 0, 0, 0, 0, 1, true, "cool notes, click to view");
+    open3DModel("objects/Interior/Kitchen/Tables/table-w-table-cloth.jsz", scene3DFloorFurnitureContainer[FLOOR], -2, 0, 4, 0, 0, 1, true, null);
 
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
+    /*
     var material = new THREE.MeshBasicMaterial( { color: 0x000000  } );
     var textGeometry = new THREE.TextGeometry('cool notes, click to view', {
         font: 'helvetiker', // Must be lowercase!
@@ -4472,9 +4536,9 @@ function sceneNew() {
     textMesh.rotation.y = 1.5;
 
     scene3DFloorFurnitureContainer[FLOOR].add(textMesh);
-    open3DModel("objects/Platform/note.jsz", scene3DFloorOtherContainer[FLOOR], 1.8, 0.6, 0.18, 0, 1.5, 1);
-
-    open3DModel("objects/Platform/camera.jsz", scene3DFloorOtherContainer[FLOOR], 5, 0, -3, 0, 2.5, 1);
+    open3DModel("objects/Platform/note.jsz", scene3DFloorOtherContainer[FLOOR], 1.8, 0.6, 0.18, 0, 1.5, 1,"");
+    */
+    open3DModel("objects/Platform/camera.jsz", scene3DFloorOtherContainer[FLOOR], 5, 0, -3, 0, 2.5, 1, false, null);
 
     //open3DModel("objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorFurnitureContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
     //open3DModel("objects/Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
@@ -4838,18 +4902,21 @@ function scene3DSetBackground(set) {
 function scene3DSetLight() {
 
     scene3D.remove(sceneAmbientLight);
-    //scene3D.remove(sceneDirectionalLight);
+    scene3D.remove(sceneDirectionalLight);
     //scene3D.remove(sceneHemisphereLight);
     scene3D.remove(sceneSpotLight);
 
     if (SCENE == 'house') {
         if (DAY == 'day') {
-            sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
+            sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 1);
             scene3D.add(sceneAmbientLight);
 
-            sceneSpotLight.intensity = 0.8;
-            sceneSpotLight.castShadow = true;
-            scene3D.add(sceneSpotLight);
+            //sceneSpotLight.intensity = 0.5;
+            //sceneSpotLight.castShadow = true;
+            //scene3D.add(sceneSpotLight);
+
+            scene3D.add(sceneDirectionalLight);
+            //scene3D.add(sceneHemisphereLight);
         } else {
             sceneSpotLight.intensity = 0.8;
             sceneSpotLight.castShadow = false;
@@ -4860,7 +4927,7 @@ function scene3DSetLight() {
         scene3D.add(sceneAmbientLight);
 
         sceneSpotLight.intensity = 0.6;
-        sceneSpotLight.castShadow = true;
+        //sceneSpotLight.castShadow = true;
         scene3D.add(sceneSpotLight);
 
     } else if (SCENE == 'roof') {
@@ -4881,11 +4948,12 @@ function scene3DSetLight() {
         //scene3D.add(sceneHemisphereLight);
     } else if (SCENE == 'floor') {
 
-        sceneAmbientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        sceneAmbientLight = new THREE.AmbientLight(0xffffff, 0.1);
         scene3D.add(sceneAmbientLight);
-        sceneSpotLight.intensity = 0.4;
+        //sceneSpotLight.intensity = 0.8;
         //sceneSpotLight.castShadow = false;
-        scene3D.add(sceneSpotLight);
+        //scene3D.add(sceneSpotLight);
+        scene3D.add(sceneDirectionalLight);
     }
 }
 
@@ -5018,14 +5086,17 @@ function scene3DLight() {
 
     //scene3D.fog = new THREE.Fog(0xffffff, 0.015, 40); //white fog (0xffffff). The last two properties can be used to tune how the mist will appear. The 0.015 value sets the near property and the 100 value sets the far property 
 
-
-    //sceneHemisphereLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
-    //sceneHemisphereLight.color.setHSL(0.6, 0.75, 0.5);
-    //sceneHemisphereLight.groundColor.setHSL(0.095, 0.5, 0.5);
-    //sceneHemisphereLight.position.set(0, 50, 0);
+    /*
+    sceneHemisphereLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
+    sceneHemisphereLight.color.setHSL(0.6, 0.75, 0.5);
+    sceneHemisphereLight.groundColor.setHSL(0.095, 0.5, 0.5);
+    sceneHemisphereLight.position.set(0, 20, 0);
     //sceneHemisphereLight.shadowCameraVisible = true;
+    */
     //scene3D.add(hemiLight);
 
+    // sky color ground color intensity 
+    //sceneHemisphereLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 ); 
 
     //var ambientLight = new THREE.AmbientLight(0x444444); // 0xcccccc
     //scene.add(ambientLight);
@@ -5061,26 +5132,27 @@ function scene3DLight() {
     scene3D.add(light);
     */
 
-    /*
-    sceneDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    
+   sceneDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     sceneDirectionalLight.color.setHSL(0.1, 1, 0.95);
-    sceneDirectionalLight.position.set(-1, 15, 5); //.normalize();
+    sceneDirectionalLight.position.set(1, 1.8, 0.8); //.normalize();
     sceneDirectionalLight.position.multiplyScalar(50);
     //sceneDirectionalLight.position.set(-1, 0, 0).normalize();
     sceneDirectionalLight.castShadow = true;
     sceneDirectionalLight.shadowMapWidth = 2048;
     sceneDirectionalLight.shadowMapHeight = 2048;
-    var d = 10;
+    var d = 15;
     sceneDirectionalLight.shadowCameraLeft = -d;
     sceneDirectionalLight.shadowCameraRight = d;
     sceneDirectionalLight.shadowCameraTop = d;
     sceneDirectionalLight.shadowCameraBottom = -d;
-    sceneDirectionalLight.shadowCameraFar = 3000;
+    sceneDirectionalLight.shadowCameraFar = 2000;
     sceneDirectionalLight.shadowBias = -0.0001;
-    sceneDirectionalLight.shadowDarkness = 0.5;
+    sceneDirectionalLight.shadowDarkness = 0.4;
     //sceneDirectionalLight.shadowCameraVisible = true;
-    scene3D.add(sceneDirectionalLight);
-    */
+    
+    //scene3D.add(sceneDirectionalLight);
+    
 
     sceneSpotLight = new THREE.SpotLight();
     sceneSpotLight.shadowCameraNear = 1; // keep near and far planes as tight as possible
@@ -5180,14 +5252,14 @@ function insertSceneObject(path) {
         z = scene3DHouseContainer.children[o].position.z + scene3DHouseContainer.children[o].geometry.boundingBox.max.z;
 
         //console.log(path + " x:" + x + " z:" + z);
-        open3DModel(path, scene3DHouseContainer, x, 0, z, 0, 0, 1);
+        open3DModel(path, scene3DHouseContainer, x, 0, z, 0, 0, 1, true, null);
     }
     else  if(SCENE == 'floor')
     {
     	o = scene3DFloorFurnitureContainer[FLOOR].children.length-1;
     	x = scene3DFloorFurnitureContainer[FLOOR].children[o].position.x + scene3DFloorFurnitureContainer[FLOOR].children[o].geometry.boundingBox.max.x;
         z = scene3DFloorFurnitureContainer[FLOOR].children[o].position.z + scene3DFloorFurnitureContainer[FLOOR].children[o].geometry.boundingBox.max.z;
-        open3DModel(path, scene3DFloorFurnitureContainer[FLOOR], x, 0, z, 0, 0, 1);
+        open3DModel(path, scene3DFloorFurnitureContainer[FLOOR], x, 0, z, 0, 0, 1, true, null);
     }
 }
 
