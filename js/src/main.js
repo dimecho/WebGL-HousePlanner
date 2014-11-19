@@ -1345,7 +1345,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
                 //callback(object.geometry,object.material);
                     
                 objectContainer.add(object);
-            } catch (exception) {
+            } catch (e) {
                 //console.log("error catch");
             }
         }else if (object instanceof THREE.PointLight) {
@@ -1691,7 +1691,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
                         var result = loader.parse(data, textures);
                         callback(result.geometry, result.materials);
                     }
-                } catch (exception) { //zip file was probably not found, load regular json
+                } catch (e) { //zip file was probably not found, load regular json
                     console.log("error catch");
                     loader.load(js.slice(0, -1), callback, textures);
                 }
@@ -1881,8 +1881,7 @@ function show3DFloor() {
             reflectivity: 0.5
         });
         scene3DFloorGroundContainer.children[0].materials[0] = floorMaterial;
-    } catch (ex) {
-    }
+    }catch(e){}
 
     scene3DFloorWallGenerate();
 
@@ -2134,7 +2133,7 @@ function show2D() {
             circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][i].get('x1'), scene2DWallMesh[FLOOR][i].get('y1'), scene2DWallMesh[FLOOR][i - 1], scene2DWallMesh[FLOOR][i]);
             pivot = scene2DMakeWallPivotCircle(scene2DWallMesh[FLOOR][i].get('x2')-scene2DWallMesh[FLOOR][i].get('x1')/2, scene2DWallMesh[FLOOR][i].get('y1') - 10, null, scene2DWallMesh[FLOOR][i], null);
             
-        } catch (e) {
+        }catch(e){
 
             circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][0].get('x1'), scene2DWallMesh[FLOOR][0].get('y1'), scene2DWallMesh[FLOOR][i-1], scene2DWallMesh[FLOOR][0]);
         }
@@ -4121,16 +4120,18 @@ function collectArrayFromContainer(container) {
 	var json = new Array();
 
 	for (var i = 0; i < container.children.length; i++) {
-        var obj = new Object();
-    	obj.file = container.children[i].name;
-    	obj.x = container.children[i].position.x;
-    	obj.y = container.children[i].position.y;
-    	obj.z = container.children[i].position.z;
-    	obj._x = container.children[i].rotation.x;
-    	obj._y = container.children[i].rotation.y;
-    	obj._z = container.children[i].rotation.z;
+        //var obj = new Object();
+        var JSONString = {};
+        JSONString["file"] = container.children[i].children[0].name;
+        try{ JSONString["note"] = container.children[i].children[2].name; }catch(e){}
+        JSONString["position.x"] = container.children[i].children[0].position.x;
+        JSONString["position.y"] = container.children[i].children[0].position.y;
+        JSONString["position.z"] = container.children[i].children[0].position.z;
+        JSONString["rotation.x"] = container.children[i].children[0].rotation.x;
+        JSONString["rotation.y"] = container.children[i].children[0].rotation.y;
+        JSONString["rotation.z"] = container.children[i].children[0].rotation.z;
     	//TODO: pickup scale and alternative texture location
-        json.push(obj);
+        json.push(JSONString);
     }
     return json;
 }
@@ -4141,76 +4142,58 @@ function saveScene(online) {
     {
         var zip = new JSZip();
 
-        var exportHouseContainerJSON = "scene3DHouseContainer";
-        var exportHouseGroundContainerJSON = "scene3DHouseGroundContainer";
-        var exportFloorContainerJSON = "scene3DFloorFurnitureContainer";
+        var exportRoofContainer = "scene3DRoofContainer";
+        var exportHouseContainer= "scene3DHouseContainer";
+        var exportHouseGroundContainer = "scene3DHouseGroundContainer";
+        var exportFloorContainer = "scene3DFloorFurnitureContainer";
+
+        /*
+        var textures = zip.folder("Textures");
+            textures.file("house.jpg", imgData, {
+            base64: true
+        });
+        */
 
 		if (online) //save only 3d object's absolute location, position & orientation
 		{
-			var JSONString = {};
-
-			for (var o = 0; o < scene3DHouseContainer.children.length; o++)
-			{
-				JSONString["file"] = scene3DHouseContainer.children[o].name;
-				JSONString["x"] = scene3DHouseContainer.children[o].position.x;
-				JSONString["y"] = scene3DHouseContainer.children[o].position.y;
-				JSONString["z"] = scene3DHouseContainer.children[o].position.z;
-				//TODO: Save angle and rotation degree
-    		}
-			zip.file(exportHouseContainerJSON + ".json", JSON.stringify(JSONString));
-
-			zip.file(exportHouseGroundContainerJSON + ".json", "");
+            zip.file(exportRoofContainer + ".json", JSON.stringify(collectArrayFromContainer(scene3DRoofContainer)));
+            zip.file(exportHouseContainer+ ".json", JSON.stringify(collectArrayFromContainer(scene3DHouseContainer)));
+			zip.file(exportHouseGroundContainer + ".json", JSON.stringify(collectArrayFromContainer(scene3DHouseGroundContainer)));
 
 			for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++)
         	{
-        		JSONString = {};
-
-				for (var o = 0; o < scene3DFloorFurnitureContainer[i].children.length; o++)
-				{
-					JSONString["file"] = scene3DFloorFurnitureContainer[i].children[o].name;
-					JSONString["x"] = scene3DFloorFurnitureContainer[i].children[o].position.x;
-					JSONString["y"] = scene3DFloorFurnitureContainer[i].children[o].position.y;
-					JSONString["z"] = scene3DFloorFurnitureContainer[i].children[o].position.z;
-					//TODO: Save angle and rotation degree
-	    		}
-            	zip.file(exportFloorContainerJSON + "." + i + ".json", "");
+                zip.file(exportFloorContainer + "." + i + ".json", JSON.stringify(collectArrayFromContainer(scene3DFloorFurnitureContainer[i])));
         	}
 		}
 		else //export entire scene fruits (good for editing with Blender/CAD)
 		{
-			/*
-			var textures = zip.folder("Textures");
-	        textures.file("house.jpg", imgData, {
-	        base64: true
-	    	});
-	    	*/
+			zip.file(exportHouseContainer+ ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseContainer)));
+			zip.file(exportHouseGroundContainer + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
 
-			zip.file(exportHouseContainerJSON + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseContainer)));
-			zip.file(exportHouseGroundContainerJSON + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
-
-			for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) 
+			for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++)
         	{
-            	zip.file(exportFloorContainerJSON + "." + i + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorFurnitureContainer[i])));
+            	zip.file(exportFloorContainer + "." + i + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorFurnitureContainer[i])));
         	}
 
         	zip.file("ReadMe.txt", "Saved by WebGL HousePlanner. Files can be opened by THREE.js Framework");
 		}
 
-        /*
-        for (var i = 0; i < scene2DFloorContainer.length; i++) {
-            //scene2D.clear();
-            //scene2D.add(scene2DFloorContainer[i])
+        for (var i = 0; i < scene2DWallMesh.length; i++)
+        {
+            scene2D.clear();
+            for (var o = 0; o < scene2DWallMesh[i].length; o++)
+            {
+                scene2D.add(scene2DWallMesh[i][o]);
+            }
 
-            //zip.file("scene2DFloorContainer." + i + ".js", JSON.stringify(scene2DFloorContainer[i]));
-            zip.file("scene2DFloorContainer." + i + ".svg", scene2DFloorContainer[i].toSVG());
-
-            //zip.file("scene2DFloorContainer." + i + ".js", JSON.stringify(scene2DFloorContainer.toDatalessJSON()));
+            zip.file("scene2DFloorContainer." + i + ".json", JSON.stringify(scene2D.toDatalessJSON()));
         }
-        */
 
-        zip.file("house.jpg", imageBase64('imgHouse'), {
-            base64: true
-        });
+        try{
+            zip.file("house.jpg", imageBase64('imgHouse'), {
+                base64: true
+            });
+        }catch(ex){}
 
         var content = zip.generate({
             type: "blob"
@@ -4227,6 +4210,7 @@ function saveScene(online) {
         {
         	if(SESSION == '')
 		    {
+                saveAs(content, "scene.zip"); //Debug
 		        window.location = "#openLogin";
 		    }
 		    else
@@ -5302,7 +5286,7 @@ function showRightObjectMenu(path) {
                     }
                 });
             }
-            catch(ex)
+            catch(e)
             {
                 menu.append(empty); //local no json
             }
