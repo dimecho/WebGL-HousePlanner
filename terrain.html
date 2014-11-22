@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>Terrain</title>
+	<meta charset="utf-8">
+</head>
+<body>
+<script id="groundVertexShader" type="x-shader/x-fragment">
+    
+    attribute float displacement;
+    
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    
+    void main( void ) {
+        
+        vUv = uv;
+        vPosition = position;
+        
+        vPosition.z += displacement;
+        
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1);
+    }
+</script>
+
+<script id="groundFragmentShader" type="x-shader/x-vertex">
+    
+    uniform sampler2D texture_grass;
+    uniform sampler2D texture_bare;
+    uniform sampler2D texture_snow;
+    
+    uniform bool show_ring;
+    uniform float ring_width;
+    uniform vec4 ring_color;
+    uniform vec3 ring_center;
+    uniform float ring_radius;
+    
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    
+    float dist_falloff(float distance, float falloff) {
+        float alpha = (falloff - distance) / falloff;
+        if (alpha < 0.0) {
+            alpha = 0.0;
+        }
+        if (alpha > 1.0) {
+            alpha = 1.0;
+        }
+        return alpha;
+    }
+    
+    vec3 layerColor(vec3 color1, vec3 color2, float alpha) {
+        return mix(
+            color1,
+            color2,
+            alpha
+        );
+    }
+    
+    void main()
+    {
+        // Texture loading
+        vec3 diffuseBare = texture2D( texture_bare, vUv ).rgb;
+        vec3 diffuseGrass = texture2D( texture_grass, vUv ).rgb;
+        vec3 diffuseSnow = texture2D( texture_snow, vUv ).rgb;
+        
+        // Get base texture
+        vec3 fragcolor = diffuseBare;
+        
+        // Grass texture
+        fragcolor = layerColor(
+            fragcolor,
+            diffuseGrass,
+            dist_falloff(abs(vPosition.z - 0.0), 7.0)
+        );
+        
+        // Ice texture
+        fragcolor = layerColor(
+            fragcolor,
+            diffuseSnow,
+            dist_falloff(abs(vPosition.z - 7.0), 2.0)
+        );
+        
+        gl_FragColor = vec4(fragcolor, 1.0);
+        
+        float distance = sqrt((vPosition.x - ring_center.x) * (vPosition.x - ring_center.x) + (vPosition.y - ring_center.y) * (vPosition.y - ring_center.y));
+        
+        // Ring
+        if (show_ring == true && distance < ring_radius + ring_width / 2.0 && distance > ring_radius - ring_width / 2.0) {
+            
+            gl_FragColor.r += ring_color.r;
+            gl_FragColor.b += ring_color.b;
+            gl_FragColor.g += ring_color.g;
+            gl_FragColor.a += ring_color.a;
+            gl_FragColor = normalize(gl_FragColor);
+        }
+        
+        // Grid overlay
+        if (distance < 1.4) {
+            float tiles = 0.4 / 20.0;
+            float val = mod(vUv.y, tiles);
+            if (mod(vUv.x, tiles) < .003 || mod(vUv.y, tiles) < .003) {
+                gl_FragColor = gl_FragColor * (distance / 3.0);
+                gl_FragColor.a = 1.0;
+            }
+        }
+    }
+</script>
+
+
+<script id="waterVertexShader" type="x-shader/x-fragment">
+    
+    attribute float displacement;
+    
+    varying float vDisplacement;
+    varying vec2 vUv;
+    varying vec3 vPosition;
+
+    void main( void ) {
+        
+        vDisplacement = displacement;
+        vUv = uv;
+        vPosition = position;
+        
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1);
+    }
+</script>
+
+<script id="waterFragmentShader" type="x-shader/x-vertex">
+    
+    uniform float water_level;
+    uniform float time;
+    
+    varying float vDisplacement;
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    
+    void main()
+    {
+        // Base Color
+        gl_FragColor = vec4(0.5, 0.7, 1.0, .7);
+        
+        float low_tide = sin(radians(time / 10.0)); // Mostly animation speed
+        
+        // Determine at what point the elevation must be for the foam to display
+        low_tide -= 1.5;
+        low_tide *= .3;
+        
+        if (vDisplacement > low_tide + water_level) {
+            gl_FragColor = mix(
+                gl_FragColor,
+                vec4(1.0, 1.0, 1.0, 1.0),
+                .6
+            );
+        }
+    }
+</script>
+
+<script type="text/javascript" src="js/three.js"></script>
+<script src="js/src/Projector.js"></script>
+<div id="ThreeJS"></div>
+<script>
+
+/** CONFIG **/
+var plots_x = 30;
+var plots_y = 30;
+var plot_vertices = 2;
+
+var map_left = plots_x /  -2;
+var map_top = plots_y / -2;
+
+var container, scene, camera, renderer;
+var ground;
+var materials = [];
+
+init();
+
+function init() 
+{
+	scene = new THREE.Scene();
+
+	camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+    camera.position.set(10, 10, 20);
+	camera.lookAt(scene.position);
+    scene.add(camera);
+	
+	renderer = new THREE.WebGLRenderer({antialias:true});
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setClearColor( 0xffffff, 0.5 );
+
+	container = document.getElementById( 'ThreeJS' );
+	container.appendChild( renderer.domElement );
+
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,50,0);
+	scene.add(light);
+
+    
+    var texture_grass = new THREE.ShaderMaterial({
+        uniforms: {
+            texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'images/texture_ground_grass.jpg' ) },
+            show_ring: { type: 'i', value: true },
+            ring_width: { type: 'f', value: 0.15 },
+            ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
+            ring_center: { type: 'v3', value: new THREE.Vector3() },
+            ring_radius: { type: 'f', value: 1.8 }
+        },
+        attributes: {
+            displacement: { type: 'f', value: [] }
+        },
+        vertexShader: document.getElementById( 'groundVertexShader' ).textContent,
+        fragmentShader: document.getElementById( 'groundFragmentShader' ).textContent
+    });
+    var texture_bare = texture_grass.clone();
+    texture_bare.uniforms.texture_bare = "{ type: 't', value: THREE.ImageUtils.loadTexture( 'images/texture_ground_bare.jpg' ) }";
+
+    var texture_snow = texture_grass.clone();
+    texture_snow.uniforms.texture_snow = "{ type: 't', value: THREE.ImageUtils.loadTexture( 'images/texture_ground_snow.jpg' ) }";
+
+    materials.push(texture_grass);
+    materials.push(texture_bare);
+    materials.push(texture_snow);
+    
+    ground = new THREE.Mesh(new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices), texture_grass);
+    //ground.materials = [ texture_grass, texture_bare, texture_snow ];
+    ground.materials = [ texture_grass ];
+
+    ground.dynamic = true;
+    ground.displacement = ground.materials[0].attributes.displacement;
+    for (var i = 0; i < ground.geometry.vertices.length; i++) {
+        ground.materials[0].attributes.displacement.value.push(0);
+    }
+    ground.rotation.x = Degrees2Radians(-90);
+    scene.add(ground);
+
+    ground.water = new THREE.Mesh(
+        new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices ),
+        new THREE.ShaderMaterial({
+            uniforms: {
+                water_level: { type: 'f', value: -2 },
+                time: { type: 'f', value: 0 }
+            },
+            attributes: {
+                displacement: { type: 'f', value: [] }
+            },
+            vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
+            fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent,
+            transparent: true
+        })
+    );
+    ground.water.dynamic = true;
+    ground.water.displacement = ground.water.material.attributes.displacement;
+    for (var i = 0; i < ground.water.geometry.vertices.length; i++) {
+        ground.water.material.attributes.displacement.value.push(0);
+    }
+    ground.water.position.z = -2;
+    ground.add(ground.water);
+	
+    animate();
+}
+
+function Degrees2Radians(degrees) {
+    return degrees * (Math.PI / 180)
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+    ground.water.material.uniforms.time.value = new Date().getTime() % 10000;
+	render();		
+}
+
+function render() 
+{	
+	renderer.render( scene, camera );
+}
+
+/** VERTEX POINTS **/
+var verticeIndex = function(vertice) {
+    return vertice.x + vertice.y * ((plots_x * plot_vertices) + 1);
+};
+
+var findLattices = (function() {
+    function distance(x, y) {
+        return Math.pow(x, 2) + Math.pow(y, 2);
+    }
+    
+    function generate_n2(radius) {
+
+        var ymax = [0];
+        var d = 0;
+        
+        var points = [];
+        
+        var batch, x, y;
+        
+        while (d <= radius) {
+            yieldable = []
+            
+            while (true) {
+                batch = [];
+                for (x = 0; x < d+1; x++) {
+                    y = ymax[x];
+                    if (distance(x, y) <= Math.pow(d, 2)) {
+                        batch.push({x: x, y: y});
+                        ymax[x] += 1;
+                    }
+                }
+                if (batch.length === 0) {
+                    break;
+                }
+                points = points.concat(batch);
+            }
+            
+            d += 1
+            ymax.push(0);
+        }
+        return points;
+    };
+    
+    return function findLattices(radius, origin) {
+        var all_points = [];
+        
+        var i, point, points = generate_n2(radius);
+        for (i = 0; i < points.length; i++) {
+            point = points[i];
+            
+            all_points.push(point);
+            if (point.x !== 0) {
+                all_points.push({x: -point.x, y: point.y});
+            }
+            if (point.y !== 0) {
+                all_points.push({x: point.x, y: -point.y});
+            }
+            if (point.x && point.y) {
+                all_points.push({x: -point.x, y: -point.y});
+            }
+        }
+        
+        for (i = 0; i < all_points.length; i++) {
+            all_points[i].x += origin.x;
+            all_points[i].y += origin.y;
+        };
+        
+        return all_points;
+    }
+})();
+
+/** LANDSCAPING **/
+var landscape = new function() {
+    var landscape_tool = null;
+    
+    this.select = function(tool) {
+        landscape_tool = tool;
+    };
+    
+    this.onmousemove = function() {
+        
+        if (mouse_info.state === 2) { // The user has clicked and drug their mouse
+            
+            // Get all of the vertices in a 5-unit radius
+            var vertices = findLattices(3 * plot_vertices, mouse_info.vertex_coordinates);
+            
+            // Call the landscaping tool to do its job
+            this.tools[landscape_tool](3 * plot_vertices, vertices);
+            
+            // Ensure all of the vertices are within the elevation bounds
+            var vertice_index;
+            for (var i = 0; i < vertices.length; i++) {
+                vertice_index = verticeIndex(vertices[i]);
+                if (ground.displacement.value[vertice_index] > 8) {
+                    ground.displacement.value[vertice_index] = 8;
+                }
+                
+                if (ground.displacement.value[vertice_index] < -7) {
+                    ground.displacement.value[vertice_index] = -7;
+                }
+                
+                ground.water.displacement.value[vertice_index] = ground.displacement.value[vertice_index];
+            }
+            ground.water.displacement.needsUpdate = true;
+        }
+    };
+    
+    this.tools = {
+        hill: function(radius, vertices) {
+            
+            var i, vertice, vertice_index, distance;
+            
+            for (i = 0; i < vertices.length; i++) {
+                
+                vertice = vertices[i];
+                
+                if (vertice.x < 0 || vertice.y < 0) {
+                    continue;
+                }
+                if (vertice.x >= plots_x * plot_vertices + 1 || vertice.y >= plots_y * plot_vertices + 1) {
+                    continue;
+                }
+                
+                vertice_index = verticeIndex(vertice);
+                distance = Math.sqrt(Math.pow(mouse_info.vertex_coordinates.x - vertice.x, 2) + Math.pow(mouse_info.vertex_coordinates.y - vertice.y, 2));
+                
+                ground.displacement.value[vertice_index] += Math.pow(radius - distance, .5) * .03;
+                ground.displacement.needsUpdate = true;
+            }
+        },
+        
+        valley: function(radius, vertices) {
+            
+            var i, vertice, vertice_index, distance;
+            
+            for (i = 0; i < vertices.length; i++) {
+                
+                vertice = vertices[i];
+                
+                if (vertice.x < 0 || vertice.y < 0) {
+                    continue;
+                }
+                if (vertice.x >= plots_x * plot_vertices + 1 || vertice.y >= plots_y * plot_vertices + 1) {
+                    continue;
+                }
+                
+                vertice_index = verticeIndex(vertice);
+                distance = Math.sqrt(Math.pow(mouse_info.vertex_coordinates.x - vertice.x, 2) + Math.pow(mouse_info.vertex_coordinates.y - vertice.y, 2));
+                
+                ground.displacement.value[vertice_index] -= Math.pow(radius - distance, .5) * .03;
+                ground.displacement.needsUpdate = true;
+            }
+        }
+    };
+}
+
+/** MOUSE **/
+    var mouse_info = {
+        x: 0,
+        y: 0,
+        button: 0,
+        state: 0, // 0 - up, 1 - down, 2 - dragging,
+        point: null,
+        plot_coordinates: {x: null, y: null},
+        vertex_coordinates: {x: null, y: null}
+    };
+    
+    var updateMouse = function updateMouse(e) {
+        e.preventDefault();
+        e.cancelBubble = true;
+        
+        mouse_info.x = e.layerX;
+        mouse_info.y = e.layerY;
+        mouse_info.button = e.button;
+    };
+    
+    var updateMouseCoordinates = function() {
+
+        var vector = new THREE.Vector3((mouse_info.x / window.innerWidth) * 2 - 1, - (mouse_info.y / window.innerHeight) * 2 + 1, 0.5);
+        vector.unproject(camera);
+        var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+        var intersection = ray.intersectObjects(ground.children);
+        if (intersection.length > 0) {
+
+            mouse_info.point = intersection[0].point;
+            
+            mouse_info.plot_coordinates.x = Math.floor(mouse_info.point.x - map_left);
+            mouse_info.plot_coordinates.y = Math.floor(mouse_info.point.z - map_top);
+            
+            mouse_info.vertex_coordinates.x = Math.floor((mouse_info.point.x * plot_vertices) - (map_left * plot_vertices));
+            mouse_info.vertex_coordinates.y = Math.floor((mouse_info.point.z * plot_vertices) - (map_top * plot_vertices));
+
+            ground.materials[0].uniforms.ring_center.value.x = mouse_info.point.x;
+            ground.materials[0].uniforms.ring_center.value.y = -mouse_info.point.z;
+        }
+    };
+    
+    renderer.domElement.onmousedown = function onmousedown(e) {
+        mouse_info.state = 1;
+        updateMouse(e);
+    };
+    renderer.domElement.onmouseup = function onmouseup(e) {
+        mouse_info.state = 0;
+        updateMouse(e);
+    };
+    renderer.domElement.onmousemove = function onmousemove(e) {
+        if (mouse_info.state == 1) {
+            mouse_info.state = 2;
+        }
+        updateMouse(e);
+        updateMouseCoordinates();
+        landscape.onmousemove();
+    };
+    renderer.domElement.onmouseout = function onmouseout(e) {
+        mouse_info.state = 0;
+        updateMouse(e);
+    };
+    window.landscape = landscape;
+    landscape.select('hill');
+</script>
+</body></html>

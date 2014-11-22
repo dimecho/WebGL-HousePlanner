@@ -24,6 +24,11 @@ TODO:
 - [difficulty: 6/10  progress: 98%] 3D Exterior View create night scene atmosphere with proper lights
 - [difficulty: 8/10  progress: 100%]  3D Exterior View auto rotate-snap on ground angle
 - [difficulty: 4/10  progress: 100%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
+- [difficulty: 8/10  progress: 2%]    Implement room agmented reality 
+http://skeelogy.github.io/skarf.js/examples/skarf_trackThreejsScene.html
+https://github.com/bhollis/aruco-marker
+http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
+http://www.chandlerprall.com/webgl/terrain/
 */
 
 //"use strict";
@@ -156,6 +161,9 @@ var mesh;
 var zip;
 
 //var stats;
+
+var terrain3D;
+var terrain3DMaterial;
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
@@ -551,13 +559,17 @@ function init(runmode,viewmode) {
     //scene2D.fillRect(0, 0, 1, 1);
 
     renderer = new THREE.WebGLRenderer({
-        devicePixelRatio: window.devicePixelRatio || 1,
+        //devicePixelRatio: window.devicePixelRatio || 1,
         antialias: true,
         alpha: true,
         //clearColor: 0x34583e,
-        clearAlpha: 0.5
+        //clearAlpha: 0.5
         //preserveDrawingBuffer: false
     });
+
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapType = THREE.PCFShadowMap;
+    renderer.shadowMapSoft = true;
     /*
     renderer = new THREE.WebGLDeferredRenderer({
         width: window.innerWidth,
@@ -594,7 +606,7 @@ function init(runmode,viewmode) {
     document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
 
     scene3DCube = new THREE.Scene();
-    camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 1000);
+    camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
     camera3DCube.up = camera3D.up;
     scene3DCube.add(camera3DCube);
     scene3DCube.add(scene3DCubeMesh);
@@ -1822,6 +1834,241 @@ function show3DHouse() {
     animate();
 }
 
+//========================================
+/** CONFIG **/
+var plots_x = 20;
+var plots_y = 20;
+var plot_vertices = 2;
+
+var map_left = plots_x /  -2;
+var map_top = plots_y / -2;
+
+/** MOUSE **/
+var mouse_info = {
+    x: 0,
+    y: 0,
+    button: 0,
+    state: 0, // 0 - up, 1 - down, 2 - dragging,
+    point: null,
+    plot_coordinates: {x: null, y: null},
+    vertex_coordinates: {x: null, y: null}
+};
+
+ var updateMouse = function updateMouse(e) {
+    e.preventDefault();
+    e.cancelBubble = true;
+    
+    mouse_info.x = e.layerX;
+    mouse_info.y = e.layerY;
+    mouse_info.button = e.button;
+};
+
+var updateMouseCoordinates = function() {
+
+    var vector = new THREE.Vector3((mouse_info.x / window.innerWidth) * 2 - 1, - (mouse_info.y / window.innerHeight) * 2 + 1, 0.5);
+    vector.unproject(camera3D);
+    var ray = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+
+    var intersection = ray.intersectObjects(terrain3D.children);
+    if (intersection.length > 0) {
+
+        mouse_info.point = intersection[0].point;
+        
+        mouse_info.plot_coordinates.x = Math.floor(mouse_info.point.x - map_left);
+        mouse_info.plot_coordinates.y = Math.floor(mouse_info.point.z - map_top);
+        
+        mouse_info.vertex_coordinates.x = Math.floor((mouse_info.point.x * plot_vertices) - (map_left * plot_vertices));
+        mouse_info.vertex_coordinates.y = Math.floor((mouse_info.point.z * plot_vertices) - (map_top * plot_vertices));
+
+        terrain3D.materials[0].uniforms.ring_center.value.x = mouse_info.point.x;
+        terrain3D.materials[0].uniforms.ring_center.value.y = -mouse_info.point.z;
+    }
+};
+
+/** VERTEX POINTS **/
+var verticeIndex = function(vertice) {
+    return vertice.x + vertice.y * ((plots_x * plot_vertices) + 1);
+};
+
+var findLattices = (function() {
+    function distance(x, y) {
+        return Math.pow(x, 2) + Math.pow(y, 2);
+    }
+    function generate_n2(radius) {
+
+        var ymax = [0];
+        var d = 0;
+        var points = [];
+        var batch, x, y;
+        
+        while (d <= radius) {
+            yieldable = []
+            
+            while (true) {
+                batch = [];
+                for (x = 0; x < d+1; x++) {
+                    y = ymax[x];
+                    if (distance(x, y) <= Math.pow(d, 2)) {
+                        batch.push({x: x, y: y});
+                        ymax[x] += 1;
+                    }
+                }
+                if (batch.length === 0) {
+                    break;
+                }
+                points = points.concat(batch);
+            }
+            
+            d += 1
+            ymax.push(0);
+        }
+        return points;
+    };
+    
+    return function findLattices(radius, origin) {
+        var all_points = [];
+        
+        var i, point, points = generate_n2(radius);
+        for (i = 0; i < points.length; i++) {
+            point = points[i];
+            
+            all_points.push(point);
+            if (point.x !== 0) {
+                all_points.push({x: -point.x, y: point.y});
+            }
+            if (point.y !== 0) {
+                all_points.push({x: point.x, y: -point.y});
+            }
+            if (point.x && point.y) {
+                all_points.push({x: -point.x, y: -point.y});
+            }
+        }
+        
+        for (i = 0; i < all_points.length; i++) {
+            all_points[i].x += origin.x;
+            all_points[i].y += origin.y;
+        };
+        
+        return all_points;
+    }
+})();
+
+/** LANDSCAPING **/
+var landscape = new function() {
+    var landscape_tool = null;
+    
+    this.select = function(tool) {
+        landscape_tool = tool;
+    };
+    this.onmousemove = function() {
+
+        if (mouse_info.state === 2) { // The user has clicked and drug their mouse
+            
+            // Get all of the vertices in a 5-unit radius
+            var vertices = findLattices(3 * plot_vertices, mouse_info.vertex_coordinates);
+            
+            // Call the landscaping tool to do its job
+            this.tools[landscape_tool](3 * plot_vertices, vertices);
+            
+            // Ensure all of the vertices are within the elevation bounds
+            var vertice_index;
+            for (var i = 0; i < vertices.length; i++) {
+                vertice_index = verticeIndex(vertices[i]);
+                if (terrain3D.displacement.value[vertice_index] > 8) {
+                    terrain3D.displacement.value[vertice_index] = 8;
+                }
+                
+                if (terrain3D.displacement.value[vertice_index] < -7) {
+                    terrain3D.displacement.value[vertice_index] = -7;
+                }
+                
+                terrain3D.water.displacement.value[vertice_index] = terrain3D.displacement.value[vertice_index];
+            }
+            terrain3D.water.displacement.needsUpdate = true;
+        }
+    };
+    
+    this.tools = {
+        hill: function(radius, vertices) {
+            
+            var i, vertice, vertice_index, distance;
+            
+            for (i = 0; i < vertices.length; i++) {
+                
+                vertice = vertices[i];
+                
+                if (vertice.x < 0 || vertice.y < 0) {
+                    continue;
+                }
+                if (vertice.x >= plots_x * plot_vertices + 1 || vertice.y >= plots_y * plot_vertices + 1) {
+                    continue;
+                }
+                
+                vertice_index = verticeIndex(vertice);
+                distance = Math.sqrt(Math.pow(mouse_info.vertex_coordinates.x - vertice.x, 2) + Math.pow(mouse_info.vertex_coordinates.y - vertice.y, 2));
+                
+                terrain3D.displacement.value[vertice_index] += Math.pow(radius - distance, .5) * .03;
+                terrain3D.displacement.needsUpdate = true;
+            }
+        },
+        
+        valley: function(radius, vertices) {
+            
+            var i, vertice, vertice_index, distance;
+            
+            for (i = 0; i < vertices.length; i++) {
+                
+                vertice = vertices[i];
+                
+                if (vertice.x < 0 || vertice.y < 0) {
+                    continue;
+                }
+                if (vertice.x >= plots_x * plot_vertices + 1 || vertice.y >= plots_y * plot_vertices + 1) {
+                    continue;
+                }
+                
+                vertice_index = verticeIndex(vertice);
+                distance = Math.sqrt(Math.pow(mouse_info.vertex_coordinates.x - vertice.x, 2) + Math.pow(mouse_info.vertex_coordinates.y - vertice.y, 2));
+                
+                terrain3D.displacement.value[vertice_index] -= Math.pow(radius - distance, .5) * .03;
+                terrain3D.displacement.needsUpdate = true;
+            }
+        }
+    };
+}
+function Degrees2Radians(degrees) {
+    return degrees * (Math.PI / 180)
+}
+function getHeightData(img,scale) //return array with height data from img
+{
+ if (scale == undefined) scale=1;
+  
+    var canvas = document.createElement( 'canvas' );
+    canvas.width = img.width;
+    canvas.height = img.height;
+    var context = canvas.getContext( '2d' );
+ 
+    var size = img.width * img.height;
+    var data = new Float32Array( size );
+ 
+    context.drawImage(img,0,0);
+ 
+    for ( var i = 0; i < size; i ++ ) {
+        data[i] = 0
+    }
+ 
+    var imgd = context.getImageData(0, 0, img.width, img.height);
+    var pix = imgd.data;
+ 
+    var j=0;
+    for (var i = 0; i<pix.length; i +=4) {
+        var all = pix[i]+pix[i+1]+pix[i+2];
+        data[j++] = all/(12*scale);
+    }
+     
+    return data;
+}
+//========================================
 function show3DLandscape() {
 
     _animate = -1;
@@ -1834,12 +2081,14 @@ function show3DLandscape() {
     scene3DSetLight();
 
     enableOrbitControls();
-    camera3D.position.set(0, 3.5, 22);
 
-    scene3D.add(scene3DHouseGroundContainer);
+    camera3D.position.set(0, 10, 15);
+    camera3D.lookAt(scene3D.position);
+    controls3D.enabled = false;
+    //scene3D.add(scene3DHouseGroundContainer);
 
-    $(renderer.domElement).bind('mousedown', on3DLandscapeMouseDown);
-    $(renderer.domElement).bind('mouseup', on3DLandscapeMouseUp);
+    //$(renderer.domElement).bind('mousedown', on3DLandscapeMouseDown);
+    //$(renderer.domElement).bind('mouseup', on3DLandscapeMouseUp);
 
     TOOL3DLANDSCAPE = 'rotate';
 
@@ -1850,6 +2099,119 @@ function show3DLandscape() {
     correctMenuHeight();
 
     $('#WebGLCanvas').show();
+
+    //texture = THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G3756.jpg' )
+    //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    //texture.repeat.set(10, 10);
+
+    terrain3DMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G36096.jpg' )},
+            show_ring: { type: 'i', value: true },
+            ring_width: { type: 'f', value: 0.15 },
+            ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
+            ring_center: { type: 'v3', value: new THREE.Vector3() },
+            ring_radius: { type: 'f', value: 1.4 }
+            //repeatX : {type:"i", value: 1},
+            //repeatY : {type:"i", value: 1}
+        },
+        attributes: {
+            displacement: { type: 'f', value: [] }
+        },
+        vertexShader: document.getElementById( 'groundVertexShader' ).textContent,
+        fragmentShader: document.getElementById( 'groundFragmentShader' ).textContent
+    });
+
+    //geometry = new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices)
+    //geometry = scene3DHouseGroundContainer.children[0].children[0].geometry.clone();
+    //geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    //repeat_x = mesh.material.map.repeat.x;
+    //repeat_y = mesh.material.map.repeat.y;
+
+    terrain3D = new THREE.Mesh(new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices), terrain3DMaterial);
+    terrain3D.materials = [ terrain3DMaterial ]; //For Future - Multiple Materials
+    terrain3D.dynamic = true;
+    terrain3D.displacement = terrain3D.materials[0].attributes.displacement;
+    for (var i = 0; i < terrain3D.geometry.vertices.length; i++) {
+        terrain3D.materials[0].attributes.displacement.value.push(0);
+    }
+    terrain3D.rotation.x = Degrees2Radians(-90);
+    scene3D.add(terrain3D);
+    
+     terrain3D.water = new THREE.Mesh(
+        new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices ),
+        new THREE.ShaderMaterial({
+            uniforms: {
+                water_level: { type: 'f', value: -1 },
+                time: { type: 'f', value: 0 }
+            },
+            attributes: {
+                displacement: { type: 'f', value: [] }
+            },
+            vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
+            fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent,
+            transparent: true
+        })
+    );
+    terrain3D.water.dynamic = true;
+    terrain3D.water.displacement =  terrain3D.water.material.attributes.displacement;
+    for (var i = 0; i <  terrain3D.water.geometry.vertices.length; i++) {
+         terrain3D.water.material.attributes.displacement.value.push(0);
+    }
+    terrain3D.water.position.z = -1;
+    terrain3D.add(terrain3D.water);
+
+    $(renderer.domElement).bind('mousedown', function onmousedown(e) {
+        mouse_info.state = 1;
+        updateMouse(e);
+    });
+
+    $(renderer.domElement).bind('mouseup', function onmouseup(e) {
+        mouse_info.state = 0;
+        updateMouse(e);
+    });
+
+    $(renderer.domElement).bind('mousemove', function onmousemove(e) {
+        
+        if (mouse_info.state == 1) {
+            mouse_info.state = 2;
+        }
+        updateMouse(e);
+        updateMouseCoordinates();
+        landscape.onmousemove();
+    });
+
+    $(renderer.domElement).bind('mouseout', function onmouseout(e) {
+        mouse_info.state = 0;
+        updateMouse(e);
+    });
+
+    window.landscape = landscape;
+    landscape.select('hill');
+
+    /*
+    //http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
+    var img = new Image();
+    img.onload = function () {
+      
+        //get height data from img
+        var data = getHeightData(img);
+      
+        // plane
+        var geometry = new THREE.PlaneGeometry(10,10,9,9); //10x10 plane with 100 vertices. heightmap image is 10x10 px
+        var texture = THREE.ImageUtils.loadTexture( 'images/heightmap2.png' );
+        var material = new THREE.MeshLambertMaterial( { map: texture } );
+        plane = new THREE.Mesh( geometry, material );
+         
+        //set height of vertices
+        for ( var i = 0; i<plane.geometry.vertices.length; i++ ) {
+             plane.geometry.vertices[i].z = data[i];
+        }
+        scene.add(plane);
+    };
+    img.src = "images/heightmap2.png";
+    */
+
     animate();
 }
 
@@ -2228,6 +2590,7 @@ function hideElements() {
     scene3D.remove(weatherSkyRainbowMesh);
     //=================================
 
+    scene3D.remove(terrain3D);
     scene3D.remove(scene3DHouseGroundContainer);
     scene3D.remove(scene3DRoofContainer);
 
@@ -4462,7 +4825,9 @@ function sceneNew() {
     */
 
     open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
+
     open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
+
     open3DModel("objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
 
     /*
@@ -4910,9 +5275,10 @@ function scene3DSetLight() {
         sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
         scene3D.add(sceneAmbientLight);
 
-        sceneSpotLight.intensity = 0.6;
+        //sceneSpotLight.intensity = 0.6;
         //sceneSpotLight.castShadow = true;
-        scene3D.add(sceneSpotLight);
+        //scene3D.add(sceneSpotLight);
+        scene3D.add(sceneDirectionalLight);
 
     } else if (SCENE == 'roof') {
 
@@ -5115,11 +5481,29 @@ function scene3DLight() {
     light.shadowMapHeight = 2048;
     scene3D.add(light);
     */
+    /*
+    sceneDirectionalLight = new THREE.DirectionalLight(0xFFBBBB, 0.5);
+    sceneDirectionalLight.position.set(2, 10, 6);
+    sceneDirectionalLight.target.position.set(0, 0, 0);
+    sceneDirectionalLight.castShadow = true;
+    sceneDirectionalLight.shadowCameraNear = 0;
+    sceneDirectionalLight.shadowCameraFar = 27;
+    sceneDirectionalLight.shadowCameraRight = 15;
+    sceneDirectionalLight.shadowCameraLeft = -15;
+    sceneDirectionalLight.shadowCameraTop = 15;
+    sceneDirectionalLight.shadowCameraBottom = -15;
+    sceneDirectionalLight.shadowCameraVisible = true;
+    sceneDirectionalLight.shadowBias = 0.005;
+    sceneDirectionalLight.shadowDarkness = 0.4;
+    sceneDirectionalLight.shadowMapWidth = 1024;
+    sceneDirectionalLight.shadowMapHeight = 1024;
+    */
 
     
-   sceneDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    sceneDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     sceneDirectionalLight.color.setHSL(0.1, 1, 0.95);
     sceneDirectionalLight.position.set(1, 1.8, 0.8); //.normalize();
+    sceneDirectionalLight.target.position.set(0, 0, 0);
     sceneDirectionalLight.position.multiplyScalar(50);
     //sceneDirectionalLight.position.set(-1, 0, 0).normalize();
     sceneDirectionalLight.castShadow = true;
@@ -5133,6 +5517,7 @@ function scene3DLight() {
     sceneDirectionalLight.shadowCameraFar = 2000;
     sceneDirectionalLight.shadowBias = -0.0001;
     sceneDirectionalLight.shadowDarkness = 0.4;
+    
     //sceneDirectionalLight.shadowCameraVisible = true;
     
     //scene3D.add(sceneDirectionalLight);
@@ -5459,12 +5844,22 @@ function animateLandscape()
     if (_animate != 4)
         return;
 
-    requestAnimationFrame(animateHouse);
-    var delta = clock.getDelta();
+    requestAnimationFrame(animateLandscape);
 
-    controls3D.update(delta);
+    //var delta = clock.getDelta(); //have to call this before getElapsedTime()
+    //var time = clock.getElapsedTime();
+
+    //terrain3DMaterial.map = terrain3D.getSculptDisplayTexture();
+
+    //controls3D.update(delta);
+
+    //renderer.autoClear = false;
+    //renderer.clear();
+    //terrain3D.update(delta);
+    terrain3D.water.material.uniforms.time.value = new Date().getTime() % 10000;
+
     renderer.render(scene3D, camera3D);
-    TWEEN.update();
+    //TWEEN.update();
 }
 
 function animateClouds()
@@ -5519,6 +5914,7 @@ function animateHouse()
         }
     }
     controls3D.update(delta);
+
     renderer.render(scene3D, camera3D);
     TWEEN.update();
 

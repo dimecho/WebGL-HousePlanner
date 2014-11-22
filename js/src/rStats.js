@@ -26,8 +26,6 @@
 
 function rStats( settings ) {
 
-    'use strict';
-
     function iterateKeys( array, callback ) {
 
         for( var j in array ) {
