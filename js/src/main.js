@@ -5905,10 +5905,11 @@ function animateHouse()
         animateClouds();
 
         rendererCube.render(scene3DCube, camera3DCube);
-
+        /*
         for (var a in animation) {
             a.update(delta * 0.8);
         }
+        */
     }
     controls3D.update(delta);
 

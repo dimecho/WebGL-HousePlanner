@@ -41,4 +41,6 @@ limitations under the License.
 
 WebGL HousePlanner was created by Dima Dykhman.
 
-->![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot.jpg)<-
+![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot.jpg)
+
+![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot2.jpg)
