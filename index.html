@@ -67,17 +67,7 @@
       gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
     }
   </script>
-  
-</head>
-<!--[if gte IE 9]>
-  <style type="text/css">
-    .gradient {
-       filter: none;
-    }
-  </style>
-<![endif]-->
-<body class="preloader">
-<script id="groundVertexShader" type="x-shader/x-fragment">
+  <script id="groundVertexShader" type="x-shader/x-fragment">
     
     attribute float displacement;
     
@@ -93,93 +83,93 @@
         
         gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1);
     }
-</script>
+  </script>
+  <script id="groundFragmentShader" type="x-shader/x-vertex">
+      
+    uniform sampler2D texture_grass;
+    uniform sampler2D texture_bare;
+    uniform sampler2D texture_snow;
+    
+    uniform bool show_ring;
+    uniform float ring_width;
+    uniform vec4 ring_color;
+    uniform vec3 ring_center;
+    uniform float ring_radius;
+    
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    
+    float dist_falloff(float distance, float falloff) {
+      float alpha = (falloff - distance) / falloff;
+      if (alpha < 0.0) {
+          alpha = 0.0;
+      }
+      if (alpha > 1.0) {
+          alpha = 1.0;
+      }
+      return alpha;
+    }
+    
+    vec3 layerColor(vec3 color1, vec3 color2, float alpha) {
+      return mix(
+          color1,
+          color2,
+          alpha
+      );
+    }
+    
+    void main()
+    {
+      // Texture loading
+      vec3 diffuseBare = texture2D( texture_bare, vUv ).rgb;
+      vec3 diffuseGrass = texture2D( texture_grass, vUv ).rgb;
+      vec3 diffuseSnow = texture2D( texture_snow, vUv ).rgb;
+      
+      //http://www.chandlerprall.com/2011/06/blending-webgl-textures/
 
-<script id="groundFragmentShader" type="x-shader/x-vertex">
-    
-  uniform sampler2D texture_grass;
-  uniform sampler2D texture_bare;
-  uniform sampler2D texture_snow;
-  
-  uniform bool show_ring;
-  uniform float ring_width;
-  uniform vec4 ring_color;
-  uniform vec3 ring_center;
-  uniform float ring_radius;
-  
-  varying vec2 vUv;
-  varying vec3 vPosition;
-  
-  float dist_falloff(float distance, float falloff) {
-    float alpha = (falloff - distance) / falloff;
-    if (alpha < 0.0) {
-        alpha = 0.0;
-    }
-    if (alpha > 1.0) {
-        alpha = 1.0;
-    }
-    return alpha;
-  }
-  
-  vec3 layerColor(vec3 color1, vec3 color2, float alpha) {
-    return mix(
-        color1,
-        color2,
-        alpha
-    );
-  }
-  
-  void main()
-  {
-    // Texture loading
-    vec3 diffuseBare = texture2D( texture_bare, vUv ).rgb;
-    vec3 diffuseGrass = texture2D( texture_grass, vUv ).rgb;
-    vec3 diffuseSnow = texture2D( texture_snow, vUv ).rgb;
-    
-    // Get base texture
-    vec3 fragcolor = diffuseBare;
-    
-    // Grass texture
-    fragcolor = layerColor(
-      fragcolor,
-      diffuseGrass,
-      dist_falloff(abs(vPosition.z - 0.0), 7.0)
-    );
-    
-    // Ice texture
-    fragcolor = layerColor(
-      fragcolor,
-      diffuseSnow,
-      dist_falloff(abs(vPosition.z - 7.0), 2.0)
-    );
-    
-    gl_FragColor = vec4(fragcolor, 1.0);
-    
-    float distance = sqrt((vPosition.x - ring_center.x) * (vPosition.x - ring_center.x) + (vPosition.y - ring_center.y) * (vPosition.y - ring_center.y));
-    
-    // Ring
-    if (show_ring == true && distance < ring_radius + ring_width / 2.0 && distance > ring_radius - ring_width / 2.0) {
-        
-      gl_FragColor.r += ring_color.r;
-      gl_FragColor.b += ring_color.b;
-      gl_FragColor.g += ring_color.g;
-      gl_FragColor.a += ring_color.a;
-      gl_FragColor = normalize(gl_FragColor);
-    }
-    
-    // Grid overlay
-    if (distance < 1.4) {
-      float tiles = 0.4 / 20.0;
-      float val = mod(vUv.y, tiles);
-      if (mod(vUv.x, tiles) < .003 || mod(vUv.y, tiles) < .003) {
-        gl_FragColor = gl_FragColor * (distance / 1.4);
-        gl_FragColor.a = 1.0;
+      // Get base texture
+      vec3 fragcolor = diffuseBare;
+      
+      // Grass texture
+      fragcolor = layerColor(
+        fragcolor,
+        diffuseGrass,
+        dist_falloff(abs(vPosition.z - 0.0), 7.0) // Start at 0 for 5 units
+      );
+      
+      // Ice texture
+      fragcolor = layerColor(
+        fragcolor,
+        diffuseSnow,
+        dist_falloff(abs(vPosition.z - 7.0), 2.0) // Start at 5 for 2 units
+      );
+      
+      gl_FragColor = vec4(fragcolor, 1.0);
+      
+      float distance = sqrt((vPosition.x - ring_center.x) * (vPosition.x - ring_center.x) + (vPosition.y - ring_center.y) * (vPosition.y - ring_center.y));
+      
+      // Ring
+      if (show_ring == true && distance < ring_radius + ring_width / 2.0 && distance > ring_radius - ring_width / 2.0) {
+          
+        gl_FragColor.r += ring_color.r;
+        gl_FragColor.b += ring_color.b;
+        gl_FragColor.g += ring_color.g;
+        gl_FragColor.a += ring_color.a;
+        gl_FragColor = normalize(gl_FragColor);
+      }
+      
+      // Grid overlay
+      if (distance < 1.4) {
+        float tiles = 0.4 / 20.0;
+        float val = mod(vUv.y, tiles);
+        if (mod(vUv.x, tiles) < .003 || mod(vUv.y, tiles) < .003) {
+          gl_FragColor = gl_FragColor * (distance / 1.4);
+          gl_FragColor.a = 1.0;
+        }
       }
     }
-  }
-</script>
-
-<script id="waterVertexShader" type="x-shader/x-fragment">
+  </script>
+  <script id="waterVertexShader" type="x-shader/x-fragment">
     
     attribute float displacement;
     
@@ -195,9 +185,8 @@
         
         gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1);
     }
-</script>
-
-<script id="waterFragmentShader" type="x-shader/x-vertex">
+  </script>
+  <script id="waterFragmentShader" type="x-shader/x-vertex">
     
     uniform float water_level;
     uniform float time;
@@ -225,7 +214,17 @@
             );
         }
     }
-</script>
+  </script>
+</head>
+<!--[if gte IE 9]>
+  <style type="text/css">
+    .gradient {
+       filter: none;
+    }
+  </style>
+<![endif]-->
+<body class="preloader">
+
 <style>
 #dragElement {
   width:100px;
@@ -542,6 +541,7 @@
         <a href="#" onclick="menuSelect(1,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='angle'" class="hi-icon icon-angle tooltip" id="menuLeft3DLandscapeItem1" title="Angle"></a>
         <a href="#" onclick="menuSelect(2,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='hill';controls3D.enabled=false;landscape.select('hill');" class="hi-icon icon-hill tooltip" id="menuLeft3DLandscapeItem2" title="Create Hill" ></a>
         <a href="#" onclick="menuSelect(3,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='valley';controls3D.enabled=false;landscape.select('valley');" class="hi-icon icon-valley tooltip" id="menuLeft3DLandscapeItem3" title="Create Valley"></a>
+        <a href="#" onclick="" class="hi-icon icon-shovel tooltip" id="menuLeft3DLandscapeItem4" title="Reset Ground"></a>
       </div>
   </div>
 </div>
@@ -590,7 +590,7 @@
       <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
       <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
 			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
-			<a href="#" onclick="show2D()" class="hi-icon icon-stack tooltip" title="Floor Plans" id="menuTopItem6"></a>
+			<a href="#" onclick="show2D()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
 			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open" id="menuTopItem8"></a>
       <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>

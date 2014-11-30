@@ -17,18 +17,18 @@ TODO:
 - [difficulty: 5/10  progress: 50%] 3D Floor ground base glass reflective
 - [difficulty: 6/10  progress: 80%] 3D Exterior View ability to select floors (+ flying-in animationeffect)
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
-- [difficulty: 6/10  progress: 10%] Make House Ground editable - angle/terain/square ex: downhill house http://cjcliffe.github.io/CubicVR.js/experiment/landscape_editor/landscape_edit_500m.html
-- [difficulty: 4/10  progress: 60%] Ability to save scene 3D & 2D
-- [difficulty: 5/10  progress: 1%]  Ability to open scene 3D & 2D
-- [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
-- [difficulty: 6/10  progress: 98%] 3D Exterior View create night scene atmosphere with proper lights
-- [difficulty: 8/10  progress: 100%]  3D Exterior View auto rotate-snap on ground angle
-- [difficulty: 4/10  progress: 100%]  Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
-- [difficulty: 8/10  progress: 2%]    Implement room agmented reality 
-http://skeelogy.github.io/skarf.js/examples/skarf_trackThreejsScene.html
-https://github.com/bhollis/aruco-marker
-http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
-http://www.chandlerprall.com/webgl/terrain/
+- [difficulty: 6/10  progress: 80%] Make House Ground editable - angle/terain/square
+    http://cjcliffe.github.io/CubicVR.js/experiment/landscape_editor/landscape_edit_500m.html
+    http://skeelogy.github.io/skarf.js/examples/skarf_trackThreejsScene.html
+    http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
+    http://www.chandlerprall.com/webgl/terrain/
+- [difficulty: 4/10  progress: 60%]  Ability to save scene 3D & 2D
+- [difficulty: 5/10  progress: 1%]   Ability to open scene 3D & 2D
+- [difficulty: 6/10  progress: 0%]   Keep history and implement Undo/Redo
+- [difficulty: 6/10  progress: 98%]  3D Exterior View create night scene atmosphere with proper lights
+- [difficulty: 8/10  progress: 100%] 3D Exterior View auto rotate-snap on ground angle
+- [difficulty: 4/10  progress: 100%] Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
+- [difficulty: 8/10  progress: 2%]   Implement room agmented reality  https://github.com/bhollis/aruco-marker
 */
 
 //"use strict";
@@ -1807,9 +1807,11 @@ function show3DHouse() {
     scene3D.add(scene3DHouseContainer);
     scene3D.add(scene3DRoofContainer);
 
+    scene3DFloorWallGenerate();
+    scene3D.add(scene3DFloorTileContainer[FLOOR]);
+    
     for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
         scene3D.add(scene3DFloorFurnitureContainer[i]);
-        scene3D.add(scene3DFloorTileContainer[i]);
     }
     scene3DCube.add(scene3DCubeMesh);
 
@@ -1873,8 +1875,8 @@ var mouse_info = {
     e.preventDefault();
     e.cancelBubble = true;
     
-    mouse_info.x = e.layerX;
-    mouse_info.y = e.layerY;
+    mouse_info.x = e.clientX; //layerX;
+    mouse_info.y = e.clientY; //layerY;
     mouse_info.button = e.button;
 };
 
@@ -1885,6 +1887,7 @@ var updateMouseCoordinates = function() {
     var ray = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
 
     var intersection = ray.intersectObjects(terrain3D.children);
+
     if (intersection.length > 0) {
 
         mouse_info.point = intersection[0].point;
@@ -1987,14 +1990,15 @@ var landscape = new function() {
             
             // Ensure all of the vertices are within the elevation bounds
             var vertice_index;
+            //console.log("# of vertices " + vertices.length);
             for (var i = 0; i < vertices.length; i++) {
                 vertice_index = verticeIndex(vertices[i]);
-                if (terrain3D.displacement.value[vertice_index] > 8) {
-                    terrain3D.displacement.value[vertice_index] = 8;
+                if (terrain3D.displacement.value[vertice_index] > 6) {
+                    terrain3D.displacement.value[vertice_index] = 6;
                 }
                 
-                if (terrain3D.displacement.value[vertice_index] < -7) {
-                    terrain3D.displacement.value[vertice_index] = -7;
+                if (terrain3D.displacement.value[vertice_index] < -5) {
+                    terrain3D.displacement.value[vertice_index] = -5;
                 }
                 
                 terrain3D.water.displacement.value[vertice_index] = terrain3D.displacement.value[vertice_index];
@@ -2123,6 +2127,7 @@ function show3DLandscape() {
     terrain3DMaterial = new THREE.ShaderMaterial({
         uniforms: {
             texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G36096.jpg' )},
+            texture_bare: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/F46734.jpg' )},
             show_ring: { type: 'i', value: true },
             ring_width: { type: 'f', value: 0.15 },
             ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
@@ -2137,12 +2142,15 @@ function show3DLandscape() {
         vertexShader: document.getElementById( 'groundVertexShader' ).textContent,
         fragmentShader: document.getElementById( 'groundFragmentShader' ).textContent
     });
-    //geometry = new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices)
+
+    geometry = new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices)
     //geometry = scene3DHouseGroundContainer.children[0].children[0].geometry.clone();
     //geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    //geometry = new THREE.CircleGeometry( 15, 64 );
     //repeat_x = mesh.material.map.repeat.x;
     //repeat_y = mesh.material.map.repeat.y;
-    terrain3D = new THREE.Mesh(new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices), terrain3DMaterial);
+
+    terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);
     terrain3D.materials = [ terrain3DMaterial ]; //For Future - Multiple Materials
     terrain3D.dynamic = true;
     terrain3D.displacement = terrain3D.materials[0].attributes.displacement;
@@ -2152,7 +2160,7 @@ function show3DLandscape() {
     terrain3D.rotation.x = Degrees2Radians(-90);
     scene3D.add(terrain3D);
     
-     terrain3D.water = new THREE.Mesh(
+    terrain3D.water = new THREE.Mesh(
         new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices ),
         new THREE.ShaderMaterial({
             uniforms: {
@@ -2200,6 +2208,8 @@ function show3DLandscape() {
         updateMouse(e);
     });
     //============================================
+    
+    scene3D.add(scene3DFloorTileContainer[1][0]);
 
     /*
     //http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
@@ -2291,7 +2301,6 @@ function show3DFloor() {
     $('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
-    $('#menuBottomItem4').show();
     $('#menuBottomItem8').show();
     $('#menuBottomItem9').show();
     $('#menuBottomItem10').show();
@@ -4647,14 +4656,9 @@ fabric.Canvas.prototype.getItemByName = function(name) {
     return object;
 };
 
-function scene3DFloorTileGenerate() {
-    //TODO: make mesh from wall positions
-    scene3DFloorTileContainer[FLOOR] = new THREE.Object3D(); //reset
-}
-
 function scene3DFloorMeasurementsGenerate()
 {
-     material = new THREE.LineBasicMaterial({
+    material = new THREE.LineBasicMaterial({
         color: 0x000000,
         linewidth: 2
     });
@@ -4691,6 +4695,10 @@ function scene3DFloorWallGenerate() {
 
     //TODO: Generate directly from SVG 2D points!
     var objects = scene2DWallMesh[FLOOR]; //scene2D.getObjects();
+    //var floorShape = new THREE.Shape();
+    var floorShape = null; //new THREE.Geometry();
+    var leftMenuOffset = - 2;
+    var topMenuOffset = 4;
 
     for (var i in objects) {
         var obj = objects[i];
@@ -4710,18 +4718,25 @@ function scene3DFloorWallGenerate() {
             x2 *= 12;
             y2 *= 12;
 
-
             console.log("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2)
 
             var rectLength = x2 - x1,
                 rectWidth = 0.2;
 
-            var rectShape = new THREE.Shape();
-            rectShape.moveTo(x1, y1);
-            rectShape.lineTo(x2, y2);
-            rectShape.lineTo(x2, y2 + rectWidth);
-            rectShape.lineTo(x1, y1 + rectWidth);
-            rectShape.lineTo(x1, y1);
+            var wallShape = new THREE.Shape();
+            wallShape.moveTo(x1, y1);
+            wallShape.lineTo(x2, y2);
+            wallShape.lineTo(x2, y2 + rectWidth);
+            wallShape.lineTo(x1, y1 + rectWidth);
+            wallShape.lineTo(x1, y1);
+
+            if (floorShape == null)
+            {
+                floorShape = new THREE.Shape();
+                floorShape.moveTo(x1, y1);
+            }else{
+                floorShape.lineTo(x1, y1);
+            }
             /*
             rectShape.moveTo(0, 0);
             rectShape.lineTo(0, rectWidth);
@@ -4751,7 +4766,7 @@ function scene3DFloorWallGenerate() {
             //extrudeSettings.steps = 1;
             //extrudeSettings.bevelSegments = 2;
 
-            var geometry = new THREE.ExtrudeGeometry(rectShape, extrudeSettings);
+            var geometry = new THREE.ExtrudeGeometry(wallShape, extrudeSettings);
             //THREE.ExtrudeGeometry.WorldUVGenerator
 
             //scene3DWallTexture.repeat.set(12, 12);
@@ -4765,22 +4780,20 @@ function scene3DFloorWallGenerate() {
 
             geometry.computeBoundingBox();
 
-
-
             var scene3DWallMaterial = new THREE.MeshLambertMaterial({
                 map: scene3DWallTexture,
                 transparent: true,
-                opacity:0.5,
-                side: THREE.DoubleSide
+                opacity:0.6,
+                side: THREE.DoubleSide,
+                //wireframe: true
             });
-
 
             var mesh = new THREE.Mesh(geometry, scene3DWallMaterial);
             mesh.rotation.x = -(90 * RADIAN); //extrusion happens in Z direction, we need the wall pointing UP
 
-            mesh.position.x = mesh.position.x - 2; //compensate for leftMenu
+            mesh.position.x = mesh.position.x + leftMenuOffset; //compensate for leftMenu
             mesh.position.y = 0;
-            mesh.position.z = mesh.position.z + 4; //compensate for topMenu
+            mesh.position.z = mesh.position.z + topMenuOffset; //compensate for topMenu
 
             /*
             geometry.centroid = new THREE.Vector3();
@@ -4792,6 +4805,45 @@ function scene3DFloorWallGenerate() {
             scene3DFloorWallContainer[FLOOR].add(mesh);
         }
     }
+
+    //floorShape.faces.push(new THREE.Face3(0, 1, 2));
+    //floorShape.computeFaceNormals();
+    //floorShape.computeCentroids();
+
+
+    texture = THREE.ImageUtils.loadTexture('objects/Platform/Textures/M23562.jpg');
+    //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    //texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping
+    //texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+    //texture.repeat.set(4, 4);
+
+    /*
+    var image = new Image();
+    image.onload = function () { texture.needsUpdate = true; };
+    image.src = 'objects/Platform/Textures/W23674.jpg';
+    var texture  = new THREE.Texture(image, new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.LinearMipMapLinearFilter );
+    texture.repeat.x = 10;
+    texture.repeat.y = 10;
+    */
+
+    //material = new THREE.MeshBasicMaterial({ map: texture});
+    //material = new THREE.MeshLambertMaterial( { map: texture } );
+    //material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10});
+    //var materials = [material1, material2, material3, material4, material5, material6];
+    //var meshFaceMaterial = new THREE.MeshFaceMaterial( materials );
+    material = new THREE.MeshBasicMaterial({color: 0xccac7b});
+
+
+    mesh = new THREE.Mesh(floorShape.makeGeometry(), material);
+    mesh.rotation.x = -(90 * RADIAN); //Horizontal Flip
+    mesh.position.x = mesh.position.x + leftMenuOffset; //compensate for leftMenu
+    mesh.position.y = 0.1;
+    mesh.position.z = mesh.position.z + topMenuOffset; //compensate for topMenu
+    //mesh.overdraw = true;
+    mesh.receiveShadow = true;
+
+    scene3DFloorTileContainer[FLOOR].add(mesh);
+    //scene3DFloorTileContainer[FLOOR].children[0] = mesh;
 }
 
 function sceneNew() {
@@ -4853,7 +4905,7 @@ function sceneNew() {
 
     open3DModel("objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1, true, null);
     open3DModel("objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1, true, null);
-    open3DModel("objects/Platform/floor1.jsz", scene3DFloorTileContainer[FLOOR], 0, 0.1, 0, 0, 0, 1, true, null);
+    //open3DModel("objects/Platform/floor1.jsz", scene3DFloorTileContainer[FLOOR], 0, 0.1, 0, 0, 0, 1, true, null);
 
     open3DModel("objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1, true, null);
     open3DModel("objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1, true, null);

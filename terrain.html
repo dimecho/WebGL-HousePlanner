@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>Terrain</title>
-	<meta charset="utf-8">
+<title>Terrain</title>
+<meta charset="utf-8">
 </head>
 <body>
 <script id="groundVertexShader" type="x-shader/x-fragment">
     
     attribute float displacement;
-    
     varying vec2 vUv;
     varying vec3 vPosition;
     
@@ -16,13 +15,10 @@
         
         vUv = uv;
         vPosition = position;
-        
         vPosition.z += displacement;
-        
         gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1);
     }
 </script>
-
 <script id="groundFragmentShader" type="x-shader/x-vertex">
     
     uniform sampler2D texture_grass;
@@ -106,12 +102,9 @@
         }
     }
 </script>
-
-
 <script id="waterVertexShader" type="x-shader/x-fragment">
     
     attribute float displacement;
-    
     varying float vDisplacement;
     varying vec2 vUv;
     varying vec3 vPosition;
@@ -121,16 +114,13 @@
         vDisplacement = displacement;
         vUv = uv;
         vPosition = position;
-        
         gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1);
     }
 </script>
-
 <script id="waterFragmentShader" type="x-shader/x-vertex">
     
     uniform float water_level;
     uniform float time;
-    
     varying float vDisplacement;
     varying vec2 vUv;
     varying vec3 vPosition;
@@ -171,7 +161,6 @@ var map_top = plots_y / -2;
 
 var container, scene, camera, renderer;
 var ground;
-var materials = [];
 
 init();
 
@@ -195,10 +184,11 @@ function init()
 	light.position.set(0,50,0);
 	scene.add(light);
 
-    
-    var texture_grass = new THREE.ShaderMaterial({
+    var texture = new THREE.ShaderMaterial({
         uniforms: {
             texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'images/texture_ground_grass.jpg' ) },
+            texture_bare: { type: "t", value: THREE.ImageUtils.loadTexture( 'images/texture_ground_bare.jpg' ) },
+            texture_snow: { type: "t", value: THREE.ImageUtils.loadTexture( 'images/texture_ground_snow.jpg' ) },
             show_ring: { type: 'i', value: true },
             ring_width: { type: 'f', value: 0.15 },
             ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
@@ -211,19 +201,9 @@ function init()
         vertexShader: document.getElementById( 'groundVertexShader' ).textContent,
         fragmentShader: document.getElementById( 'groundFragmentShader' ).textContent
     });
-    var texture_bare = texture_grass.clone();
-    texture_bare.uniforms.texture_bare = "{ type: 't', value: THREE.ImageUtils.loadTexture( 'images/texture_ground_bare.jpg' ) }";
 
-    var texture_snow = texture_grass.clone();
-    texture_snow.uniforms.texture_snow = "{ type: 't', value: THREE.ImageUtils.loadTexture( 'images/texture_ground_snow.jpg' ) }";
-
-    materials.push(texture_grass);
-    materials.push(texture_bare);
-    materials.push(texture_snow);
-    
-    ground = new THREE.Mesh(new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices), texture_grass);
-    //ground.materials = [ texture_grass, texture_bare, texture_snow ];
-    ground.materials = [ texture_grass ];
+    ground = new THREE.Mesh(new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices), texture);
+    ground.materials = [texture];
 
     ground.dynamic = true;
     ground.displacement = ground.materials[0].attributes.displacement;
@@ -289,9 +269,7 @@ var findLattices = (function() {
 
         var ymax = [0];
         var d = 0;
-        
         var points = [];
-        
         var batch, x, y;
         
         while (d <= radius) {
@@ -336,12 +314,10 @@ var findLattices = (function() {
                 all_points.push({x: -point.x, y: -point.y});
             }
         }
-        
         for (i = 0; i < all_points.length; i++) {
             all_points[i].x += origin.x;
             all_points[i].y += origin.y;
         };
-        
         return all_points;
     }
 })();
@@ -353,7 +329,6 @@ var landscape = new function() {
     this.select = function(tool) {
         landscape_tool = tool;
     };
-    
     this.onmousemove = function() {
         
         if (mouse_info.state === 2) { // The user has clicked and drug their mouse
@@ -381,7 +356,6 @@ var landscape = new function() {
             ground.water.displacement.needsUpdate = true;
         }
     };
-    
     this.tools = {
         hill: function(radius, vertices) {
             
@@ -405,7 +379,6 @@ var landscape = new function() {
                 ground.displacement.needsUpdate = true;
             }
         },
-        
         valley: function(radius, vertices) {
             
             var i, vertice, vertice_index, distance;
@@ -430,7 +403,6 @@ var landscape = new function() {
         }
     };
 }
-
 /** MOUSE **/
     var mouse_info = {
         x: 0,
@@ -441,16 +413,14 @@ var landscape = new function() {
         plot_coordinates: {x: null, y: null},
         vertex_coordinates: {x: null, y: null}
     };
-    
     var updateMouse = function updateMouse(e) {
         e.preventDefault();
         e.cancelBubble = true;
         
-        mouse_info.x = e.layerX;
-        mouse_info.y = e.layerY;
+        mouse_info.x = e.clientX; //layerX;
+        mouse_info.y = e.clientY; //layerY;
         mouse_info.button = e.button;
     };
-    
     var updateMouseCoordinates = function() {
 
         var vector = new THREE.Vector3((mouse_info.x / window.innerWidth) * 2 - 1, - (mouse_info.y / window.innerHeight) * 2 + 1, 0.5);
@@ -472,7 +442,6 @@ var landscape = new function() {
             ground.materials[0].uniforms.ring_center.value.y = -mouse_info.point.z;
         }
     };
-    
     renderer.domElement.onmousedown = function onmousedown(e) {
         mouse_info.state = 1;
         updateMouse(e);
