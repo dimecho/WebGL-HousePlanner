@@ -330,6 +330,68 @@ function init(runmode,viewmode) {
     material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
     scene3DCutawayPlaneMesh = new THREE.Mesh(geometry, material);
    
+    //This is a true coolness factor (difficult to code, but visually stands out!)
+    //============================================
+    terrain3DMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G36096.jpg' )},
+            texture_bare: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/F46734.jpg' )},
+            show_ring: { type: 'i', value: true },
+            ring_width: { type: 'f', value: 0.15 },
+            ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
+            ring_center: { type: 'v3', value: new THREE.Vector3() },
+            ring_radius: { type: 'f', value: 1.6 }
+            //repeatX : {type:"i", value: 1},
+            //repeatY : {type:"i", value: 1}
+        },
+        attributes: {
+            displacement: { type: 'f', value: [] }
+        },
+        vertexShader: document.getElementById( 'groundVertexShader' ).textContent,
+        fragmentShader: document.getElementById( 'groundFragmentShader' ).textContent,
+        //fog: false,
+        //lights: true
+    });
+
+    geometry = new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices)
+    //geometry = scene3DHouseGroundContainer.children[0].children[0].geometry.clone();
+    //geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    //geometry = new THREE.CircleGeometry( 15, 64 );
+    //repeat_x = mesh.material.map.repeat.x;
+    //repeat_y = mesh.material.map.repeat.y;
+
+    terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);
+    terrain3D.materials = [ terrain3DMaterial ]; //For Future - Multiple Materials
+    terrain3D.dynamic = true;
+    terrain3D.displacement = terrain3D.materials[0].attributes.displacement;
+    for (var i = 0; i < terrain3D.geometry.vertices.length; i++) {
+        terrain3D.materials[0].attributes.displacement.value.push(0);
+    }
+    terrain3D.rotation.x = Degrees2Radians(-90);
+    terrain3D.water = new THREE.Mesh(
+        new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices ),
+        new THREE.ShaderMaterial({
+            uniforms: {
+                water_level: { type: 'f', value: -1 },
+                time: { type: 'f', value: 0 }
+            },
+            attributes: {
+                displacement: { type: 'f', value: [] }
+            },
+            vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
+            fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent,
+            transparent: true
+        })
+    );
+    terrain3D.water.dynamic = true;
+    terrain3D.water.displacement =  terrain3D.water.material.attributes.displacement;
+    for (var i = 0; i <  terrain3D.water.geometry.vertices.length; i++) {
+        terrain3D.water.material.attributes.displacement.value.push(0);
+    }
+    terrain3D.water.position.z = -1;
+    terrain3D.add(terrain3D.water);
+    //============================================
+
     //FIND TRUE MESH CENTER
     /*
     geometry.centroid = new THREE.Vector3();
@@ -1286,10 +1348,12 @@ function enableTransformControls(mode)
 
 function enableOrbitControls()
 {   
+    /*
     if (controls3D instanceof THREE.OrbitControls) //do not cause error first-time
     {
         controls3D.enabled = false;
     }
+    */
     controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
     controls3D.minDistance = 3;
     controls3D.maxDistance = 25; //Infinity;
@@ -1873,7 +1937,8 @@ var mouse_info = {
 
  var updateMouse = function updateMouse(e) {
     e.preventDefault();
-    e.cancelBubble = true;
+    //e.stopPropagation();
+    //e.cancelBubble = true;
     
     mouse_info.x = e.clientX; //layerX;
     mouse_info.y = e.clientY; //layerY;
@@ -2102,13 +2167,16 @@ function show3DLandscape() {
     enableOrbitControls();
     camera3D.position.set(10, 10, 15);
     camera3D.lookAt(scene3D.position);
-   
-    //scene3D.add(scene3DHouseGroundContainer);
-
-    //$(renderer.domElement).bind('mousedown', on3DLandscapeMouseDown);
-    //$(renderer.domElement).bind('mouseup', on3DLandscapeMouseUp);
 
     TOOL3DLANDSCAPE = 'rotate';
+   
+    //scene3D.add(scene3DHouseGroundContainer);
+    scene3D.add(terrain3D);
+
+    $(renderer.domElement).bind('mousedown', on3DLandscapeMouseDown);
+    $(renderer.domElement).bind('mouseup', on3DLandscapeMouseUp);
+    $(renderer.domElement).bind('mousemove', on3DLandscapeMouseMove);
+    //$(renderer.domElement).bind('mouseout', on3DLandscapeMouseUp);
 
     menuSelect(0, 'menuLeft3DLandscapeItem', '#ff3700');
     toggleLeft('menuLeft3DLandscape', true);
@@ -2121,95 +2189,8 @@ function show3DLandscape() {
     //texture = THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G3756.jpg' )
     //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     //texture.repeat.set(10, 10);
-
-    //This is a true coolness factor (difficult to code, but visually stands out!)
-    //============================================
-    terrain3DMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-            texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G36096.jpg' )},
-            texture_bare: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/F46734.jpg' )},
-            show_ring: { type: 'i', value: true },
-            ring_width: { type: 'f', value: 0.15 },
-            ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
-            ring_center: { type: 'v3', value: new THREE.Vector3() },
-            ring_radius: { type: 'f', value: 1.6 }
-            //repeatX : {type:"i", value: 1},
-            //repeatY : {type:"i", value: 1}
-        },
-        attributes: {
-            displacement: { type: 'f', value: [] }
-        },
-        vertexShader: document.getElementById( 'groundVertexShader' ).textContent,
-        fragmentShader: document.getElementById( 'groundFragmentShader' ).textContent
-    });
-
-    geometry = new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices)
-    //geometry = scene3DHouseGroundContainer.children[0].children[0].geometry.clone();
-    //geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
-    //geometry = new THREE.CircleGeometry( 15, 64 );
-    //repeat_x = mesh.material.map.repeat.x;
-    //repeat_y = mesh.material.map.repeat.y;
-
-    terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);
-    terrain3D.materials = [ terrain3DMaterial ]; //For Future - Multiple Materials
-    terrain3D.dynamic = true;
-    terrain3D.displacement = terrain3D.materials[0].attributes.displacement;
-    for (var i = 0; i < terrain3D.geometry.vertices.length; i++) {
-        terrain3D.materials[0].attributes.displacement.value.push(0);
-    }
-    terrain3D.rotation.x = Degrees2Radians(-90);
-    scene3D.add(terrain3D);
     
-    terrain3D.water = new THREE.Mesh(
-        new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices ),
-        new THREE.ShaderMaterial({
-            uniforms: {
-                water_level: { type: 'f', value: -1 },
-                time: { type: 'f', value: 0 }
-            },
-            attributes: {
-                displacement: { type: 'f', value: [] }
-            },
-            vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
-            fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent,
-            transparent: true
-        })
-    );
-    terrain3D.water.dynamic = true;
-    terrain3D.water.displacement =  terrain3D.water.material.attributes.displacement;
-    for (var i = 0; i <  terrain3D.water.geometry.vertices.length; i++) {
-        terrain3D.water.material.attributes.displacement.value.push(0);
-    }
-    terrain3D.water.position.z = -1;
-    terrain3D.add(terrain3D.water);
-
-    $(renderer.domElement).bind('mousedown', function onmousedown(e) {
-        mouse_info.state = 1;
-        updateMouse(e);
-    });
-
-    $(renderer.domElement).bind('mouseup', function onmouseup(e) {
-        mouse_info.state = 0;
-        updateMouse(e);
-    });
-
-    $(renderer.domElement).bind('mousemove', function onmousemove(e) {
-        
-        if (mouse_info.state == 1) {
-            mouse_info.state = 2;
-        }
-        updateMouse(e);
-        updateMouseCoordinates();
-        landscape.onmousemove();
-    });
-
-    $(renderer.domElement).bind('mouseout', function onmouseout(e) {
-        mouse_info.state = 0;
-        updateMouse(e);
-    });
-    //============================================
-    
-    scene3D.add(scene3DFloorTileContainer[1][0]);
+    //scene3D.add(scene3DFloorTileContainer[1][0]);
 
     /*
     //http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
@@ -2671,11 +2652,14 @@ function hideElements() {
 
     $(renderer.domElement).unbind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DHouseMouseUp);
+
     $(renderer.domElement).unbind('mousedown', on3DFloorMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DFloorMouseUp);
-    //$(renderer.domElement).unbind('mousemove', on3DFloorMouseMove);
+    
+    $(renderer.domElement).unbind('mousemove', on3DFloorMouseMove);
     $(renderer.domElement).unbind('mousedown', on3DLandscapeMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DLandscapeMouseUp);
+    //$(renderer.domElement).unbind('mouseout', on3DLandscapeMouseUp);
 
     disposePanorama('WebGLPanorama');
 
@@ -3621,40 +3605,71 @@ function on2DMouseMove(event) {
 function on3DLandscapeMouseMove(event) {
 
     event.preventDefault();
-
-    //if (!leftButtonDown)
+    //event.stopPropagation();
+    
+    //if (TOOL3DLANDSCAPE == "rotate") {
     //    return;
+    //}
 
-    if (TOOL3DLANDSCAPE == "angle") {
+    //controls3D.enabled = false;
+
+    if (TOOL3DLANDSCAPE == "angle") 
+    {
+        if (!leftButtonDown)
+        return;
+
         if (event.clientX > window.innerWidth / 2) {
-            scene3DHouseGroundContainer.children[0].rotation.z = scene3DHouseGroundContainer.children[0].rotation.z + 0.02;
+            //scene3DHouseGroundContainer.children[0].rotation.z = scene3DHouseGroundContainer.children[0].rotation.z + 0.02;
+            terrain3D.rotation.y = terrain3D.rotation.y + 0.015;
         } else {
-            scene3DHouseGroundContainer.children[0].rotation.z = scene3DHouseGroundContainer.children[0].rotation.z - 0.02;
+            //scene3DHouseGroundContainer.children[0].rotation.z = scene3DHouseGroundContainer.children[0].rotation.z - 0.02;
+            terrain3D.rotation.y = terrain3D.rotation.y - 0.015;
         }
+    }
+    else
+    {
+        if (mouse_info.state == 1) {
+            mouse_info.state = 2;
+        }
+        updateMouse(event);
+        updateMouseCoordinates();
+        landscape.onmousemove();
     }
 }
 
 function on3DLandscapeMouseDown(event) {
 
     event.preventDefault();
-    //if (event.which == 1) leftButtonDown = true;
+    //event.stopPropagation();
+    if (event.which == 1) leftButtonDown = true;
 
-    $(renderer.domElement).bind('mousemove', on3DLandscapeMouseMove);
+    controls3D.enabled = false;
 
-    if (TOOL3DLANDSCAPE != "rotate") {
+    //console.log(TOOL3DLANDSCAPE);
 
-        controls3D.enabled = false;
+    if (TOOL3DLANDSCAPE == "rotate")
+    {
+        controls3D.enabled = true;
+    }
+    else if (TOOL3DLANDSCAPE == "hill" || TOOL3DLANDSCAPE == "valley")
+    {
+        mouse_info.state = 1;
+        updateMouse(event);
     }
 }
 
 function on3DLandscapeMouseUp(event) {
 
-    event.preventDefault();
-    //if (event.which == 1) leftButtonDown = false;
+    //event.preventDefault();
+    //event.stopPropagation();
+    leftButtonDown = false;
+    controls3D.enabled = false;
 
-    $(renderer.domElement).unbind('mousemove', on3DLandscapeMouseMove);
-
-    controls3D.enabled = true;
+    if (TOOL3DLANDSCAPE == "hill" || TOOL3DLANDSCAPE == "valley")
+    {
+        mouse_info.state = 0;
+        updateMouse(event);
+    }
 }
 
 $(document).on('keyup', function(event){
@@ -5899,7 +5914,7 @@ function animateLandscape()
     //var time = clock.getElapsedTime();
 
     //terrain3DMaterial.map = terrain3D.getSculptDisplayTexture();
-    if(controls3D.enabled)
+    if(controls3D.enabled && leftButtonDown && TOOL3DLANDSCAPE == "rotate")
         controls3D.update(delta);
 
     //renderer.autoClear = false;
