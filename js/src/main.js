@@ -165,6 +165,8 @@ var zip;
 
 var terrain3D;
 var terrain3DMaterial;
+var terrain3DRawHillData = [];
+var terrain3DRawValleyData = [];
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
@@ -1674,7 +1676,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
             textMesh.position.y = 0.5;
             textMesh.position.z = 0.05;
             textMesh.rotation.y = 1.5;
-            //textMesh.name = "text"
+            textMesh.name = note;
 
             open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
 
@@ -1897,9 +1899,11 @@ function show3DHouse() {
         menuSelect(2, 'menuInteractiveItem', '#ff3700');
     }
 
-    for (var i = 2; i <= 10; i++) {
-        $('#menuBottomItem' + i).show();
-    }
+    var menuBottom = [2,3,4,5,6,7,8,9,10];
+    menuBottom.forEach(function(item) {
+         $('#menuBottomItem' + item).show();
+    });
+    $('#menuBottom').show();
 
     toggleRight('menuRight', true);
     toggleLeft('menuLeft3DHouse', true);
@@ -1925,46 +1929,40 @@ var map_left = plots_x /  -2;
 var map_top = plots_y / -2;
 
 /** MOUSE **/
-var mouse_info = {
+var terrain3DMouse = {
     x: 0,
     y: 0,
-    button: 0,
-    state: 0, // 0 - up, 1 - down, 2 - dragging,
-    point: null,
-    plot_coordinates: {x: null, y: null},
-    vertex_coordinates: {x: null, y: null}
+    //state: 0, // 0 - up, 1 - down, 2 - dragging,
+    //plot: {x: null, y: null},
+    vertex: {x: null, y: null}
 };
 
- var updateMouse = function updateMouse(e) {
+var updateMouse = function updateMouse(e) {
     e.preventDefault();
     //e.stopPropagation();
     //e.cancelBubble = true;
     
-    mouse_info.x = e.clientX; //layerX;
-    mouse_info.y = e.clientY; //layerY;
-    mouse_info.button = e.button;
+    terrain3DMouse.x = e.clientX; //layerX;
+    terrain3DMouse.y = e.clientY; //layerY;
 };
 
 var updateMouseCoordinates = function() {
 
-    var vector = new THREE.Vector3((mouse_info.x / window.innerWidth) * 2 - 1, - (mouse_info.y / window.innerHeight) * 2 + 1, 0.5);
+    var vector = new THREE.Vector3((terrain3DMouse.x / window.innerWidth) * 2 - 1, - (terrain3DMouse.y / window.innerHeight) * 2 + 1, 0.5);
     vector.unproject(camera3D);
     var ray = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
-
     var intersection = ray.intersectObjects(terrain3D.children);
 
     if (intersection.length > 0) {
-
-        mouse_info.point = intersection[0].point;
         
-        mouse_info.plot_coordinates.x = Math.floor(mouse_info.point.x - map_left);
-        mouse_info.plot_coordinates.y = Math.floor(mouse_info.point.z - map_top);
+        //terrain3DMouse.plot.x = Math.floor(intersection[0].point.x - map_left);
+        //terrain3DMouse.plot.y = Math.floor(intersection[0].point.z - map_top);
         
-        mouse_info.vertex_coordinates.x = Math.floor((mouse_info.point.x * plot_vertices) - (map_left * plot_vertices));
-        mouse_info.vertex_coordinates.y = Math.floor((mouse_info.point.z * plot_vertices) - (map_top * plot_vertices));
+        terrain3DMouse.vertex.x = Math.floor((intersection[0].point.x * plot_vertices) - (map_left * plot_vertices));
+        terrain3DMouse.vertex.y = Math.floor((intersection[0].point.z * plot_vertices) - (map_top * plot_vertices));
 
-        terrain3D.materials[0].uniforms.ring_center.value.x = mouse_info.point.x;
-        terrain3D.materials[0].uniforms.ring_center.value.y = -mouse_info.point.z;
+        terrain3D.materials[0].uniforms.ring_center.value.x = intersection[0].point.x;
+        terrain3D.materials[0].uniforms.ring_center.value.y = -intersection[0].point.z;
     }
 };
 
@@ -2045,19 +2043,22 @@ var landscape = new function() {
     };
     this.onmousemove = function() {
 
-        if (mouse_info.state === 2 && !controls3D.enabled) { // The user has clicked and drug their mouse
+        if (!controls3D.enabled) { // The user has clicked and drug their mouse
             
             // Get all of the vertices in a 5-unit radius
-            var vertices = findLattices(3 * plot_vertices, mouse_info.vertex_coordinates);
+            var vertices = findLattices(3 * plot_vertices, terrain3DMouse.vertex);
             
             // Call the landscaping tool to do its job
             this.tools[landscape_tool](3 * plot_vertices, vertices);
             
             // Ensure all of the vertices are within the elevation bounds
             var vertice_index;
+            var vertice_data = new Array();
             //console.log("# of vertices " + vertices.length);
             for (var i = 0; i < vertices.length; i++) {
+
                 vertice_index = verticeIndex(vertices[i]);
+
                 if (terrain3D.displacement.value[vertice_index] > 6) {
                     terrain3D.displacement.value[vertice_index] = 6;
                 }
@@ -2068,6 +2069,9 @@ var landscape = new function() {
                 
                 terrain3D.water.displacement.value[vertice_index] = terrain3D.displacement.value[vertice_index];
             }
+
+            //terrain3DRawData.push(terrain3DMouse);
+
             terrain3D.water.displacement.needsUpdate = true;
         }
     };
@@ -2089,11 +2093,12 @@ var landscape = new function() {
                 }
                 
                 vertice_index = verticeIndex(vertice);
-                distance = Math.sqrt(Math.pow(mouse_info.vertex_coordinates.x - vertice.x, 2) + Math.pow(mouse_info.vertex_coordinates.y - vertice.y, 2));
+                distance = Math.sqrt(Math.pow(terrain3DMouse.vertex.x - vertice.x, 2) + Math.pow(terrain3DMouse.vertex.y - vertice.y, 2));
                 
                 terrain3D.displacement.value[vertice_index] += Math.pow(radius - distance, .5) * .03;
                 terrain3D.displacement.needsUpdate = true;
             }
+            terrain3DRawHillData.push(terrain3DMouse);
         },
         
         valley: function(radius, vertices) {
@@ -2112,11 +2117,12 @@ var landscape = new function() {
                 }
                 
                 vertice_index = verticeIndex(vertice);
-                distance = Math.sqrt(Math.pow(mouse_info.vertex_coordinates.x - vertice.x, 2) + Math.pow(mouse_info.vertex_coordinates.y - vertice.y, 2));
+                distance = Math.sqrt(Math.pow(terrain3DMouse.vertex.x - vertice.x, 2) + Math.pow(terrain3DMouse.vertex.y - vertice.y, 2));
                 
                 terrain3D.displacement.value[vertice_index] -= Math.pow(radius - distance, .5) * .03;
                 terrain3D.displacement.needsUpdate = true;
             }
+            terrain3DRawValleyData.push(terrain3DMouse);
         }
     };
 }
@@ -2282,9 +2288,11 @@ function show3DFloor() {
     $('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
-    $('#menuBottomItem8').show();
-    $('#menuBottomItem9').show();
-    $('#menuBottomItem10').show();
+    var menuBottom = [8,9,10];
+    menuBottom.forEach(function(item) {
+         $('#menuBottomItem' + item).show();
+    });
+    $('#menuBottom').show();
 
     toggleRight('menuRight', true);
     toggleLeft('menuLeft3DFloor', true);
@@ -2442,11 +2450,11 @@ function show2D() {
     $('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
-    $('#menuBottomItem1').show();
-    $('#menuBottomItem5').show();
-    $('#menuBottomItem8').show();
-    $('#menuBottomItem9').show();
-    $('#menuBottomItem10').show();
+    var menuBottom = [1,5,8,9,10];
+    menuBottom.forEach(function(item) {
+         $('#menuBottomItem' + item).show();
+    });
+    $('#menuBottom').show();
 
     scene2DMakeGrid();
 
@@ -2684,6 +2692,7 @@ function hideElements() {
     for (var i = 1; i <= 10; i++) {
         $('#menuBottomItem' + i).hide();
     }
+    $('#menuBottom').hide();
     
     $('#zoom2DLevel').hide();
 
@@ -3612,10 +3621,11 @@ function on3DLandscapeMouseMove(event) {
     //}
 
     //controls3D.enabled = false;
+    
 
     if (TOOL3DLANDSCAPE == "angle") 
     {
-        if (!leftButtonDown)
+       if (!leftButtonDown)
         return;
 
         if (event.clientX > window.innerWidth / 2) {
@@ -3628,12 +3638,14 @@ function on3DLandscapeMouseMove(event) {
     }
     else
     {
-        if (mouse_info.state == 1) {
-            mouse_info.state = 2;
-        }
+        //if (terrain3DMouse.state == 1) {
+        //    terrain3DMouse.state = 2;
+        //}
         updateMouse(event);
         updateMouseCoordinates();
-        landscape.onmousemove();
+
+        if (leftButtonDown)
+            landscape.onmousemove();
     }
 }
 
@@ -3653,7 +3665,7 @@ function on3DLandscapeMouseDown(event) {
     }
     else if (TOOL3DLANDSCAPE == "hill" || TOOL3DLANDSCAPE == "valley")
     {
-        mouse_info.state = 1;
+        //terrain3DMouse.state = 1;
         updateMouse(event);
     }
 }
@@ -3667,7 +3679,7 @@ function on3DLandscapeMouseUp(event) {
 
     if (TOOL3DLANDSCAPE == "hill" || TOOL3DLANDSCAPE == "valley")
     {
-        mouse_info.state = 0;
+        //terrain3DMouse.state = 0;
         updateMouse(event);
     }
 }
@@ -4510,8 +4522,8 @@ function collectArrayFromContainer(container) {
 
 function saveScene(online) {
 
-    setTimeout(function()
-    {
+    //setTimeout(function(){
+
         var zip = new JSZip();
 
         var exportRoofContainer = "scene3DRoofContainer";
@@ -4525,6 +4537,17 @@ function saveScene(online) {
             base64: true
         });
         */
+        //console.log(JSON.stringify(terrain3DRawData));
+
+        zip.file("terrain3DHill.json", JSON.stringify(terrain3DRawHillData));
+        zip.file("terrain3DValley.json", JSON.stringify(terrain3DRawValleyData));
+
+        var JSONString = {};
+        JSONString["AgentInfo"] = scene3DHouseContainer.name;
+        for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
+            JSONString["Floor" + i] = scene3DFloorFurnitureContainer[i].name;
+        }
+        zip.file("scene3DSettings.json", JSON.stringify(JSONString));
 
 		if (online) //save only 3d object's absolute location, position & orientation
 		{
@@ -4615,30 +4638,67 @@ function saveScene(online) {
         	window.location = "#close";
         }
 
-    }, 1000);
+    //}, 1000);
 }
 
 function openScene(zipData) {
 
     zip = new JSZip(zipData);
-
     //zip.folder("Textures").load(data);
-    //var text = zip.file("hello.txt").asText();
 
-    /*
-    for (var i = 0; i < 4; i++) {
+    try{
+        terrain3DRawHillData = JSON.parse(zip.file("terrain3DHill.json").asText());
+        landscape.select('hill');
+        $.each(terrain3DRawHillData, function(index)
+        {
+            terrain3DMouse = this;
+            landscape.onmousemove();
+            //console.log(this);
+        });
+    }catch(ex){}
 
-        scene2DFloorContainer[i].loadFromJSON(JSON.parse(zip.file("scene2DFloorContainer." + i + ".js").asText()));
+    try{
+        terrain3DRawValleyData = JSON.parse(zip.file("terrain3DValley.json").asText());
+        landscape.select('valley');
+        $.each(terrain3DRawValleyData, function(index)
+        {
+            terrain3DMouse = this;
+            landscape.onmousemove();
+            //console.log(this);
+        });
+    }catch(ex){}
+
+    for (var i = 0; i < 4; i++){
+        try{
+            //var objects2DFloor = JSON.parse(zip.file("scene2DFloorContainer." + i + ".json").asText());
+
+            var objects3DFurniture = JSON.parse(zip.file("scene3DFloorFurnitureContainer." + i + ".json").asText());
+            $.each(objects3DFurniture, function(index){
+                var note = null;
+                if(this.note != null)
+                    note = this['note'];
+                //console.log(this['position.x']);
+                open3DModel(this['file'], scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
+            });
+        }catch(ex){}
     }
-	*/
-
-    /*
-    var loader = new THREE.ObjectLoader();
-    loader.load('scenes/scene1.js', function(object) {
-        console.log('adding object to scene');
-        scene3D.add(object);
-    });
-    */
+    try{
+        var objects3DHouse = JSON.parse(zip.file("scene3DHouseContainer.json").asText());
+        $.each(objects3DHouse, function(index){
+            open3DModel(this['file'], scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        });
+        var objects3DRoof = JSON.parse(zip.file("scene3DRoofContainer.json").asText());
+        $.each(objects3DRoof, function(index){
+            open3DModel(this['file'], scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        });
+        var objects3DSettings = JSON.parse(zip.file("scene3DSettings.json").asText());
+        scene3DHouseContainer.name = objects3DSettings['AgentInfo'];
+        for (var i = 0; i < 4; i++){
+            try{
+                scene3DFloorFurnitureContainer[i].name = objects3DSettings['Floor' + i]; 
+            }catch(ex){}
+        }
+    }catch(ex){}
 }
 
 function imageBase64(id) {
@@ -4825,73 +4885,59 @@ function scene3DFloorWallGenerate() {
     //floorShape.computeFaceNormals();
     //floorShape.computeCentroids();
 
+    try {
+        texture = THREE.ImageUtils.loadTexture('objects/Platform/Textures/M23562.jpg');
+        //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        //texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping
+        //texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+        //texture.repeat.set(4, 4);
 
-    texture = THREE.ImageUtils.loadTexture('objects/Platform/Textures/M23562.jpg');
-    //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    //texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping
-    //texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
-    //texture.repeat.set(4, 4);
+        /*
+        var image = new Image();
+        image.onload = function () { texture.needsUpdate = true; };
+        image.src = 'objects/Platform/Textures/W23674.jpg';
+        var texture  = new THREE.Texture(image, new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.LinearMipMapLinearFilter );
+        texture.repeat.x = 10;
+        texture.repeat.y = 10;
+        */
 
-    /*
-    var image = new Image();
-    image.onload = function () { texture.needsUpdate = true; };
-    image.src = 'objects/Platform/Textures/W23674.jpg';
-    var texture  = new THREE.Texture(image, new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.LinearMipMapLinearFilter );
-    texture.repeat.x = 10;
-    texture.repeat.y = 10;
-    */
+        //material = new THREE.MeshBasicMaterial({ map: texture});
+        //material = new THREE.MeshLambertMaterial( { map: texture } );
+        //material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10});
+        //var materials = [material1, material2, material3, material4, material5, material6];
+        //var meshFaceMaterial = new THREE.MeshFaceMaterial( materials );
+        material = new THREE.MeshBasicMaterial({color: 0xccac7b});
+        mesh = new THREE.Mesh(floorShape.makeGeometry(), material);
+        mesh.rotation.x = -(90 * RADIAN); //Horizontal Flip
+        mesh.position.x = mesh.position.x + leftMenuOffset; //compensate for leftMenu
+        mesh.position.y = 0.1;
+        mesh.position.z = mesh.position.z + topMenuOffset; //compensate for topMenu
+        //mesh.overdraw = true;
+        mesh.receiveShadow = true;
 
-    //material = new THREE.MeshBasicMaterial({ map: texture});
-    //material = new THREE.MeshLambertMaterial( { map: texture } );
-    //material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10});
-    //var materials = [material1, material2, material3, material4, material5, material6];
-    //var meshFaceMaterial = new THREE.MeshFaceMaterial( materials );
-    material = new THREE.MeshBasicMaterial({color: 0xccac7b});
-
-
-    mesh = new THREE.Mesh(floorShape.makeGeometry(), material);
-    mesh.rotation.x = -(90 * RADIAN); //Horizontal Flip
-    mesh.position.x = mesh.position.x + leftMenuOffset; //compensate for leftMenu
-    mesh.position.y = 0.1;
-    mesh.position.z = mesh.position.z + topMenuOffset; //compensate for topMenu
-    //mesh.overdraw = true;
-    mesh.receiveShadow = true;
-
-    scene3DFloorTileContainer[FLOOR].add(mesh);
-    //scene3DFloorTileContainer[FLOOR].children[0] = mesh;
+        scene3DFloorTileContainer[FLOOR].add(mesh);
+        //scene3DFloorTileContainer[FLOOR].children[0] = mesh;
+    }catch(e){}
 }
 
 function sceneNew() {
-    /*
-    for (var i = 0; i < scene3DHouseContainer.children.length; i++) {
-        scene3D.remove(scene3DHouseContainer.children[i]);
-    }
-    */
-
-    //for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
-    //    scene3D.remove(scene3DFloorFurnitureContainer[i]);
-    //}
-
-    scene3DHouseContainer.name = "12345|Alyson";
-
-    scene3DFloorFurnitureContainer[0].name = "Basement";
-    scene3DFloorFurnitureContainer[1].name = "Floor1";
-    scene3DFloorFurnitureContainer[2].name = "Floor2";
-
-    //open3DModel("Platform/ground-grass.js", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1); //Exterior ground
-    /*
-    var groundMaterial = new THREE.MeshBasicMaterial({
-        map: THREE.ImageUtils.loadTexture('objects/Platform/Textures/G36096.png'),
-        overdraw: true
-    })
-    var cylinder = new THREE.Mesh(new THREE.CylinderGeometry(10, 10, 0.1, 80, 1, false), groundMaterial);
-    scene3DHouseGroundContainer.add(cylinder);
-    */
+   
+    $.ajax("scenes/scene1.zip",{
+        contentType: "application/zip",
+        beforeSend: function (req) {
+              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+        },
+        success: function(data){
+            try {
+                openScene(data);
+            } catch (e) {
+                console.log("failed to open scene " + e);
+            }
+        }
+    });
 
     open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
-
     open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
-
     open3DModel("objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
 
     /*
@@ -4916,21 +4962,7 @@ function sceneNew() {
     //=========================================
 
     open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1, false, null);
-    //open3DModel("objects/Platform/note.jsz", scene3DNote, 0, 0, 0, 0, 0, 1);
-
-    open3DModel("objects/Platform/roof.jsz", scene3DRoofContainer, 0, 0.15, 0, 0, 0, 1, true, null);
-    open3DModel("objects/Platform/house.jsz", scene3DHouseContainer, 0, 0, 0, 0, 0, 1, true, null);
-    //open3DModel("objects/Platform/floor1.jsz", scene3DFloorTileContainer[FLOOR], 0, 0.1, 0, 0, 0, 1, true, null);
-
-    open3DModel("objects/Exterior/Trees/palm.jsz", scene3DHouseContainer, -6, 0, 8, 0, 0, 1, true, null);
-    open3DModel("objects/Exterior/Backyard/umbrella.jsz", scene3DHouseContainer, -8, 0, 0, 0, 0, 1, true, null);
-    open3DModel("objects/Exterior/Plants/Bushes/bush.jsz", scene3DHouseContainer, 6, 0, 8, 0, 0, 1, true, null);
-    open3DModel("objects/Exterior/Fences/fence1.jsz", scene3DHouseContainer, -5, 0, 10, 0, 0, 1, true, null);
-    open3DModel("objects/Exterior/Fences/fence2.jsz", scene3DHouseContainer, 0, 0, 10, 0, 0, 1, true, null);
-
-    open3DModel("objects/Interior/Furniture/Sofas/clear-sofa.jsz", scene3DFloorFurnitureContainer[FLOOR], 0, 0, 0, 0, 0, 1, true, "cool notes, click to view");
-    open3DModel("objects/Interior/Kitchen/Tables/table-w-table-cloth.jsz", scene3DFloorFurnitureContainer[FLOOR], -2, 0, 4, 0, 0, 1, true, null);
-
+    
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
     /*
     var material = new THREE.MeshBasicMaterial( { color: 0x000000  } );
@@ -4947,7 +4979,7 @@ function sceneNew() {
     textMesh.position.y = 1;
     textMesh.position.z = 0.55;
     textMesh.rotation.y = 1.5;
-
+    
     scene3DFloorFurnitureContainer[FLOOR].add(textMesh);
     open3DModel("objects/Platform/note.jsz", scene3DFloorOtherContainer[FLOOR], 1.8, 0.6, 0.18, 0, 1.5, 1,"");
     */
