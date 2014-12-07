@@ -4522,21 +4522,10 @@ function collectArrayFromContainer(container) {
 
 function saveScene(online) {
 
-    //setTimeout(function(){
+    setTimeout(function(){
 
         var zip = new JSZip();
 
-        var exportRoofContainer = "scene3DRoofContainer";
-        var exportHouseContainer= "scene3DHouseContainer";
-        var exportHouseGroundContainer = "scene3DHouseGroundContainer";
-        var exportFloorContainer = "scene3DFloorFurnitureContainer";
-
-        /*
-        var textures = zip.folder("Textures");
-            textures.file("house.jpg", imgData, {
-            base64: true
-        });
-        */
         //console.log(JSON.stringify(terrain3DRawData));
 
         zip.file("terrain3DHill.json", JSON.stringify(terrain3DRawHillData));
@@ -4548,30 +4537,14 @@ function saveScene(online) {
             JSONString["Floor" + i] = scene3DFloorFurnitureContainer[i].name;
         }
         zip.file("scene3DSettings.json", JSON.stringify(JSONString));
+        zip.file("scene3DRoofContainer.json", JSON.stringify(collectArrayFromContainer(scene3DRoofContainer)));
+        zip.file("scene3DHouseContainer.json", JSON.stringify(collectArrayFromContainer(scene3DHouseContainer)));
+        zip.file("scene3DHouseGroundContainer.json", JSON.stringify(collectArrayFromContainer(scene3DHouseGroundContainer)));
 
-		if (online) //save only 3d object's absolute location, position & orientation
-		{
-            zip.file(exportRoofContainer + ".json", JSON.stringify(collectArrayFromContainer(scene3DRoofContainer)));
-            zip.file(exportHouseContainer+ ".json", JSON.stringify(collectArrayFromContainer(scene3DHouseContainer)));
-			zip.file(exportHouseGroundContainer + ".json", JSON.stringify(collectArrayFromContainer(scene3DHouseGroundContainer)));
-
-			for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++)
-        	{
-                zip.file(exportFloorContainer + "." + i + ".json", JSON.stringify(collectArrayFromContainer(scene3DFloorFurnitureContainer[i])));
-        	}
-		}
-		else //export entire scene fruits (good for editing with Blender/CAD)
-		{
-			zip.file(exportHouseContainer+ ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseContainer)));
-			zip.file(exportHouseGroundContainer + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DHouseGroundContainer)));
-
-			for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++)
-        	{
-            	zip.file(exportFloorContainer + "." + i + ".json", JSON.stringify(new THREE.ObjectExporter().parse(scene3DFloorFurnitureContainer[i])));
-        	}
-
-        	zip.file("ReadMe.txt", "Saved by WebGL HousePlanner. Files can be opened by THREE.js Framework");
-		}
+        for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++)
+        {
+            zip.file("scene3DFloorFurnitureContainer." + i + ".json", JSON.stringify(collectArrayFromContainer(scene3DFloorFurnitureContainer[i])));
+        }
 
         for (var i = 0; i < scene2DWallMesh.length; i++)
         {
@@ -4590,6 +4563,24 @@ function saveScene(online) {
             });
         }catch(ex){}
 
+        if (!online)
+        {
+            zip.file("ReadMe.txt", "Saved by WebGL HousePlanner.");
+
+            var ob = zip.folder("obj");
+            var tx = zip.folder("obj/Textures");
+
+            //var result= new THREE.OBJExporter().parse(scene3D.geometry); //MaterialExporter.js
+            var result = JSON.stringify(new THREE.ObjectExporter().parse(scene3D)); 
+            ob.file("THREE.Scene.json", result);
+
+            /*
+            tx.file("house.jpg", imgData, {
+                base64: true
+            });
+            */
+        }
+
         var content = zip.generate({
             type: "blob"
         });
@@ -4605,7 +4596,7 @@ function saveScene(online) {
         {
         	if(SESSION == '')
 		    {
-                saveAs(content, "scene.zip"); //Debug
+                //saveAs(content, "scene.zip"); //Debug
 		        window.location = "#openLogin";
 		    }
 		    else
@@ -4635,10 +4626,10 @@ function saveScene(online) {
         else
         {
         	saveAs(content, "scene.zip");
-        	window.location = "#close";
+            window.location = "#close";
         }
 
-    //}, 1000);
+    }, 1500);
 }
 
 function openScene(zipData) {
