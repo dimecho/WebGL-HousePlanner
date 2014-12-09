@@ -24,7 +24,9 @@
   <script src="js/src/ShaderParticles.js"></script>
   <script src="js/src/Projector.js"></script>
   <script src="js/src/helvetiker.typeface.js"></script>
-
+  <script src="js/src/jquery.easing.js"></script>
+  <script src="js/src/parallaxslider.js"></script>
+  
   <!--
   <script src="js/3d/extras/physics/Collisions.js"></script>
   <script src="js/3d/extras/physics/CollisionUtils.js"></script>
@@ -73,6 +75,7 @@
   <link rel="stylesheet" type="text/css" href="css/src/style.css" />
   <link rel="stylesheet" type="text/css" href="css/src/alertify.css" media="all" />
   <link rel="stylesheet" type="text/css" href="css/src/alertify.default.css" />
+  <link rel="stylesheet" type="text/css" href="css/src/parallaxslider.css" />
   
   <script id="vs" type="x-shader/x-vertex">
     varying vec2 vUv;
@@ -265,24 +268,6 @@
 }
 </style>
 
-<div id="openScene" class="modalDialog">
-  <div>
-    <a href="#close" class="close">X</a>
-    <style>
-    .sceneFrame{
-      border:2px solid black;
-      width:120px;
-      height:120px;
-      margin:0;
-      padding:0;
-    }
-    </style>
-    <div class="sceneFrame">
-      
-    </div>
-  </div>
-</div>
-
 <div id="openLogin" class="modalDialog">
 	<div>
 		<a href="#close" class="close">X</a>
@@ -320,6 +305,44 @@
     <a href="#">Forgot password?</a><br/>
     <a href="#openRegistration">Don't have an account? <strong>Sign Up</strong></a>
 	</div>
+</div>
+
+<div id="scene" class="modalDialog">
+  <div style="width:80%;height:460px;background:#fff;">
+    <a href="#close" class="close">X</a>
+    <div id="pxs_container" class="pxs_container">
+        <div class="pxs_bg">
+            <div class="pxs_bg1"></div>
+            <div class="pxs_bg2"></div>
+            <div class="pxs_bg3"></div>
+        </div>
+        <div class="pxs_loading">Loading images...</div>
+        <div class="pxs_slider_wrapper">
+            <ul class="pxs_slider">
+                <li><a href="#" onclick="sceneOpen('scene1.zip')"><img src="scenes/scene1.jpg" alt="" /></a></li>
+                <li><a href="#" onclick="sceneOpen('scene2.zip')"><img src="scenes/scene2.jpg" alt="" /></a></li>
+                <li><a href="#" onclick="sceneOpen('scene3.zip')"><img src="scenes/scene3.jpg" alt="" /></a></li>
+            </ul>
+            <!--
+            <div class="pxs_navigation">
+                <span class="pxs_next"></span>
+                <span class="pxs_prev"></span>
+            </div>
+            -->
+            <ul class="pxs_thumbnails">
+                <li><img src="scenes/_scene1.jpg" alt="" /></li>
+                <li><img src="scenes/_scene2.jpg" alt="" /></li>
+                <li><img src="scenes/_scene3.jpg" alt="" /></li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function() {
+            var $pxs_container  = $('#pxs_container');
+            $pxs_container.parallaxSlider();
+        });
+    </script>
+  </div>
 </div>
 
 <div id="openRegistration" class="modalDialog">
@@ -627,7 +650,7 @@
 			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open" id="menuTopItem8"></a>
       <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
 			<a href="#" class="hi-icon icon-share tooltip-share-menu" title="Share" id="menuTopItem12"></a>
-			<a href="#" onclick="window.open(renderer.domElement.toDataURL('image/png'), 'Final');" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
+			<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
 			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>
 			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
       <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings" id="menuTopItem16"></a>

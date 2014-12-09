@@ -172,6 +172,7 @@ var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
 
 //var colliderSystem = [];
+var getScreenshotData = false;
 
 function init(runmode,viewmode) {
 
@@ -831,6 +832,20 @@ function disposePanorama(id)
     rendererPanorama = null;
     camera3DPanorama = null;
     scene3DPanorama = null;
+}
+
+function makeScreenshot()
+{
+    getScreenshotData = true;
+    
+    /*
+    renderer.preserveDrawingBuffer = true;
+    window.open(renderer.domElement.toDataURL('image/png'), 'Final');
+
+    setTimeout(function() {
+        renderer.preserveDrawingBuffer = false;
+    }, 1400);
+    */
 }
 
 function initPanorama(id,files,W,H)
@@ -4911,9 +4926,9 @@ function scene3DFloorWallGenerate() {
     }catch(e){}
 }
 
-function sceneNew() {
-   
-    $.ajax("scenes/scene1.zip",{
+function sceneOpen(file) {
+
+    $.ajax("scenes/" + file,{
         contentType: "application/zip",
         beforeSend: function (req) {
               req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
@@ -4927,6 +4942,26 @@ function sceneNew() {
         }
     });
 
+    //============ SAMPLE DATA ================
+
+    scene2DWallGeometry[FLOOR].push([480, 180, 660, 180, 0]); //x1,y1,x2,y2,curve
+    scene2DWallGeometry[FLOOR].push([660, 180, 660, 140, 0]);
+    scene2DWallGeometry[FLOOR].push([660, 140, 1040, 140, 0]);
+
+    scene2DWallGeometry[FLOOR].push([1040, 150, 1040, 540, 0]);
+    scene2DWallGeometry[FLOOR].push([1040, 540, 930, 540, 0]);
+    scene2DWallGeometry[FLOOR].push([930, 540, 930, 650, 0]);
+
+    scene2DWallGeometry[FLOOR].push([930, 650, 480, 650, 0]);
+
+    scene2DWallGeometry[FLOOR].push([480, 650, 480, 180, 0]);
+    //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
+    
+    scene2DArrayToLineWalls();
+}
+
+function sceneNew() {
+   
     open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
     open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
     open3DModel("objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
@@ -4979,23 +5014,6 @@ function sceneNew() {
     //open3DModel("objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorFurnitureContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
     //open3DModel("objects/Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
     //THREE.GeometryUtils.center();
-
-    //============ SAMPLE DATA ================
-
-    scene2DWallGeometry[FLOOR].push([480, 180, 660, 180, 0]); //x1,y1,x2,y2,curve
-    scene2DWallGeometry[FLOOR].push([660, 180, 660, 140, 0]);
-    scene2DWallGeometry[FLOOR].push([660, 140, 1040, 140, 0]);
-
-    scene2DWallGeometry[FLOOR].push([1040, 150, 1040, 540, 0]);
-    scene2DWallGeometry[FLOOR].push([1040, 540, 930, 540, 0]);
-    scene2DWallGeometry[FLOOR].push([930, 540, 930, 650, 0]);
-
-    scene2DWallGeometry[FLOOR].push([930, 650, 480, 650, 0]);
-
-    scene2DWallGeometry[FLOOR].push([480, 650, 480, 180, 0]);
-    //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
-    
-    scene2DArrayToLineWalls();
     
     /*
     scene2D.add(
@@ -6004,6 +6022,12 @@ function animateHouse()
     controls3D.update(delta);
 
     renderer.render(scene3D, camera3D);
+    
+    if(getScreenshotData == true){
+        getScreenshotData = false;
+        window.open(renderer.domElement.toDataURL('image/png'), 'Final');
+    }
+
     TWEEN.update();
 
     //stats.update();
@@ -6485,4 +6509,6 @@ $(document).ready(function() {
     $('.editP').bind('blur', function() {
         $(this).hide().prev('#menuTop p').html($(this).val()).show();
     });
+
+    window.location.href = "#scene";
 });

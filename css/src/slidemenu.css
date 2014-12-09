@@ -98,27 +98,28 @@ div.clear { clear: both; }
     width: 400px;
     font-size: 12px;
     line-height: 20px;
-    right: -350px;
+    right: -360px;
     top: 100px; /* change this value to place the menu higher or lower */
     position: fixed;
     z-index: 99;
 }
 
 #menuWallInput{
-    width: 100px;
-    position: fixed;
-    z-index: 10;
+  width: 100px;
+  position: fixed;
+  z-index: 10;
 }
 
 #tab-right{
-    float: left;
-    list-style: none outside none;
-    margin: 0;
-    padding: 0;
-    /*
-    position: relative;
-    z-index: 99;
-    */
+  width: 44px;
+  float: left;
+  list-style: none outside none;
+  margin: 0;
+  padding: 0;
+  /*
+  position: relative;
+  z-index: 99;
+  */
 }
 
 #links-right{
@@ -139,7 +140,7 @@ div.clear { clear: both; }
 }
 
 .show-right{
-    margin-right:350px;
+    margin-right:360px;
 }
 
 #arrow-right, .bt{
