@@ -126,7 +126,7 @@ THREE.Projector = function () {
 
 	_clippedVertex1PositionScreen = new THREE.Vector4(),
 	_clippedVertex2PositionScreen = new THREE.Vector4();
-	
+
 	//
 
 	this.projectVector = function ( vector, camera ) {
@@ -148,7 +148,7 @@ THREE.Projector = function () {
 		console.error( 'THREE.Projector: .pickingRay() has been removed.' );
 
 	};
-	
+
 	//
 
 	var RenderList = function () {
@@ -352,17 +352,9 @@ THREE.Projector = function () {
 					_object.id = object.id;
 					_object.object = object;
 
-					if ( object.renderDepth !== null ) {
-
-						_object.z = object.renderDepth;
-
-					} else {
-
-						_vector3.setFromMatrixPosition( object.matrixWorld );
-						_vector3.applyProjection( _viewProjectionMatrix );
-						_object.z = _vector3.z;
-
-					}
+					_vector3.setFromMatrixPosition( object.matrixWorld );
+					_vector3.applyProjection( _viewProjectionMatrix );
+					_object.z = _vector3.z;
 
 					_renderData.objects.push( _object );
 
@@ -646,7 +638,7 @@ THREE.Projector = function () {
 
 						} else {
 
-							var step = object.type === THREE.LinePieces ? 2 : 1;
+							var step = object.mode === THREE.LinePieces ? 2 : 1;
 
 							for ( var i = 0, l = ( positions.length / 3 ) - 1; i < l; i += step ) {
 
@@ -670,7 +662,7 @@ THREE.Projector = function () {
 					v1.positionScreen.copy( vertices[ 0 ] ).applyMatrix4( _modelViewProjectionMatrix );
 
 					// Handle LineStrip and LinePieces
-					var step = object.type === THREE.LinePieces ? 2 : 1;
+					var step = object.mode === THREE.LinePieces ? 2 : 1;
 
 					for ( var v = 1, vl = vertices.length; v < vl; v ++ ) {
 

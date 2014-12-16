@@ -255,9 +255,14 @@ http://tympanus.net/Tutorials/ParallaxSlider/
         navigation next and previous buttons will be:
         windowWidth/2 - imgWidth/2 + some margin (not to touch the image borders)
          */
+         /*
         var position_nav    = w_w/2 - one_image_w/2 + 3;
         $pxs_next.css('right', position_nav + 'px');
         $pxs_prev.css('left', position_nav + 'px');
+        */
+
+        $pxs_next.css('right', '20px');
+        $pxs_prev.css('left', '20px');
     }
     
     $.fn.parallaxSlider.defaults = {

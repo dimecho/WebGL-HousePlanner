@@ -4928,36 +4928,59 @@ function scene3DFloorWallGenerate() {
 
 function sceneOpen(file) {
 
-    $.ajax("scenes/" + file,{
-        contentType: "application/zip",
-        beforeSend: function (req) {
-              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
-        },
-        success: function(data){
-            try {
-                openScene(data);
-            } catch (e) {
-                console.log("failed to open scene " + e);
+    var opts = {
+      lines: 13, // The number of lines to draw
+      length: 20, // The length of each line
+      width: 10, // The line thickness
+      radius: 30, // The radius of the inner circle
+      corners: 1, // Corner roundness (0..1)
+      color: '#000', // #rgb or #rrggbb or array of colors
+      speed: 1, // Rounds per second
+      trail: 60, // Afterglow percentage
+      className: 'spinner', // The CSS class to assign to the spinner
+      top: '50%', // Top position relative to parent
+      left: '50%' // Left position relative to parent
+    };
+    var spinner = new Spinner(opts).spin();
+    document.getElementById("WebGLCanvas").appendChild(spinner.el);
+
+    setTimeout(function()
+    {
+        $.ajax("scenes/" + file,{
+            contentType: "application/zip",
+            beforeSend: function (req) {
+                  req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+            },
+            success: function(data){
+                try {
+                    openScene(data);
+                } catch (e) {
+                    console.log("failed to open scene " + e);
+                }
+                //============ SAMPLE DATA ================
+                scene2DWallGeometry[FLOOR].push([480, 180, 660, 180, 0]); //x1,y1,x2,y2,curve
+                scene2DWallGeometry[FLOOR].push([660, 180, 660, 140, 0]);
+                scene2DWallGeometry[FLOOR].push([660, 140, 1040, 140, 0]);
+
+                scene2DWallGeometry[FLOOR].push([1040, 150, 1040, 540, 0]);
+                scene2DWallGeometry[FLOOR].push([1040, 540, 930, 540, 0]);
+                scene2DWallGeometry[FLOOR].push([930, 540, 930, 650, 0]);
+
+                scene2DWallGeometry[FLOOR].push([930, 650, 480, 650, 0]);
+
+                scene2DWallGeometry[FLOOR].push([480, 650, 480, 180, 0]);
+                //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
+                scene2DArrayToLineWalls();
+                scene3DFloorWallGenerate();
+                
+
+                setTimeout(function()
+                {
+                    document.getElementById("WebGLCanvas").removeChild(spinner.el);
+                }, 1500);
             }
-        }
-    });
-
-    //============ SAMPLE DATA ================
-
-    scene2DWallGeometry[FLOOR].push([480, 180, 660, 180, 0]); //x1,y1,x2,y2,curve
-    scene2DWallGeometry[FLOOR].push([660, 180, 660, 140, 0]);
-    scene2DWallGeometry[FLOOR].push([660, 140, 1040, 140, 0]);
-
-    scene2DWallGeometry[FLOOR].push([1040, 150, 1040, 540, 0]);
-    scene2DWallGeometry[FLOOR].push([1040, 540, 930, 540, 0]);
-    scene2DWallGeometry[FLOOR].push([930, 540, 930, 650, 0]);
-
-    scene2DWallGeometry[FLOOR].push([930, 650, 480, 650, 0]);
-
-    scene2DWallGeometry[FLOOR].push([480, 650, 480, 180, 0]);
-    //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
-    
-    scene2DArrayToLineWalls();
+        });
+    }, 1000);
 }
 
 function sceneNew() {
