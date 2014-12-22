@@ -639,7 +639,7 @@ function init(runmode,viewmode) {
     //scene2D.fillRect(0, 0, 1, 1);
 
     renderer = new THREE.WebGLRenderer({
-        //devicePixelRatio: window.devicePixelRatio || 1,
+        devicePixelRatio: window.devicePixelRatio || 1,
         antialias: true,
         alpha: true,
         //clearColor: 0x34583e,
@@ -676,7 +676,7 @@ function init(runmode,viewmode) {
     renderer.autoClear = false; //REQUIRED: for split screen
     renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
     //renderer.physicallyBasedShading = true;
-    //renderer.sortObjects = false;
+    renderer.sortObjects = true; //when scene is opening this make sure clouds stay on top
     document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
 
     //Orientation Cube
@@ -6388,6 +6388,9 @@ function toggleTextureSelect() {
 }
 
 $(document).ready(function() {
+
+    var $pxs_container  = $('#pxs_container');
+    $pxs_container.parallaxSlider();
 
     /*
      $.ajax("objects/Platform/floorplan1.dxf",{
