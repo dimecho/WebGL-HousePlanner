@@ -1089,8 +1089,6 @@ function scene2DMakeWall(coords) {
     
     //line.set({ fill: 'red', stroke: 'green', opacity: 0.5 });
 
-   
-
     line.name = 'wall';
 
     /*
@@ -1102,6 +1100,204 @@ function scene2DMakeWall(coords) {
     */
 
     return line;
+}
+
+function scene2DCheckLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
+    /*
+    http://jsfiddle.net/justin_c_rounds/Gd2S2
+    */
+    // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
+    var denominator, a, b, numerator1, numerator2, result = {
+        x: null,
+        y: null,
+        onLine1: false,
+        onLine2: false
+    };
+    denominator = ((line2EndY - line2StartY) * (line1EndX - line1StartX)) - ((line2EndX - line2StartX) * (line1EndY - line1StartY));
+    if (denominator == 0) {
+        return result;
+    }
+    a = line1StartY - line2StartY;
+    b = line1StartX - line2StartX;
+    numerator1 = ((line2EndX - line2StartX) * a) - ((line2EndY - line2StartY) * b);
+    numerator2 = ((line1EndX - line1StartX) * a) - ((line1EndY - line1StartY) * b);
+    a = numerator1 / denominator;
+    b = numerator2 / denominator;
+
+    // if we cast these lines infinitely in both directions, they intersect here:
+    result.x = line1StartX + (a * (line1EndX - line1StartX));
+    result.y = line1StartY + (a * (line1EndY - line1StartY));
+    /*
+    // it is worth noting that this should be the same as:
+    x = line2StartX + (b * (line2EndX - line2StartX));
+    y = line2StartX + (b * (line2EndY - line2StartY));
+    */
+    // if line1 is a segment and line2 is infinite, they intersect if:
+    if (a > 0 && a < 1) {
+        result.onLine1 = true;
+    }
+    // if line2 is a segment and line1 is infinite, they intersect if:
+    if (b > 0 && b < 1) {
+        result.onLine2 = true;
+    }
+    // if line1 and line2 are segments, they intersect if both of the above are true
+    return result;
+}
+
+function scene2DMakeWallEdgeLength(v1,v2) {
+
+    /*
+    Most advanced calculations of this project turn out to be wall lengths :)
+    http://www.wenda.io/questions/165404/draw-a-parallel-line.html
+    */
+
+    var L = Math.sqrt((v1.x-v2.x)*(v1.x-v2.x)+(v1.y-v2.y)*(v1.y-v2.y));
+    var offsetPixels = 20.0;
+    // This is the second line
+    var x1p = v1.x + offsetPixels * (v2.y-v1.y) / L
+    var x2p = v2.x + offsetPixels * (v2.y-v1.y) / L
+    var y1p = v1.y + offsetPixels * (v1.x-v2.x) / L
+    var y2p = v2.y + offsetPixels * (v1.x-v2.x) / L
+
+    //center
+    var c1x = x1p + (x2p - x1p) /2;
+    var c1y = y1p + (y2p - y1p) /2;
+
+    //var line = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
+    var line = new fabric.Line([x1p, y1p, x2p, y2p], {
+        left: c1x, //v1.x + (v2.x - v1.x)/2,
+        top: c1y, //v1.y - 20,
+        stroke: '#000000',
+        strokeWidth: 1,
+        //strokeDashArray: [5, 5]
+    });
+
+    var rect = new fabric.Rect({
+      left: c1x,
+      top: c1y,
+      fill: '#ffffff',
+      width: 30,
+      height: 20
+    });
+
+    var text = new fabric.Text('??', {
+        left: c1x, //v1.x + (v2.x - v1.x)/2,
+        top: c1y, //v1.y - 20,
+        fontFamily: 'helvetiker',
+        fontWeight: 'normal',
+        textAlign: 'left', //required
+        //fill: '#ffffff',
+        fontSize: 15
+    });
+
+    return new fabric.Group([line, rect, text], {selectable: false});
+}
+
+function scene2DMakeWallEdgeAngle(v1,v2,v3) {
+
+    var a = find2DAngle(v1,v2,v3);
+    var w = 50;
+    var l = 25;
+    var t = 0;
+
+    var line = new fabric.Line([v1.x, v1.y, v3.x, v3.y], {
+        left: 0,
+        top: 0,
+        stroke: '#c0c0c0',
+        strokeWidth: 1,
+        strokeDashArray: [5, 5]
+    });
+    
+    var line1 = new fabric.Line([0, 0, w, 0], {
+        left: l,
+        top: t,
+        stroke: '#ff6600',
+        strokeWidth: 2
+    });
+    
+    var line2 = line1.clone();
+    line2.left = t;
+    line2.top = l;
+    line2.angle = a * 180 / Math.PI;
+
+    var arc = new fabric.Circle({
+        radius: w,
+        left: -1,
+        top: 1,
+        angle: 180,
+        startAngle: Math.PI, // 180 * Math.PI,
+        endAngle: a - Math.PI,
+        stroke: '#ff6600',
+        strokeWidth: 2,
+        fill: ''
+    });
+
+    //http://www.cufonfonts.com
+    var text = new fabric.Text(Math.round(line2.angle) + '°', {
+        left: 20, 
+        top: 20,
+        fontFamily: 'helvetiker',
+        fontWeight: 'normal',
+        textAlign: 'left', //required
+        fontSize: 15
+    });
+
+    var left = false;
+    var right = false;
+    var up = false;
+    var down = false;
+
+    if(v2.x > v3.x){ //going right
+        right = true;
+    }else{ //going left
+        left = true
+    }
+
+    if(v1.y > v3.y || v2.y > v3.y){ //going down
+        down = true;
+    }
+    else if(v1.y < v3.y || v2.y < v3.y){ //going up
+        up = true;
+    }
+
+    if(!down && !up)
+    {
+        return new fabric.Group([line], {selectable: false});
+    }
+
+    if(left)
+    {
+        text.left = -20;
+        line1.left = 0 - l
+        
+        if(down)
+        {
+            arc.angle = 270;
+            arc.left = 1;
+            arc.top = -1;
+        }
+        else
+        {
+            arc.angle = 0; 
+        }
+    }
+    else if(right)
+    {
+        if(up){
+            arc.angle = 90; 
+        }else{
+            arc.angle = 180;
+        }
+    }
+
+    if(up) //going up
+    {
+        text.top = -20;
+        line1.top = 0;
+        line2.top = 0 - l
+    }
+
+    return new fabric.Group([line, line1, line2, arc, text], {selectable: false});
 }
 
 function scene2DMakeWallEdgeCircle(left, top, line1, line2, line3, line4) {
@@ -2515,23 +2711,55 @@ function show2D() {
     for (var i = 1; i <= scene2DWallMesh[FLOOR].length; i++) { //each floor wall
 
         var circle;
+        var W_angle;
+        var W_length;
         var pivot;
+        var v1 = {x: 0, y: 0}, v2 = {x: 0, y: 0}, v3 = {x: 0, y: 0};
         
         try
         {
+            v1 = {x: scene2DWallMesh[FLOOR][i-1].get('x1'), y: scene2DWallMesh[FLOOR][i-1].get('y1')};
+            v3 = {x: scene2DWallMesh[FLOOR][i].get('x2'), y: scene2DWallMesh[FLOOR][i].get('y2')};
+            v2 = {x: scene2DWallMesh[FLOOR][i].get('x1'), y: scene2DWallMesh[FLOOR][i].get('y1')};
+
             circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][i].get('x1'), scene2DWallMesh[FLOOR][i].get('y1'), scene2DWallMesh[FLOOR][i - 1], scene2DWallMesh[FLOOR][i]);
             pivot = scene2DMakeWallPivotCircle(scene2DWallMesh[FLOOR][i].get('x2')-scene2DWallMesh[FLOOR][i].get('x1')/2, scene2DWallMesh[FLOOR][i].get('y1') - 10, null, scene2DWallMesh[FLOOR][i], null);
             
         }catch(e){
 
-            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][0].get('x1'), scene2DWallMesh[FLOOR][0].get('y1'), scene2DWallMesh[FLOOR][i-1], scene2DWallMesh[FLOOR][0]);
+            v1 = {x: scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length-1].get('x1'), y: scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length-1].get('y1')};
+            v3 = {x: scene2DWallMesh[FLOOR][0].get('x2'), y: scene2DWallMesh[FLOOR][0].get('y2')};
+            v2 = {x: scene2DWallMesh[FLOOR][0].get('x1'), y: scene2DWallMesh[FLOOR][0].get('y1')};
+
+            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][0].get('x1'), scene2DWallMesh[FLOOR][0].get('y1'), scene2DWallMesh[FLOOR][i-1], scene2DWallMesh[FLOOR][0]); 
         }
+
+        /*
+        http://stackoverflow.com/questions/12903547/fastest-way-to-find-the-angle-between-two-points
+        http://jsperf.com/shhacos-vs-array/3
+        */
+        //var angleRad = Math.acos((v1.x * v2.x + v1.y * v2.y) / ( Math.sqrt(v1.x*v1.x + v1.y*v1.y) * Math.sqrt(v2.x*v2.x + v2.y*v2.y)));
+        //var angleDeg = angleRad * 180 / Math.PI;
+        var angleDeg = find2DAngle(v1,v2,v3) * 180 / Math.PI;
+        console.log("Angle:" + ((angleDeg*100)>>0)/100);
 
         circle.point_type = 'edge';
         pivot.name = "pivot";
 
         scene2D.add(circle);
         //scene2D.add(pivot);
+
+        W_angle = scene2DMakeWallEdgeAngle(v1,v2,v3);
+        W_angle.left = v3.x;
+        W_angle.top = v3.y;
+        W_angle.angle = Math.atan2(v1.y - v3.y, v1.x - v3.x);
+        scene2D.add(W_angle);
+
+        W_length = scene2DMakeWallEdgeLength(v1,v2,v3);
+        //W_length.left = v1.x + (v2.x - v1.x)/2;
+        //W_length.top = v1.y;
+        //W_length.angle = Math.atan2(v1.y - v2.y, v1.x - v2.x);
+        scene2D.add(W_length);
     }
     //scene2DArrayToLineWalls();
 
@@ -2567,6 +2795,23 @@ function show2D() {
     delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
     $('#HTMLCanvas').show();
+}
+
+ /*
+ * Calculates the angle ABC (in radians) 
+ *
+ * A first point
+ * C second point
+ * B center point
+ */
+function find2DAngle(A,B,C) {
+    /*
+    http://stackoverflow.com/questions/17763392/how-to-calculate-in-javascript-angle-between-3-points
+    */
+    var AB = Math.sqrt(Math.pow(B.x-A.x,2)+ Math.pow(B.y-A.y,2));    
+    var BC = Math.sqrt(Math.pow(B.x-C.x,2)+ Math.pow(B.y-C.y,2)); 
+    var AC = Math.sqrt(Math.pow(C.x-A.x,2)+ Math.pow(C.y-A.y,2));
+    return Math.acos((BC*BC+AB*AB-AC*AC)/(2*BC*AB));
 }
 
 function zoom2DdrawBase(ctx) {
@@ -5277,24 +5522,6 @@ function scene2DMakeWallPivotCircle(left, top, line1, line2, line3) {
     c.line3 = line3;
 
     return c;
-}
-
-function scene2DCalculateWallLength() {
-
-    for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++)
-    {
-        var xOffset = -10;
-        var yOffset = -20;
-
-        var line = new fabric.Line([scene2DWallMesh[FLOOR][i].get('x1') + xOffset, scene2DWallMesh[FLOOR][i].get('y1') + yOffset, scene2DWallMesh[FLOOR][i].get('x2') + xOffset, scene2DWallMesh[FLOOR][i].get('y2') + yOffset], {
-            fill: '',
-            stroke: 'black',
-            strokeWidth: 1,
-            hasControls: false,
-            selectable: false
-        });
-        scene2D.add(line);
-    }
 }
 
 /*

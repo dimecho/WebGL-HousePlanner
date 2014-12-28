@@ -114,11 +114,13 @@ ul.pxs_thumbnails li.selected img{
 .pxs_navigation span.pxs_next{
 	background:#000 url(../scenes/images/next.png) no-repeat center center;
 }
+/*
 .pxs_loading{
 	color:#fff;
 	font-size:20px;
 	padding:15px 15px 15px 50px;
 	position:absolute;
+
 	background:#333 url(../scenes/images/ajax-loader.gif) no-repeat 10px 50%;
 	-moz-border-radius:15px;
 	-webkit-border-radius:15px;
@@ -130,3 +132,4 @@ ul.pxs_thumbnails li.selected img{
 	left:50%;
 	margin-left:-90px;
 }
+*/
