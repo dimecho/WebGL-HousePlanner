@@ -830,12 +830,12 @@ function init(runmode,viewmode) {
     $('#menuWeatherText').html("Sunny");
     $('#menuDayNightText').html("Day");
 
-    //show3DHouse();
+    show3DHouse();
 
     //For debugging purposes
     //========================
-    sceneOpen('scene1.zip');
-    show2D();
+    //sceneOpen('scene1.zip');
+    //show2D();
     //========================
 }
 
@@ -1248,20 +1248,24 @@ function scene2DGetWallParallelCoordinates(v1,v2,offsetPixels) {
     return p;
 }
 
-function scene2DMakeWallCurvedPivot(v1,v2,v3,line)
+function scene2DGetCenterPivot(v1,v2)
 {
     var p = scene2DGetWallParallelCoordinates(v1,v2,0);
-    var cx = p.x1 + (p.x2 - p.x1) / 2; //center
-    var cy = p.y1 + (p.y2 - p.y1) / 2; //center
+    return ({x:p.x1 + (p.x2 - p.x1) / 2, y:p.y1 + (p.y2 - p.y1) / 2});
+}
 
-    var pivot = scene2DMakeWallPivotCircle(0, 0, null, line, null);
-    pivot.name = 'pivot';
-    pivot.left = cx;
-    pivot.top = cy;
-   
+function scene2DMakeWallCurvedPivot(v1,v2,wall)
+{
+    var point = scene2DGetCenterPivot(v1,v2);
+    var pivot = scene2DMakeWallPivotCircle(0, 0);
+    
+    pivot.left = point.x;
+    pivot.top = point.y;
+    pivot.wall = wall;
+
     //adjust wall to proper curvature
-    line.path[1][1] = cx;
-    line.path[1][2] = cy;
+    wall.path[1][1] = point.x;
+    wall.path[1][2] = point.y;
 
     return pivot;
 }
@@ -1290,21 +1294,9 @@ function scene2DMakeWallEdgeLength(v1,v2,v3)
     //var vXP = -(v2.y-v1.y);
     //var vYP = v2.x-v1.x;
 
-    var a = Math.atan2(v1.y - v2.y, v1.x - v2.x); //console.log(a);
-    if(a == 0)
-        a = 90
-
-    var line1 = new fabric.Line([0, 0, 6, 0], {
-        left: p1.x1,
-        top: p1.y1,
-        stroke: '#000000',
-        strokeWidth: 1,
-        angle: a
-    });
-
-    var line2 = line1.clone();
-    line2.left = p1.x2;
-    line2.top = p1.y2;
+    //var ap = Math.atan2(v1.y - v2.y, v1.x - v2.x); //console.log(a);
+    //if(ap == 0)
+    //    ap = 90
 
     if(Math.abs(v1.y - v2.y) > Math.abs(v1.x-v2.x)) //vertical lines
     {
@@ -1320,6 +1312,18 @@ function scene2DMakeWallEdgeLength(v1,v2,v3)
       height: 20,
       angle: a
     });
+
+    var line1 = new fabric.Line([0, 0, 6, 0], {
+        left: p1.x1,
+        top: p1.y1,
+        stroke: '#000000',
+        strokeWidth: 1,
+        angle: a + 90
+    });
+
+    var line2 = line1.clone();
+    line2.left = p1.x2;
+    line2.top = p1.y2;
 
     var text = new fabric.Text((n1/50).toFixed(1) + ' m', {
         left: cx, //v1.x + (v2.x - v1.x)/2,
@@ -1362,8 +1366,6 @@ function scene2DMakeWallEdgeAngle(v1,v2,v3) {
     var scale = w / n1; //calculate ratio for constant line scale
     //============ LERP Formula ==============
     //start.x + (final.x - start.x) * progress;
-    //var L1x = v1.x + (v2.x - v1.x) * scale;
-    //var L1y = v1.y + (v2.y - v1.y) * scale;
     var L1x = v2.x + (v2.x - v1.x) * scale;
     var L1y = v2.y + (v2.y - v1.y) * scale;
     //========================================
@@ -1371,8 +1373,6 @@ function scene2DMakeWallEdgeAngle(v1,v2,v3) {
     var scale = w / n2; //calculate ratio for constant line scale
     //============ LERP Formula ==============
     //start.x + (final.x - start.x) * progress;
-    //var L2x = v3.x + (v2.x - v3.x) * scale;
-    //var L2y = v3.y + (v2.y - v3.y) * scale;
     var L2x = v2.x + (v2.x - v3.x) * scale;
     var L2y = v2.y + (v2.y - v3.y) * scale;
     //========================================
@@ -1382,6 +1382,7 @@ function scene2DMakeWallEdgeAngle(v1,v2,v3) {
     */
     var startAngle = Math.atan2(L2y-v2.y, L2x-v2.x);
     var endAngle = Math.atan2(L1y-v2.y, L1x-v2.x);
+   
     var t = startAngle + (endAngle - startAngle)/2;
     if(endAngle > startAngle) //always point towards center
         t = t + Math.PI;
@@ -1424,10 +1425,17 @@ function scene2DMakeWallEdgeAngle(v1,v2,v3) {
         angle: offsetAngle
     });
 
-    return new fabric.Group([line1, line2, arc, text], {selectable: false, angle:offsetAngle});
+    return new fabric.Group([line1, line2, arc, text], {selectable: false, angle:offsetAngle, name:'angle'});
 }
 
-function scene2DMakeWallEdgeCircle(left, top, line1, line2, line3, line4) {
+function scene2DMakeWallEdgeCircle(left, top) {
+
+    var mobileFix = new fabric.Circle({
+      left: left,
+      top: top,
+      radius: 40,
+      fill: '',
+    });
 
     var c = new fabric.Circle({
         left: left,
@@ -1435,15 +1443,16 @@ function scene2DMakeWallEdgeCircle(left, top, line1, line2, line3, line4) {
         strokeWidth: 5,
         radius: 12,
         fill: '#fff',
-        stroke: '#666'
+        stroke: '#666',
     });
-    c.hasControls = c.hasBorders = false;
 
-    c.line1 = line1;
-    c.line2 = line2;
-    c.line3 = line3;
-    c.line4 = line4;
-    return c;
+    var g = new fabric.Group([mobileFix, c], {selectable: true, hasBorders: false, hasControls: false, name: 'edge'});
+
+    g.line = new Array();
+    g.pivot = new Array();
+    g.bend = new Array();
+
+    return g;
 }
 
 /*
@@ -2647,7 +2656,7 @@ function show3DFloor() {
 
 function show3DFloorLevel() {
 
-     _animate = -1;
+    _animate = -1;
     SCENE = 'floorlevel';
 
     hideElements();
@@ -2763,6 +2772,7 @@ function scene2DZoom(SCALE_FACTOR) {
 
 function show2D() {
 
+    _animate = -1;
     SCENE = '2d';
 
     //camera2D.position.set(0, 8, 20);
@@ -2806,16 +2816,6 @@ function show2D() {
     }));
     scene2DMakeGrid(40,'#6dcff6');
     scene2DMakeGrid(20,'#E0E0E0');
-    scene2D.on('object:moving', function (e) //snap to grid
-    {
-        if(e.target.name != 'pivot')
-        {
-            e.target.set({
-                left: Math.round(e.target.left / 20) * 20,
-                top: Math.round(e.target.top / 20) * 20
-            });
-        }
-    });
     //============================
 
     for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++) {
@@ -2841,30 +2841,92 @@ function show2D() {
     //TODO: doubleclick resets Quardatic Curve
 
     scene2D.on('mouse:over', function(e) {
-        if(e.target.name == 'edge' || e.target.name == 'pivot')
+        if(e.target.name == 'edge')
         {
-            e.target.set({stroke:'#ff6600'});
+            e.target.item(1).set({stroke:'#ff6600'});
+            for (var i = 0; i < 2; i++)
+            {
+                if(e.target.bend[i]){
+                    e.target.bend[i].animate('opacity', 0.0, {
+                        duration: 600,
+                        onChange: scene2D.renderAll.bind(scene2D),
+                        //onComplete: function() {},
+                        easing: fabric.util.ease.easeInCubic
+                    });
+                }
+            }
+            //scene2D.renderAll();
+        }
+        else if (e.target.name == 'pivot') 
+        {
+            e.target.item(1).set({stroke:'#ff6600'});
             scene2D.renderAll();
         }
     });
     scene2D.on('mouse:out', function(e) {
-        if(e.target.name== 'edge')
+        if(e.target.name == 'edge')
         {
-            e.target.set({stroke:'#666'});
-            scene2D.renderAll();
+            e.target.item(1).set({stroke:'#666'});
+
+            for (var i = 0; i < 2; i++)
+            {
+                if(e.target.bend[i]){
+                    //TODO: adjust opposite angles
+                    //TODO: improve performance by adjusting "changed angle" only
+                    var angle = scene2DMakeWallEdgeAngle({x:e.target.line[0].path[0][1],y:e.target.line[0].path[0][2]},{x:e.target.line[1].path[0][1],y:e.target.line[1].path[0][2]},{x:e.target.line[1].path[1][3],y:e.target.line[1].path[1][4]});
+                    angle.set({opacity:0});
+                    scene2D.remove(e.target.bend[i]);
+                    e.target.bend[i] = angle;
+                    scene2D.add(angle); //.sendBackwards(angle); //.sendBackwards(angle);
+                    angle.animate('opacity', 1.0, {
+                        duration: 500,
+                        onChange: scene2D.renderAll.bind(scene2D),
+                        //onComplete: function() {scene2D.bringToFront(p.pivot[1])},
+                        easing: fabric.util.ease.easeInCubic
+                    });
+                }
+            }
+            scene2D.bringToFront(e.target);
+            //scene2D.bringForward(e.target);
+            //scene2D.renderAll();
         }
         else if (e.target.name == 'pivot') 
         {
-            e.target.set({stroke:'#0066FF'});
+            e.target.item(1).set({stroke:'#0066FF'});
             scene2D.renderAll();
         }
     });
+
+    scene2D.on('mouse:up', function(e) {
+        if(e.target.name == 'wall')
+        {
+
+        }
+    });
+    /*
+    scene2D.on('object:dblclick', function(e) {
+        if (e.target.name == 'pivot')
+        {
+            var pivot = scene2DGetCenterPivot({x:e.target.wall.path[0][1],y:e.target.wall.path[0][2]},{x:e.target.wall.path[1][3],y:e.target.wall.path[1][4]});
+            e.target.left = pivot.x; e.target.top = pivot.y
+            e.target.wall.path[1][1] = pivot.x; e.target.wall.path[1][2] = pivot.y;
+        }
+    });
+    */
+
     scene2D.on('object:moving', function(e) {
+    
         var p = e.target;
 
         scene2D.remove(scene2DDrawLine); //quickfix
+    
+        //snap to grid
+        p.set({
+                left: Math.round(p.left / 20) * 20,
+                top: Math.round(p.top / 20) * 20
+        });
 
-        if (p.name === 'edge') {
+        if (p.name == 'edge') {
             
             /*
             //Non-SVG
@@ -2875,37 +2937,35 @@ function show2D() {
             */
 
             //SVG
+            for (var i = 0; i < 4; i++)
+            {
+                if(p.line[i])
+                {
+                    var pivotOriginal = scene2DGetCenterPivot({x:p.line[i].path[0][1],y:p.line[i].path[0][2]},{x:p.line[i].path[1][3],y:p.line[i].path[1][4]});
+                    
+                    if(i == 0){
+                        p.line[i].path[1][3] = p.left; p.line[i].path[1][4] = p.top;
+                    }else{
+                        p.line[i].path[0][1] = p.left; p.line[i].path[0][2] = p.top;
+                    }
 
-            if(undefined != p.line1){
-                p.line1.path[1][3] = p.left; p.line1.path[1][4] = p.top;
-            }
-            if(undefined != p.line2){
-                p.line2.path[0][1] = p.left; p.line2.path[0][2] = p.top;
-            }
-            if(undefined != p.line3){
-                p.line3.path[0][1] = p.left; p.line3.path[0][2] = p.top;
-            }
-            if(undefined != p.line4){
-                p.line4.path[0][1] = p.left; p.line4.path[0][2] = p.top;
-            }
-
-            if(undefined != p.angle1){
-                scene2D.add(scene2DMakeWallEdgeAngle({x:p.line1.path[0][1],y:p.line1.path[0][2]},{x:p.line2.path[0][1],y:p.line2.path[0][2]},{x:p.line2.path[1][3],y:p.line2.path[1][4]}));
-                scene2D.bringForward(p);
-             }
-            if(undefined != p.angle2){
-                p.angle2.left = p.left;
-                p.angle2.top = p.top;
+                    var pivot = scene2DGetCenterPivot({x:p.line[i].path[0][1],y:p.line[i].path[0][2]},{x:p.line[i].path[1][3],y:p.line[i].path[1][4]});
+                    if(p.line[i].path[1][1] == pivotOriginal.x || p.line[i].path[1][2] == pivotOriginal.y)
+                    {
+                        p.line[i].path[1][1] = pivot.x; p.line[i].path[1][2] = pivot.y;
+                        p.pivot[i].left = pivot.x; p.pivot[i].top = pivot.y
+                    }
+                }
             }
 
             //scene2D.renderAll();
         }
-        else if (p.name === "pivot") //Curved Walls!
+        else  if (p.name === 'pivot') //Curved Walls!
         {
             //console.log(p.left + " " + p.top);
 
-            p.line2.path[1][1] = p.left;
-            p.line2.path[1][2] = p.top;
+            p.wall.path[1][1] = p.left;
+            p.wall.path[1][2] = p.top;
         }
     });
 
@@ -2913,14 +2973,15 @@ function show2D() {
 
         var circle;
         var angle;
-        var dimentions; 
+        var pivot;
+        var dimentions;
         var v1 = {x: 0, y: 0}, v2 = {x: 0, y: 0}, v3 = {x: 0, y: 0}; //Think of it as 3 point angle > v1 is left v2 right and v3 center
         
         /*
         Original idea was using simple lines, but curved lines must be in SVG (Path) format
         therefore reading coordinates is a lot more complex - below table shows tranlations
         */
-        var x1, x2, y1, y2;
+        var x1, x2, x3, y1, y2, y3;
         /*
         svg.path[0][1] -> x1
         svg.path[0][2] -> y1
@@ -2929,33 +2990,27 @@ function show2D() {
         */
 
         try { //TODO: detect ending loop of lines better!
-            /*
-            v1 = {x: scene2DWallMesh[FLOOR][i-1].get('x1'), y: scene2DWallMesh[FLOOR][i-1].get('y1')};
-            v3 = {x: scene2DWallMesh[FLOOR][i].get('x2'), y: scene2DWallMesh[FLOOR][i].get('y2')};
-            v2 = {x: scene2DWallMesh[FLOOR][i].get('x1'), y: scene2DWallMesh[FLOOR][i].get('y1')};
-
-            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][i].get('x1'), scene2DWallMesh[FLOOR][i].get('y1'), scene2DWallMesh[FLOOR][i - 1], scene2DWallMesh[FLOOR][i]);
-            pivot = scene2DMakeWallPivotCircle(scene2DWallMesh[FLOOR][i].get('x2')-scene2DWallMesh[FLOOR][i].get('x1')/2, scene2DWallMesh[FLOOR][i].get('y1') - 10, null, scene2DWallMesh[FLOOR][i], null);
-            */
+            
             x1 = scene2DWallMesh[FLOOR][i].path[0][1];
             x2 = scene2DWallMesh[FLOOR][i].path[1][3];
             y1 = scene2DWallMesh[FLOOR][i].path[0][2];
             y2 = scene2DWallMesh[FLOOR][i].path[1][4];
+            
 
+            //x3 = scene2DWallMesh[FLOOR][i-1].path[0][1];
+            //y3 = scene2DWallMesh[FLOOR][i-1].path[0][2];
+            
             v1 = {x: scene2DWallMesh[FLOOR][i-1].path[0][1], y: scene2DWallMesh[FLOOR][i-1].path[0][2]};
             v3 = {x: x2, y: y2};
             v2 = {x: x1, y: y1};
-
-            circle = scene2DMakeWallEdgeCircle(x1, y1, scene2DWallMesh[FLOOR][i-1], scene2DWallMesh[FLOOR][i]);
+            
+            circle = scene2DMakeWallEdgeCircle(x1, y1);
+            circle.line[0] = scene2DWallMesh[FLOOR][i-1];
+            circle.line[1] = scene2DWallMesh[FLOOR][i];
+            circle.pivot[0] = pivot;
+            pivot = scene2DMakeWallCurvedPivot(v2,v3,scene2DWallMesh[FLOOR][i]);
         
         }catch(e){
-            /*
-            v1 = {x: scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length-1].get('x1'), y: scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length-1].get('y1')};
-            v3 = {x: scene2DWallMesh[FLOOR][0].get('x2'), y: scene2DWallMesh[FLOOR][0].get('y2')};
-            v2 = {x: scene2DWallMesh[FLOOR][0].get('x1'), y: scene2DWallMesh[FLOOR][0].get('y1')};
-
-            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][0].get('x1'), scene2DWallMesh[FLOOR][0].get('y1'), scene2DWallMesh[FLOOR][i-1], scene2DWallMesh[FLOOR][0]); 
-            */
 
             x1 = scene2DWallMesh[FLOOR][0].path[0][1];
             x2 = scene2DWallMesh[FLOOR][0].path[1][3];
@@ -2966,7 +3021,11 @@ function show2D() {
             v3 = {x: x2, y: y2};
             v2 = {x: x1, y: y1};
 
-            circle = scene2DMakeWallEdgeCircle(scene2DWallMesh[FLOOR][0].path[0][1], scene2DWallMesh[FLOOR][0].path[0][2], scene2DWallMesh[FLOOR][i-1], scene2DWallMesh[FLOOR][0]); 
+            circle = scene2DMakeWallEdgeCircle(x1, y1);
+            circle.line[0] = scene2DWallMesh[FLOOR][i-1];
+            circle.line[1] = scene2DWallMesh[FLOOR][0];
+            circle.pivot[0] = pivot;
+            pivot = scene2DMakeWallCurvedPivot(v2,v3,scene2DWallMesh[FLOOR][0]);
         }
 
         /*
@@ -2977,19 +3036,19 @@ function show2D() {
         //var angleDeg = angleRad * 180 / Math.PI;
         //var angleDeg = find2DAngle(v1,v2,v3) * 180 / Math.PI;
 
-        circle.name = 'edge';
-        //circle.name = Math.random() * 9000 - 1000;; //unique segment ID
+        //circle.id = Math.random() * 9000 - 1000;; //unique segment ID
         
         angle = scene2DMakeWallEdgeAngle(v1,v2,v3);
         dimentions = scene2DMakeWallEdgeLength(v1,v2,v3)
-        circle.angle1 = angle;
+        circle.pivot[1] = pivot
+        circle.bend[0] = angle;
         circle.dimentions = dimentions;
 
         scene2D.add(angle).sendBackwards(angle);
 
         scene2D.add(dimentions);//.sendToBack(dimentions);
         
-        scene2D.add(scene2DMakeWallCurvedPivot(v1,v2,v3,scene2DWallMesh[FLOOR][i-1]));
+        scene2D.add(pivot);
 
         scene2D.add(circle);
     }
@@ -5760,7 +5819,15 @@ function scene2DArrayToLineWalls() {
 */
 }
 
-function scene2DMakeWallPivotCircle(left, top, line1, line2, line3) {
+function scene2DMakeWallPivotCircle(left, top) {
+
+    var mobileFix = new fabric.Circle({
+      left: left,
+      top: top,
+      radius: 40,
+      fill: '',
+    });
+
     var c = new fabric.Circle({
       left: left,
       top: top,
@@ -5770,13 +5837,7 @@ function scene2DMakeWallPivotCircle(left, top, line1, line2, line3) {
       stroke: '#0066FF'
     });
 
-    c.hasBorders = c.hasControls = false;
-
-    c.line1 = line1;
-    c.line2 = line2;
-    c.line3 = line3;
-
-    return c;
+    return new fabric.Group([mobileFix, c], {selectable: true, hasBorders: false, hasControls: false, name: 'pivot'});
 }
 
 /*
@@ -7022,5 +7083,5 @@ $(document).ready(function() {
         $(this).hide().prev('#menuTop p').html($(this).val()).show();
     });
 
-    //window.location.href = "#scene";
+    window.location.href = "#scene";
 });
