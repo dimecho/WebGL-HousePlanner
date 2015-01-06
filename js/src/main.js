@@ -132,14 +132,13 @@ var zoom2D = 1; // Global remembering previous zoom factor
 var scene2DDrawLineGeometry = []; //Temporary holder for mouse click and drag drawings
 var scene2DDrawLine; //2D Line form with color/border/points
 //var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
-var scene2DWallGeometry = []; //Sample Data - TODO: Remove
 var scene2DWallMesh = []; //Fabric.js line data
 var scene2DDoorMesh = []; //Fabric.js group line data (doors)
 var scene2DWindowMesh = []; //Fabric.js group line data (windows)
 var scene2DInteriorMesh = []; //Fabric.js svg data (furniture)
 var scene2DExteriorMesh = []; //Fabric.js svg data (trees)
 var scene2DDrawLine; //Fabric.Line - used by mousedown/mousemove/mouseup
-var scene2DWallDimentions = []; //Multidymentional array, contains real-life (visual) dimentions for scene2DWallGeometry [width,length,height,height-angle,angle]
+var scene2DWallDimentions = []; //Multidymentional array, contains real-life (visual) dimentions for scene2DWallMesh [width,length,height,height-angle,angle]
 
 var scene3DWallInteriorTextureDefault; //Wall Interior Default Texture
 var scene3DWallExteriorTextureDefault; //Wall Exterior Default Texture
@@ -287,9 +286,8 @@ function init(runmode,viewmode) {
         scene3DFloorWallContainer[i] = new THREE.Object3D();
         scene3DFloorTileContainer[i] = new THREE.Object3D();
 
-        scene2DWallGeometry[i] = new Array();
-        scene2DWallDimentions[i] = new Array();
         scene2DWallMesh[i] = new Array();
+        scene2DWallDimentions[i] = new Array();
         scene2DDoorMesh[i] = new Array();
         scene2DWindowMesh[i] = new Array();
         scene2DInteriorMesh[i] = new Array();
@@ -1148,7 +1146,7 @@ function scene2DMakeWall(coords) {
     */
 
     line.name = 'wall';
-
+    line.hasControls = false;
     /*
     line.toObject = function() {
         return {
@@ -2839,11 +2837,31 @@ function show2D() {
     }
 
     //TODO: doubleclick resets Quardatic Curve
-
+    //http://stackoverflow.com/questions/21511383/fabricjs-detect-mouse-over-object-path -> http://fabricjs.com/per-pixel-drag-drop/
+    
+    scene2D.on('object:selected', function(e) {
+        if(e.target.name == 'edge')
+        {
+            clearTimeout(clickTime);
+            clickTime = setTimeout(function() {
+                    $('#menu2DTools').tooltipster({
+                        theme: 'tooltipster-light',
+                        trigger: 'custom',
+                        contentAsHTML: true,
+                        content: '<a href="#" class="lo-icon icon-delete" style="color:#FF0000"></a><a href="#" class="lo-icon icon-lock" style="color:#606060"></a>'
+                    });
+                       
+                    $('#menu2DTools').css({ left: e.target.left, top: e.target.top });
+                    $('#menu2DTools').tooltipster('show');
+            }, 500);
+        }
+    });
+    
     scene2D.on('mouse:over', function(e) {
         if(e.target.name == 'edge')
         {
             e.target.item(1).set({stroke:'#ff6600'});
+            
             for (var i = 0; i < 2; i++)
             {
                 if(e.target.bend[i]){
@@ -2887,6 +2905,7 @@ function show2D() {
                 }
             }
             scene2D.bringToFront(e.target);
+            
             //scene2D.bringForward(e.target);
             //scene2D.renderAll();
         }
@@ -2897,12 +2916,26 @@ function show2D() {
         }
     });
 
-    scene2D.on('mouse:up', function(e) {
+    scene2D.on('mouse:down', function(e) {
         if(e.target.name == 'wall')
         {
-
+             
+        }
+        else
+        {
+            try{
+                $('#menu2DTools').tooltipster('hide');
+            }catch(e){}
         }
     });
+    /*
+    scene2D.on('mouse:up', function(e) {
+        if(e.target.name == 'edge')
+        {
+            clearTimeout(clickTime);
+        }
+    });
+    */
     /*
     scene2D.on('object:dblclick', function(e) {
         if (e.target.name == 'pivot')
@@ -2915,7 +2948,7 @@ function show2D() {
     */
 
     scene2D.on('object:moving', function(e) {
-    
+        
         var p = e.target;
 
         scene2D.remove(scene2DDrawLine); //quickfix
@@ -2927,7 +2960,9 @@ function show2D() {
         });
 
         if (p.name == 'edge') {
-            
+
+            $('#menu2DTools').tooltipster('hide');
+            //clearTimeout(clickTime);
             /*
             //Non-SVG
             p.line1 && p.line1.set({'x2': p.left,'y2': p.top});
@@ -3483,7 +3518,7 @@ function selectFloor(next) {
 		        scene3DFloorWallContainer[i] = new THREE.Object3D();
                 scene3DFloorTileContainer[i] = new THREE.Object3D();
                 scene3DFloorOtherContainer[i] = new THREE.Object3D();
-			    scene2DWallGeometry[i] = new Array();
+			    scene2DWallMesh[i] = new Array();
 			    scene2DWallDimentions[i] = new Array();
 		    //} else { // user clicked "cancel"
 		    }
@@ -4058,16 +4093,15 @@ function on2DMouseUp(event) {
                 if (magicY[c - 1] == "straight") {
 
                     //console.log(scene2DWallGeometry[FLOOR][scene2DWallGeometry[FLOOR].length - 1]);
-
                     //add new wall points
-                    scene2DWallGeometry[FLOOR].push([scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y, scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y]);
+                    //scene2DWallGeometry[FLOOR].push([scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y, scene2DDrawLineGeometry[n].x, scene2DDrawLineGeometry[i].y]);
 
                 } else {
 
                     //Modify wall last point (extend)
-                    var l = scene2DWallGeometry[FLOOR].length - 1;
-                    scene2DWallGeometry[FLOOR][l][2] = scene2DDrawLineGeometry[i].x;
-                    scene2DWallGeometry[FLOOR][l][3] = scene2DDrawLineGeometry[i].y;
+                    //var l = scene2DWallGeometry[FLOOR].length - 1;
+                    //scene2DWallGeometry[FLOOR][l][2] = scene2DDrawLineGeometry[i].x;
+                    //scene2DWallGeometry[FLOOR][l][3] = scene2DDrawLineGeometry[i].y;
                 }
 
             } else if ((magicY[c] == "up" || magicY[c] == "down")) {
@@ -4075,7 +4109,7 @@ function on2DMouseUp(event) {
                 if (magicY[c - 1] == "up" || magicY[c - 1] == "down") {
 
                     //add new wall points
-                    scene2DWallGeometry[FLOOR].push([scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[n].y, scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[n].y]);
+                    //scene2DWallGeometry[FLOOR].push([scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[n].y, scene2DDrawLineGeometry[i].x, scene2DDrawLineGeometry[n].y]);
                     //} else {
 
                 }
@@ -5061,7 +5095,7 @@ function scene2DCollectArrayFromContainer(container) {
     for (var i in container)
     {
         var obj = container[i];
-        if (obj.name == "wall")
+        if (obj.name == 'wall')
         {
             var JSONString = {};
             JSONString["wall"] = "standard";
@@ -5221,8 +5255,17 @@ function openScene(zipData) {
 
     for (var i = 0; i < 4; i++){
         try{
-            //var objects2DFloor = JSON.parse(zip.file("scene2DFloorContainer." + i + ".json").asText());
+            var objects2DWalls = JSON.parse(zip.file("scene2DFloorContainer." + i + ".json").asText());
+            var loop = 0;
+            scene2DWallMesh[i] = [];
+            $.each(objects2DWalls, function(index){
+                //console.log(this['position.x1'] + ":" + this['position.y1'] + " " + this['position.x2'] + ":" + this['position.y2']);
+                scene2DWallMesh[i][loop] = scene2DMakeWall([this['position.x1'], this['position.y1'], this['position.x2'], this['position.y2'],this['curve.x'],this['curve.y']]);
+                loop++;
+            });
+        }catch(ex){console.log(">>>" + ex);}
 
+        try{
             var objects3DFurniture = JSON.parse(zip.file("scene3DFloorFurnitureContainer." + i + ".json").asText());
             $.each(objects3DFurniture, function(index){
                 var note = null;
@@ -5515,23 +5558,9 @@ function sceneOpen(file) {
                 } catch (e) {
                     console.log("failed to open scene " + e);
                 }
-                //============ SAMPLE DATA ================
-                scene2DWallGeometry[FLOOR].push([480, 180, 660, 180, 0]); //x1,y1,x2,y2,curve
-                scene2DWallGeometry[FLOOR].push([660, 180, 660, 140, 0]);
-                scene2DWallGeometry[FLOOR].push([660, 140, 1040, 140, 0]);
 
-                scene2DWallGeometry[FLOOR].push([1040, 150, 1040, 540, 0]);
-                scene2DWallGeometry[FLOOR].push([1040, 540, 930, 540, 0]);
-                scene2DWallGeometry[FLOOR].push([930, 540, 930, 650, 0]);
-
-                scene2DWallGeometry[FLOOR].push([930, 650, 480, 650, 0]);
-
-                scene2DWallGeometry[FLOOR].push([480, 650, 480, 180, 0]);
-                //scene2DWallDimentions[FLOOR].push([50, 200, 80, 0, 0]);
-                scene2DArrayToLineWalls();
                 scene3DFloorWallGenerate();
                 
-
                 setTimeout(function()
                 {
                     document.getElementById("WebGLCanvas").removeChild(spinner.el);
@@ -5607,216 +5636,6 @@ function sceneNew() {
         makeCircle(line6.get('x2'), line6.get('y2'), line6)
     );
 	*/
-}
-
-function scene2DArrayToLineWalls() {
-
-    scene2DWallMesh[FLOOR] = [];
-
-    for (var i = 0; i < scene2DWallGeometry[FLOOR].length; i++) { //each floor wall
-
-        //console.log(scene2DWallGeometry[FLOOR][i][0] + "," + scene2DWallGeometry[FLOOR][i][1] + "," + scene2DWallGeometry[FLOOR][i][2] + "," + scene2DWallGeometry[FLOOR][i][3]);
-        
-        scene2DWallMesh[FLOOR][i] = scene2DMakeWall([scene2DWallGeometry[FLOOR][i][0], scene2DWallGeometry[FLOOR][i][1], scene2DWallGeometry[FLOOR][i][2], scene2DWallGeometry[FLOOR][i][3],0,0]);
-        scene2DWallMesh[FLOOR][i].hasControls = false;
-
-        var xOffset = -10;
-        var yOffset = -20;
-        var angleOffset = -90;
-
-        if (scene2DWallGeometry[FLOOR][i][1] != scene2DWallGeometry[FLOOR][i][3])
-            angleOffset = -180;
-
-        /*
-        var line = new fabric.Line([scene2DWallGeometry[FLOOR][i][0] - 10, scene2DWallGeometry[FLOOR][i][1] - 20, scene2DWallGeometry[FLOOR][i][2] + 10, scene2DWallGeometry[FLOOR][i][3] - 20], {
-            fill: 'blue',
-            stroke: 'black',
-            strokeWidth: 1,
-            hasControls: false,
-            selectable: false
-        });
-        scene2D.add(line);
-        */
-      
-        /*
-        var text = new fabric.Text('10m x 15cm', {
-            fontFamily: 'Arial',
-            fontSize: 12,
-            left: scene2DWallGeometry[FLOOR][i][0] + (scene2DWallGeometry[FLOOR][i][2] - scene2DWallGeometry[FLOOR][i][0]) / 2,
-            top: scene2DWallGeometry[FLOOR][i][1] + yOffset,
-            fill: 'black',
-            hasControls: false,
-            selectable: false
-        });
-        var dx = line.get('x2') - line.get('x1');
-        var dy = line.get('x2') - line.get('x1');
-        var PI2 = Math.PI * 2;
-        var radianAngle = (Math.atan2(dy, dx) + PI2) % PI2;
-        text.setAngle(radianAngle);
-        scene2D.add(text);
-        */
-
-        /*
-        var tip = [];
-        for (var a = 0; a < 2; a++) {
-            tip[a] = new fabric.Path('M 0 0 L -10 10 M 0 0 L 10 10 z', {
-                strokeWidth: 1,
-                stroke: 'black',
-                hasControls: false,
-                selectable: false,
-            });
-
-            if (a == 0) {
-                tip[a].setAngle(angleOffset);
-                tip[a].left = scene2DWallGeometry[FLOOR][i][0] + xOffset,
-                tip[a].top = scene2DWallGeometry[FLOOR][i][1] + yOffset;
-            } else if (a == 1) {
-                tip[a].setAngle(angleOffset * -1);
-                tip[a].left = scene2DWallGeometry[FLOOR][i][2] - xOffset,
-                tip[a].top = scene2DWallGeometry[FLOOR][i][3] + yOffset;
-            }
-
-            tip[a].line = line;
-            scene2D.add(tip[a]);
-            tip[a].bringToFront();
-        }
-        scene2D.on('object:moving', function(e) {
-        var p = e.target;
-
-        if (p.point_type === 'arrow_start') {
-
-            p.arrow.set('x1', p.left);
-            p.arrow.set('y1', p.top);
-
-            p.arrow._setWidthHeight();
-            var x = p.arrow.get('x2') - p.arrow.get('x1');
-            var y = p.arrow.get('y2') - p.arrow.get('y1');
-            var angle;
-            if (x == 0) {
-                if (y == 0) {
-                    angle = 0;
-                } else if (y > 0) {
-                    angle = Math.PI / 2;
-                } else {
-                    angle = Mathi.PI * 3 / 2;
-                }
-            } else if (y == 0) {
-                if (x > 0) {
-                    angle = 0;
-                } else {
-                    angle = Math.PI;
-                }
-            } else {
-                if (x < 0) {
-                    angle = Math.atan(y / x) + Math.PI;
-                } else if (y < 0) {
-                    angle = Math.atan(y / x) + (2 * Math.PI);
-                } else {
-                    angle = Math.atan(y / x);
-                }
-            }
-            angle = angle * 180 / Math.PI;
-            // var angle = -Math.atan((y)/(x))*180/Math.PI
-
-            p.set('angle', angle - 90);
-            scene2D.renderAll();
-
-        } else if (p.point_type === 'arrow_end') {
-
-            p.arrow.set('x2', p.left);
-            p.arrow.set('y2', p.top);
-            p.arrow._setWidthHeight();
-            var x = p.arrow.get('x2') - p.arrow.get('x1');
-            var y = p.arrow.get('y2') - p.arrow.get('y1');
-            var angle;
-            if (x == 0) {
-                if (y == 0) {
-                    angle = 0;
-                } else if (y > 0) {
-                    angle = Math.PI / 2;
-                } else {
-                    angle = Mathi.PI * 3 / 2;
-                }
-            } else if (y == 0) {
-                if (x > 0) {
-                    angle = 0;
-                } else {
-                    angle = Math.PI;
-                }
-            } else {
-                if (x < 0) {
-                    angle = Math.atan(y / x) + Math.PI;
-                } else if (y < 0) {
-                    angle = Math.atan(y / x) + (2 * Math.PI);
-                } else {
-                    angle = Math.atan(y / x);
-                }
-            }
-            angle = angle * 180 / Math.PI;
-            //var angle = -Math.atan((y)/(x))*180/Math.PI
-            p.point_start.set('angle', angle - 90);
-            scene2D.renderAll();
-
-        } else if (p.point_type === 'edge') {
-
-            p.line1 && p.line1.set({
-                'x2': p.left,
-                'y2': p.top
-            });
-            p.line2 && p.line2.set({
-                'x1': p.left,
-                'y1': p.top
-            });
-            p.line3 && p.line3.set({
-                'x1': p.left,
-                'y1': p.top
-            });
-            p.line4 && p.line4.set({
-                'x1': p.left,
-                'y1': p.top
-            });
-            scene2D.renderAll();
-        }
-    });
-        */
-
-        //wallMesh[i].tip = tip;
-
-        /*
-        // create arrow points
-        var r1 = new fabric.Triangle({
-            left: line.get('x1'),
-            top: line.get('y1'),
-            opacity: 1,
-            width: 20,
-            height: 20,
-            fill: '#000'
-        });
-        r1.lockScalingX = r1.lockScalingY = r1.lockRotation = true;
-        r1.lockRotation = true;
-        r1.hasControls = false;
-        r1.arrow = wallMesh[i];
-        r1.setAngle('-45');
-        r1.point_type = 'arrow_start';
-        scene2D.add(r1);
-        */
-
-        //scene2D.add(scene2DWallMesh[FLOOR][i]);
-
-        //canvas.setActiveObject(line);
-    }
-
-
-
-/*
-    scene2D.on('object:selected', function(e) {
-        var p = e.target;
-    });
-
-    scene2D.on('before:selection:cleared', function(e) {
-        var p = e.target;
-    });
-*/
 }
 
 function scene2DMakeWallPivotCircle(left, top) {
