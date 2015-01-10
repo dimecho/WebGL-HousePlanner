@@ -740,19 +740,6 @@ function init(runmode,viewmode) {
             clearTimeout
     })();
 
-    
-    scene2D.on('mouse:down', function(event) {
-        on2DMouseDown(event.e);
-    });
-    
-    scene2D.on('mouse:move', function(event) {
-        on2DMouseMove(event.e);
-    });
-
-    scene2D.on('mouse:up', function(event) {
-        on2DMouseUp(event.e);
-    });
-    
 
     //$("#HTMLCanvas").bind('mousedown', on2DMouseDown);
     //$("#HTMLCanvas").bind('mouseup', on2DMouseUp);
@@ -1255,7 +1242,7 @@ function scene2DGetCenterPivot(v1,v2)
 function scene2DMakeWallCurvedPivot(v1,v2,wall)
 {
     var point = scene2DGetCenterPivot(v1,v2);
-    var pivot = scene2DMakeWallPivotCircle(0, 0);
+    var pivot = scene2DMakeWallPivotCircle(0, 0, false);
     
     pivot.left = point.x;
     pivot.top = point.y;
@@ -1426,7 +1413,51 @@ function scene2DMakeWallEdgeAngle(v1,v2,v3) {
     return new fabric.Group([line1, line2, arc, text], {selectable: false, angle:offsetAngle, name:'angle'});
 }
 
-function scene2DMakeWallEdgeCircle(left, top) {
+function scene2DRemoveWallEdgeCircle(id) {
+    console.log(id);
+
+    //var objects = canvas.getObjects(canvas.getActiveGroup);
+
+    var objects = scene2D.getObjects();
+    for (var i in objects)
+    {
+        var obj = objects[i];
+        if(obj.id == id)
+        {
+            scene2D.remove(obj);
+            //TODO: History Record
+            //TODO: remove walls coordinates
+
+            break;
+        }
+    }
+
+    return false; //href="#" fix
+}
+
+function scene2DLockObject(id) {
+
+    var objects = scene2D.getObjects();
+    for (var i in objects)
+    {
+        var obj = objects[i];
+        if(obj.id == id)
+        {   
+            if(obj.lockMovementX == true)
+            {
+                obj.item(2).set({visible:false});
+                obj.set({lockMovementX:false,lockMovementY:false});
+            }else{
+                obj.item(2).set({visible:true});
+                obj.set({lockMovementX:true,lockMovementY:true});
+            }
+            break;
+        }
+    }
+    return false; //href="#" fix
+}
+
+function scene2DMakeWallEdgeCircle(left, top, lock) {
 
     var mobileFix = new fabric.Circle({
       left: left,
@@ -1444,8 +1475,20 @@ function scene2DMakeWallEdgeCircle(left, top) {
         stroke: '#666',
     });
 
-    var g = new fabric.Group([mobileFix, c], {selectable: true, hasBorders: false, hasControls: false, name: 'edge'});
+    var img = new Image();
+    img.src = 'images/lock.png';
 
+    var i = new fabric.Image(img, {
+        left: left,
+        top: top,
+        width: 10,
+        height: 12,
+        opacity: 0.6,
+        visible: false,
+    });
+
+    var g = new fabric.Group([mobileFix, c, i], {selectable: true, hasBorders: false, hasControls: false, name: 'edge', lockMovementX:lock, lockMovementY:lock});
+    
     g.line = new Array();
     g.pivot = new Array();
     g.bend = new Array();
@@ -2782,12 +2825,19 @@ function show2D() {
     if (TOOL2D == 'freestyle') {
         menuSelect(2, 'menuLeft2DItem', '#ff3700');
         scene2D.isDrawingMode = true;
-    } else if (TOOL2D == 'vector') {
-        menuSelect(3, 'menuLeft2DItem', '#ff3700');
+    }
+    else
+    {
         scene2D.isDrawingMode = false;
-        //} else if (TOOL2D == 'square') {
-
-        //} else if (TOOL2D == 'circle') {
+        if (TOOL2D == 'vector') {
+            menuSelect(3, 'menuLeft2DItem', '#ff3700');
+        } else if (TOOL2D == 'line') {
+            menuSelect(4, 'menuLeft2DItem', '#ff3700');
+        } else if (TOOL2D == 'square') {
+            menuSelect(5, 'menuLeft2DItem', '#ff3700');
+        } else if (TOOL2D == 'circle') {
+            menuSelect(6, 'menuLeft2DItem', '#ff3700');
+        }
     }
 
     toggleRight('menuRight', true);
@@ -2842,19 +2892,33 @@ function show2D() {
     scene2D.on('object:selected', function(e) {
         if(e.target.name == 'edge')
         {
-            clearTimeout(clickTime);
+            //clearTimeout(clickTime);
             clickTime = setTimeout(function() {
-                    $('#menu2DTools').tooltipster({
-                        theme: 'tooltipster-light',
-                        trigger: 'custom',
-                        contentAsHTML: true,
-                        content: '<a href="#" class="lo-icon icon-delete" style="color:#FF0000"></a><a href="#" class="lo-icon icon-lock" style="color:#606060"></a>'
-                    });
-                       
-                    $('#menu2DTools').css({ left: e.target.left, top: e.target.top });
-                    $('#menu2DTools').tooltipster('show');
+                $('#menu2DTools').tooltipster('update', '<a href="#" onclick="scene2DRemoveWallEdgeCircle(\'' + e.target.id + '\')" class="lo-icon icon-delete" style="color:#FF0000"></a><a href="#" onclick="scene2DLockObject(\'' + e.target.id + '\')" class="lo-icon icon-lock" style="color:#606060"></a>');
+                $('#menu2DTools').css({ left: e.target.left, top: e.target.top });
+                $('#menu2DTools').tooltipster('show');
             }, 500);
         }
+        else if(e.target.name == 'pivot')
+        {
+            clickTime = setTimeout(function() {
+                $('#menu2DTools').tooltipster('update', '<a href="#" onclick="scene2DLockObject(\'' + e.target.id + '\')" class="lo-icon icon-lock" style="color:#606060"></a>');
+                $('#menu2DTools').css({ left: e.target.left, top: e.target.top });
+                $('#menu2DTools').tooltipster('show');
+            }, 500);
+        }
+    });
+
+    scene2D.on('mouse:down', function(event) {
+        on2DMouseDown(event.e);
+    });
+    /*
+    scene2D.on('mouse:move', function(event) {
+        on2DMouseMove(event.e);
+    });
+    */
+    scene2D.on('mouse:up', function(event) {
+        on2DMouseUp(event.e);
     });
     
     scene2D.on('mouse:over', function(e) {
@@ -2881,6 +2945,7 @@ function show2D() {
             scene2D.renderAll();
         }
     });
+
     scene2D.on('mouse:out', function(e) {
         if(e.target.name == 'edge')
         {
@@ -2916,18 +2981,6 @@ function show2D() {
         }
     });
 
-    scene2D.on('mouse:down', function(e) {
-        if(e.target.name == 'wall')
-        {
-             
-        }
-        else
-        {
-            try{
-                $('#menu2DTools').tooltipster('hide');
-            }catch(e){}
-        }
-    });
     /*
     scene2D.on('mouse:up', function(e) {
         if(e.target.name == 'edge')
@@ -2954,14 +3007,16 @@ function show2D() {
         scene2D.remove(scene2DDrawLine); //quickfix
     
         //snap to grid
+
         p.set({
-                left: Math.round(p.left / 20) * 20,
-                top: Math.round(p.top / 20) * 20
+            left: Math.round(p.left / 20) * 20,
+            top: Math.round(p.top / 20) * 20
         });
-
+        
         if (p.name == 'edge') {
-
+            
             $('#menu2DTools').tooltipster('hide');
+            
             //clearTimeout(clickTime);
             /*
             //Non-SVG
@@ -2972,6 +3027,7 @@ function show2D() {
             */
 
             //SVG
+
             for (var i = 0; i < 4; i++)
             {
                 if(p.line[i])
@@ -2992,15 +3048,17 @@ function show2D() {
                     }
                 }
             }
-
+        
             //scene2D.renderAll();
         }
-        else  if (p.name === 'pivot') //Curved Walls!
+        else  if (p.name == 'pivot') //Curved Walls!
         {
             //console.log(p.left + " " + p.top);
-
+            $('#menu2DTools').tooltipster('hide');
+       
             p.wall.path[1][1] = p.left;
             p.wall.path[1][2] = p.top;
+        
         }
     });
 
@@ -3017,6 +3075,7 @@ function show2D() {
         therefore reading coordinates is a lot more complex - below table shows tranlations
         */
         var x1, x2, x3, y1, y2, y3;
+        var a, b;
         /*
         svg.path[0][1] -> x1
         svg.path[0][2] -> y1
@@ -3024,44 +3083,31 @@ function show2D() {
         svg.path[1][4] -> y2
         */
 
-        try { //TODO: detect ending loop of lines better!
-            
-            x1 = scene2DWallMesh[FLOOR][i].path[0][1];
-            x2 = scene2DWallMesh[FLOOR][i].path[1][3];
-            y1 = scene2DWallMesh[FLOOR][i].path[0][2];
-            y2 = scene2DWallMesh[FLOOR][i].path[1][4];
-            
-
-            //x3 = scene2DWallMesh[FLOOR][i-1].path[0][1];
-            //y3 = scene2DWallMesh[FLOOR][i-1].path[0][2];
-            
-            v1 = {x: scene2DWallMesh[FLOOR][i-1].path[0][1], y: scene2DWallMesh[FLOOR][i-1].path[0][2]};
-            v3 = {x: x2, y: y2};
-            v2 = {x: x1, y: y1};
-            
-            circle = scene2DMakeWallEdgeCircle(x1, y1);
-            circle.line[0] = scene2DWallMesh[FLOOR][i-1];
-            circle.line[1] = scene2DWallMesh[FLOOR][i];
-            circle.pivot[0] = pivot;
-            pivot = scene2DMakeWallCurvedPivot(v2,v3,scene2DWallMesh[FLOOR][i]);
-        
+        try {
+            a = i;
+            b = i - 1;
+            x1 = scene2DWallMesh[FLOOR][a].path[0][1];
         }catch(e){
-
-            x1 = scene2DWallMesh[FLOOR][0].path[0][1];
-            x2 = scene2DWallMesh[FLOOR][0].path[1][3];
-            y1 = scene2DWallMesh[FLOOR][0].path[0][2];
-            y2 = scene2DWallMesh[FLOOR][0].path[1][4];
-
-            v1 = {x: scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length-1].path[0][1], y: scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length-1].path[0][2]};
-            v3 = {x: x2, y: y2};
-            v2 = {x: x1, y: y1};
-
-            circle = scene2DMakeWallEdgeCircle(x1, y1);
-            circle.line[0] = scene2DWallMesh[FLOOR][i-1];
-            circle.line[1] = scene2DWallMesh[FLOOR][0];
-            circle.pivot[0] = pivot;
-            pivot = scene2DMakeWallCurvedPivot(v2,v3,scene2DWallMesh[FLOOR][0]);
+            a = 0;
+            b = scene2DWallMesh[FLOOR].length-1;
+            x1 = scene2DWallMesh[FLOOR][a].path[0][1];
         }
+
+        x2 = scene2DWallMesh[FLOOR][a].path[1][3];
+        y1 = scene2DWallMesh[FLOOR][a].path[0][2];
+        y2 = scene2DWallMesh[FLOOR][a].path[1][4];
+        x3 = scene2DWallMesh[FLOOR][b].path[0][1];
+        y3 = scene2DWallMesh[FLOOR][b].path[0][2];
+
+        v1 = {x: x3, y: y3};
+        v3 = {x: x2, y: y2};
+        v2 = {x: x1, y: y1};
+
+        circle = scene2DMakeWallEdgeCircle(x1, y1, false);
+        circle.line[0] = scene2DWallMesh[FLOOR][b];
+        circle.line[1] = scene2DWallMesh[FLOOR][a];
+        circle.pivot[0] = pivot;
+        pivot = scene2DMakeWallCurvedPivot(v2,v3,scene2DWallMesh[FLOOR][a]);
 
         /*
         http://stackoverflow.com/questions/12903547/fastest-way-to-find-the-angle-between-two-points
@@ -3070,12 +3116,11 @@ function show2D() {
         //var angleRad = Math.acos((v1.x * v2.x + v1.y * v2.y) / ( Math.sqrt(v1.x*v1.x + v1.y*v1.y) * Math.sqrt(v2.x*v2.x + v2.y*v2.y)));
         //var angleDeg = angleRad * 180 / Math.PI;
         //var angleDeg = find2DAngle(v1,v2,v3) * 180 / Math.PI;
-
-        //circle.id = Math.random() * 9000 - 1000;; //unique segment ID
         
         angle = scene2DMakeWallEdgeAngle(v1,v2,v3);
-        dimentions = scene2DMakeWallEdgeLength(v1,v2,v3)
-        circle.pivot[1] = pivot
+        dimentions = scene2DMakeWallEdgeLength(v1,v2,v3);
+        circle.id = Math.random().toString(36).substring(7); //Math.random() * 9000 - 1000;; //unique segment ID
+        circle.pivot[1] = pivot;
         circle.bend[0] = angle;
         circle.dimentions = dimentions;
 
@@ -3815,11 +3860,13 @@ function on2DMouseDown(event) {
         }
     }
 
+    $('#menu2DTools').tooltipster('hide');
+
     //$("#HTMLCanvas").bind('mousemove', on2DMouseMove);
     // fabric.util.addListener(fabric.document, 'dblclick', dblClickHandler);
     //fabric.util.removeListener(canvas.upperCanvasEl, 'dblclick', dblClickHandler); 
 
-    $("#menuWallInput").hide(); //TODO: analyze and store input
+    //$("#menuWallInput").hide(); //TODO: analyze and store input
 
     //http://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
     //===================================
@@ -4136,7 +4183,7 @@ function on2DMouseMove(event) {
     //if (!leftButtonDown) {
     //    return;
     //}
-
+    /*
     if (TOOL2D == 'line' && scene2DDrawLine instanceof fabric.Line) {
         scene2DDrawLine.set({
             x2: event.clientX,
@@ -4144,7 +4191,8 @@ function on2DMouseMove(event) {
         });
         scene2D.renderAll();
     }
-    
+    */
+
     //scene3DHouseContainer.children[0].mesh.materials[0].opacity = 0.2;
 
     //TweenLite.to(mesh.material, 2, {opacity: 0.2}); //TweenLite.to(object, duration, properties);
@@ -5099,6 +5147,7 @@ function scene2DCollectArrayFromContainer(container) {
         {
             var JSONString = {};
             JSONString["wall"] = "standard";
+            JSONString["locked"] = obj.lockMovementX;
             JSONString["position.x1"] = obj.path[0][1];
             JSONString["position.y1"] = obj.path[0][2];
             JSONString["position.x2"] = obj.path[1][3];
@@ -5638,7 +5687,7 @@ function sceneNew() {
 	*/
 }
 
-function scene2DMakeWallPivotCircle(left, top) {
+function scene2DMakeWallPivotCircle(left, top, lock) {
 
     var mobileFix = new fabric.Circle({
       left: left,
@@ -5656,7 +5705,19 @@ function scene2DMakeWallPivotCircle(left, top) {
       stroke: '#0066FF'
     });
 
-    return new fabric.Group([mobileFix, c], {selectable: true, hasBorders: false, hasControls: false, name: 'pivot'});
+    var img = new Image();
+    img.src = 'images/lock.png';
+
+    var i = new fabric.Image(img, {
+        left: left,
+        top: top,
+        width: 8,
+        height: 6,
+        opacity: 0.6,
+        visible: false,
+    });
+
+    return new fabric.Group([mobileFix, c, i], {selectable: true, hasBorders: false, hasControls: false, name: 'pivot', lockMovementX:lock, lockMovementY:lock});
 }
 
 /*
@@ -6858,6 +6919,16 @@ $(document).ready(function() {
         trigger: 'hover',
         position: 'bottom',
         contentAsHTML: true
+    });
+
+    $('#menu2DTools').tooltipster({
+        theme: 'tooltipster-light',
+        trigger: 'custom',
+        touchDevices: true,
+        //delay: 200,
+        interactive:true,
+        contentAsHTML: true,
+        content: ''
     });
 
     $('.scroll').jscroll({
