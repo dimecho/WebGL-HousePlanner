@@ -1021,54 +1021,6 @@ function onPanoramaTouchMove( event ) {
     touch.y = touches.screenY;
 }
 
-/*
-function loadDAE(file, object, x, y, z, xaxis, yaxis, ratio) {
-
-    loader.load('objects/dae/' + file, function(collada) {
-        var dae = collada.scene;
-        //var skin = collada.skins[ 0 ];
-        dae.scale.x = dae.scale.y = dae.scale.z = 1;
-        //dae.scale.x = dae.scale.y = dae.scale.z = 50;
-        dae.updateMatrix();
-
-        /
-            var geometries = collada.dae.geometries;
-            for(var propName in geometries){
-                    if(geometries.hasOwnProperty(propName) && geometries[propName].mesh){
-                    dae.geometry = geometries[propName].mesh.geometry3js;
-                }
-            }
-        /
-
-        var mesh = dae.children.filter(function(child) {
-            return child instanceof THREE.Mesh;
-        })[0];
-        dae.geometry = mesh.geometry;
-
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        mesh.position.x = x;
-        mesh.position.y = y;
-        mesh.position.z = z;
-        mesh.rotation.x = xaxis * Math.PI / 1000;
-        mesh.rotation.y = yaxis * Math.PI / 1000;
-        mesh.doubleSided = false;
-
-        /
-            if(xaxis > 0){
-                 mesh.rotateOnAxis(new THREE.Vector3(0,1,0), xaxis * RADIAN);
-            }
-            if(yaxis > 0){
-                 mesh.rotateOnAxis(new THREE.Vector3(1,0,0), yaxis * RADIAN);
-            }
-        /
-        //scene3DHouseContainer.add(mesh);
-        //object.add(mesh);
-        object.add(dae);
-    });
-}
-*/
-
 function scene2DMakeWall(coords) {
     /*
     var line = new fabric.Line(coords, {
@@ -1878,9 +1830,9 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
 
         
         //geometry.mergeVertices(); //speed things up ?
-        //geometry.computeFaceNormals();
-        //geometry.computeVertexNormals(); // requires correct face normals
-        //geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+        geometry.computeFaceNormals();
+        geometry.computeVertexNormals(); // requires correct face normals
+        geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
         
 
         //materials.side = THREE.DoubleSide;
@@ -1893,15 +1845,35 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
         performance optimization sometimes leads to wholes in the surface. When this happens
         in your surface, simply set 'doubleSided' to 'true'.
         */
-        var material = new THREE.MeshFaceMaterial(materials);
-        material.side = THREE.DoubleSide;
 
-        /*var material = new THREE.MeshBasicMaterial({
-            map: new THREE.MeshFaceMaterial(materials),
-            side:THREE.DoubleSide
+        materials.forEach(function (material) {
+            material.side = THREE.DoubleSide;
+
+            if(material.opacity < 1) //glass transparency fix
+            {
+                material.transparent = true;
+            }else{
+                material.transparent = false;
+            }
+            material.depthWrite = true; //Blender exports fix
+            //material.doubleSided = true;
+            //material.ambient = 0x999999;
+            //material.color = 0xffffff;
+            //material.specular = 0xffffff;
+            //material.shininess = 0;
+            //material.morphTargets = true;
+            //material.morphNormals = true;
+            //var lm = THREE.ImageUtils.loadTexture('../assets/textures/lightmap/lm-1.png');
+            //material.lightMap: lm,
+            //material.map = material
         });
-        */
 
+        var material = new THREE.MeshFaceMaterial(materials);
+        //var material = new THREE.MeshPhongMaterial(materials);
+        //var material = new THREE.MeshNormalMaterial(materials);
+        //var material = new THREE.MeshBasicMaterial(materials);
+        //var material = new THREE.MeshLambertMaterial(materials);
+        
         var mesh = new THREE.Mesh(geometry, material);
         mesh.name = js;
         
@@ -1917,9 +1889,6 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
 
         //mesh.vertexColors = THREE.FaceColors;
         //mesh.shading = THREE.FlatShading;
-
-        //mesh.receiveShadow = true;
-        //mesh.overdraw = true;
 
         /*
         if (ratio != 1) {
@@ -1940,15 +1909,6 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
         mesh.rotation.x = xaxis;
         mesh.rotation.y = yaxis;
      
-        //mesh.doubleSided = true;
-
-        
-        //mesh.geometry.mergeVertices(); //speed things up ?
-        mesh.geometry.computeFaceNormals();
-        mesh.geometry.computeVertexNormals(); // requires correct face normals
-        mesh.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
-        
-
         mesh.matrixAutoUpdate = true;
         mesh.updateMatrix();
 
@@ -1986,6 +1946,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
             //var line = new THREE.Line(geometry, material);
 
             var line = new THREE.Line(geometry, material, THREE.LinePieces);
+            line.position.y = 0.1;
             //line.dynamic = true;
 
             var realLifeDimentions = new Array();
@@ -2246,7 +2207,7 @@ function show3DHouse() {
     initMenu("menuRight3DHouse","Exterior/index.json");
  
     scene3DSetSky(DAY);
-    scene3DSetLight()
+    scene3DSetLight();
 
     scene3DSetWeather();
 
@@ -3249,6 +3210,7 @@ function hideElements() {
     for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
         scene3D.remove(scene3DFloorFurnitureContainer[i]);
         scene3D.remove(scene3DFloorMeasurementsContainer[i]);
+
         scene3D.remove(scene3DFloorWallContainer[i]);
         scene3D.remove(scene3DFloorTileContainer[i]);
         scene3D.remove(scene3DFloorOtherContainer[i]);
@@ -3282,7 +3244,8 @@ function hideElements() {
             scene2D.remove(scene2D.item(i));
         }
     }
-    
+    $('#menu2DTools').tooltipster('hide');
+
     //console.log(scene2DWallMesh[FLOOR].length);
 
     //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
@@ -5410,6 +5373,7 @@ function scene3DFloorObjectWallMeasurementAjust() {
 function scene3DFloorWallGenerate() {
 
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
+    scene3DFloorTileContainer[FLOOR] = new THREE.Object3D();
 
     //TODO: Generate directly from SVG 2D points!
     var objects = scene2DWallMesh[FLOOR]; //scene2D.getObjects();
@@ -5466,10 +5430,10 @@ function scene3DFloorWallGenerate() {
             {
                 floorShape = new THREE.Shape();
                 floorShape.moveTo(x1, y1);
+                floorShape.quadraticCurveTo(cx, cy, x2,y2);
             }else{
-                floorShape.lineTo(x1, y1);
+                floorShape.quadraticCurveTo(cx, cy, x2,y2);
             }
-            //var geometry = rectShape.makeGeometry();
 
             /*
             var curve = new THREE.SplineCurve([
@@ -5543,37 +5507,94 @@ function scene3DFloorWallGenerate() {
     //floorShape.computeFaceNormals();
     //floorShape.computeCentroids();
 
-    try {
-        texture = THREE.ImageUtils.loadTexture('objects/Platform/Textures/M23562.jpg');
-        //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-        //texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping
-        //texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
-        //texture.repeat.set(4, 4);
 
-        /*
-        var image = new Image();
-        image.onload = function () { texture.needsUpdate = true; };
-        image.src = 'objects/Platform/Textures/W23674.jpg';
-        var texture  = new THREE.Texture(image, new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.LinearMipMapLinearFilter );
-        texture.repeat.x = 10;
-        texture.repeat.y = 10;
-        */
 
-        //material = new THREE.MeshBasicMaterial({ map: texture});
-        //material = new THREE.MeshLambertMaterial( { map: texture } );
-        //material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10});
-        //var materials = [material1, material2, material3, material4, material5, material6];
-        //var meshFaceMaterial = new THREE.MeshFaceMaterial( materials );
-        material = new THREE.MeshBasicMaterial({color: 0xccac7b});
-        mesh = new THREE.Mesh(floorShape.makeGeometry(), material);
-        mesh.rotation.x = -(90 * RADIAN); //Horizontal Flip
-        mesh.position.y = 0.1;
-        //mesh.overdraw = true;
-        mesh.receiveShadow = true;
+    /*
+    var image = new Image();
+    image.onload = function () { texture.needsUpdate = true; };
+    image.src = 'objects/Platform/Textures/W23674.jpg';
+    var texture  = new THREE.Texture(image, new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.LinearMipMapLinearFilter );
+    texture.repeat.x = 10;
+    texture.repeat.y = 10;
+    */
 
-        scene3DFloorTileContainer[FLOOR].add(mesh);
-        //scene3DFloorTileContainer[FLOOR].children[0] = mesh;
-    }catch(e){}
+    /*
+    http://stackoverflow.com/questions/19182298/how-to-texture-a-three-js-mesh-created-with-shapegeometry
+    */
+
+
+
+    /*
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    texture = new THREE.Texture(canvas);
+    */
+    texture = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/W23643.jpg');
+    //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.minFilter = THREE.LinearFilter;
+    //texture.minFilter = THREE.NearestFilter;
+    //texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping
+    texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+    //texture.repeat.set(4, 4);
+    texture.repeat.set(0.4, 0.4);
+    texture.offset.set(0.4, 0.4);
+    /*
+    var img = new Image();
+    img.src = 'objects/Platform/Textures/W23643.jpg';
+    img.style.width = '50%'
+    img.style.height = 'auto'
+    img.onload = function() {
+        //context.drawImage(img,0,0);
+        //context.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width/6, img.height/6);
+        texture.needsUpdate = true;
+    }
+    */
+    var uvGenerator = THREE.ExtrudeGeometry.WorldUVGenerator;
+    //uvGenerator.uRepeat = 4;
+    geometry = floorShape.extrude({amount: 0.1, 
+        bevelEnabled: false,
+        uvGenerator: uvGenerator
+    });
+
+    /*
+    var uvs = [];
+    uvs.push( new THREE.Vector2( 0.0, 0.0 ) );
+    uvs.push( new THREE.Vector2( 1.0, 0.0 ) );
+    uvs.push( new THREE.Vector2( 1.0, 1.0 ) );
+    uvs.push( new THREE.Vector2( 0.0, 1.0 ) );
+    geometry.faceVertexUvs[0].push([ uvs[0], uvs[1], uvs[2]] );
+    */
+
+    material = new THREE.MeshBasicMaterial({ map: texture});
+
+    //material = new THREE.MeshLambertMaterial( { map: texture } );
+    //material = new THREE.MeshPhongMaterial({ map: texture, shininess: 4});
+    //var materials = [material1, material2, material3, material4, material5, material6];
+    //var meshFaceMaterial = new THREE.MeshFaceMaterial( materials );
+    //material = new THREE.MeshBasicMaterial({color: 0xccac7b});
+
+    //geometry = floorShape.makeGeometry();
+    //geometry.computeCentroids();
+
+    geometry.computeVertexNormals();
+    geometry.computeFaceNormals();
+
+    mesh = new THREE.Mesh(geometry, material);
+    /*
+    mesh = THREE.SceneUtils.createMultiMaterialObject(geometry, [material, new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        wireframe: true,
+        transparent: true,
+    })]);
+    */
+    mesh.rotation.x = -(90 * RADIAN); //Horizontal Flip
+    mesh.position.y = 0.01;
+    //mesh.overdraw = true;
+    mesh.receiveShadow = true;
+    //mesh.scale.set(4, 4, 1 );
+
+    scene3DFloorTileContainer[FLOOR].add(mesh);
+    //scene3DFloorTileContainer[FLOOR].children[0] = mesh;
 }
 
 function sceneOpen(file) {
@@ -5810,6 +5831,9 @@ function scene3DSetLight() {
         if (DAY == 'day') {
             sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 1);
             scene3D.add(sceneAmbientLight);
+
+            //sceneAmbientLight = new THREE.AmbientLight(0x555555);
+            //scene3D.add(sceneAmbientLight);
 
             //sceneSpotLight.intensity = 0.5;
             //sceneSpotLight.castShadow = true;
