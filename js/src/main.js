@@ -815,7 +815,7 @@ function init(runmode,viewmode) {
     $('#menuWeatherText').html("Sunny");
     $('#menuDayNightText').html("Day");
 
-    show3DHouse();
+    show3DHouse(true);
 
     //For debugging purposes
     //========================
@@ -1021,7 +1021,7 @@ function onPanoramaTouchMove( event ) {
     touch.y = touches.screenY;
 }
 
-function scene2DMakeWall(coords) {
+function scene2DMakeWall(v1,v2,c,id,i) {
     /*
     var line = new fabric.Line(coords, {
         fill: 'black',
@@ -1034,25 +1034,30 @@ function scene2DMakeWall(coords) {
     });
     */
 
+    if(id == null)
+        id = Math.random().toString(36).substring(7);
+
+    if(i == null)
+        i = FLOOR;
     /*
     Quadratic Curve
     http://fabricjs.com/quadratic-curve/
     */
 
-    if(coords[4] == 0 && coords[5] == 0)
+    if(c.x == 0 && c.y == 0)
     {
-        var p = scene2DGetWallParallelCoordinates({x: coords[0], y: coords[1]},{x: coords[2], y: coords[3]},0);
-        coords[4] = p.x1 + (p.x2 - p.x1) / 2; //center
-        coords[5] = p.y1 + (p.y2 - p.y1) / 2; //center
+        var p = scene2DGetWallParallelCoordinates({x: v1.x, y: v1.y},{x: v2.x, y: v2.y},0);
+        c.x = p.x1 + (p.x2 - p.x1) / 2; //center
+        c.y = p.y1 + (p.y2 - p.y1) / 2; //center
     }
 
     var line = new fabric.Path('M 0 0 Q 0, 0, 0, 0', { fill: '', strokeWidth: 12, stroke: 'black' });
-    line.path[0][1] = coords[0];
-    line.path[0][2] = coords[1];
-    line.path[1][1] = coords[4]; //curve left
-    line.path[1][2] = coords[5]; //curve right
-    line.path[1][3] = coords[2];
-    line.path[1][4] = coords[3];
+    line.path[0][1] = v1.x;
+    line.path[0][2] = v1.y;
+    line.path[1][1] = c.x; //curve left
+    line.path[1][2] = c.y; //curve right
+    line.path[1][3] = v2.x;
+    line.path[1][4] = v2.y;
     //line.set({ left: coords[0], top: coords[1] });
 
     //TODO: parallel quadratic curves as shape with pattern
@@ -1084,8 +1089,9 @@ function scene2DMakeWall(coords) {
     }
     */
 
-    line.name = 'wall';
-    line.hasControls = false;
+    //line.name = 'wall';
+    //line.id = id;
+    //line.hasControls = false;
     /*
     line.toObject = function() {
         return {
@@ -1093,8 +1099,29 @@ function scene2DMakeWall(coords) {
         };
     };
     */
+    
+    var group = new Array();
 
-    return line;
+    group.push(line);
+
+    //TODO: Move pivot point inside this group!
+    /*
+    var point = scene2DGetCenterPivot(v1,v2);
+    var pivot = scene2DMakeWallPivotCircle(0, 0, false);
+    pivot.left = point.x;
+    pivot.top = point.y;
+    group.push(pivot);
+    */
+    /*
+    for (var d = 0; d < scene2DDoorMesh[i].length; d++) { //each door
+
+        if(id == scene2DDoorMesh[i][d].id) //attched to walls by matching id)
+        {
+            group.push(scene2DDoorMesh[i][d]);
+        }
+    }
+    */
+    return new fabric.Group(group, {selectable:false, hasControls: false, name:'wall', id:id});
 }
 
 function scene2DCheckLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
@@ -1201,8 +1228,8 @@ function scene2DMakeWallCurvedPivot(v1,v2,wall)
     pivot.wall = wall;
 
     //adjust wall to proper curvature
-    wall.path[1][1] = point.x;
-    wall.path[1][2] = point.y;
+    wall.item(0).path[1][1] = point.x;
+    wall.item(0).path[1][2] = point.y;
 
     return pivot;
 }
@@ -1281,7 +1308,105 @@ function scene2DMakeWallEdgeLength(v1,v2,v3)
         text.top = p1.y2;
     }
 
-    return new fabric.Group([line, line1, line2, rect, text], {selectable: false});
+    return new fabric.Group([line, line1, line2, rect, text], {selectable:false});
+}
+
+function scene2DMakeDoor(v1,v2,c,z,open,direction,id) {
+
+    if(id == null)
+        id = Math.random().toString(36).substring(7);
+
+    //Debug adjust
+    v1 = {x:v1.x+40,y:v1.y};
+    v2 = {x:v1.x+100,y:v1.y};
+
+    //TODO: lock/hide wall curve if door is present
+    //var angle = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI;
+
+    var swing = scene2DLineLength(v1.x,v1.y,v2.x,v2.y);
+    
+    var group = new Array();
+
+    //var line1 = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
+    var line1 = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
+        stroke: '#f5f5f5',
+        strokeWidth: 18
+    });
+
+    var line2 = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
+        stroke: '#000000',
+        strokeWidth: 4
+    });
+
+    group.push(line1);
+    group.push(line2);
+    
+
+    var hinge = [0,0,0,0];
+    var startAngle = Math.PI/2;
+    var endAngle = Math.PI;
+
+    if(open == "double")
+    {
+
+    }
+    else if(open == "right")
+    {
+        if(direction == "in")
+        {
+            hinge = [v2.x, v2.y, v2.x, v2.y+swing];
+        }else{
+            hinge = [v2.x, v2.y, v2.x, v2.y-swing];
+            startAngle = 0-Math.PI;
+            endAngle = 0-Math.PI/2;
+        }
+    }
+    else if(open == "left")
+    {
+        if(direction == "in")
+        {
+            startAngle = 0;
+            endAngle = Math.PI/2;
+        }else{
+            startAngle = 0-Math.PI/2;
+            endAngle = 0;
+        }
+    }
+
+    var line3 = new fabric.Line(hinge, {
+        stroke: '#000000',
+        strokeWidth: 2
+    });
+    group.push(line3);
+
+    var arc1 = new fabric.Circle({
+        radius: swing-1,
+        left: hinge[0],
+        top: hinge[1],
+        //angle: offsetAngle,
+        startAngle: startAngle,
+        endAngle: endAngle,
+        stroke: '#000000',
+        strokeWidth: 2,
+        fill: ''
+    });
+    group.push(arc1);
+
+    //Interactive Adjusting lines TODO: add mobileFix
+    var line4 = new fabric.Line([v1.x, v1.y-10, v1.x, v1.y+10], {
+        stroke: '#00CC00',
+        strokeWidth: 6,
+        name: "door-adjust-left"
+    });
+    var line5 = new fabric.Line([v2.x, v2.y-10, v2.x, v2.y+10], {
+        stroke: '#00CC00',
+        strokeWidth: 6,
+        name: "door-adjust-right"
+    });
+    group.push(line4);
+    group.push(line5);
+
+    return new fabric.Group(group, {selectable:false, name:'door', z:z, open:open, direction:direction, id:id});
 }
 
 function scene2DMakeWallEdgeAngle(v1,v2,v3) {
@@ -1387,6 +1512,24 @@ function scene2DRemoveWallEdgeCircle(id) {
     return false; //href="#" fix
 }
 
+function scene2DResetPivot(id) {
+
+    var objects = scene2D.getObjects();
+    for (var i in objects)
+    {
+        var obj = objects[i];
+        if(obj.id == id)
+        {
+            var pivot = scene2DGetCenterPivot({x:obj.wall.item(0).path[0][1],y:obj.wall.item(0).path[0][2]},{x:obj.wall.item(0).path[1][3],y:obj.wall.item(0).path[1][4]});
+            $('#menu2DTools').tooltipster('hide');
+            obj.wall.item(0).path[1][1] = pivot.x; obj.wall.item(0).path[1][2] = pivot.y;
+            obj.left = pivot.x; obj.top = pivot.y
+            break;
+        }
+    }
+    return false; //href="#" fix
+}
+
 function scene2DLockObject(id) {
 
     var objects = scene2D.getObjects();
@@ -1394,7 +1537,7 @@ function scene2DLockObject(id) {
     {
         var obj = objects[i];
         if(obj.id == id)
-        {   
+        {
             if(obj.lockMovementX == true)
             {
                 obj.item(2).set({visible:false});
@@ -1439,11 +1582,13 @@ function scene2DMakeWallEdgeCircle(left, top, lock) {
         visible: false,
     });
 
-    var g = new fabric.Group([mobileFix, c, i], {selectable: true, hasBorders: false, hasControls: false, name: 'edge', lockMovementX:lock, lockMovementY:lock});
+    var g = new fabric.Group([mobileFix, c, i], {selectable: true, hasBorders: false, hasControls: false, name: 'edge', id:Math.random().toString(36).substring(7), lockMovementX:lock, lockMovementY:lock});
     
     g.line = new Array();
     g.pivot = new Array();
     g.bend = new Array();
+    g.doors = new Array();
+    g.windows = new Array();
 
     return g;
 }
@@ -2124,8 +2269,8 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
                     if (data.metadata.type == "scene")
                     {
                         //console.log(data.metadata.type);
-                        loader = new THREE.SceneLoader();
-                        loader.parse(data, callbackScene, textures);
+                        //loader = new THREE.SceneLoader();
+                        //loader.parse(data, callbackScene, textures);
                     }
                     else
                     {
@@ -2195,7 +2340,7 @@ function cube(size) {
     return geometry;
 }
 
-function show3DHouse() {
+function show3DHouse(skyload) {
 
     //Something interesting from the web (maybe someday) -> http://inear.se/urbanjungle
     //Math behind the scenes explained here http://www.inear.se/2014/03/urban-jungle-street-view/
@@ -2205,30 +2350,24 @@ function show3DHouse() {
 
     hideElements();
     initMenu("menuRight3DHouse","Exterior/index.json");
- 
-    scene3DSetSky(DAY);
-    scene3DSetLight();
 
-    scene3DSetWeather();
+    if(skyload)
+    {
+        scene3DSetSky(DAY);
+        scene3DSetWeather();
+    }
+    
+    scene3D.add(skyMesh);
+    scene3D.add(weatherSkyMesh);
+    scene3D.add(weatherSkyRainbowMesh);
+
+    scene3DSetLight();
 
     //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
     //camera3D.position.set(0, 6, 20);
     enableOrbitControls();
 
-    //TODO: Loop and show based in ID name
-
-    scene3D.add(scene3DHouseGroundContainer);
-    scene3D.add(scene3DHouseFXContainer);
-    scene3D.add(scene3DHouseContainer);
-    scene3D.add(scene3DRoofContainer);
-
     scene3DFloorWallGenerate();
-    scene3D.add(scene3DFloorTileContainer[FLOOR]);
-    
-    for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
-        scene3D.add(scene3DFloorFurnitureContainer[i]);
-    }
-    scene3DCube.add(scene3DCubeMesh);
 
     //initObjectCollisions(scene3DHouseContainer);
 
@@ -2263,6 +2402,20 @@ function show3DHouse() {
     //scene3DHouseContainer.traverse;
 
     $('#WebGLCanvas').show();
+
+    //TODO: Loop and show based in ID name
+
+    scene3D.add(scene3DHouseGroundContainer);
+    scene3D.add(scene3DHouseFXContainer);
+    scene3D.add(scene3DHouseContainer);
+    scene3D.add(scene3DRoofContainer);
+
+    scene3D.add(scene3DFloorTileContainer[FLOOR]);
+    
+    for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
+        scene3D.add(scene3DFloorFurnitureContainer[i]);
+    }
+    scene3DCube.add(scene3DCubeMesh);
 
     camera3DHouseEnter();
     animate();
@@ -2511,6 +2664,7 @@ function getHeightData(img,scale) //return array with height data from img
 function show3DLandscape() {
 
     _animate = -1;
+    SceneAnimate = false;
     SCENE = 'landscape';
 
     hideElements();
@@ -2526,6 +2680,7 @@ function show3DLandscape() {
     TOOL3DLANDSCAPE = 'rotate';
    
     //scene3D.add(scene3DHouseGroundContainer);
+    scene3D.add(skyMesh);
     scene3D.add(terrain3D);
 
     $(renderer.domElement).bind('mousedown', on3DLandscapeMouseDown);
@@ -2576,6 +2731,7 @@ function show3DLandscape() {
 function show3DFloor() {
 
     _animate = -1;
+    SceneAnimate = false;
     SCENE = 'floor';
 
     hideElements();
@@ -2659,6 +2815,7 @@ function show3DFloor() {
 function show3DFloorLevel() {
 
     _animate = -1;
+    SceneAnimate = false;
     SCENE = 'floorlevel';
 
     hideElements();
@@ -2685,6 +2842,7 @@ function show3DFloorLevel() {
 function show3DRoofDesign() {
 
     _animate = -1;
+    SceneAnimate = false;
     SCENE = 'roof';
 
     hideElements();
@@ -2751,7 +2909,7 @@ function scene2DZoom(SCALE_FACTOR) {
     http://jsfiddle.net/Q3TMA/
     http://jsfiddle.net/butch2k/kVukT/37/
     */
-    console.log(SCALE_FACTOR);
+    //console.log(SCALE_FACTOR);
     
     scene2D.setHeight(scene2D.getHeight() * SCALE_FACTOR);
     scene2D.setWidth(scene2D.getWidth() * SCALE_FACTOR);
@@ -2775,6 +2933,7 @@ function scene2DZoom(SCALE_FACTOR) {
 function show2D() {
 
     _animate = -1;
+    SceneAnimate = false;
     SCENE = '2d';
 
     //camera2D.position.set(0, 8, 20);
@@ -2831,14 +2990,6 @@ function show2D() {
         scene2D.add(scene2DWallMesh[FLOOR][i]);
     }
 
-    for (var i = 0; i < scene2DDoorMesh[FLOOR].length; i++) {
-        scene2D.add(scene2DDoorMesh[FLOOR][i]);
-    }
-
-    for (var i = 0; i < scene2DWindowMesh[FLOOR].length; i++) {
-        scene2D.add(scene2DWindowMesh[FLOOR][i]);
-    }
-
     for (var i = 0; i < scene2DInteriorMesh[FLOOR].length; i++) {
         scene2D.add(scene2DInteriorMesh[FLOOR][i]);
     }
@@ -2863,7 +3014,7 @@ function show2D() {
         else if(e.target.name == 'pivot')
         {
             clickTime = setTimeout(function() {
-                $('#menu2DTools').tooltipster('update', '<a href="#" onclick="scene2DLockObject(\'' + e.target.id + '\')" class="lo-icon icon-lock" style="color:#606060"></a>');
+                $('#menu2DTools').tooltipster('update', '<a href="#" onclick="scene2DResetPivot(\'' + e.target.id + '\')" class="lo-icon icon-linereset" style="color:#0066FF"></a><a href="#" onclick="scene2DLockObject(\'' + e.target.id + '\')" class="lo-icon icon-lock" style="color:#606060"></a>');
                 $('#menu2DTools').css({ left: e.target.left, top: e.target.top });
                 $('#menu2DTools').tooltipster('show');
             }, 500);
@@ -2887,17 +3038,27 @@ function show2D() {
         {
             e.target.item(1).set({stroke:'#ff6600'});
             
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++) //multi-angle
             {
                 if(e.target.bend[i]){
-                    e.target.bend[i].animate('opacity', 0.0, {
-                        duration: 600,
+                    
+                    //TODO: adjust opposite angles
+                    //TODO: improve performance by adjusting "changed angle" only
+                    var angle = scene2DMakeWallEdgeAngle({x:e.target.line[0].item(0).path[0][1],y:e.target.line[0].item(0).path[0][2]},{x:e.target.line[1].item(0).path[0][1],y:e.target.line[1].item(0).path[0][2]},{x:e.target.line[1].item(0).path[1][3],y:e.target.line[1].item(0).path[1][4]});
+                    angle.set({opacity:0});
+                    scene2D.remove(e.target.bend[i]);
+                    e.target.bend[i] = angle;
+                    scene2D.add(angle); //.sendBackwards(angle); //.sendBackwards(angle);
+                    angle.animate('opacity', 1.0, {
+                        duration: 500,
                         onChange: scene2D.renderAll.bind(scene2D),
-                        //onComplete: function() {},
+                        //onComplete: function() {scene2D.bringToFront(p.pivot[1])},
                         easing: fabric.util.ease.easeInCubic
                     });
                 }
             }
+            scene2D.bringToFront(e.target);
+
             //scene2D.renderAll();
         }
         else if (e.target.name == 'pivot') 
@@ -2912,25 +3073,17 @@ function show2D() {
         {
             e.target.item(1).set({stroke:'#666'});
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++) //multi-angle
             {
                 if(e.target.bend[i]){
-                    //TODO: adjust opposite angles
-                    //TODO: improve performance by adjusting "changed angle" only
-                    var angle = scene2DMakeWallEdgeAngle({x:e.target.line[0].path[0][1],y:e.target.line[0].path[0][2]},{x:e.target.line[1].path[0][1],y:e.target.line[1].path[0][2]},{x:e.target.line[1].path[1][3],y:e.target.line[1].path[1][4]});
-                    angle.set({opacity:0});
-                    scene2D.remove(e.target.bend[i]);
-                    e.target.bend[i] = angle;
-                    scene2D.add(angle); //.sendBackwards(angle); //.sendBackwards(angle);
-                    angle.animate('opacity', 1.0, {
-                        duration: 500,
+                    e.target.bend[i].animate('opacity', 0.0, {
+                        duration: 600,
                         onChange: scene2D.renderAll.bind(scene2D),
-                        //onComplete: function() {scene2D.bringToFront(p.pivot[1])},
+                        //onComplete: function() {},
                         easing: fabric.util.ease.easeInCubic
                     });
                 }
             }
-            scene2D.bringToFront(e.target);
             
             //scene2D.bringForward(e.target);
             //scene2D.renderAll();
@@ -2950,16 +3103,6 @@ function show2D() {
         }
     });
     */
-    /*
-    scene2D.on('object:dblclick', function(e) {
-        if (e.target.name == 'pivot')
-        {
-            var pivot = scene2DGetCenterPivot({x:e.target.wall.path[0][1],y:e.target.wall.path[0][2]},{x:e.target.wall.path[1][3],y:e.target.wall.path[1][4]});
-            e.target.left = pivot.x; e.target.top = pivot.y
-            e.target.wall.path[1][1] = pivot.x; e.target.wall.path[1][2] = pivot.y;
-        }
-    });
-    */
 
     scene2D.on('object:moving', function(e) {
         
@@ -2967,8 +3110,10 @@ function show2D() {
 
         scene2D.remove(scene2DDrawLine); //quickfix
     
-        //snap to grid
+        if(p.lockMovementX) //precaution
+            return;
 
+        //snap to grid
         p.set({
             left: Math.round(p.left / 20) * 20,
             top: Math.round(p.top / 20) * 20
@@ -2977,7 +3122,12 @@ function show2D() {
         if (p.name == 'edge') {
             
             $('#menu2DTools').tooltipster('hide');
-            
+            for (var i = 0; i < 2; i++)
+            {
+                if(e.target.bend[i]){
+                    scene2D.remove(e.target.bend[i]);
+                }
+            }
             //clearTimeout(clickTime);
             /*
             //Non-SVG
@@ -2993,20 +3143,49 @@ function show2D() {
             {
                 if(p.line[i])
                 {
-                    var pivotOriginal = scene2DGetCenterPivot({x:p.line[i].path[0][1],y:p.line[i].path[0][2]},{x:p.line[i].path[1][3],y:p.line[i].path[1][4]});
+                    var v1 = {x:p.line[i].item(0).path[0][1],y:p.line[i].item(0).path[0][2]};
+                    var v2 = {x:p.line[i].item(0).path[1][3],y:p.line[i].item(0).path[1][4]};
+                    var pivot = scene2DGetCenterPivot(v1,v2); //Original
                     
-                    if(i == 0){
-                        p.line[i].path[1][3] = p.left; p.line[i].path[1][4] = p.top;
+                    if(i == 0){ //TODO: Simplify wall round loop completion
+                        v2 = {x:p.left,y:p.top};
                     }else{
-                        p.line[i].path[0][1] = p.left; p.line[i].path[0][2] = p.top;
+                        v1 = {x:p.left,y:p.top};
                     }
+                    p.line[i].item(0).path[0][1] = v1.x; p.line[i].item(0).path[0][2] = v1.y
+                    p.line[i].item(0).path[1][3] = v2.x; p.line[i].item(0).path[1][4] = v2.y
 
-                    var pivot = scene2DGetCenterPivot({x:p.line[i].path[0][1],y:p.line[i].path[0][2]},{x:p.line[i].path[1][3],y:p.line[i].path[1][4]});
-                    if(p.line[i].path[1][1] == pivotOriginal.x || p.line[i].path[1][2] == pivotOriginal.y)
+                    //======= Pivot curvature ==========
+                    if(p.line[i].item(0).path[1][1] == pivot.x && p.line[i].item(0).path[1][2] == pivot.y)
                     {
-                        p.line[i].path[1][1] = pivot.x; p.line[i].path[1][2] = pivot.y;
+                        pivot = scene2DGetCenterPivot(v1,v2); //New
+                        p.line[i].item(0).path[1][1] = pivot.x; p.line[i].item(0).path[1][2] = pivot.y;
                         p.pivot[i].left = pivot.x; p.pivot[i].top = pivot.y
                     }
+         
+                    //========== Line Length ===========
+                    var n1 = scene2DLineLength(v1.x,v1.y,v2.x,v2.y);
+                    //console.log("length: " + n1);
+
+                    //==== Doors and Windows Adjust ====
+                    if(p.doors[i]) //TODO: multi doors / wall
+                    {
+                        //console.log(p.doors[i][0].id)
+
+                        var scale = 50 / n1;
+                        //============ LERP Formula ==============
+                        //start.x + (final.x - start.x) * progress;
+                        var L1x = v2.x + (v1.x - v2.x) * scale;
+                        var L1y = v2.y + (v1.y - v2.y) * scale;
+                        //========================================
+                        p.doors[i][0].left = L1x;
+                        p.doors[i][0].top = L1y;
+
+                        var r = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI;
+                        p.doors[i][0].angle = r;
+                        //console.log("angle: " + p.doors[i].angle);
+                    }
+                    //==================================
                 }
             }
         
@@ -3017,8 +3196,8 @@ function show2D() {
             //console.log(p.left + " " + p.top);
             $('#menu2DTools').tooltipster('hide');
        
-            p.wall.path[1][1] = p.left;
-            p.wall.path[1][2] = p.top;
+            p.wall.item(0).path[1][1] = p.left;
+            p.wall.item(0).path[1][2] = p.top;
         
         }
     });
@@ -3047,18 +3226,18 @@ function show2D() {
         try {
             a = i;
             b = i - 1;
-            x1 = scene2DWallMesh[FLOOR][a].path[0][1];
+            x1 = scene2DWallMesh[FLOOR][a].item(0).path[0][1];
         }catch(e){
             a = 0;
             b = scene2DWallMesh[FLOOR].length-1;
-            x1 = scene2DWallMesh[FLOOR][a].path[0][1];
+            x1 = scene2DWallMesh[FLOOR][a].item(0).path[0][1];
         }
 
-        x2 = scene2DWallMesh[FLOOR][a].path[1][3];
-        y1 = scene2DWallMesh[FLOOR][a].path[0][2];
-        y2 = scene2DWallMesh[FLOOR][a].path[1][4];
-        x3 = scene2DWallMesh[FLOOR][b].path[0][1];
-        y3 = scene2DWallMesh[FLOOR][b].path[0][2];
+        x2 = scene2DWallMesh[FLOOR][a].item(0).path[1][3];
+        y1 = scene2DWallMesh[FLOOR][a].item(0).path[0][2];
+        y2 = scene2DWallMesh[FLOOR][a].item(0).path[1][4];
+        x3 = scene2DWallMesh[FLOOR][b].item(0).path[0][1];
+        y3 = scene2DWallMesh[FLOOR][b].item(0).path[0][2];
 
         v1 = {x: x3, y: y3};
         v3 = {x: x2, y: y2};
@@ -3078,20 +3257,52 @@ function show2D() {
         //var angleDeg = angleRad * 180 / Math.PI;
         //var angleDeg = find2DAngle(v1,v2,v3) * 180 / Math.PI;
         
-        angle = scene2DMakeWallEdgeAngle(v1,v2,v3);
+        //angle = scene2DMakeWallEdgeAngle(v1,v2,v3);
         dimentions = scene2DMakeWallEdgeLength(v1,v2,v3);
-        circle.id = Math.random().toString(36).substring(7); //Math.random() * 9000 - 1000;; //unique segment ID
         circle.pivot[1] = pivot;
-        circle.bend[0] = angle;
+        circle.bend[0] = 1;//angle;
         circle.dimentions = dimentions;
 
-        scene2D.add(angle).sendBackwards(angle);
+        //scene2D.add(angle).sendBackwards(angle);
 
         scene2D.add(dimentions);//.sendToBack(dimentions);
         
-        scene2D.add(pivot);
-
         scene2D.add(circle);
+        
+        var showPivot = true;
+
+        for (var d = 0; d < scene2DDoorMesh[FLOOR].length; d++) { //each door
+
+            for (var w = 0; w < 4; w++)
+            {
+                if(circle.line[w])
+                {
+                    if(circle.line[w].id == scene2DDoorMesh[FLOOR][d].id) //attach to walls by matching id)
+                    {
+                        if(circle.doors[w] == undefined)
+                            circle.doors[w] = new Array();
+
+                        circle.doors[w][0] = scene2DDoorMesh[FLOOR][d];
+                        scene2D.add(scene2DDoorMesh[FLOOR][d]);
+                        showPivot = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(showPivot)
+            scene2D.add(pivot);
+    }
+
+    /*
+    for (var i = 0; i < scene2DDoorMesh[FLOOR].length; i++) {
+        scene2D.add(scene2DDoorMesh[FLOOR][i]);
+    }
+    */
+
+    for (var i = 0; i < scene2DWindowMesh[FLOOR].length; i++) {
+        scene2D.add(scene2DWindowMesh[FLOOR][i]);
     }
     //scene2DArrayToLineWalls();
 
@@ -3244,8 +3455,9 @@ function hideElements() {
             scene2D.remove(scene2D.item(i));
         }
     }
-    $('#menu2DTools').tooltipster('hide');
-
+    try{
+        $('#menu2DTools').tooltipster('hide');
+    }catch(e){}
     //console.log(scene2DWallMesh[FLOOR].length);
 
     //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
@@ -3475,7 +3687,7 @@ function scene3DSetWeather() {
         geometry.merge(plane.geometry, plane.matrix);
         weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialRainbow);
 
-        scene3D.add(weatherSkyRainbowMesh);
+        //scene3D.add(weatherSkyRainbowMesh);
     }
     else if (DAY == 'night')
     {
@@ -3486,7 +3698,7 @@ function scene3DSetWeather() {
         weatherSkyMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
     }
 
-    scene3D.add(weatherSkyMesh);
+    //scene3D.add(weatherSkyMesh);
 }
 
 function menuSelect(item, id, color) {
@@ -3562,6 +3774,10 @@ function selectDayNight() {
     scene3DSetSky(DAY);
     scene3DSetLight();
     scene3DSetWeather();
+
+    scene3D.add(skyMesh);
+    scene3D.add(weatherSkyMesh);
+    scene3D.add(weatherSkyRainbowMesh);
 }
 
 function selectWeather() {
@@ -3684,19 +3900,19 @@ function onDocumentDoubleClick(event) {
 
         //if (new Date().getTime() - 150 < clickTime) { //Set pivot-point to clicked coordinates
 
-        vector = new THREE.Vector3(x, y, 0.5);
+        vector = new THREE.Vector3(x, y, 0.1);
         //projector.unprojectVector(vector, camera3D);
         vector.unproject(camera3D);
         var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
         var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
 
         if (intersects.length > 0) {
+            console.log('doubleclick');
 
             clearTimeout(doubleClickTime);
 
             scene3DPivotPoint.position.set(intersects[0].point.x, 0, intersects[0].point.z);
             
-
             //http://stemkoski.github.io/Three.js/Particle-Engine-Fireworks.html
 
             //particlePivot.removeEmitter(particlePivotEmitter);
@@ -3741,7 +3957,7 @@ function onDocumentDoubleClick(event) {
             
 
             particlePivot = new SPE.Group({
-                texture: THREE.ImageUtils.loadTexture("./images/star.png"),
+                texture: THREE.ImageUtils.loadTexture("images/star.png"),
                 maxAge: 4.0,
                 hasPerspective: 1,
                 colorize: 1,
@@ -3798,7 +4014,7 @@ function on2DMouseDown(event) {
     {
         if(scene2DDrawLine instanceof fabric.Line) {
 
-            scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length] = scene2DMakeWall([scene2DDrawLine.get('x1'), scene2DDrawLine.get('y1'), scene2DDrawLine.get('x2'), scene2DDrawLine.get('y2'),0,0]);
+            scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length] = scene2DMakeWall({x:scene2DDrawLine.get('x1'),y:scene2DDrawLine.get('y1')},{x:scene2DDrawLine.get('x2'),y:scene2DDrawLine.get('y2')},{x:0,y:0});
             scene2D.add(scene2DWallMesh[FLOOR][scene2DWallMesh[FLOOR].length-1]);
 
             scene2D.remove(scene2DDrawLine);
@@ -4440,7 +4656,7 @@ function on3DMouseMove(event) {
 
         //if (TOOL3DINTERACTIVE == 'moveXY') {
 
-            vector = new THREE.Vector3(x, y, 0.5);
+            vector = new THREE.Vector3(x, y, 0.1);
             //projector.unprojectVector(vector, camera3D);
             vector.unproject(camera3D);
             var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
@@ -5099,9 +5315,10 @@ function scene3DCollectArrayFromContainer(container) {
     return json;
 }
 
-function scene2DCollectArrayFromContainer(container) {
+function scene2DCollectArrayFromContainer(n) {
 
     var json = new Array();
+    var container = scene2DWallMesh[n];
 
     for (var i in container)
     {
@@ -5109,7 +5326,8 @@ function scene2DCollectArrayFromContainer(container) {
         if (obj.name == 'wall')
         {
             var JSONString = {};
-            JSONString["wall"] = "standard";
+            JSONString["wall"] = "standard"; //used with different colors/textures
+            JSONString["id"] = obj.id; //used for matching windows and doors
             JSONString["locked"] = obj.lockMovementX;
             JSONString["position.x1"] = obj.path[0][1];
             JSONString["position.y1"] = obj.path[0][2];
@@ -5117,6 +5335,28 @@ function scene2DCollectArrayFromContainer(container) {
             JSONString["position.y2"] = obj.path[1][4];
             JSONString["curve.x"] = obj.path[1][1];
             JSONString["curve.y"] = obj.path[1][2];
+            json.push(JSONString);
+        }
+    }
+    container = scene2DDoorMesh[n];
+    for (var i in container)
+    {
+        var obj = container[i];
+        if (obj.name == 'door')
+        {
+            var JSONString = {};
+            JSONString["door"] = "3dfile";
+            JSONString["id"] = obj.id;
+            JSONString["locked"] = obj.lockMovementX;
+            JSONString["open"] = obj.open;
+            JSONString["direction"] = obj.direction;
+            JSONString["position.x1"] = obj.get("x1"); //obj.path[0][1];
+            JSONString["position.y1"] = obj.get("y1"); //obj.path[0][2];
+            JSONString["position.x2"] = obj.get("x2"); //obj.path[1][3];
+            JSONString["position.y2"] = obj.get("y2"); //obj.path[1][4];
+            JSONString["position.z"] = obj.z;
+            JSONString["curve.x"] = 0; //obj.path[1][1];
+            JSONString["curve.y"] = 0; //obj.path[1][2];
             json.push(JSONString);
         }
     }
@@ -5160,7 +5400,7 @@ function saveScene(online) {
             zip.file("scene2DFloorContainer." + i + ".json", JSON.stringify(scene2D.toDatalessJSON()));
             */
 
-            zip.file("scene2DFloorContainer." + i + ".json", JSON.stringify(scene2DCollectArrayFromContainer(scene2DWallMesh[i])));
+            zip.file("scene2DFloorContainer." + i + ".json", JSON.stringify(scene2DCollectArrayFromContainer(i)));
         }
 
         try{
@@ -5268,14 +5508,31 @@ function openScene(zipData) {
     for (var i = 0; i < 4; i++){
         try{
             var objects2DWalls = JSON.parse(zip.file("scene2DFloorContainer." + i + ".json").asText());
-            var loop = 0;
+            var w = 0;
+            var d = 0;
             scene2DWallMesh[i] = [];
+            scene2DDoorMesh[i] = [];
             $.each(objects2DWalls, function(index){
-                //console.log(this['position.x1'] + ":" + this['position.y1'] + " " + this['position.x2'] + ":" + this['position.y2']);
-                scene2DWallMesh[i][loop] = scene2DMakeWall([this['position.x1'], this['position.y1'], this['position.x2'], this['position.y2'],this['curve.x'],this['curve.y']]);
-                loop++;
+                if(this['door'] != undefined)
+                {
+                    scene2DDoorMesh[i][d] = scene2DMakeDoor({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
+                    d++;
+                }
+                else if(this['window'] != undefined)
+                {
+                    //scene2DWindowMesh[i][w] = 
+                    w++;
+                }
             });
-        }catch(ex){console.log(">>>" + ex);}
+            w = 0;
+            $.each(objects2DWalls, function(index){
+                if(this['wall'] != undefined)
+                {
+                    scene2DWallMesh[i][w] = scene2DMakeWall({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['id'],i);
+                    w++;
+                }
+            });
+        }catch(ex){}
 
         try{
             var objects3DFurniture = JSON.parse(zip.file("scene3DFloorFurnitureContainer." + i + ".json").asText());
@@ -5305,6 +5562,9 @@ function openScene(zipData) {
             }catch(ex){}
         }
     }catch(ex){}
+
+    scene3DFloorWallGenerate();
+    scene3D.add(scene3DFloorTileContainer[FLOOR]);
 }
 
 function imageBase64(id) {
@@ -5369,7 +5629,6 @@ function scene3DFloorObjectWallMeasurementAjust() {
 
 }
 
-
 function scene3DFloorWallGenerate() {
 
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
@@ -5377,6 +5636,8 @@ function scene3DFloorWallGenerate() {
 
     //TODO: Generate directly from SVG 2D points!
     var objects = scene2DWallMesh[FLOOR]; //scene2D.getObjects();
+    if(objects == 0)
+        return;
     //var floorShape = new THREE.Shape();
     var floorShape = null; //new THREE.Geometry();
 
@@ -5396,12 +5657,12 @@ function scene3DFloorWallGenerate() {
             //console.log(obj.type + " x1:" + obj.path[0][1] + " y1:" + obj.path[0][2] + " x2:" + obj.path[1][3] + " y2:" + obj.path[1][4] + " cx:" + obj.path[1][1] + " cy:" + obj.path[1][2]);
 
             //SVG
-            var x1 = (obj.path[0][1]/100) * 2 - 1;
-            var y1 = -(obj.path[0][2]/100) * 2 + 1;
-            var cx = (obj.path[1][1]/100) * 2 - 1;
-            var cy = -(obj.path[1][2]/100) * 2 + 1;
-            var x2 = (obj.path[1][3]/100) * 2 - 1;
-            var y2 = -(obj.path[1][4]/100) * 2 + 1;
+            var x1 = (obj.item(0).path[0][1]/100) * 2 - 1;
+            var y1 = -(obj.item(0).path[0][2]/100) * 2 + 1;
+            var cx = (obj.item(0).path[1][1]/100) * 2 - 1;
+            var cy = -(obj.item(0).path[1][2]/100) * 2 + 1;
+            var x2 = (obj.item(0).path[1][3]/100) * 2 - 1;
+            var y2 = -(obj.item(0).path[1][4]/100) * 2 + 1;
 
             //Adjustments
             x1 = x1-13;
@@ -5507,8 +5768,6 @@ function scene3DFloorWallGenerate() {
     //floorShape.computeFaceNormals();
     //floorShape.computeCentroids();
 
-
-
     /*
     var image = new Image();
     image.onload = function () { texture.needsUpdate = true; };
@@ -5522,79 +5781,80 @@ function scene3DFloorWallGenerate() {
     http://stackoverflow.com/questions/19182298/how-to-texture-a-three-js-mesh-created-with-shapegeometry
     */
 
+    //if (floorShape != null)
+    //{
+        /*
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        texture = new THREE.Texture(canvas);
+        */
+        texture = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/W23643.jpg');
+        //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.minFilter = THREE.LinearFilter;
+        //texture.minFilter = THREE.NearestFilter;
+        texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping
+        //texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+        //texture.repeat.set(4, 4);
+        texture.repeat.set(0.4, 0.4);
+        texture.offset.set(0.4, 0.4);
+        /*
+        var img = new Image();
+        img.src = 'objects/Platform/Textures/W23643.jpg';
+        img.style.width = '50%'
+        img.style.height = 'auto'
+        img.onload = function() {
+            //context.drawImage(img,0,0);
+            //context.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width/6, img.height/6);
+            texture.needsUpdate = true;
+        }
+        */
+        var uvGenerator = THREE.ExtrudeGeometry.WorldUVGenerator;
+        //uvGenerator.uRepeat = 4;
+        geometry = floorShape.extrude({amount: 0.1, 
+            bevelEnabled: false,
+            uvGenerator: uvGenerator
+        });
 
+        /*
+        var uvs = [];
+        uvs.push( new THREE.Vector2( 0.0, 0.0 ) );
+        uvs.push( new THREE.Vector2( 1.0, 0.0 ) );
+        uvs.push( new THREE.Vector2( 1.0, 1.0 ) );
+        uvs.push( new THREE.Vector2( 0.0, 1.0 ) );
+        geometry.faceVertexUvs[0].push([ uvs[0], uvs[1], uvs[2]] );
+        */
 
-    /*
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
-    texture = new THREE.Texture(canvas);
-    */
-    texture = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/W23643.jpg');
-    //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.minFilter = THREE.LinearFilter;
-    //texture.minFilter = THREE.NearestFilter;
-    //texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping
-    texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
-    //texture.repeat.set(4, 4);
-    texture.repeat.set(0.4, 0.4);
-    texture.offset.set(0.4, 0.4);
-    /*
-    var img = new Image();
-    img.src = 'objects/Platform/Textures/W23643.jpg';
-    img.style.width = '50%'
-    img.style.height = 'auto'
-    img.onload = function() {
-        //context.drawImage(img,0,0);
-        //context.drawImage(img, 0, 0, img.width, img.height, 0, 0, img.width/6, img.height/6);
-        texture.needsUpdate = true;
-    }
-    */
-    var uvGenerator = THREE.ExtrudeGeometry.WorldUVGenerator;
-    //uvGenerator.uRepeat = 4;
-    geometry = floorShape.extrude({amount: 0.1, 
-        bevelEnabled: false,
-        uvGenerator: uvGenerator
-    });
+        material = new THREE.MeshBasicMaterial({ map: texture});
 
-    /*
-    var uvs = [];
-    uvs.push( new THREE.Vector2( 0.0, 0.0 ) );
-    uvs.push( new THREE.Vector2( 1.0, 0.0 ) );
-    uvs.push( new THREE.Vector2( 1.0, 1.0 ) );
-    uvs.push( new THREE.Vector2( 0.0, 1.0 ) );
-    geometry.faceVertexUvs[0].push([ uvs[0], uvs[1], uvs[2]] );
-    */
+        //material = new THREE.MeshLambertMaterial( { map: texture } );
+        //material = new THREE.MeshPhongMaterial({ map: texture, shininess: 4});
+        //var materials = [material1, material2, material3, material4, material5, material6];
+        //var meshFaceMaterial = new THREE.MeshFaceMaterial( materials );
+        //material = new THREE.MeshBasicMaterial({color: 0xccac7b});
 
-    material = new THREE.MeshBasicMaterial({ map: texture});
+        //geometry = floorShape.makeGeometry();
+        //geometry.computeCentroids();
 
-    //material = new THREE.MeshLambertMaterial( { map: texture } );
-    //material = new THREE.MeshPhongMaterial({ map: texture, shininess: 4});
-    //var materials = [material1, material2, material3, material4, material5, material6];
-    //var meshFaceMaterial = new THREE.MeshFaceMaterial( materials );
-    //material = new THREE.MeshBasicMaterial({color: 0xccac7b});
+        geometry.computeVertexNormals();
+        geometry.computeFaceNormals();
 
-    //geometry = floorShape.makeGeometry();
-    //geometry.computeCentroids();
+        mesh = new THREE.Mesh(geometry, material);
+        /*
+        mesh = THREE.SceneUtils.createMultiMaterialObject(geometry, [material, new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            wireframe: true,
+            transparent: true,
+        })]);
+        */
+        mesh.rotation.x = -(90 * RADIAN); //Horizontal Flip
+        mesh.position.y = 0.01;
+        //mesh.overdraw = true;
+        mesh.receiveShadow = true;
+        //mesh.scale.set(4, 4, 1 );
 
-    geometry.computeVertexNormals();
-    geometry.computeFaceNormals();
-
-    mesh = new THREE.Mesh(geometry, material);
-    /*
-    mesh = THREE.SceneUtils.createMultiMaterialObject(geometry, [material, new THREE.MeshBasicMaterial({
-        color: 0x000000,
-        wireframe: true,
-        transparent: true,
-    })]);
-    */
-    mesh.rotation.x = -(90 * RADIAN); //Horizontal Flip
-    mesh.position.y = 0.01;
-    //mesh.overdraw = true;
-    mesh.receiveShadow = true;
-    //mesh.scale.set(4, 4, 1 );
-
-    scene3DFloorTileContainer[FLOOR].add(mesh);
-    //scene3DFloorTileContainer[FLOOR].children[0] = mesh;
+        scene3DFloorTileContainer[FLOOR].add(mesh);
+        //scene3DFloorTileContainer[FLOOR].children[0] = mesh;
+    //}
 }
 
 function sceneOpen(file) {
@@ -5605,7 +5865,7 @@ function sceneOpen(file) {
       width: 10, // The line thickness
       radius: 30, // The radius of the inner circle
       corners: 1, // Corner roundness (0..1)
-      color: '#000', // #rgb or #rrggbb or array of colors
+      color: '#505050', // #rgb or #rrggbb or array of colors
       speed: 1, // Rounds per second
       trail: 60, // Afterglow percentage
       className: 'spinner', // The CSS class to assign to the spinner
@@ -5628,8 +5888,6 @@ function sceneOpen(file) {
                 } catch (e) {
                     console.log("failed to open scene " + e);
                 }
-
-                scene3DFloorWallGenerate();
                 
                 setTimeout(function()
                 {
@@ -5667,7 +5925,7 @@ function sceneNew() {
     //TODO: load from one JSON file
     //=========================================
 
-    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0, 0, 0, 1, false, null);
+    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
     
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
     /*
@@ -5713,7 +5971,7 @@ function scene2DMakeWallPivotCircle(left, top, lock) {
     var mobileFix = new fabric.Circle({
       left: left,
       top: top,
-      radius: 40,
+      radius: 30,
       fill: '',
     });
 
@@ -5733,12 +5991,12 @@ function scene2DMakeWallPivotCircle(left, top, lock) {
         left: left,
         top: top,
         width: 8,
-        height: 6,
+        height: 10,
         opacity: 0.6,
         visible: false,
     });
 
-    return new fabric.Group([mobileFix, c, i], {selectable: true, hasBorders: false, hasControls: false, name: 'pivot', lockMovementX:lock, lockMovementY:lock});
+    return new fabric.Group([mobileFix, c, i], {selectable: true, opacity: 0.8, hasBorders: false, hasControls: false, name: 'pivot', id:Math.random().toString(36).substring(7), lockMovementX:lock, lockMovementY:lock});
 }
 
 /*
@@ -5916,7 +6174,7 @@ function scene3DSetSky(set) {
     }
 
     //skyMaterial.needsUpdate = true;
-    scene3D.add(skyMesh);
+    //scene3D.add(skyMesh);
 }
 
 function scene3DSky() {
@@ -6456,10 +6714,14 @@ function animateClouds()
         weatherSkyNightMesh.position.x = camera3D.position.x / 1.5;
     }
     */
-    weatherSkyMesh.rotation.y = camera3D.rotation.y; //spiral
-    weatherSkyMesh.rotation.z = camera3D.rotation.z; //side-to-side
-    weatherSkyMesh.rotation.x = camera3D.rotation.x; //top
-    weatherSkyMesh.position.x = camera3D.position.x / 1.5;
+
+    if(weatherSkyMesh)
+    {
+        weatherSkyMesh.rotation.y = camera3D.rotation.y; //spiral
+        weatherSkyMesh.rotation.z = camera3D.rotation.z; //side-to-side
+        weatherSkyMesh.rotation.x = camera3D.rotation.x; //top
+        weatherSkyMesh.position.x = camera3D.position.x / 1.5;
+    }
 
     //weatherSkyDayMesh.position.z = camera3D.position.z;
     //weatherSkyDayMesh.rotation = camera3D.rotation;
