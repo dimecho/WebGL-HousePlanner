@@ -2,20 +2,29 @@
 
 cd "$(dirname "$0")"
 
-#for f in $(find ./ -name '*.jsz')
-#do
-	#rm "$f"
-#done
-
 #for f in $(find ./ -name '*.js')
-find './' -name '*.js' | while read f
+find './' -name '*.json' | while read f
 do
-	cd "$(dirname "$0")/$(dirname "$f")"
-	#zip "${f%.*}.jsz" "${f%.*}.js"
-	zip "$(basename "$f" .js).jsz" "$(basename "$f")"
-	#tar -czf "${f%.*}.jsz" "$f"
+    echo $(basename "$f")
+
+    if [ "$(basename "$f")" != "index.json" ]
+    then
+	   cd "$(dirname "$0")/$(dirname "$f")"
+       #Fix Texture Path
+       #============================
+       #cat "$(basename "$f")" | sed -e "s/\"mapDiffuse\": \"/\"mapDiffuse\": \"Textures\\/g" > "$(basename "$f").txt"
+
+       #Zip 3D Model
+       #============================
+	   #zip "${f%.*}.jsz" "${f%.*}.js"
+       rm "$(basename "$f" .json).jsz"
+	   zip "$(basename "$f" .json).jsz" "$(basename "$f")"
+	   #tar -czf "${f%.*}.jsz" "$f"
+    fi
 done
 
+#Encrypt 3D Models
+#============================
 #for f in $(find ./ -name '*.jsz')
 #do
 	#openssl base64 -in "$f" -out "$f.base64"

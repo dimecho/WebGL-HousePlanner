@@ -20,8 +20,11 @@ do
 done
 
 #for f in $(find ./ -name '*.js')
-find './' -name '*.js' | while read f
+find './' -name '*.json' | while read f
 do
-	rm "$f"
+    if [ "$(basename "$f")" != "index.json" ]
+    then
+	   rm "$f"
+    fi
 done
 

@@ -1907,7 +1907,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
     var textures = js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
     var data;
 
-    //console.log("Textures:" + urlTextures);
+    console.log("Textures:" + textures);
 
     var callbackScene = function ( result ) {
 
@@ -2244,12 +2244,12 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
                     } else {
                         //console.log(response);
                         zip.load(response);
-        data = zip.file(filename + ".js").asText();
+        data = zip.file(filename + ".json").asText();
                         console.log(data);
                     }
                 });
 				
-                url = "objects/" + js.slice(0, -4) + ".js";
+                url = "objects/" + js.slice(0, -4) + ".json";
                 break;
             default:
         }
@@ -2264,7 +2264,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
                 try {
                     var zip = new JSZip(data);
                     //zip.load(binary.read('string'));
-                    data = zip.file(filename + ".js").asText();
+                    data = zip.file(filename + ".json").asText();
                     data = JSON.parse(data);
 
                     if (data.metadata.type == "scene")
