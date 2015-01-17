@@ -57,7 +57,7 @@ var scene3DFloorFurnitureContainer = []; //Three.js contains all Floor 3D object
 var scene3DFloorOtherContainer = []; //Three.js contains all other objects, cameras, notes
 var scene3DFloorMeasurementsContainer = []; //Three.js contains floor measurements: angles, wall size - lines & text (note: objects have their own measurement meshes)
 var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
-var scene3DFloorTileContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
+var scene3DFloorShapeContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 
 var scene3DPivotPoint; // 3D rotational pivot point - 1 object
@@ -133,6 +133,8 @@ var scene2DDrawLineGeometry = []; //Temporary holder for mouse click and drag dr
 var scene2DDrawLine; //2D Line form with color/border/points
 //var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
 var scene2DWallMesh = []; //Fabric.js line data
+var scene2DFloorMesh = []; //Fabric.js line data - floor shape subdevide lines
+var scene2DFloorShape; //Fabric.js path data - overall floor shape (no need for Array because it is re-calculated on-change)
 var scene2DDoorMesh = []; //Fabric.js group line data (doors)
 var scene2DWindowMesh = []; //Fabric.js group line data (windows)
 var scene2DInteriorMesh = []; //Fabric.js svg data (furniture)
@@ -284,7 +286,7 @@ function init(runmode,viewmode) {
         scene3DFloorOtherContainer[i] = new THREE.Object3D();
         scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
         scene3DFloorWallContainer[i] = new THREE.Object3D();
-        scene3DFloorTileContainer[i] = new THREE.Object3D();
+        scene3DFloorShapeContainer[i] = new THREE.Object3D();
 
         scene2DWallMesh[i] = new Array();
         scene2DWallDimentions[i] = new Array();
@@ -820,7 +822,6 @@ function init(runmode,viewmode) {
     //For debugging purposes
     //========================
     //sceneOpen('scene1.zip');
-    //show2D();
     //========================
 }
 
@@ -2410,7 +2411,7 @@ function show3DHouse(skyload) {
     scene3D.add(scene3DHouseContainer);
     scene3D.add(scene3DRoofContainer);
 
-    scene3D.add(scene3DFloorTileContainer[FLOOR]);
+    //scene3D.add(scene3DFloorShapeContainer[FLOOR]);
     
     for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
         scene3D.add(scene3DFloorFurnitureContainer[i]);
@@ -2700,7 +2701,7 @@ function show3DLandscape() {
     //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     //texture.repeat.set(10, 10);
     
-    //scene3D.add(scene3DFloorTileContainer[1][0]);
+    //scene3D.add(scene3DFloorShapeContainer[1][0]);
 
     /*
     //http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
@@ -2775,7 +2776,7 @@ function show3DFloor() {
     }
 
     scene3D.add(scene3DFloorWallContainer[FLOOR]); //walls
-    scene3D.add(scene3DFloorTileContainer[FLOOR]); //floor ground
+    //scene3D.add(scene3DFloorShapeContainer[FLOOR]); //floor ground
     scene3D.add(scene3DFloorOtherContainer[FLOOR]); //notes
 
     scene3DCube.add(scene3DCubeMesh);
@@ -2986,6 +2987,8 @@ function show2D() {
     scene2DMakeGrid(20,'#E0E0E0');
     //============================
 
+    scene2DFloorShapeGenerate();
+
     for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++) {
         scene2D.add(scene2DWallMesh[FLOOR][i]);
     }
@@ -2997,6 +3000,8 @@ function show2D() {
     for (var i = 0; i < scene2DExteriorMesh[FLOOR].length; i++) {
         scene2D.add(scene2DExteriorMesh[FLOOR][i]);
     }
+
+
 
     //TODO: doubleclick resets Quardatic Curve
     //http://stackoverflow.com/questions/21511383/fabricjs-detect-mouse-over-object-path -> http://fabricjs.com/per-pixel-drag-drop/
@@ -3423,7 +3428,7 @@ function hideElements() {
         scene3D.remove(scene3DFloorMeasurementsContainer[i]);
 
         scene3D.remove(scene3DFloorWallContainer[i]);
-        scene3D.remove(scene3DFloorTileContainer[i]);
+        scene3D.remove(scene3DFloorShapeContainer[i]);
         scene3D.remove(scene3DFloorOtherContainer[i]);
     }
 
@@ -3447,8 +3452,10 @@ function hideElements() {
         }
     }
     */
+
+    //scene2D.remove(scene2DFloorShape);
+
     //TODO: make this more efficient
-    
     while(scene2D._objects.length > 0)
     {
         for (var i = 0; i < scene2D._objects.length; i++) {
@@ -3736,7 +3743,7 @@ function selectFloor(next) {
 		        scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
                 scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
 		        scene3DFloorWallContainer[i] = new THREE.Object3D();
-                scene3DFloorTileContainer[i] = new THREE.Object3D();
+                scene3DFloorShapeContainer[i] = new THREE.Object3D();
                 scene3DFloorOtherContainer[i] = new THREE.Object3D();
 			    scene2DWallMesh[i] = new Array();
 			    scene2DWallDimentions[i] = new Array();
@@ -5563,8 +5570,8 @@ function openScene(zipData) {
         }
     }catch(ex){}
 
-    scene3DFloorWallGenerate();
-    scene3D.add(scene3DFloorTileContainer[FLOOR]);
+    //show2D(); //DEBUG 2D
+    show3DHouse();
 }
 
 function imageBase64(id) {
@@ -5629,17 +5636,74 @@ function scene3DFloorObjectWallMeasurementAjust() {
 
 }
 
+function scene2DFloorShapeGenerate() {
+
+    //if(scene2DFloorShape != undefined)
+    //    scene2D.remove(scene2DFloorShape);
+
+    scene2DFloorShape = null;
+
+    var path = "M 0 0";
+    var pattern
+    var count = 2;
+
+    for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++) {
+        path += " Q 0, 0, 0, 0";
+    }
+
+    //console.log(path);
+
+    for (var objects in scene2DWallMesh[FLOOR])
+    {
+        var obj = scene2DWallMesh[FLOOR][objects];
+
+        if (obj.name == "wall")
+        {
+            //console.log(obj.item(0));
+
+            var x1 = obj.item(0).path[0][1];
+            var y1 = obj.item(0).path[0][2];
+            var cx = obj.item(0).path[1][1];
+            var cy = obj.item(0).path[1][2];
+            var x2 = obj.item(0).path[1][3];
+            var y2 = obj.item(0).path[1][4];
+
+            if (scene2DFloorShape == null)
+            {
+                //Generate 2D Vector Floor Shape
+                scene2DFloorShape = new fabric.Path(path, {strokeWidth: 1, stroke: 'black', selectable:false, hasControls: false, name:'floorshape', opacity:0.6});
+                scene2DFloorShape.path[0][1] = x1; scene2DFloorShape.path[0][2] = y1;
+                scene2DFloorShape.path[1][1] = cx; scene2DFloorShape.path[1][2] = cy;
+                scene2DFloorShape.path[1][3] = x2; scene2DFloorShape.path[1][4] = y2;
+            }else{
+                scene2DFloorShape.path[count][1] = cx; scene2DFloorShape.path[count][2] = cy;
+                scene2DFloorShape.path[count][3] = x2; scene2DFloorShape.path[count][4] = y2;
+                count++;
+            }
+        }
+    }
+
+    fabric.util.loadImage('objects/FloorPlan/Default/7.png', function(img) {
+      scene2DFloorShape.fill = new fabric.Pattern({
+        source: img,
+        repeat: 'repeat'
+      });
+      scene2D.renderAll();
+    });
+
+    //console.log(scene2DFloorShape);
+
+    scene2D.add(scene2DFloorShape);
+}
 function scene3DFloorWallGenerate() {
 
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
-    scene3DFloorTileContainer[FLOOR] = new THREE.Object3D();
+    scene3DFloorShapeContainer[FLOOR] = new THREE.Object3D();
 
-    //TODO: Generate directly from SVG 2D points!
-    var objects = scene2DWallMesh[FLOOR]; //scene2D.getObjects();
-    if(objects == 0)
+    if(scene2DWallMesh[FLOOR].length == 0)
         return;
-    //var floorShape = new THREE.Shape();
-    var floorShape = null; //new THREE.Geometry();
+    
+    var floorShape = null; //new THREE.Shape(); //new THREE.Geometry();
 
     /*
     svg.path[0][1] -> x1
@@ -5648,9 +5712,9 @@ function scene3DFloorWallGenerate() {
     svg.path[1][4] -> y2
     */
 
-    for (var i in objects) //Translate 2D points into 3D
+    for (var objects in scene2DWallMesh[FLOOR])
     {
-        var obj = objects[i];
+        var obj = scene2DWallMesh[FLOOR][objects];
 
         if (obj.name == "wall") { //avoid picking arrows which are path also
 
@@ -5664,7 +5728,7 @@ function scene3DFloorWallGenerate() {
             var x2 = (obj.item(0).path[1][3]/100) * 2 - 1;
             var y2 = -(obj.item(0).path[1][4]/100) * 2 + 1;
 
-            //Adjustments
+            //3D Adjustments
             x1 = x1-13;
             y1 = y1+7;
             cx = cx-13;
@@ -5689,9 +5753,10 @@ function scene3DFloorWallGenerate() {
             */
             if (floorShape == null)
             {
+                //Generate 3D Floor Shape
                 floorShape = new THREE.Shape();
                 floorShape.moveTo(x1, y1);
-                floorShape.quadraticCurveTo(cx, cy, x2,y2);
+                floorShape.quadraticCurveTo(cx, cy, x2, y2);
             }else{
                 floorShape.quadraticCurveTo(cx, cy, x2,y2);
             }
@@ -5748,6 +5813,7 @@ function scene3DFloorWallGenerate() {
             */
 
             scene3DFloorWallContainer[FLOOR].add(mesh);
+            //scene3DFloorWallContainer.2d = obj;
 
             /*
             http://stackoverflow.com/questions/26272564/how-to-increase-the-thickness-of-the-extrude-geometry-along-x-and-z-axis-three
@@ -5852,9 +5918,11 @@ function scene3DFloorWallGenerate() {
         mesh.receiveShadow = true;
         //mesh.scale.set(4, 4, 1 );
 
-        scene3DFloorTileContainer[FLOOR].add(mesh);
-        //scene3DFloorTileContainer[FLOOR].children[0] = mesh;
+        scene3DFloorShapeContainer[FLOOR].add(mesh);
+        //scene3DFloorShapeContainer[FLOOR].children[0] = mesh;
     //}
+
+    scene3D.add(scene3DFloorShapeContainer[FLOOR]);
 }
 
 function sceneOpen(file) {

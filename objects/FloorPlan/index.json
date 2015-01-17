@@ -3,5 +3,13 @@
         "name": "Windows",
         "link": null,
         "sub": null
+    },{
+        "name": "Doors",
+        "link": null,
+        "sub": null
+    },{
+        "name": "Stairs",
+        "link": null,
+        "sub": null
     }]
 }
