@@ -1,20 +1,36 @@
 #!/bin/sh
 
-cd "$(dirname "$0")"
-clear
+ROOT="$(dirname "$0")"
+BLENDER_PATH=/Applications/blender.app/Contents/Resources/2.73/scripts/addons/
 
-curl -O https://raw.githubusercontent.com/mrdoob/three.js/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/__init__.py
-curl -O https://raw.githubusercontent.com/mrdoob/three.js/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/export_threejs.py
-curl -O https://raw.githubusercontent.com/mrdoob/three.js/master/utils/exporters/blender/2.65/scripts/addons/io_mesh_threejs/import_threejs.py
+cd "$ROOT"
+cp "Platform/io_three.zip" "$BLENDER_PATH"
+cd "$BLENDER_PATH"
+unzip -o "io_three.zip"
+rm "io_three.zip"
+
+cd "$ROOT"
+cp "Platform/io_mesh_threejs.zip" "$BLENDER_PATH"
+cd "$BLENDER_PATH"
+unzip -o "io_mesh_threejs.zip"
+rm "io_mesh_threejs.zip"
+
+CONSTANTS_PATH="$BLENDER_PATH/io_three/constants.py"
+
+cat "$CONSTANTS_PATH" | sed -e "s/COPY_TEXTURES: True,/COPY_TEXTURES: False,/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH.0" | sed -e "s/UVS: False,/UVS: True,/g" > "$CONSTANTS_PATH.1"
+cat "$CONSTANTS_PATH.1" | sed -e "s/MATERIALS: False,/MATERIALS: True,/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH.0" | sed -e "s/ENABLE_PRECISION: False,/ENABLE_PRECISION: True,/g" > "$CONSTANTS_PATH.1"
+cat "$CONSTANTS_PATH.1" | sed -e "s/DEFAULT_PRECISION = 6/DEFAULT_PRECISION = 2/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH.0" | sed -e "s/MIX_COLORS: False,/MIX_COLORS: True,/g" > "$CONSTANTS_PATH.1"
+cat "$CONSTANTS_PATH.1" | sed -e "s/MAPS: False,/MAPS: True,/g" > "$CONSTANTS_PATH"
+rm "$CONSTANTS_PATH.0"
+rm "$CONSTANTS_PATH.1"
 
 
-BLENDER_PATH=/Applications/blender.app/Contents/Resources/2.72/scripts/addons/io_mesh_threejs/
-mkdir -p "$BLENDER_PATH"
-
-cp -R __init__.py "$BLENDER_PATH"
-cp -R export_threejs.py "$BLENDER_PATH"
-cp -R import_threejs.py "$BLENDER_PATH"
-
-rm __init__.py
-rm export_threejs.py
-rm import_threejs.py
+CONSTANTS_PATH="$BLENDER_PATH/io_mesh_threejs/export_threejs.py"
+cat "$CONSTANTS_PATH" | sed -e "s/option_normals = True,/option_normals = False,/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH.0" | sed -e "s/option_skinning = True,/option_skinning = False,/g" > "$CONSTANTS_PATH.1"
+cat "$CONSTANTS_PATH.1" | sed -e "s/option_bones = True,/option_bones = False,/g" > "$CONSTANTS_PATH"
+rm "$CONSTANTS_PATH.0"
+rm "$CONSTANTS_PATH.1"

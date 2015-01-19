@@ -10,22 +10,18 @@ do
 	open -n /Applications/blender.app "$(basename "$f")"
 	#/Applications/blender.app/Contents/MacOS/blender -b "$(basename "$f")"
 
-	sleep 2
+	#sleep 2
+	#osascript -e 'tell application "Blender" to activate'
+	sleep 3
 
-	osascript -e 'tell application "Blender" to activate'
-
-	sleep 2
-
-	cliclick -w 400 -r c:60,60 c:60,415 c:250,510 c:1600,105
+	cliclick -w 600 -r c:300,30 c:60,60 c:60,415 c:350,500 c:1600,105
 
 	while [ ! -f "$(basename "$f" .blend).json" ]
 	do
-	    sleep 2
+	    sleep 1
 	done
-	sleep 2
-	#osascript -e 'tell application "Blender" to quit'
-	#osascript -e 'do shell script "killall Blender"'
-	cliclick -w 400 -r c:12,28
-	
+	sleep 1
+	pkill -9 "blender"
+	sleep 1
 	#osascript -e 'repeat\nif application "Blender" is not running then exit repeat\ndelay 5\nend repeat'
 done

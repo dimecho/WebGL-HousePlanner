@@ -1,25 +1,31 @@
 #!/bin/sh
 
-cd "$(dirname "$0")"
+ROOT="$(dirname "$0")"
+cd "$ROOT"
+
 
 #for f in $(find ./ -name '*.js')
-find './' -name '*.json' | while read f
+find "$ROOT" -name '*.json' | while read f
 do
-    echo $(basename "$f")
-
     if [ "$(basename "$f")" != "index.json" ]
     then
-	   cd "$(dirname "$0")/$(dirname "$f")"
+      DIR="$(dirname "$f")"
+	    cd "$DIR"
        #Fix Texture Path
        #============================
        #cat "$(basename "$f")" | sed -e "s/\"mapDiffuse\": \"/\"mapDiffuse\": \"Textures\\/g" > "$(basename "$f").txt"
 
+      #Compress JSON (json limit fix)
+      #============================
+      #java -jar "$ROOT/../css/yuicompressor.jar" -o "$DIR/$(basename "$f").js" "$DIR/$(basename "$f")"
+      #mv "$(basename "$f").js" "$(basename "$f")"
+
        #Zip 3D Model
        #============================
-	   #zip "${f%.*}.jsz" "${f%.*}.js"
+	     #zip "${f%.*}.jsz" "${f%.*}.js"
        rm "$(basename "$f" .json).jsz"
-	   zip "$(basename "$f" .json).jsz" "$(basename "$f")"
-	   #tar -czf "${f%.*}.jsz" "$f"
+	     zip "$(basename "$f" .json).jsz" "$(basename "$f")"
+	     #tar -czf "${f%.*}.jsz" "$f"
     fi
 done
 

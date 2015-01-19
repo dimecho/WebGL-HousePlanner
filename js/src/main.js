@@ -54,7 +54,7 @@ var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DCutawayPlaneMesh; //Virtual mesh used to detect collisions "cut-aways" for front walls
 var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DFloorFurnitureContainer = []; //Three.js contains all Floor 3D objects by floor (sofas,tables)
-var scene3DFloorOtherContainer = []; //Three.js contains all other objects, cameras, notes
+//var scene3DFloorOtherContainer = []; //Three.js contains all other objects, cameras, notes
 var scene3DFloorMeasurementsContainer = []; //Three.js contains floor measurements: angles, wall size - lines & text (note: objects have their own measurement meshes)
 var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
 var scene3DFloorShapeContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
@@ -165,6 +165,7 @@ var target; //THREE.Vector3();
 var clock;
 var _animate = 1; 
 //var engine;
+var manager;
 var projector;
 var vector;
 var geometry;
@@ -283,7 +284,7 @@ function init(runmode,viewmode) {
     for(var i=0; i<=2; i++)
     {
         scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
-        scene3DFloorOtherContainer[i] = new THREE.Object3D();
+        //scene3DFloorOtherContainer[i] = new THREE.Object3D();
         scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
         scene3DFloorWallContainer[i] = new THREE.Object3D();
         scene3DFloorShapeContainer[i] = new THREE.Object3D();
@@ -807,6 +808,13 @@ function init(runmode,viewmode) {
     var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
     scene.add( skyBox );
     */
+
+    manager = new THREE.LoadingManager();
+    
+    manager.onProgress = function ( item, loaded, total ) {
+        console.log( item, loaded, total );
+        //var material = new THREE.MeshFaceMaterial(materials);
+    };
 
     sceneNew();
     //scene3DSky();
@@ -1900,40 +1908,80 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
     */
 
     //TODO: catch .obj and .dae
+    /*
+    var manager = new THREE.LoadingManager();
+    
+    manager.onProgress = function ( item, loaded, total ) {
+        console.log( item, loaded, total );
+        //var material = new THREE.MeshFaceMaterial(materials);
+    };
+    */
+try{
+    var data;
+    var ext = js.split('.').pop();
+    var textures = js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
+
+    var onProgress = function ( xhr ) {
+        if ( xhr.lengthComputable ) {
+            var percentComplete = xhr.loaded / xhr.total * 100;
+            console.log( Math.round(percentComplete, 2) + '% downloaded' );
+        }
+    };
+    var onError = function ( xhr ) {
+    };
 
     var loader = new THREE.JSONLoader();
 
-    var ext = js.split('.').pop();
-    var textures = js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
-    var data;
+    var callbackObject2 = function( object ) {
 
-    console.log("Textures:" + textures);
+        /* 
+        Texture Fix
+        https://github.com/denzp/three.js
+        https://github.com/denzp/three.js/commit/c069ec1b26014b55bc961846feaf7f7554fc2bb2
+        */
 
-    var callbackScene = function ( result ) {
+        object.name = js;
 
-        //scene3D = result.scene;
+        object.traverse( function ( child ) {
 
-        result.scene.traverse(function (object) {
+            if (child instanceof THREE.Mesh ) {
 
-        if (object instanceof THREE.Mesh) { //object.material
-            try
-            {
-                object.geometry.computeFaceNormals();
-                object.geometry.computeVertexNormals();
-                object.geometry.computeBoundingBox();
-                //callback(object.geometry,object.material);
-                    
-                objectContainer.add(object);
-            } catch (e) {
-                //console.log("error catch");
+                console.log(child);
+
+                //geometry.mergeVertices(); //speed things up ?
+                //geometry.computeFaceNormals(); //already done by .load
+                //geometry.computeBoundingSphere(); //already done by .load
+                child.geometry.computeVertexNormals(); // requires correct face normals
+                child.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+               
+                child.castShadow = true;
+
+                if (shadow)
+                    child.receiveShadow = true;
+
+                if(child.material != null)
+                {
+                    child.material.shading = THREE.SmoothShading;
+                    child.material.side = THREE.DoubleSide;
+                    child.material.depthWrite = true; //Blender exports fix
+
+                    //if(child.material.shininess == 1) //TODO: Fix this with Blender Exporter
+                    if(child.material.opacity < 1) //glass transparency fix
+                    {
+                        child.material.transparent = true;
+                        child.material.opacity = 0.6;
+                        //child.material.vertexColors = false;
+                    }else{
+                        child.material.transparent = false;
+                    }
+                }
+            }else if (child instanceof THREE.PointLight) {
+                console.log("light found!");
+
+                //pointLight = new THREE.PointLight( 0xffaa00 );
+                //pointLight.position.set( 0, 0, 0 );
+                //scene3D.add( object );
             }
-        }else if (object instanceof THREE.PointLight) {
-            console.log("light found!");
-
-            //pointLight = new THREE.PointLight( 0xffaa00 );
-            //pointLight.position.set( 0, 0, 0 );
-            scene3D.add( object );
-        }
             /*
             if ( object.userData.rotating === true ) {
 
@@ -1955,7 +2003,17 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
             }
             */
         });
+        
+        object.position.x = x;
+        object.position.y = y;
+        object.position.z = z;
+        object.rotation.x = xaxis;
+        object.rotation.y = yaxis;
+
+        console.log("ObjectLoader2 add model to scene" + object.name);
+        scene3D.add(object); 
     }
+
 
     var callback = function(geometry, materials) {
         /*
@@ -1974,9 +2032,10 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
         //console.log(materials[i].map);
         //}
 
-        
+        console.log("computing normals " + js);
         //geometry.mergeVertices(); //speed things up ?
-        geometry.computeFaceNormals();
+        //geometry.computeFaceNormals(); //already done by .load
+        //geometry.computeBoundingSphere(); //already done by .load
         geometry.computeVertexNormals(); // requires correct face normals
         geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
         
@@ -1991,8 +2050,9 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
         performance optimization sometimes leads to wholes in the surface. When this happens
         in your surface, simply set 'doubleSided' to 'true'.
         */
-
+        
         materials.forEach(function (material) {
+
             material.side = THREE.DoubleSide;
 
             if(material.opacity < 1) //glass transparency fix
@@ -2002,6 +2062,9 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
                 material.transparent = false;
             }
             material.depthWrite = true; //Blender exports fix
+            //material.map.minFilter = THREE.LinearFilter; //does not work for all models?
+            //material.map.anisotropy = 2; //focus blur (16=unblured 1=blured)
+
             //material.doubleSided = true;
             //material.ambient = 0x999999;
             //material.color = 0xffffff;
@@ -2013,6 +2076,8 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
             //material.lightMap: lm,
             //material.map = material
         });
+        
+        console.log("loading materials " + js);
 
         var material = new THREE.MeshFaceMaterial(materials);
         //var material = new THREE.MeshPhongMaterial(materials);
@@ -2032,7 +2097,6 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
 
         //mesh.morphTargets = true;
         //mesh.morphNormals = true;
-
         //mesh.vertexColors = THREE.FaceColors;
         //mesh.shading = THREE.FlatShading;
 
@@ -2051,12 +2115,11 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
         mesh.position.x = x;
         mesh.position.y = y;
         mesh.position.z = z;
-
         mesh.rotation.x = xaxis;
         mesh.rotation.y = yaxis;
      
-        mesh.matrixAutoUpdate = true;
-        mesh.updateMatrix();
+        //mesh.matrixAutoUpdate = true;
+        //mesh.updateMatrix();
 
         var object = new THREE.Object3D();
 
@@ -2139,7 +2202,6 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
             //object.add(textMeshL);
             //object.add(textMeshW);
             
-
             line.add(textMeshL);
             line.add(textMeshW);
 
@@ -2150,7 +2212,6 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
             line.visible = false;
 
             //console.log("Calculating " + mesh.name + " measurements " + mesh.position.x + ":" + mesh.position.z + " " + mesh.geometry.boundingBox.max.x + ":" + mesh.geometry.boundingBox.max.z);
-           
         }
         
         if(note != null)
@@ -2214,7 +2275,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
 
     if (js.split('.').pop() == 'jsz') //zipped json file
     {
-        var filename = js.split('/').pop().slice(0, -4);
+        var filename = js.split('/').pop().slice(0, -4) + ".json";
 
         /*
         var fullpath = window.location.pathname; // + window.location.search;
@@ -2263,35 +2324,48 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
             success: function(data){
                 try {
                     var zip = new JSZip(data);
+                    
                     //zip.load(binary.read('string'));
-                    data = zip.file(filename + ".json").asText();
+                    data = zip.file(filename).asText(); //console.log("unzip OK " + js);
                     data = JSON.parse(data);
 
-                    if (data.metadata.type == "scene")
+                    if (data.metadata.formatVersion == 3.1) //using export script io_mesh_threejs
                     {
-                        //console.log(data.metadata.type);
-                        //loader = new THREE.SceneLoader();
-                        //loader.parse(data, callbackScene, textures);
-                    }
-                    else
-                    {
-                        //loader.loadJson(data, callback, urlTextures);
+                        console.log("using old format 3");
+
+                        //loader = new THREE.JSONLoader();
                         var result = loader.parse(data, textures);
                         callback(result.geometry, result.materials);
                     }
+                    else //using export script io_three
+                    { 
+                        /*
+                        https://github.com/mrdoob/three.js/wiki/JSON-Texture-format-4
+                        */
+
+                        console.log("using new format 4");
+
+                        loader = new THREE.ObjectLoader2(manager);
+                        loader.setTexturePath(textures);
+                        loader.parse(data,callbackObject2,onProgress,onError);
+                    }
                 } catch (e) { //zip file was probably not found, load regular json
-                    console.log("error catch");
-                    loader.load(js.slice(0, -1), callback, textures);
+                    console.log("error catch " + e + " " + js.slice(0, -4) + ".json");
+
+                    loader = new THREE.JSONLoader();
+                    loader.load(js.slice(0, -4) + ".json", callback, textures);
                 }
             },
             error: function(xhr, textStatus, errorThrown){
 				alertify.alert("3D Model (" + js + ") Loading Error");
 			}
         });
-
-    } else {
-        loader.load(js, callback, textures);
+    //} else {
+        //loader.load(js, callback, textures);
     }
+}catch(e){
+    console.log("open3DModel Error " + e)
+}
 }
 
 function cube(size) {
@@ -2777,7 +2851,7 @@ function show3DFloor() {
 
     scene3D.add(scene3DFloorWallContainer[FLOOR]); //walls
     //scene3D.add(scene3DFloorShapeContainer[FLOOR]); //floor ground
-    scene3D.add(scene3DFloorOtherContainer[FLOOR]); //notes
+    //scene3D.add(scene3DFloorOtherContainer[FLOOR]); //notes
 
     scene3DCube.add(scene3DCubeMesh);
 
@@ -3428,8 +3502,8 @@ function hideElements() {
         scene3D.remove(scene3DFloorMeasurementsContainer[i]);
 
         scene3D.remove(scene3DFloorWallContainer[i]);
-        scene3D.remove(scene3DFloorShapeContainer[i]);
-        scene3D.remove(scene3DFloorOtherContainer[i]);
+        //scene3D.remove(scene3DFloorShapeContainer[i]);
+        //scene3D.remove(scene3DFloorOtherContainer[i]);
     }
 
     if (controls3D instanceof THREE.TransformControls)
@@ -3744,7 +3818,7 @@ function selectFloor(next) {
                 scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
 		        scene3DFloorWallContainer[i] = new THREE.Object3D();
                 scene3DFloorShapeContainer[i] = new THREE.Object3D();
-                scene3DFloorOtherContainer[i] = new THREE.Object3D();
+                //scene3DFloorOtherContainer[i] = new THREE.Object3D();
 			    scene2DWallMesh[i] = new Array();
 			    scene2DWallDimentions[i] = new Array();
 		    //} else { // user clicked "cancel"
@@ -4554,8 +4628,8 @@ function on3DHouseMouseUp(event) {
 function on3DFloorMouseDown(event) {
 	on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorOtherContainer[FLOOR].children))
-    {
+    //if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorOtherContainer[FLOOR].children))
+    //{
         if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR].children))
         {
             if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
@@ -4563,7 +4637,7 @@ function on3DFloorMouseDown(event) {
                 scene3D.add(scene3DPivotPoint);
             }
         }
-    }
+    //}
 }
 
 Array.prototype.contains = function(obj) {
@@ -5352,7 +5426,7 @@ function scene2DCollectArrayFromContainer(n) {
         if (obj.name == 'door')
         {
             var JSONString = {};
-            JSONString["door"] = "3dfile";
+            JSONString["door"] = obj.name;
             JSONString["id"] = obj.id;
             JSONString["locked"] = obj.lockMovementX;
             JSONString["open"] = obj.open;
@@ -5638,8 +5712,8 @@ function scene3DFloorObjectWallMeasurementAjust() {
 
 function scene2DFloorShapeGenerate() {
 
-    //if(scene2DFloorShape != undefined)
-    //    scene2D.remove(scene2DFloorShape);
+    if(scene2DFloorShape != undefined)
+        scene2D.remove(scene2DFloorShape);
 
     scene2DFloorShape = null;
 
@@ -5695,8 +5769,11 @@ function scene2DFloorShapeGenerate() {
 
     scene2D.add(scene2DFloorShape);
 }
+
 function scene3DFloorWallGenerate() {
 
+    scene3D.remove(scene3DFloorShapeContainer[FLOOR]);
+    
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
     scene3DFloorShapeContainer[FLOOR] = new THREE.Object3D();
 
@@ -5913,7 +5990,7 @@ function scene3DFloorWallGenerate() {
         })]);
         */
         mesh.rotation.x = -(90 * RADIAN); //Horizontal Flip
-        mesh.position.y = 0.01;
+        mesh.position.y = 0;
         //mesh.overdraw = true;
         mesh.receiveShadow = true;
         //mesh.scale.set(4, 4, 1 );
@@ -5971,67 +6048,9 @@ function sceneNew() {
     open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
     open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
     open3DModel("objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
-
-    /*
-    new THREE.JSONLoader().load("objects/Landscape/round.js", function(geometry, materials) {
-        var groundTexture = new THREE.ImageUtils.loadTexture('objects/Landscape/Textures/F56734.jpg');
-        groundTexture.wrapS = THREE.RepeatWrapping;
-        groundTexture.wrapT = THREE.RepeatWrapping;
-        groundTexture.repeat.set(12, 12);
-        groundTexture.anisotropy = 2; //focus blur (16=unblured 1=blured)
-        var groundMaterial = new THREE.MeshBasicMaterial({
-            map: groundTexture
-        });
-        mesh = new THREE.Mesh(geometry, groundMaterial);
-        //mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        scene3DFloorLevelGroundContainer.add(mesh);
-    });
-	*/
-
-    //Temporary Objects for visualization
-    //TODO: load from one JSON file
-    //=========================================
-
     open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
     
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
-    /*
-    var material = new THREE.MeshBasicMaterial( { color: 0x000000  } );
-    var textGeometry = new THREE.TextGeometry('cool notes, click to view', {
-        font: 'helvetiker', // Must be lowercase!
-        weight: 'normal',
-        size: 0.05,
-        height: 0.01
-    });
-    var textMesh = new THREE.Mesh(textGeometry, material);
-    //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
-    //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
-    textMesh.position.x = 1.8;
-    textMesh.position.y = 1;
-    textMesh.position.z = 0.55;
-    textMesh.rotation.y = 1.5;
-    
-    scene3DFloorFurnitureContainer[FLOOR].add(textMesh);
-    open3DModel("objects/Platform/note.jsz", scene3DFloorOtherContainer[FLOOR], 1.8, 0.6, 0.18, 0, 1.5, 1,"");
-    */
-    open3DModel("objects/Platform/camera.jsz", scene3DFloorOtherContainer[FLOOR], 5, 0, -3, 0, 2.5, 1, false, null);
-
-    //open3DModel("objects/Interior/Furniture/Sofas/IKEA/three-seat-sofa.jsz", scene3DFloorFurnitureContainer[FLOOR], -3.5, 0, 4, 0, 0, 1);
-    //open3DModel("objects/Exterior/Cars/VWbeetle.jsz", scene3DHouseContainer, -2.5, 0, 8, 0, 0, 1);
-    //THREE.GeometryUtils.center();
-    
-    /*
-    scene2D.add(
-        scene2DMakeWallEdgeCircle(line.get('x1'), line.get('y1'), null, line),
-        makeCircle(line.get('x2'), line.get('y2'), line, line2, line5, line6),
-        makeCircle(line2.get('x2'), line2.get('y2'), line2, line3, line4),
-        makeCircle(line3.get('x2'), line3.get('y2'), line3),
-        makeCircle(line4.get('x2'), line4.get('y2'), line4),
-        makeCircle(line5.get('x2'), line5.get('y2'), line5),
-        makeCircle(line6.get('x2'), line6.get('y2'), line6)
-    );
-	*/
 }
 
 function scene2DMakeWallPivotCircle(left, top, lock) {
