@@ -57,7 +57,8 @@ THREE.ObjectLoader2.prototype = {
 		});
 
 		geometries = this.parseGeometries( json.geometries );
-		images = this.parseImages( json.images, manager );
+		if(json.images)
+			images = this.parseImages( json.images, manager );
 	},
 
 	parseGeometries: function ( json ) {

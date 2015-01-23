@@ -1,5 +1,5 @@
 /*
-WebGL HousePlanner v 1.0
+WebGL HousePlanner v1.0
 Preview: http://houseplanner.iroot.ca
 Source Code: https://github.com/poofik/webgl-houseplanner
 
@@ -14,7 +14,7 @@ TODO:
 - [difficulty: 2/10  progress: 80%] 3D objects sub-edit menu (textures/delete/duplicate)
 - [difficulty: 2/10  progress: 60%] Categorize and populate 3D Menu items
 - [difficulty: 8/10  progress: 20%] 3D Menu functions for draggable objects
-- [difficulty: 5/10  progress: 50%] 3D Floor ground base glass reflective
+- [difficulty: 5/10  progress: 40%] 3D Floor ground base glass reflective
 - [difficulty: 6/10  progress: 80%] 3D Exterior View ability to select floors (+ flying-in animationeffect)
 - [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
 - [difficulty: 6/10  progress: 80%] Make House Ground editable - angle/terain/square
@@ -23,36 +23,38 @@ TODO:
     http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
     http://www.chandlerprall.com/webgl/terrain/
 - [difficulty: 4/10  progress: 60%]  Ability to save scene 3D & 2D
-- [difficulty: 5/10  progress: 1%]   Ability to open scene 3D & 2D
+- [difficulty: 5/10  progress: 50%]   Ability to open scene 3D & 2D
 - [difficulty: 6/10  progress: 0%]   Keep history and implement Undo/Redo
 - [difficulty: 6/10  progress: 98%]  3D Exterior View create night scene atmosphere with proper lights
 - [difficulty: 8/10  progress: 100%] 3D Exterior View auto rotate-snap on ground angle
 - [difficulty: 4/10  progress: 100%] Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
 - [difficulty: 8/10  progress: 2%]   Implement room agmented reality  https://github.com/bhollis/aruco-marker
-- [difficulty: 9/10  progress: 0%]   Replace clouds with Shaders and add sun rays! 
+- [difficulty: 9/10  progress: 5%]   Implement Physics with collision detection
+- [difficulty: 9/10  progress: 80%]  Replace clouds with Shaders and add sun rays! 
     http://jabtunes.com/labs/3d/clouds/clouds_godrays_controls.html
     http://www.lab4games.net/zz85/blog/2014/11/08/exploring-simple-noise-and-clouds-with-three-js/
 */
 
 //"use strict";
 
-var scene3D; //ThreeJS Canvas
-var scene3DCube; //ThreeJS Canvas
-var scene3DPanorama; //ThreeJS Canvas
-var scene2D; //FabricJS Canvas
+var scene3D; //Three.js Canvas
+var scene3DCube; //Three.js Canvas
+var scene3DPanorama; //Three.js Canvas
+var scene2D; //Fabric.js Canvas
+var physics3D; //Cannon.js Engine (collisions and other cool stuff)
 
-var renderer;
-var rendererCube;
-var rendererPanorama;
-var rendererMenu;
+var composer, dpr, effectFXAA;
+var renderer, rendererCube, rendererPanorama;
 
 var scene3DRoofContainer; //Contains Roof Design
 var scene3DHouseContainer; //Contains all Exterior 3D objects by floor (trees,fences)
 var scene3DHouseGroundContainer; //Grass Ground - 1 object
 var scene3DHouseFXContainer; //Visual Effects container (user not editable/animated) - fying bugs/birds/rainbows
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
+var scene3DPanoramaContainer;
 var scene3DCutawayPlaneMesh; //Virtual mesh used to detect collisions "cut-aways" for front walls
-var scene3DFloorLevelGroundContainer; //Floor Level arrengment Ground - 1 object
+var scene3DLevelGroundContainer; //Floor Level arrengment Ground - 1 object
+var scene3DLevelWallContainer; //Floor Level arrengment Ground - 1 object
 var scene3DFloorFurnitureContainer = []; //Three.js contains all Floor 3D objects by floor (sofas,tables)
 //var scene3DFloorOtherContainer = []; //Three.js contains all other objects, cameras, notes
 var scene3DFloorMeasurementsContainer = []; //Three.js contains floor measurements: angles, wall size - lines & text (note: objects have their own measurement meshes)
@@ -67,7 +69,7 @@ var scene3DCubeMesh; // Orange cube for visual orientation
 var sceneAmbientLight;
 var sceneDirectionalLight;
 var sceneSpotLight;
-var sceneHemisphereLight;
+//var sceneHemisphereLight;
 //var sceneParticleLight;
 //var scenePointLight;
 
@@ -134,7 +136,6 @@ var scene2DDrawLine; //2D Line form with color/border/points
 //var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
 var scene2DWallMesh = []; //Fabric.js line data
 var scene2DFloorMesh = []; //Fabric.js line data - floor shape subdevide lines
-var scene2DFloorShape; //Fabric.js path data - overall floor shape (no need for Array because it is re-calculated on-change)
 var scene2DDoorMesh = []; //Fabric.js group line data (doors)
 var scene2DWindowMesh = []; //Fabric.js group line data (windows)
 var scene2DInteriorMesh = []; //Fabric.js svg data (furniture)
@@ -152,11 +153,14 @@ var scene2DWallRegularMaterialSelect;
 var scene2DWallBearingMaterial;
 var scene2DWallBearingMaterialSelect;
 
+var physics3DContainer; //Fake 3D objects (CANNON.Box) that get passed to Cannon Engine
+
 var animation = [];
 var particlePivot;
 var particlePivotEmitter;
-
 var particleWeather;
+
+var sunlight = { enabled : false }; //SUNLIGHT RAYS
 
 //var particleClouds;
 var mouse; //THREE.Vector2()
@@ -208,6 +212,9 @@ function init(runmode,viewmode) {
         }
         return;
     }
+    
+    $('#pxs_container').parallaxSlider();
+    window.location.href = "#scene";
 
 	RUNMODE = runmode;
 	VIEWMODE = viewmode;
@@ -272,12 +279,7 @@ function init(runmode,viewmode) {
     touch = new THREE.Vector2();
     target = new THREE.Vector3();
 
-    scene3DRoofContainer = new THREE.Object3D();
-    scene3DHouseContainer = new THREE.Object3D();
-    scene3DHouseGroundContainer = new THREE.Object3D();
-    scene3DHouseFXContainer = new THREE.Object3D();
-    scene3DFloorGroundContainer = new THREE.Object3D();
-    scene3DFloorLevelGroundContainer = new THREE.Object3D();
+    sceneNew();
 
     //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
     //==============================================
@@ -658,52 +660,10 @@ function init(runmode,viewmode) {
     //scene2D.fillStyle = "#FF0000";
     //scene2D.fillRect(0, 0, 1, 1);
 
-    renderer = new THREE.WebGLRenderer({
-        devicePixelRatio: window.devicePixelRatio || 1,
-        antialias: true,
-        alpha: true,
-        //clearColor: 0x34583e,
-        //clearAlpha: 0.5
-        //preserveDrawingBuffer: false
-    });
+    scene3DInitializeRenderer();
 
-    renderer.shadowMapEnabled = true;
-    renderer.shadowMapType = THREE.PCFShadowMap;
-    renderer.shadowMapSoft = true;
-    /*
-    renderer = new THREE.WebGLDeferredRenderer({
-        width: window.innerWidth,
-        height: window.innerHeight,
-        scale: 1,
-        antialias: true,
-        tonemapping: THREE.UnchartedOperator,
-        brightness: 2.5
-    });
-    */
+    scene3DInitializePhysics();
 
-    rendererCube = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true,
-        //transparent: true,
-        //preserveDrawingBuffer: false
-    });
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    //renderer.setClearColor(0xffffff, 0);
-    renderer.shadowMapEnabled = true;
-    renderer.shadowMapAutoUpdate = true;
-    //renderer.shadowMapType = THREE.PCFSoftShadowMap; //THREE.PCFShadowMap; //THREE.BasicShadowMap;
-    renderer.autoClear = false; //REQUIRED: for split screen
-    renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
-    //renderer.physicallyBasedShading = true;
-    renderer.sortObjects = true; //when scene is opening this make sure clouds stay on top
-    document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
-
-    //Orientation Cube
-    rendererCube.setSize(100, 100);
-    //renderer.setClearColor(0xffffff, 1);
-
-    document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
 
     scene3DCube = new THREE.Scene();
     camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
@@ -742,7 +702,6 @@ function init(runmode,viewmode) {
             window.msCancelRequestAnimationFrame ||
             clearTimeout
     })();
-
 
     //$("#HTMLCanvas").bind('mousedown', on2DMouseDown);
     //$("#HTMLCanvas").bind('mouseup', on2DMouseUp);
@@ -810,20 +769,23 @@ function init(runmode,viewmode) {
     */
 
     manager = new THREE.LoadingManager();
-    
     manager.onProgress = function ( item, loaded, total ) {
         console.log( item, loaded, total );
         //var material = new THREE.MeshFaceMaterial(materials);
     };
 
-    sceneNew();
     //scene3DSky();
-    scene3DLight();
+    scene3DInitializeLights();
     
     selectMeasurement();
 
     $('#menuWeatherText').html("Sunny");
     $('#menuDayNightText').html("Day");
+
+    open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
+    open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
+    open3DModel("objects/Landscape/round.jsz", scene3DLevelGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
+    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
 
     show3DHouse(true);
 
@@ -831,6 +793,88 @@ function init(runmode,viewmode) {
     //========================
     //sceneOpen('scene1.zip');
     //========================
+}
+
+function scene3DInitializePhysics()
+{
+    //http://javascriptjamie.weebly.com/blog/part-1-the-physics
+    physics3D = new CANNON.World();
+    physics3D.gravity.set(0, -9.82, 0);
+    var physicsMaterial = new CANNON.Material("groundMaterial");
+    var physicsContactMaterial = new CANNON.ContactMaterial(physicsMaterial, physicsMaterial, {
+        friction: 0.4,
+        restitution: 0.3,
+        contactEquationStiffness: 1e8,
+        contactEquationRegularizationTime: 3,
+        frictionEquationStiffness: 1e8,
+        frictionEquationRegularizationTime: 3,
+    });
+    physics3D.addContactMaterial(physicsContactMaterial);
+    //var boxShape = new CANNON.Box(new CANNON.Vec3(1,1,1));
+}
+
+function scene3DInitializeRenderer()
+{
+    renderer = new THREE.WebGLRenderer({
+        devicePixelRatio: window.devicePixelRatio || 1,
+        antialias: false,
+        //alpha: true,
+        alpha: false,
+        //clearColor: 0x34583e,
+        //clearAlpha: 0.5
+        //preserveDrawingBuffer: false
+    });
+
+    renderer.shadowMapEnabled = true;
+    //renderer.shadowMapDebug = true;
+    /*
+    renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
+    renderer.shadowMapSoft = true;
+    renderer.shadowMapAutoUpdate = true;
+    */
+    /*
+    renderer = new THREE.WebGLDeferredRenderer({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        scale: 1,
+        antialias: true,
+        tonemapping: THREE.UnchartedOperator,
+        brightness: 2.5
+    });
+    */
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    //renderer.setClearColor(0x4584b4, 0);
+    renderer.autoClear = false; //REQUIRED: for split screen
+    renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
+    //renderer.physicallyBasedShading = true;
+    //renderer.sortObjects = true; //when scene is opening this make sure clouds stay on top
+    renderer.setClearColor(0xffffff, 1);
+
+    rendererCube = new THREE.WebGLRenderer({
+        antialias: false,
+        alpha: true,
+        //transparent: true,
+        //preserveDrawingBuffer: false
+    });
+    rendererCube.setSize(100, 100);
+   
+
+    dpr = 1;
+    if (window.devicePixelRatio !== undefined) {
+      dpr = window.devicePixelRatio;
+    }
+
+    effectFXAA = new THREE.ShaderPass(THREE.FXAAShader);
+    effectFXAA.uniforms['resolution'].value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+    effectFXAA.renderToScreen = true;
+
+    composer = new THREE.EffectComposer( renderer );
+    composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+    composer.addPass( new THREE.RenderPass( scene3D, camera3D ) );
+    composer.addPass(effectFXAA);
+
+    document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
+    document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
 }
 
 function disposePanorama(id)
@@ -867,7 +911,61 @@ function makeScreenshot()
     */
 }
 
-function initPanorama(id,files,W,H)
+function buildPanorama(scene,files,W,H)
+{
+        var geometry = new THREE.BoxGeometry(W,H,W);
+        //Low Resolution
+        var sides = [
+            new THREE.MeshBasicMaterial({
+                map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_right.jpg'),
+                side: THREE.BackSide
+            }),
+            new THREE.MeshBasicMaterial({
+                map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_left.jpg'),
+                side: THREE.BackSide
+            }),
+            new THREE.MeshBasicMaterial({
+                map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_top.jpg'),
+                side: THREE.BackSide
+            }),
+            new THREE.MeshBasicMaterial({
+              map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_bottom.jpg'),
+              side: THREE.BackSide
+            }),
+            new THREE.MeshBasicMaterial({
+               map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_front.jpg'),
+               side: THREE.BackSide
+            }),
+            new THREE.MeshBasicMaterial({
+               map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_back.jpg'),
+               side: THREE.BackSide
+            }),
+        ];
+        var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(sides));
+
+        scene.add(mesh);
+
+        //High Resolution
+        var textureloader = new THREE.TextureLoader();
+        textureloader.load('panoramas/' + files + '/right.jpg', function (texture) { sides[0].map=texture });
+        textureloader.load('panoramas/' + files + '/left.jpg', function (texture) { sides[1].map=texture });
+        textureloader.load('panoramas/' + files + '/top.jpg', function (texture) { sides[2].map=texture });
+        textureloader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture });
+        textureloader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture });
+        textureloader.load('panoramas/' + files + '/back.jpg', function (texture) {sides[5].map = texture;});
+
+    /*
+    var geometry = new THREE.SphereGeometry( 500, 60, 40 );
+    geometry.applyMatrix( new THREE.Matrix4().makeScale( -1, 1, 1 ) );
+    var material = new THREE.MeshBasicMaterial( {
+        map: THREE.ImageUtils.loadTexture( 'textures/2294472375_24a3b8ef46_o.jpg' )
+    } );
+    mesh = new THREE.Mesh( geometry, material );
+    scene3DPanorama.add(mesh);
+    */
+}
+
+function initPanorama(id, files, W,H)
 {
     scene3DPanorama = new THREE.Scene();
     camera3DPanorama = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
@@ -886,43 +984,8 @@ function initPanorama(id,files,W,H)
     
     document.addEventListener( 'mousedown', onPanoramaMouseDown, false );
     document.addEventListener( 'mousewheel', onPanoramaMouseWheel, false );
-
     document.addEventListener( 'touchstart', onPanoramaTouchStart, false );
     document.addEventListener( 'touchmove', onPanoramaTouchMove, false );
-
-    mouse = new THREE.Vector2();
-    touch = new THREE.Vector2();
-
-    var geometry = new THREE.BoxGeometry(512,512,512);
-    //Low Resolution
-    var sides = [
-        new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_right.jpg'),
-            side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_left.jpg'),
-            side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_top.jpg'),
-            side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-          map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_bottom.jpg'),
-          side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_front.jpg'),
-           side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_back.jpg'),
-           side: THREE.BackSide
-        }),
-    ];
-    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(sides));
-    scene3DPanorama.add(mesh);
 
     var opts = {
       lines: 13, // The number of lines to draw
@@ -940,24 +1003,15 @@ function initPanorama(id,files,W,H)
     var spinner = new Spinner(opts).spin();
     document.getElementById(id).appendChild(spinner.el);
 
-    //High Resolution
-    var textureloader = new THREE.TextureLoader();
-    textureloader.load('panoramas/' + files + '/right.jpg', function (texture) { sides[0].map=texture });
-    textureloader.load('panoramas/' + files + '/left.jpg', function (texture) { sides[1].map=texture });
-    textureloader.load('panoramas/' + files + '/top.jpg', function (texture) { sides[2].map=texture });
-    textureloader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture });
-    textureloader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture });
-    textureloader.load('panoramas/' + files + '/back.jpg', function (texture) {  sides[5].map = texture; document.getElementById(id).removeChild(spinner.el) });
-    
-    /*
-    var geometry = new THREE.SphereGeometry( 500, 60, 40 );
-    geometry.applyMatrix( new THREE.Matrix4().makeScale( -1, 1, 1 ) );
-    var material = new THREE.MeshBasicMaterial( {
-        map: THREE.ImageUtils.loadTexture( 'textures/2294472375_24a3b8ef46_o.jpg' )
-    } );
-    mesh = new THREE.Mesh( geometry, material );
-    scene3DPanorama.add(mesh);
-    */
+    //mouse = new THREE.Vector2();
+    //touch = new THREE.Vector2();
+    //var scene = new THREE.Object3D();
+    //buildPanorama(scene,files, 512, 512);
+    //scene3DPanorama.add(scene);
+
+    buildPanorama(scene3DPanorama,files, 512, 512);
+
+    document.getElementById(id).removeChild(spinner.el) 
 
     $('#' + id).show();
 
@@ -1744,7 +1798,9 @@ function camera3DPictureEnter()
     var target = pLocal.applyMatrix4(camera3D.matrixWorld);
 
     var tween = new TWEEN.Tween(SelectedPicture.position).to(target,2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+
             initPanorama('WebGLPanorama','3428',0.70,0.64);
+
         }).start();
 
     var tween = new TWEEN.Tween(SelectedPicture.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
@@ -2032,7 +2088,6 @@ try{
         //console.log(materials[i].map);
         //}
 
-        console.log("computing normals " + js);
         //geometry.mergeVertices(); //speed things up ?
         //geometry.computeFaceNormals(); //already done by .load
         //geometry.computeBoundingSphere(); //already done by .load
@@ -2053,7 +2108,7 @@ try{
         
         materials.forEach(function (material) {
 
-            material.side = THREE.DoubleSide;
+            material.side = THREE.DoubleSide; //DEBUG - Normally this will slow things down
 
             if(material.opacity < 1) //glass transparency fix
             {
@@ -2076,8 +2131,6 @@ try{
             //material.lightMap: lm,
             //material.map = material
         });
-        
-        console.log("loading materials " + js);
 
         var material = new THREE.MeshFaceMaterial(materials);
         //var material = new THREE.MeshPhongMaterial(materials);
@@ -2331,7 +2384,7 @@ try{
 
                     if (data.metadata.formatVersion == 3.1) //using export script io_mesh_threejs
                     {
-                        console.log("using old format 3");
+                        console.log("using old format 3 " + js);
 
                         //loader = new THREE.JSONLoader();
                         var result = loader.parse(data, textures);
@@ -2343,7 +2396,7 @@ try{
                         https://github.com/mrdoob/three.js/wiki/JSON-Texture-format-4
                         */
 
-                        console.log("using new format 4");
+                        console.log("using new format 4 " + js);
 
                         loader = new THREE.ObjectLoader2(manager);
                         loader.setTexturePath(textures);
@@ -2426,10 +2479,12 @@ function show3DHouse(skyload) {
     hideElements();
     initMenu("menuRight3DHouse","Exterior/index.json");
 
+    scene3DSetSky(DAY);
+
     if(skyload)
     {
-        scene3DSetSky(DAY);
         scene3DSetWeather();
+        scene3DSunlightsunlight(); //SUNLIGHT RAYS
     }
     
     scene3D.add(skyMesh);
@@ -2812,16 +2867,20 @@ function show3DFloor() {
     hideElements();
     initMenu("menuRight3DFloor","Interior/index.json");
 
-    scene3DSetBackground('blue');
+    //scene3DSetBackground('blue');
+    scene3DSetSky('0000');
     scene3DSetLight();
 
     enableOrbitControls();
+
+    scene3DFloorWallGenerate();
 
     //camera3D.position.set(0, 10, 12);
     
     //TODO: Loop and show based in ID name / floor
     //scene3D.add(scene3DContainer);
 
+    scene3D.add(skyMesh);
     scene3D.add(scene3DFloorGroundContainer);
     /*
     scene3D.add(camera3DMirrorReflection);
@@ -2834,7 +2893,7 @@ function show3DFloor() {
         scene3DFloorGroundContainer.children[0].materials[0] = floorMaterial;
     }catch(e){}
     */
-    scene3DFloorWallGenerate();
+   
 
     //scene3D.add(scene3DCutawayPlaneMesh); //DEBUG
 
@@ -2895,16 +2954,20 @@ function show3DFloorLevel() {
 
     hideElements();
 
-    scene3DSetBackground('blue');
+    //scene3DSetBackground('blue');
+    scene3DSetSky('day');
     scene3DSetLight();
 
-    camera3D.position.set(0, 4, 12);
+    enableOrbitControls();
+    camera3D.position.set(10, 10, 15);
+    camera3D.lookAt(scene3D.position);
 
-    scene3D.add(scene3DFloorLevelGroundContainer);
+    scene3DLevelWallGenerate();
 
-    //TODO: show extruded stuff from scene2DFloorContainer[0]
+    scene3D.add(skyMesh);
+    scene3D.add(scene3DLevelGroundContainer);
 
-    scene3DCube.add(scene3DCubeMesh);
+    //scene3DCube.add(scene3DCubeMesh);
 
     menuSelect(3, 'menuTopItem', '#ff3700');
     correctMenuHeight();
@@ -2938,7 +3001,7 @@ function show3DRoofDesign() {
 
     //scene3D.add(sceneHemisphereLight);
     //scene3D.add( new THREE.AxisHelper(100) );
-    //scene3D.add(scene3DFloorLevelGroundContainer);
+    //scene3D.add(scene3DLevelGroundContainer);
 
     //TODO: show extruded stuff from scene2DFloorContainer[0]
     //scene3DCube.add(scene3DCubeMesh);
@@ -2978,6 +3041,88 @@ function initObjectCollisions(container) {
 }
 */
 
+function scene3DSunlightsunlight() {
+
+    /*
+    God Rays (Sunlight Effect)
+    http://threejs.org/examples/webgl_sunlight_godrays.html
+    */
+    if(sunlight.enabled)
+    {
+        var sunPosition = new THREE.Vector3( 0, 10, -10 );
+        var materialDepth = new THREE.MeshDepthMaterial();
+        var screenSpacePosition = new THREE.Vector3();
+
+        sunlight.scene = new THREE.Scene();
+
+        sunlight.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,  window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
+        sunlight.camera.position.z = 50;
+
+        sunlight.scene.add( sunlight.camera );
+
+        var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
+        sunlight.rtTextureColors = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, pars );
+
+        // Switching the depth formats to luminance from rgb doesn't seem to work. I didn't
+        // investigate further for now.
+        //pars.format = THREE.LuminanceFormat;
+
+        // I would have this quarter size and use it as one of the ping-pong render
+        // targets but the aliasing causes some temporal flickering
+
+        sunlight.rtTextureDepth = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, pars );
+
+        // Aggressive downsize god-ray ping-pong render targets to minimize cost
+
+        var w = window.innerWidth / 4.0;
+        var h = window.innerHeight / 4.0;
+        sunlight.rtTextureGodRays1 = new THREE.WebGLRenderTarget( w, h, pars );
+        sunlight.rtTextureGodRays2 = new THREE.WebGLRenderTarget( w, h, pars );
+
+        // god-ray shaders
+
+        var godraysGenShader = THREE.ShaderGodRays[ "godrays_generate" ];
+        sunlight.godrayGenUniforms = THREE.UniformsUtils.clone( godraysGenShader.uniforms );
+        sunlight.materialGodraysGenerate = new THREE.ShaderMaterial( {
+
+            uniforms: sunlight.godrayGenUniforms,
+            vertexShader: godraysGenShader.vertexShader,
+            fragmentShader: godraysGenShader.fragmentShader
+
+        } );
+        
+        var godraysCombineShader = THREE.ShaderGodRays[ "godrays_combine" ];
+        sunlight.godrayCombineUniforms = THREE.UniformsUtils.clone( godraysCombineShader.uniforms );
+        sunlight.materialGodraysCombine = new THREE.ShaderMaterial( {
+
+            uniforms: sunlight.godrayCombineUniforms,
+            vertexShader: godraysCombineShader.vertexShader,
+            fragmentShader: godraysCombineShader.fragmentShader
+
+        } );
+        
+        var godraysFakeSunShader = THREE.ShaderGodRays[ "godrays_fake_sun" ];
+        sunlight.godraysFakeSunUniforms = THREE.UniformsUtils.clone( godraysFakeSunShader.uniforms );
+        sunlight.materialGodraysFakeSun = new THREE.ShaderMaterial( {
+
+            uniforms: sunlight.godraysFakeSunUniforms,
+            vertexShader: godraysFakeSunShader.vertexShader,
+            fragmentShader: godraysFakeSunShader.fragmentShader
+        });
+
+        sunlight.godraysFakeSunUniforms.bgColor.value.setHex( 0x000511);
+        sunlight.godraysFakeSunUniforms.sunColor.value.setHex( 0xffee00 );
+
+        sunlight.godrayCombineUniforms.fGodRayIntensity.value = 0.4; //0.75;
+
+        sunlight.quad = new THREE.Mesh(
+            new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight ),
+            sunlight.materialGodraysGenerate
+        );
+        sunlight.quad.position.z = -9900;
+        sunlight.scene.add( sunlight.quad );
+    }
+}
 function scene2DZoom(SCALE_FACTOR) {
 
     /*
@@ -3492,7 +3637,8 @@ function hideElements() {
     scene3D.remove(scene3DFloorGroundContainer);
     scene3D.remove(camera3DMirrorReflection);
 
-    scene3D.remove(scene3DFloorLevelGroundContainer);
+    scene3D.remove(scene3DLevelGroundContainer);
+    scene3D.remove(scene3DLevelWallContainer);
 
     scene3D.remove(scene3DHouseContainer);
     scene3D.remove(scene3DHouseFXContainer);
@@ -3502,7 +3648,7 @@ function hideElements() {
         scene3D.remove(scene3DFloorMeasurementsContainer[i]);
 
         scene3D.remove(scene3DFloorWallContainer[i]);
-        //scene3D.remove(scene3DFloorShapeContainer[i]);
+        scene3D.remove(scene3DFloorShapeContainer[i]);
         //scene3D.remove(scene3DFloorOtherContainer[i]);
     }
 
@@ -3526,8 +3672,6 @@ function hideElements() {
         }
     }
     */
-
-    //scene2D.remove(scene2DFloorShape);
 
     //TODO: make this more efficient
     while(scene2D._objects.length > 0)
@@ -3852,6 +3996,8 @@ function selectDayNight() {
         //$('#menuDayNightText').html("Day");
         $('#menuBottomItem6').attr("class", "hi-icon icon-day tooltip");
     }
+    scene3D.remove(skyMesh);
+
     scene3DSetSky(DAY);
     scene3DSetLight();
     scene3DSetWeather();
@@ -3882,14 +4028,17 @@ function selectWeather() {
 }
 
 function onWindowResize() {
-    if (scene3D.visible) {
+    //if (scene3D.visible) {
         camera3D.aspect = window.innerWidth / window.innerHeight;
         camera3D.updateProjectionMatrix();
         //} else if (scene2D.visible) {
         //camera2D.aspect = window.innerWidth / window.innerHeight;
         //camera2D.updateProjectionMatrix();
-    }
+    //}
+    effectFXAA.uniforms['resolution'].value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+    composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
     renderer.setSize(window.innerWidth, window.innerHeight);
+
     correctMenuHeight();
 }
 
@@ -4434,6 +4583,7 @@ function on2DMouseUp(event) {
         $("#menuWallInput").show();
         */
     }
+    scene2DFloorShapeGenerate();
 }
 
 function on2DMouseMove(event) {
@@ -4597,28 +4747,27 @@ $(document).on('keyup', function(event){
 
 function on3DHouseMouseDown(event) {
 
-    	on3DMouseDown(event);
+	on3DMouseDown(event);
 
-        if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
-        {
-            scene3D.add(scene3DPivotPoint);
-            
-        //}
-        //else if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseGroundContainer.children))
+    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
+    {
+        scene3D.add(scene3DPivotPoint);
+        
+    //}
+    //else if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseGroundContainer.children))
+    //{
+        //if (SelectedObject != null)
         //{
-            //if (SelectedObject != null)
+            //var max = Math.max(SelectedObject.posision.x + SelectedObject.geometry.boundingBox.max.x, SelectedObject.posision.y + SelectedObject.geometry.boundingBox.max.y, SelectedObject.posision.z + SelectedObject.geometry.boundingBox.max.z);
+            //if (SelectedObject != null && (mouse.x > max || mouse.y > max))
             //{
-                //var max = Math.max(SelectedObject.posision.x + SelectedObject.geometry.boundingBox.max.x, SelectedObject.posision.y + SelectedObject.geometry.boundingBox.max.y, SelectedObject.posision.z + SelectedObject.geometry.boundingBox.max.z);
-                //if (SelectedObject != null && (mouse.x > max || mouse.y > max))
-                //{
-                    //controls3D.detach(SelectedObject);
-                    //enableOrbitControls();
-                    //camera3DAnimateResetView();
-                    //return;
-                //}
+                //controls3D.detach(SelectedObject);
+                //enableOrbitControls();
+                //camera3DAnimateResetView();
+                //return;
             //}
-        }
-
+        //}
+    }
 }
 
 function on3DHouseMouseUp(event) {
@@ -4727,6 +4876,7 @@ function on3DMouseMove(event) {
     	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
 	}
 
+    /*
     if (SelectedObject != null) {
 
         var x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -4746,100 +4896,65 @@ function on3DMouseMove(event) {
     		//var intersects = ray.intersectObject(scene3DHouseGroundContainer.children[0]);
             if (intersects.length > 0) {
 
-            	var collisionContainer;
+        	var collisionContainer;
 
-	            if (SCENE == 'house')
-	            {
-	                collisionContainer = scene3DHouseContainer; //.clone();
-	            }
-	            else if (SCENE == 'floor')
-	            {
-	                collisionContainer = scene3DFloorFurnitureContainer[FLOOR]; //.clone();
-	            }
-				
-	            //collisionContainer.remove(SELECTED); //avoid detecting itself
-
-	            // ===== SIMPLE COLLISION DETECTION ======
-            	//http://stackoverflow.com/questions/11418762/how-to-detect-collisions-between-a-cube-and-sphere-in-three-js
-            	var futurePosition = new THREE.Vector3(intersects[0].point.x,SelectedObject.position.y,intersects[0].point.z);
-            	var collision = false;
-            	for (var i = 0,len = collisionContainer.children.length; i < len; i++) {
-
-            		var distance = futurePosition.distanceToSquared(collisionContainer.children[i].position);
-
-            		if (collisionContainer.children[i].name != SelectedObject.name && distance < 1)
-            		{
-            			//console.log(collisionContainer.children[i].name);
-            			collision = true;
-            			break;
-            		}
-            		//console.log(SelectedObject.position.distanceToSquared(collisionContainer.children[i].position));
-        		}
-        		collisionContainer = null;
-        		// =======================================
-        		if (!collision)
-        		{
-                	//console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
-                	SelectedObject.position.x = intersects[0].point.x;
-                	SelectedObject.position.z = intersects[0].point.z;
-            	}
+            if (SCENE == 'house')
+            {
+                collisionContainer = scene3DHouseContainer; //.clone();
             }
-
-            /*
-            var box3 = new THREE.Box3().setFromPoints(SELECTED.geometry.vertices); // compute shape from mesh.geometry.vertices
-            var boundingBox = SELECTED.geometry.boundingBox.clone();
+            else if (SCENE == 'floor')
+            {
+                collisionContainer = scene3DFloorFurnitureContainer[FLOOR]; //.clone();
+            }
 			
-            for (var i = 0,len = colliderSystem.length; i < len; i++) {
-            	console.log(SELECTED.position.distanceToSquared(yourSphere.position));
-            	if (box3.isIntersectionBox(colliderSystem[i][1]))
-            	{
-            		console.log("collision with  " + colliderSystem[i][0]);
-            	}
-            	//console.log("analysis of " + colliderSystem[i]);
+            //collisionContainer.remove(SELECTED); //avoid detecting itself
+
+            // ===== SIMPLE COLLISION DETECTION ======
+        	//http://stackoverflow.com/questions/11418762/how-to-detect-collisions-between-a-cube-and-sphere-in-three-js
+        	var futurePosition = new THREE.Vector3(intersects[0].point.x,SelectedObject.position.y,intersects[0].point.z);
+        	var collision = false;
+        	for (var i = 0,len = collisionContainer.children.length; i < len; i++) {
+
+        		var distance = futurePosition.distanceToSquared(collisionContainer.children[i].position);
+
+        		if (collisionContainer.children[i].name != SelectedObject.name && distance < 1)
+        		{
+        			//console.log(collisionContainer.children[i].name);
+        			collision = true;
+        			break;
+        		}
+        		//console.log(SelectedObject.position.distanceToSquared(collisionContainer.children[i].position));
+    		}
+    		collisionContainer = null;
+    		// =======================================
+    		if (!collision)
+    		{
+            	//console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
+            	SelectedObject.position.x = intersects[0].point.x;
+            	SelectedObject.position.z = intersects[0].point.z;
         	}
-			*/
+        }
 
-            // ====== COLLISION DETECTION with RAYS ======
-            // http://webmaestro.fr/collisions-detection-three-js-raycasting/
-			/*
-            var rays = [
-                new THREE.Vector3(0, 0, 1),
-                //new THREE.Vector3(1, 0, 1),
-                //new THREE.Vector3(1, 0.5, 0),
-                //new THREE.Vector3(1, 0, -1),
-                //new THREE.Vector3(0, 0.5, -1),
-                //new THREE.Vector3(-1, 0, -1),
-                //new THREE.Vector3(-1, 0.5, 0),
-                //new THREE.Vector3(-1, 0, 1)
-            ]; // Set the rays : one vector for every potential direction
-            */
-            /*
-            var rays = [
-            	new THREE.Vector3(SELECTED.position.x + SELECTED.geometry.boundingBox.max.x, SELECTED.position.y + SELECTED.geometry.boundingBox.max.y, SELECTED.position.z + SELECTED.geometry.boundingBox.max.z),
-            	new THREE.Vector3(SELECTED.position.x - SELECTED.geometry.boundingBox.max.x, SELECTED.position.y + SELECTED.geometry.boundingBox.max.y, SELECTED.position.z - SELECTED.geometry.boundingBox.max.z)
-            ]; // Set the rays : one vector for every potential direction
+        *
+        var box3 = new THREE.Box3().setFromPoints(SELECTED.geometry.vertices); // compute shape from mesh.geometry.vertices
+        var boundingBox = SELECTED.geometry.boundingBox.clone();
+		
+        for (var i = 0,len = colliderSystem.length; i < len; i++) {
+        	console.log(SELECTED.position.distanceToSquared(yourSphere.position));
+        	if (box3.isIntersectionBox(colliderSystem[i][1]))
+        	{
+        		console.log("collision with  " + colliderSystem[i][0]);
+        	}
+        	//console.log("analysis of " + colliderSystem[i]);
+    	}
+		*
 
-            var caster = new THREE.Raycaster(); // the "RayCaster", able to test for intersections
-            var distance = 0.5; // Maximum distance from the origin before we consider collision
-            //scene3D.updateMatrixWorld();
-            for (var i = 0; i < rays.length; i += 1){ // For each ray
-
-                //caster.set(SELECTED.position, rays[i]);  // We reset the raycaster to this direction
-                caster.set(SELECTED.position, rays[i].sub(SELECTED.position).normalize());  // We reset the raycaster to this direction
-                //scene3D.updateMatrixWorld(); // required, since you haven't rendered yet
-
-                //var collisions = caster.intersectObject(scene3DHouseContainer.children); // Test if we intersect with any obstacle mesh
-           
-                var collisions = caster.intersectObjects(scene3DHouseContainer.children,true); // Test if we intersect with any obstacle mesh
-           
-                if (collisions.length > 0 && collisions[0].object.name != "") // && collisions[0].distance <= distance) // And disable that direction if we do
-                {
-                    console.log("collision detected '" + collisions[0].object.name + "'");
-                }
-            }
-            */
-            // ===========================================
+        // ====== COLLISION DETECTION with RAYS ======
+        // http://webmaestro.fr/collisions-detection-three-js-raycasting/
+        // ===========================================
     }
+    */
+
     /*
         mouse.x = x;
         mouse.y = y;
@@ -5712,27 +5827,15 @@ function scene3DFloorObjectWallMeasurementAjust() {
 
 function scene2DFloorShapeGenerate() {
 
-    if(scene2DFloorShape != undefined)
-        scene2D.remove(scene2DFloorShape);
-
-    scene2DFloorShape = null;
-
-    var path = "M 0 0";
-    var pattern
-    var count = 2;
-
-    for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++) {
-        path += " Q 0, 0, 0, 0";
-    }
-
-    //console.log(path);
-
+    var shape = scene2D.getItemByName("floorshape");
+    var count = 1;
+    var path;
+    
     for (var objects in scene2DWallMesh[FLOOR])
     {
         var obj = scene2DWallMesh[FLOOR][objects];
 
-        if (obj.name == "wall")
-        {
+        if (obj.name == "wall"){
             //console.log(obj.item(0));
 
             var x1 = obj.item(0).path[0][1];
@@ -5742,38 +5845,67 @@ function scene2DFloorShapeGenerate() {
             var x2 = obj.item(0).path[1][3];
             var y2 = obj.item(0).path[1][4];
 
-            if (scene2DFloorShape == null)
+            if (shape == null)
             {
                 //Generate 2D Vector Floor Shape
-                scene2DFloorShape = new fabric.Path(path, {strokeWidth: 1, stroke: 'black', selectable:false, hasControls: false, name:'floorshape', opacity:0.6});
-                scene2DFloorShape.path[0][1] = x1; scene2DFloorShape.path[0][2] = y1;
-                scene2DFloorShape.path[1][1] = cx; scene2DFloorShape.path[1][2] = cy;
-                scene2DFloorShape.path[1][3] = x2; scene2DFloorShape.path[1][4] = y2;
-            }else{
-                scene2DFloorShape.path[count][1] = cx; scene2DFloorShape.path[count][2] = cy;
-                scene2DFloorShape.path[count][3] = x2; scene2DFloorShape.path[count][4] = y2;
-                count++;
+
+                path = " Q 0, 0, 0, 0".repeat(scene2DWallMesh[FLOOR].length);
+                path = "M 0 0" + path;  //console.log(path);
+
+                shape = new fabric.Path(path, {strokeWidth: 1, stroke: 'black', selectable:false, hasControls: false, name:'floorshape', opacity:0.6});
+                fabric.util.loadImage('objects/FloorPlan/Default/7.png', function(img) {
+                  shape.fill = new fabric.Pattern({
+                    source: img,
+                    repeat: 'repeat'
+                  });
+                  //scene2D.renderAll();
+                });
+                scene2D.add(shape);
             }
+            if(count == 1)
+            {
+                shape.path[0][1] = x1; shape.path[0][2] = y1;
+            }
+            shape.path[count][1] = cx; shape.path[count][2] = cy;
+            shape.path[count][3] = x2; shape.path[count][4] = y2;
+            count++;
         }
     }
+}
 
-    fabric.util.loadImage('objects/FloorPlan/Default/7.png', function(img) {
-      scene2DFloorShape.fill = new fabric.Pattern({
-        source: img,
-        repeat: 'repeat'
-      });
-      scene2D.renderAll();
+function scene3DLevelWallGenerate() {
+
+    scene3DLevelWallContainer = new THREE.Object3D();
+
+    //Temporary Sample Data
+    var geometry = new THREE.BoxGeometry(15, 4, 13);
+    var material = new THREE.MeshBasicMaterial({
+        color: 0xE0E0E0,
     });
+    var mesh = new THREE.Mesh(geometry,material);
+    mesh.position.y=2;
+    scene3DLevelWallContainer.add(mesh);
 
-    //console.log(scene2DFloorShape);
 
-    scene2D.add(scene2DFloorShape);
+    geometry = new THREE.BoxGeometry(10, 4, 9);
+    material = new THREE.MeshBasicMaterial({
+        color: 0xB0B0B0,
+
+    });
+    mesh = new THREE.Mesh(geometry,material);
+    mesh.position.x=2.5;
+    mesh.position.z = -2;
+    mesh.position.y=6;
+    scene3DLevelWallContainer.add(mesh);
+
+    scene3D.add(scene3DLevelWallContainer);
 }
 
 function scene3DFloorWallGenerate() {
 
-    scene3D.remove(scene3DFloorShapeContainer[FLOOR]);
-    
+    //scene3D.remove(scene3DFloorShapeContainer[FLOOR]);
+
+    //PERFORMANCE: May not need array for this
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
     scene3DFloorShapeContainer[FLOOR] = new THREE.Object3D();
 
@@ -6045,11 +6177,19 @@ function sceneOpen(file) {
 
 function sceneNew() {
    
-    open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
-    open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
-    open3DModel("objects/Landscape/round.jsz", scene3DFloorLevelGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
-    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
+    scene3DRoofContainer = new THREE.Object3D();
+    scene3DHouseContainer = new THREE.Object3D();
+    scene3DHouseGroundContainer = new THREE.Object3D();
+    scene3DHouseFXContainer = new THREE.Object3D();
+    scene3DFloorGroundContainer = new THREE.Object3D();
+    scene3DLevelGroundContainer = new THREE.Object3D();
+    scene3DLevelWallContainer = new THREE.Object3D();
+
+    skyMesh = new THREE.Object3D();
+
     
+    
+
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
 }
 
@@ -6127,8 +6267,10 @@ function scene3DGround(_texture, _grid) {
 */
 
 // reproduction of a demo of @mrdoob by http://mrdoob.com/lab/javascript/webgl/clouds/
+
 function scene3DSetBackground(set) {
 
+    //var canvas = document.getElementById('WebGLCanvas');
     var canvas = document.createElement('canvas');
     canvas.width = window.innerWidth; //32;
     canvas.height = window.innerHeight;
@@ -6143,7 +6285,8 @@ function scene3DSetBackground(set) {
         context.fillStyle = gradient;
         context.fillRect(0, 0, canvas.width, canvas.height);
 
-        document.body.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
+        //document.body.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
+        document.getElementById('WebGLCanvas').style.background = 'url(' + canvas.toDataURL('image/png') + ')';
 
     } else if (set == 'split') {
 
@@ -6158,7 +6301,9 @@ function scene3DSetBackground(set) {
         context.lineTo(window.innerWidth, 0.5 * window.innerHeight);
         context.stroke();
 
-        document.body.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
+        //document.body.style.background = 'url(' + canvas.toDataURL('image/png') + ')';
+        document.getElementById('WebGLCanvas').style.background = 'url(' + canvas.toDataURL('image/png') + ')';
+        //renderer.setClearColor(0x000000, 1);
 
     } else {
         document.body.style.background = "#fff";
@@ -6174,17 +6319,26 @@ function scene3DSetLight() {
 
     if (SCENE == 'house') {
         if (DAY == 'day') {
-            sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 1);
-            scene3D.add(sceneAmbientLight);
 
-            //sceneAmbientLight = new THREE.AmbientLight(0x555555);
-            //scene3D.add(sceneAmbientLight);
+            if (sunlight.enabled) 
+            {
+                //SUNLIGHT RAYS
+                sceneAmbientLight = new THREE.AmbientLight(0x555555, 0.1); //SUNLIGHT RAYS
+                scene3D.add(sceneAmbientLight);
+                sceneDirectionalLight.intensity = 0.5; //SUNLIGHT RAYS
+                scene3D.add(sceneDirectionalLight);
+                sceneSpotLight.intensity = 1;
+                sceneSpotLight.castShadow = false;
+                scene3D.add(sceneSpotLight);
+                
+            }else{
+                //REGULAR LIGHT
+                sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.6);
+                scene3D.add(sceneAmbientLight);
+                scene3D.add(sceneDirectionalLight);
+            }
 
-            //sceneSpotLight.intensity = 0.5;
-            //sceneSpotLight.castShadow = true;
-            //scene3D.add(sceneSpotLight);
-
-            scene3D.add(sceneDirectionalLight);
+            
             //scene3D.add(sceneHemisphereLight);
         } else {
             sceneSpotLight.intensity = 0.8;
@@ -6210,11 +6364,14 @@ function scene3DSetLight() {
         scene3D.add(sceneSpotLight);
 
     } else if (SCENE == 'floorlevel') {
-        sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.1);
+        sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.5);
         scene3D.add(sceneAmbientLight);
+        /*
         sceneSpotLight.intensity = 0.4;
         sceneSpotLight.castShadow = false;
         scene3D.add(sceneSpotLight);
+        */
+        scene3D.add(sceneDirectionalLight);
         //scene3D.add(sceneHemisphereLight);
     } else if (SCENE == 'floor') {
 
@@ -6227,41 +6384,64 @@ function scene3DSetLight() {
     }
 }
 
+
 function scene3DSetSky(set) {
 
-    scene3D.remove(skyMesh);
-
-    var path = 'panoramas/';
-    if(set == 'day')
+    if(skyMesh.name != set)
     {
-        path = path + "2056/";
-    }else{
-        path = path + "2057/";
+        var files = '0000';
+
+        if(set == 'day'){
+            files = "2056";
+        }else if(set == 'night'){
+            files =  "2057";
+        }
+        skyMesh = new THREE.Object3D();
+        buildPanorama(skyMesh,files, 45, 45);
+        skyMesh.position.y = 5;
+        
+        /*
+        var files = 'panoramas/';
+        if(set == 'day')
+        {
+            files = files + "2056/";
+        }else if(set == 'night'){
+            files = files + "2057/";
+        }else{
+            files = files + "0000/";
+        }
+        
+        var sides = [files + 'front.jpg', files + 'back.jpg', files + 'top.jpg', files + 'bottom.jpg', files + 'left.jpg', files + 'right.jpg'];
+
+        var scCube = THREE.ImageUtils.loadTextureCube(sides);
+        //scCube.format = THREE.RGBFormat;
+
+        var shader = THREE.ShaderLib["cube"]; // prepare skybox material (shader)
+        shader.uniforms["tCube"].value = scCube;
+
+        material = new THREE.ShaderMaterial({
+            fragmentShader: shader.fragmentShader,
+            vertexShader: shader.vertexShader,
+            uniforms: shader.uniforms,
+            depthWrite: false,
+            side: THREE.BackSide
+        });
+
+        if (set != 'day') {
+            
+            skyMesh = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), material);
+            skyMesh.position.y = 5;
+        }else{
+            skyMesh = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), material);
+            skyMesh.position.y = 25;
+        }
+        */
+
+        //skyMaterial.needsUpdate = true;
+        //scene3D.add(skyMesh);
+
+        skyMesh.name = set;
     }
-    var sides = [path + 'front.jpg', path + 'back.jpg', path + 'top.jpg', path + 'bottom.jpg', path + 'left.jpg', path + 'right.jpg'];
-
-    var scCube = THREE.ImageUtils.loadTextureCube(sides);
-    //scCube.format = THREE.RGBFormat;
-
-    var shader = THREE.ShaderLib["cube"]; // prepare skybox material (shader)
-    shader.uniforms["tCube"].value = scCube;
-
-    material = new THREE.ShaderMaterial({
-        fragmentShader: shader.fragmentShader,
-        vertexShader: shader.vertexShader,
-        uniforms: shader.uniforms,
-        depthWrite: false,
-        side: THREE.BackSide
-    });
-
-    skyMesh = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), material);
-
-    if (set == 'day') {
-        skyMesh.position.y = 25;
-    }
-
-    //skyMaterial.needsUpdate = true;
-    //scene3D.add(skyMesh);
 }
 
 function scene3DSky() {
@@ -6332,7 +6512,7 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function scene3DLight() {
+function scene3DInitializeLights() {
 
     //scene3D.add(new THREE.AmbientLight(0xFFFFFF));
 
@@ -6759,7 +6939,15 @@ function animateFloor()
     particlePivot.tick(delta);
     controls3D.update(delta);
 
-    renderer.render(scene3D, camera3D);
+    renderer.clear();
+
+    if(leftButtonDown){
+
+        renderer.render( scene3D, camera3D );
+    }else{
+        composer.render(delta);
+    }
+
     TWEEN.update();
 }
 
@@ -6784,6 +6972,131 @@ function animateLandscape()
 
     renderer.render(scene3D, camera3D);
     //TWEEN.update();
+}
+
+function renderSunlight()
+{
+    if ( sunlight.enabled ) {
+
+        var sunPosition = new THREE.Vector3( 0, 10, -10 );
+        var materialDepth = new THREE.MeshDepthMaterial();
+        var screenSpacePosition = new THREE.Vector3();
+
+        // Find the screenspace position of the sun
+
+        screenSpacePosition.copy(sunPosition).project(camera3D);
+
+        screenSpacePosition.x = ( screenSpacePosition.x + 1 );// / 2;
+        screenSpacePosition.y = ( screenSpacePosition.y + 1 );// / 2;
+
+        // Give it to the god-ray and sun shaders
+
+        sunlight.godrayGenUniforms[ "vSunPositionScreenSpace" ].value.x = screenSpacePosition.x;
+        sunlight.godrayGenUniforms[ "vSunPositionScreenSpace" ].value.y = screenSpacePosition.y;
+
+        sunlight.godraysFakeSunUniforms[ "vSunPositionScreenSpace" ].value.x = screenSpacePosition.x;
+        sunlight.godraysFakeSunUniforms[ "vSunPositionScreenSpace" ].value.y = screenSpacePosition.y;
+
+        // -- Draw sky and sun --
+
+        // Clear colors and depths, will clear to sky color
+
+        renderer.clearTarget( sunlight.rtTextureColors, true, true, false );
+
+        // Sun render. Runs a shader that gives a brightness based on the screen
+        // space distance to the sun. Not very efficient, so i make a scissor
+        // rectangle around the suns position to avoid rendering surrounding pixels.
+
+        var sunsqH = 0.74 * window.innerHeight; // 0.74 depends on extent of sun from shader
+        var sunsqW = 0.74 * window.innerHeight; // both depend on height because sun is aspect-corrected
+
+        screenSpacePosition.x *= window.innerWidth;
+        screenSpacePosition.y *= window.innerHeight;
+
+        renderer.setScissor( screenSpacePosition.x - sunsqW / 2, screenSpacePosition.y - sunsqH / 2, sunsqW, sunsqH );
+        renderer.enableScissorTest( true );
+
+        sunlight.godraysFakeSunUniforms[ "fAspect" ].value = window.innerWidth / window.innerHeight;
+
+        sunlight.scene.overrideMaterial = sunlight.materialGodraysFakeSun;
+        renderer.render( sunlight.scene, sunlight.camera, sunlight.rtTextureColors );
+
+        renderer.enableScissorTest( false );
+
+        // -- Draw scene objects --
+
+        // Colors
+        scene3D.overrideMaterial = null;
+        renderer.render( scene3D, camera3D, sunlight.rtTextureColors );
+
+        // Depth
+        scene3D.overrideMaterial = materialDepth;
+        renderer.render( scene3D, camera3D, sunlight.rtTextureDepth, true );
+
+        // -- Render god-rays --
+
+        // Maximum length of god-rays (in texture space [0,1]X[0,1])
+        var filterLen = 1.0;
+
+        // Samples taken by filter
+        var TAPS_PER_PASS = 6.0;
+
+        // Pass order could equivalently be 3,2,1 (instead of 1,2,3), which
+        // would start with a small filter support and grow to large. however
+        // the large-to-small order produces less objectionable aliasing artifacts that
+        // appear as a glimmer along the length of the beams
+
+        // pass 1 - render into first ping-pong target
+
+        var pass = 1.0;
+        var stepLen = filterLen * Math.pow( TAPS_PER_PASS, -pass );
+
+        sunlight.godrayGenUniforms[ "fStepSize" ].value = stepLen;
+        sunlight.godrayGenUniforms[ "tInput" ].value = sunlight.rtTextureDepth;
+
+        sunlight.scene.overrideMaterial = sunlight.materialGodraysGenerate;
+
+        renderer.render( sunlight.scene, sunlight.camera, sunlight.rtTextureGodRays2 );
+
+        // pass 2 - render into second ping-pong target
+
+        pass = 2.0;
+        stepLen = filterLen * Math.pow( TAPS_PER_PASS, -pass );
+
+        sunlight.godrayGenUniforms[ "fStepSize" ].value = stepLen;
+        sunlight.godrayGenUniforms[ "tInput" ].value = sunlight.rtTextureGodRays2;
+
+        renderer.render( sunlight.scene, sunlight.camera, sunlight.rtTextureGodRays1  );
+
+        // pass 3 - 1st RT
+
+        pass = 3.0;
+        stepLen = filterLen * Math.pow( TAPS_PER_PASS, -pass );
+
+        sunlight.godrayGenUniforms[ "fStepSize" ].value = stepLen;
+        sunlight.godrayGenUniforms[ "tInput" ].value = sunlight.rtTextureGodRays1;
+
+        renderer.render( sunlight.scene, sunlight.camera , sunlight.rtTextureGodRays2  );
+
+        // final pass - composite god-rays onto colors
+
+        sunlight.godrayCombineUniforms["tColors"].value = sunlight.rtTextureColors;
+        sunlight.godrayCombineUniforms["tGodRays"].value = sunlight.rtTextureGodRays2;
+
+        sunlight.scene.overrideMaterial = sunlight.materialGodraysCombine;
+
+        renderer.render( sunlight.scene, sunlight.camera );
+        sunlight.scene.overrideMaterial = null;
+
+    } else {
+        renderer.clear();
+
+        if(leftButtonDown){
+            renderer.render( scene3D, camera3D );
+        }else{
+            composer.render();
+        }
+    }
 }
 
 function animateClouds()
@@ -6844,7 +7157,7 @@ function animateHouse()
     }
     controls3D.update(delta);
 
-    renderer.render(scene3D, camera3D);
+    renderSunlight(); //renderer.render(scene3D, camera3D);
     
     if(getScreenshotData == true){
         getScreenshotData = false;
@@ -6884,7 +7197,7 @@ function animateRoof()
     //  lower_left_x, lower_left_y, viewport_width, viewport_height
 
     //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-    //renderer.clear();
+    renderer.clear();
 
     // upper left corner
     renderer.setViewport(0, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
@@ -6904,6 +7217,7 @@ function animateRoof()
     //renderer.setScissor(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
     //renderer.enableScissorTest(true);
     //camera3DQuad[3].updateProjectionMatrix();
+
     renderer.render(scene3D, camera3DQuad[3]); //perspective
 }
 
@@ -7189,9 +7503,6 @@ function toggleTextureSelect() {
 
 $(document).ready(function() {
 
-    var $pxs_container  = $('#pxs_container');
-    $pxs_container.parallaxSlider();
-
     /*
      $.ajax("objects/Platform/floorplan1.dxf",{
             contentType: "application/text",
@@ -7212,25 +7523,13 @@ $(document).ready(function() {
     //wireframe = new Wireframe();
     //wireframe.build(parser);
 
-
     /* https://dribbble.com/shots/872582-Circular-Menu */
-    /*
-    var sprites = [
-    { "size"        : 64},
-    { "arraySize"   : 5 }, 
-    { "path1"       : ""}, 
-    { "firstName"   : "Peter" , "lastName" : "Jones" }, ];
-    */
-
     var numberOfIcons = 8;
     var offsetAngleDegress = 360/numberOfIcons;
     var offsetAngle = offsetAngleDegress * Math.PI / 180;
     var circleOffset = $("#WebGLInteractiveMenu").width()/2;
     var tooltips = ["Move Horizontaly", "Info", "Duplicate", "Resize", "Textures", "Rotate", "Remove", "Object Notes"];
     var actions = ["enableTransformControls('translate')", "", "", "enableTransformControls('scale')", "toggleTextureSelect()", "enableTransformControls('rotate')", "scene3DObjectSelectRemove()", "camera3DNoteAdd()"];
-
-    //We need to get size of the object, which is currently isn't on page.
-    //So we gonna create a dummy, read everything we need and then delete it.
 
     var $d = $("<div class='rect'></div>").hide().appendTo("body");
     var iconOffset = $(".rect").width()/2;
@@ -7346,5 +7645,4 @@ $(document).ready(function() {
         $(this).hide().prev('#menuTop p').html($(this).val()).show();
     });
 
-    window.location.href = "#scene";
 });

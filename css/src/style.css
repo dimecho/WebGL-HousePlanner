@@ -11,6 +11,10 @@ body{
 	user-select: none;
 }
 
+#WebGLCanvas  {
+    background-color: #ffffff;
+}
+
 .panel{
 	min-width: 100%;
 	height: 98%;
