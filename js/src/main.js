@@ -59,6 +59,8 @@ var scene3DFloorFurnitureContainer = []; //Three.js contains all Floor 3D object
 //var scene3DFloorOtherContainer = []; //Three.js contains all other objects, cameras, notes
 var scene3DFloorMeasurementsContainer = []; //Three.js contains floor measurements: angles, wall size - lines & text (note: objects have their own measurement meshes)
 var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
+var scene3DFloorDoorContainer = [];
+var scene3DFloorWindowContainer = [];
 var scene3DFloorShapeContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 
@@ -1595,23 +1597,56 @@ function scene2DResetPivot(id) {
 
 function scene2DLockObject(id) {
 
-    var objects = scene2D.getObjects();
-    for (var i in objects)
-    {
-        var obj = objects[i];
-        if(obj.id == id)
+    var result = scene2D.getObjects().filter(function(e) { return e.id === id; });
+
+    //if (result.length >= 1) {
+        if(result[0].lockMovementX == true)
         {
-            if(obj.lockMovementX == true)
-            {
-                obj.item(2).set({visible:false});
-                obj.set({lockMovementX:false,lockMovementY:false});
-            }else{
-                obj.item(2).set({visible:true});
-                obj.set({lockMovementX:true,lockMovementY:true});
-            }
-            break;
+            result[0].item(2).set({visible:false});
+            result[0].set({lockMovementX:false,lockMovementY:false});
+        }else{
+            result[0].item(2).set({visible:true});
+            result[0].set({lockMovementX:true,lockMovementY:true});
+        }
+    //}
+
+    return false; //href="#" fix
+}
+
+function scene2DSplitWallEdgeCircle(id) {
+
+    var result = scene2D.getObjects().filter(function(e) { return e.id === id; });
+
+    //if (result.length >= 1) {
+    var circle = scene2DMakeWallEdgeCircle(result[0].left, result[0].top, false);
+    
+    for (var i = 1; i < 4; i++)
+    {
+        if(result[0].line[i])
+        {
+            circle.line[i] = result[0].line[i];
+            result[0].line[i] = undefined;
+            result[0].bend[i] = undefined;
+        }
+        if(result[0].pivot[i])
+        {
+            circle.pivot[i] = result[0].pivot[i];
+            result[0].pivot[i] = undefined;
         }
     }
+    scene2D.add(circle);
+
+    //}
+    return false; //href="#" fix
+}
+
+function scene2DJoinWallEdgeCircle(id) {
+
+    var result = scene2D.getObjects().filter(function(e) { return e.id === id; });
+
+    //if (result.length >= 1) {
+        //A bit more tricky ..nned to get "closes" edgeCircle and pick parameters from.
+    //}
     return false; //href="#" fix
 }
 
@@ -1726,19 +1761,6 @@ THREE.ImageUtils.prototype.loadTextureBinary = function(data, mapping, callback)
     image.crossOrigin = this.crossOrigin;
     image.src = "data:image/png;base64," + Base64.encode(data);
     return texture;
-};
-*/
-
-/*
-THREE.JSONLoader.prototype.loadJson = function(data, callback, texturePath) {
-    var worker, scope = this;
-    texturePath = texturePath ? texturePath : this.extractUrlBase(url);
-    this.onLoadStart();
-    var json = JSON.parse(data);
-    //var json = jQuery.parseJSON(data);
-    var result = this.parse(json, texturePath);
-    callback(result.geometry, result.materials);
-    this.onLoadComplete();
 };
 */
 
@@ -2484,7 +2506,7 @@ function show3DHouse(skyload) {
     if(skyload)
     {
         scene3DSetWeather();
-        scene3DSunlightsunlight(); //SUNLIGHT RAYS
+        scene3DSunlight(); //SUNLIGHT RAYS
     }
     
     scene3D.add(skyMesh);
@@ -3041,7 +3063,7 @@ function initObjectCollisions(container) {
 }
 */
 
-function scene3DSunlightsunlight() {
+function scene3DSunlight() {
 
     /*
     God Rays (Sunlight Effect)
@@ -3230,7 +3252,7 @@ function show2D() {
         {
             //clearTimeout(clickTime);
             clickTime = setTimeout(function() {
-                $('#menu2DTools').tooltipster('update', '<a href="#" onclick="scene2DRemoveWallEdgeCircle(\'' + e.target.id + '\')" class="lo-icon icon-delete" style="color:#FF0000"></a><a href="#" onclick="scene2DLockObject(\'' + e.target.id + '\')" class="lo-icon icon-lock" style="color:#606060"></a>');
+                $('#menu2DTools').tooltipster('update', '<a href="#" onclick="scene2DRemoveWallEdgeCircle(\'' + e.target.id + '\')" class="lo-icon icon-delete" style="color:#FF0000"></a><a href="#" onclick="scene2DLockObject(\'' + e.target.id + '\')" class="lo-icon icon-lock" style="color:#606060"></a><a href="#" onclick="scene2DSplitWallEdgeCircle(\'' + e.target.id + '\')" class="lo-icon icon-cut" style="color:#606060"></a><a href="#" onclick="scene2DJoinWallEdgeCircle(\'' + e.target.id + '\')" class="lo-icon icon-join" style="color:#606060"></a>');
                 $('#menu2DTools').css({ left: e.target.left, top: e.target.top });
                 $('#menu2DTools').tooltipster('show');
             }, 500);
@@ -3264,7 +3286,7 @@ function show2D() {
             
             for (var i = 0; i < 2; i++) //multi-angle
             {
-                if(e.target.bend[i]){
+                if(e.target.bend[i] && e.target.line[0] && e.target.line[1]){
                     
                     //TODO: adjust opposite angles
                     //TODO: improve performance by adjusting "changed angle" only
@@ -3353,15 +3375,6 @@ function show2D() {
                 }
             }
             //clearTimeout(clickTime);
-            /*
-            //Non-SVG
-            p.line1 && p.line1.set({'x2': p.left,'y2': p.top});
-            p.line2 && p.line2.set({'x1': p.left,'y1': p.top});
-            p.line3 && p.line3.set({'x1': p.left,'y1': p.top});
-            p.line4 && p.line4.set({'x1': p.left,'y1': p.top});
-            */
-
-            //SVG
 
             for (var i = 0; i < 4; i++)
             {
@@ -5712,6 +5725,7 @@ function openScene(zipData) {
                 if(this['door'] != undefined)
                 {
                     scene2DDoorMesh[i][d] = scene2DMakeDoor({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
+                    scene2DDoorMesh[i][d].file = this['door'];
                     d++;
                 }
                 else if(this['window'] != undefined)
@@ -5725,6 +5739,7 @@ function openScene(zipData) {
                 if(this['wall'] != undefined)
                 {
                     scene2DWallMesh[i][w] = scene2DMakeWall({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['id'],i);
+                    
                     w++;
                 }
             });
@@ -5909,6 +5924,9 @@ function scene3DFloorWallGenerate() {
     scene3DFloorWallContainer[FLOOR] = new THREE.Object3D(); //reset
     scene3DFloorShapeContainer[FLOOR] = new THREE.Object3D();
 
+    scene3DFloorDoorContainer = new THREE.Object3D();
+    scene3DFloorWindowContainer = new THREE.Object3D();
+
     if(scene2DWallMesh[FLOOR].length == 0)
         return;
     
@@ -5921,21 +5939,22 @@ function scene3DFloorWallGenerate() {
     svg.path[1][4] -> y2
     */
 
-    for (var objects in scene2DWallMesh[FLOOR])
+    for (var w in scene2DWallMesh[FLOOR])
     {
-        var obj = scene2DWallMesh[FLOOR][objects];
+        var wall = scene2DWallMesh[FLOOR][w];
 
-        if (obj.name == "wall") { //avoid picking arrows which are path also
+        if (wall.name == "wall") { //avoid picking arrows which are path also
 
-            //console.log(obj.type + " x1:" + obj.path[0][1] + " y1:" + obj.path[0][2] + " x2:" + obj.path[1][3] + " y2:" + obj.path[1][4] + " cx:" + obj.path[1][1] + " cy:" + obj.path[1][2]);
+            //console.log(wall.type + " x1:" + wall.path[0][1] + " y1:" + wall.path[0][2] + " x2:" + wall.path[1][3] + " y2:" + wall.path[1][4] + " cx:" + wall.path[1][1] + " cy:" + wall.path[1][2]);
 
             //SVG
-            var x1 = (obj.item(0).path[0][1]/100) * 2 - 1;
-            var y1 = -(obj.item(0).path[0][2]/100) * 2 + 1;
-            var cx = (obj.item(0).path[1][1]/100) * 2 - 1;
-            var cy = -(obj.item(0).path[1][2]/100) * 2 + 1;
-            var x2 = (obj.item(0).path[1][3]/100) * 2 - 1;
-            var y2 = -(obj.item(0).path[1][4]/100) * 2 + 1;
+            var x1 = (wall.item(0).path[0][1]/100) * 2 - 1;
+            var y1 = -(wall.item(0).path[0][2]/100) * 2 + 1;
+            var cx = (wall.item(0).path[1][1]/100) * 2 - 1;
+            var cy = -(wall.item(0).path[1][2]/100) * 2 + 1;
+            var x2 = (wall.item(0).path[1][3]/100) * 2 - 1;
+            var y2 = -(wall.item(0).path[1][4]/100) * 2 + 1;
+            var a = Math.atan2(y1-y2, x1-x2) * 180 / Math.PI - 180;
 
             //3D Adjustments
             x1 = x1-13;
@@ -6036,8 +6055,34 @@ function scene3DFloorWallGenerate() {
                 mesh_arr[i].updateMatrix();
                 scene3DFloorWallContainer[FLOOR].add(mesh_arr[i]);
             }
+
+            /*
+            http://stackoverflow.com/questions/7364150/find-object-by-id-in-array-of-javascript-objects
+            */
+            var result = scene2DDoorMesh[FLOOR].filter(function(e) { return e.id === wall.id; });
+            //var result = $.grep(scene2DDoorMesh[FLOOR], function(e){ return e.id === wall.id; });
+            if (result.length >= 1) {
+                /*
+                var x = (result[0].left/100) * 2 - 1;
+                var y = 0;
+                var z = -(result[0].top/100) * 2 + 1;
+                */
+                
+                var x = (result[0].item(0).get("x1")/100) * 2 - 1;
+                var y = 0;
+                var z = -(result[0].item(0).get("y1")/100) * 2 + 1;
+                
+                x = x-12;
+                z = z-1.75;
+
+                //console.log("ARRAY SEARCH " + result[0].file + " " + x + ":" + y + ":" + z + " " + a * 180 / Math.PI);
+
+                open3DModel(result[0].file, scene3DFloorDoorContainer, x, y, z, 0, a, 1.0, false, null);
+            }
         }
     }
+
+    scene3D.add(scene3DFloorDoorContainer);
 
     //floorShape.faces.push(new THREE.Face3(0, 1, 2));
     //floorShape.computeFaceNormals();

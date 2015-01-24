@@ -10,7 +10,7 @@
   <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
 
   <script type="text/javascript" src="js/src/cannon.js?v=0.6.1"></script>
-  <script type="text/javascript" src="js/three.js?v=70"></script>
+  <script type="text/javascript" src="js/three.js?v=71"></script>
   <script type="text/javascript" src="js/src/Detector.js"></script>
   <script src="js/src/OrbitControls.js"></script>
   <script src="js/src/FirstPersonControls.js"></script>
@@ -277,42 +277,10 @@
 </style>
 
 <div id="openLogin" class="modalDialog">
-	<div>
-		<a href="#close" class="close">X</a>
-    <script type="text/javascript">
-    $("#login").click(function() {
-      $.ajax("php/login.php", {
-          type: "POST",
-          data: "username=" + $("#username").val() + "&password=" + $("#password").val(),
-          success: function(html) {
-            document.getElementById('loading').style.display = 'none';
-            result = html.split('|');
-            if (result[0] == 'success') {
-              window.location.href = "index.php";
-            //} else {
-            }
-          },
-          beforeSend: function() {
-            document.getElementById('loading').style.display = 'block';
-          }
-      });
-      return false;
-    });
-    </script>
-    <br/>
-    <form method="post" action="" class="forms">
-      <label>
-        <input type="text" placeholder="Email" id="username" name="username" class="width-100" required />
-      </label>
-      <label>
-        <input type="password" placeholder="Password" id="password" name="password" class="width-100" required />
-      </label>
-      <button id="login" class="btn-green width-100">Login</button>
-      <div id="loading" style="display:none"></div>
-    </form>
-    <a href="#">Forgot password?</a><br/>
-    <a href="#openRegistration">Don't have an account? <strong>Sign Up</strong></a>
-	</div>
+  <div id="wrap">
+    <a href="#close" class="close" onclick="document.getElementById('iframe').src = 'about:blank'">X</a>
+    <iframe src="" frameborder="0" id="iframe"></iframe> 
+  </div>
 </div>
 
 <div id="scene" class="modalDialog">
@@ -426,36 +394,6 @@
 <div id="openSaving" class="modalDialog">
   <div id="savingSpinner" style="width:280px;height:200px">
     <br/><br/><center>Please Wait - Saving ...</center>
-  </div>
-</div>
-
-<div id="openWebGLSettings" class="modalDialog">
-  <div>
-    <a href="#close" class="close">X</a>
-    <br/>
-    <form method="post" action="" class="forms">
-      <fieldset>
-        <ul class="forms-list">
-          <li>
-             <input type="checkbox" name="checkbox-0" id="checkbox-0" checked>
-             <label for="checkbox-0">Animations</label>
-          </li>
-          <li>
-             <input type="checkbox" name="checkbox-1" id="checkbox-1" checked>
-             <label for="checkbox-1">Anti-Aliasing</label>
-          </li>
-          <li>
-             <input type="checkbox" name="checkbox-2" id="checkbox-2" checked>
-             <label for="checkbox-2">Shadows</label>
-          </li>
-          <li>
-             <input type="checkbox" name="checkbox-3" id="checkbox-3" checked>
-             <label for="checkbox-3">Mirrors</label>
-          </li>
-        </ul>
-      </fieldset>
-      <input type="submit" class="btn" value="Save" />
-    </form>
   </div>
 </div>
 
@@ -654,8 +592,8 @@
 			<a href="#" class="hi-icon icon-share tooltip-share-menu" title="Share" id="menuTopItem12"></a>
 			<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
 			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>
-			<a href="#openLogin" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
-      <a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings" id="menuTopItem16"></a>
+			<a href="#openLogin" onclick="document.getElementById('iframe').src = '/profile/login'" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
+      <!--<a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings" id="menuTopItem16"></a>-->
 		</div>
 	</div>
 
