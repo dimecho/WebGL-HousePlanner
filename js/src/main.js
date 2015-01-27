@@ -212,6 +212,11 @@ function init(runmode,viewmode) {
         {
             $('body').append(html + "<img src='images/safari-webgl.png'/></center></div>");
         }
+        $("#menuTop").hide();
+        $("#menuBottom").hide();
+
+        document.getElementsByTagName("body")[0].style.overflow = "auto";
+        document.getElementsByTagName("html")[0].style.overflow = "auto";
         return;
     }
     
@@ -283,27 +288,7 @@ function init(runmode,viewmode) {
 
     sceneNew();
 
-    //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
-    //==============================================
-    for(var i=0; i<=2; i++)
-    {
-        scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
-        //scene3DFloorOtherContainer[i] = new THREE.Object3D();
-        scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
-        scene3DFloorWallContainer[i] = new THREE.Object3D();
-        scene3DFloorShapeContainer[i] = new THREE.Object3D();
 
-        scene2DWallMesh[i] = new Array();
-        scene2DWallDimentions[i] = new Array();
-        scene2DDoorMesh[i] = new Array();
-        scene2DWindowMesh[i] = new Array();
-        scene2DInteriorMesh[i] = new Array();
-        scene2DExteriorMesh[i] = new Array();
-
-        scene3DWallInteriorTextures[i] = new Array();
-        scene3DWallExteriorTextures[i] = new Array();
-    }
-    //==============================================
 
     scene3DPivotPoint = new THREE.Object3D();
 
@@ -1376,6 +1361,37 @@ function scene2DMakeWallEdgeLength(v1,v2,v3)
     return new fabric.Group([line, line1, line2, rect, text], {selectable:false});
 }
 
+function scene2DMakeWindow(v1,v2,c,z,open,direction,id) {
+
+    if(id == null)
+        id = Math.random().toString(36).substring(7);
+
+    var group = new Array();
+
+    var line1 = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
+        stroke: '#f5f5f5',
+        strokeWidth: 18
+    });
+
+    var line2 = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
+        stroke: '#000000',
+        strokeWidth: 4
+    });
+
+    group.push(line1);
+    group.push(line2);
+    /*
+    if(open == "bay")
+    {
+        if(direction == "in")
+        {
+        }else{
+        }
+    }
+    */
+    return new fabric.Group(group, {selectable:false, name:'window', z:z, open:open, direction:direction, id:id});
+}
+
 function scene2DMakeDoor(v1,v2,c,z,open,direction,id) {
 
     if(id == null)
@@ -2044,6 +2060,7 @@ try{
                     child.material.depthWrite = true; //Blender exports fix
 
                     //if(child.material.shininess == 1) //TODO: Fix this with Blender Exporter
+                    /*
                     if(child.material.opacity < 1) //glass transparency fix
                     {
                         child.material.transparent = true;
@@ -2052,6 +2069,7 @@ try{
                     }else{
                         child.material.transparent = false;
                     }
+                    */
                 }
             }else if (child instanceof THREE.PointLight) {
                 console.log("light found!");
@@ -2131,13 +2149,14 @@ try{
         materials.forEach(function (material) {
 
             material.side = THREE.DoubleSide; //DEBUG - Normally this will slow things down
-
+            
             if(material.opacity < 1) //glass transparency fix
             {
                 material.transparent = true;
             }else{
                 material.transparent = false;
             }
+            
             material.depthWrite = true; //Blender exports fix
             //material.map.minFilter = THREE.LinearFilter; //does not work for all models?
             //material.map.anisotropy = 2; //focus blur (16=unblured 1=blured)
@@ -2496,9 +2515,9 @@ function show3DHouse(skyload) {
     //Math behind the scenes explained here http://www.inear.se/2014/03/urban-jungle-street-view/
     
     _animate = -1;
+    hideElements();
     SCENE = 'house';
 
-    hideElements();
     initMenu("menuRight3DHouse","Exterior/index.json");
 
     scene3DSetSky(DAY);
@@ -2817,9 +2836,8 @@ function show3DLandscape() {
 
     _animate = -1;
     SceneAnimate = false;
-    SCENE = 'landscape';
-
     hideElements();
+    SCENE = 'landscape';
 
     //scene3DSetBackground('blue');
     scene3DSetSky('day');
@@ -2884,9 +2902,9 @@ function show3DFloor() {
 
     _animate = -1;
     SceneAnimate = false;
+    hideElements();
     SCENE = 'floor';
 
-    hideElements();
     initMenu("menuRight3DFloor","Interior/index.json");
 
     //scene3DSetBackground('blue');
@@ -2972,9 +2990,8 @@ function show3DFloorLevel() {
 
     _animate = -1;
     SceneAnimate = false;
-    SCENE = 'floorlevel';
-
     hideElements();
+    SCENE = 'floorlevel';
 
     //scene3DSetBackground('blue');
     scene3DSetSky('day');
@@ -3003,9 +3020,9 @@ function show3DRoofDesign() {
 
     _animate = -1;
     SceneAnimate = false;
+    hideElements();
     SCENE = 'roof';
 
-    hideElements();
     initMenu("menuRight3DRoof","Roof/index.json");
 
     scene3DSetBackground('split');
@@ -3176,10 +3193,11 @@ function show2D() {
 
     _animate = -1;
     SceneAnimate = false;
+    hideElements();
     SCENE = '2d';
 
     //camera2D.position.set(0, 8, 20);
-    hideElements();
+
     initMenu("menuRight2D","FloorPlan/index.json");
 
     scene3DSetBackground(null);
@@ -3503,31 +3521,23 @@ function show2D() {
         //scene2D.add(angle).sendBackwards(angle);
 
         scene2D.add(dimentions);//.sendToBack(dimentions);
-        
         scene2D.add(circle);
         
         var showPivot = true;
 
-        for (var d = 0; d < scene2DDoorMesh[FLOOR].length; d++) { //each door
-
-            for (var w = 0; w < 4; w++)
+        for (var w = 0; w < circle.line.length; w++){
+            var result = scene2DDoorMesh[FLOOR].filter(function(e) { return e.id === circle.line[w].id; });
+            if(result.length >= 1)
             {
-                if(circle.line[w])
-                {
-                    if(circle.line[w].id == scene2DDoorMesh[FLOOR][d].id) //attach to walls by matching id)
-                    {
-                        if(circle.doors[w] == undefined)
-                            circle.doors[w] = new Array();
-
-                        circle.doors[w][0] = scene2DDoorMesh[FLOOR][d];
-                        scene2D.add(scene2DDoorMesh[FLOOR][d]);
-                        showPivot = false;
-                        break;
-                    }
-                }
+                circle.doors[w] = new Array();
+                showPivot = false;
+            }
+            for (var d = 0; d < result.length; d++){
+                circle.doors[w][d] = result[d];
+                scene2D.add(result[d]);
             }
         }
-
+        
         if(showPivot)
             scene2D.add(pivot);
     }
@@ -3627,9 +3637,11 @@ function drawImage() {
 
 function hideElements() {
     //console.log("hideElements");
+    if (renderer == undefined)
+        return;
 
     renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-    renderer.clear();
+    //renderer.clear();
 
     scene3D.remove(camera3DQuad[0]);
     scene3D.remove(camera3DQuad[1]);
@@ -5718,10 +5730,13 @@ function openScene(zipData) {
         try{
             var objects2DWalls = JSON.parse(zip.file("scene2DFloorContainer." + i + ".json").asText());
             var w = 0;
+            var l = 0;
             var d = 0;
             scene2DWallMesh[i] = [];
             scene2DDoorMesh[i] = [];
+
             $.each(objects2DWalls, function(index){
+
                 if(this['door'] != undefined)
                 {
                     scene2DDoorMesh[i][d] = scene2DMakeDoor({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
@@ -5730,17 +5745,14 @@ function openScene(zipData) {
                 }
                 else if(this['window'] != undefined)
                 {
-                    //scene2DWindowMesh[i][w] = 
+                    scene2DWindowMesh[i][w] = scene2DMakeWindow({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
+                    scene2DWindowMesh[i][w].file = this['window'];
                     w++;
                 }
-            });
-            w = 0;
-            $.each(objects2DWalls, function(index){
-                if(this['wall'] != undefined)
+                else if(this['wall'] != undefined)
                 {
-                    scene2DWallMesh[i][w] = scene2DMakeWall({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['id'],i);
-                    
-                    w++;
+                    scene2DWallMesh[i][l] = scene2DMakeWall({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['id'],i);
+                    l++;
                 }
             });
         }catch(ex){}
@@ -6222,6 +6234,8 @@ function sceneOpen(file) {
 
 function sceneNew() {
    
+    hideElements();
+    
     scene3DRoofContainer = new THREE.Object3D();
     scene3DHouseContainer = new THREE.Object3D();
     scene3DHouseGroundContainer = new THREE.Object3D();
@@ -6232,6 +6246,27 @@ function sceneNew() {
 
     skyMesh = new THREE.Object3D();
 
+    //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
+    //==============================================
+    for(var i=0; i<=2; i++)
+    {
+        scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
+        //scene3DFloorOtherContainer[i] = new THREE.Object3D();
+        scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
+        scene3DFloorWallContainer[i] = new THREE.Object3D();
+        scene3DFloorShapeContainer[i] = new THREE.Object3D();
+
+        scene2DWallMesh[i] = new Array();
+        scene2DWallDimentions[i] = new Array();
+        scene2DDoorMesh[i] = new Array();
+        scene2DWindowMesh[i] = new Array();
+        scene2DInteriorMesh[i] = new Array();
+        scene2DExteriorMesh[i] = new Array();
+
+        scene3DWallInteriorTextures[i] = new Array();
+        scene3DWallExteriorTextures[i] = new Array();
+    }
+    //==============================================
     
     
 

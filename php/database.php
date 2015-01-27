@@ -15,12 +15,9 @@
 		session_start();
 	}
 
-	try
-	{
-		$GLOBALS['pdo'] = new PDO('mysql:host=localhost;dbname=houseplanner','username','password');
-	} 
-	catch(PDOException $e)
-	{
-		echo 'Connection failed'.$e->getMessage();
-	}
+    define('DB_SERVER', 'localhost');
+    define('DB_USERNAME', 'root');
+    define('DB_PASSWORD', '******');
+    define('DB_DATABASE', 'houseplanner');
+    define('DB_DRIVER', 'mysql');
 ?>

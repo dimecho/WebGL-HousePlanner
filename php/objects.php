@@ -45,6 +45,8 @@ else
     header("Content-type: text/json");
     $json=array();
 
+    $pdo = new PDO(DB_DRIVER . ":host=" . DB_SERVER . ";dbname=" . DB_DATABASE, DB_USERNAME, DB_PASSWORD);
+
 	if (isset($_GET['id']))
     {
     	$sql = "SELECT * FROM OBJECTS WHERE ID = :id";

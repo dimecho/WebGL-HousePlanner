@@ -8,7 +8,7 @@ i=0
 CATEGORY=0
 
 #for d in `echo $(find ./objects -type d)`
-find "./objects" -type d  | while read d
+find "objects" -type d  | while read d
 do
     #echo "$d"
 

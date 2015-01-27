@@ -26,6 +26,7 @@
   <script src="js/src/helvetiker.typeface.js"></script>
   <script src="js/src/jquery.easing.js"></script>
   <script src="js/src/parallaxslider.js"></script>
+  <script src="js/src/wurfl.js"></script>
 
   <script src="js/src/shaders/EffectComposer.js"></script>
   <script src="js/src/shaders/CopyShader.js"></script>
@@ -56,6 +57,7 @@
   <script type="text/javascript" src="js/src/dxfnode.js"></script>
   <script type="text/javascript" src="js/src/dxfparser.js"></script>
   <script type="text/javascript" src="js/src/main.js"></script>
+  <script type="text/javascript" src="js/src/search.js"></script>
 
   <script type="text/javascript">
   $(document).ready(function() {
@@ -84,6 +86,7 @@
   <link rel="stylesheet" type="text/css" href="css/src/alertify.css" media="all" />
   <link rel="stylesheet" type="text/css" href="css/src/alertify.default.css" />
   <link rel="stylesheet" type="text/css" href="css/src/parallaxslider.css" />
+  <link rel="stylesheet" type="text/css" href="css/src/search.css" />
   
   <script id="vs" type="x-shader/x-vertex">
     varying vec2 vUv;
@@ -434,7 +437,9 @@
           <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
           <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
       </div>
-      <input type="text" value="" maxlength="256" class="form-control" name="search" id="search" placeholder="Search Objects" style="width:90%;float:left;border-raius:5px;" />
+      <img src="images/301.gif" id="loader" />
+      <input id="search-box" placeholder="Search 3D Models" type="text" autocomplete="off" style="border-raius:2px;"/>
+      <ul id="search_suggestion_holder"></ul>
     </div>
 
     <div id="menuRight3DHouse">
