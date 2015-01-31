@@ -5546,17 +5546,19 @@ function scene2DCollectArrayFromContainer(n) {
         var obj = container[i];
         if (obj.name == 'wall')
         {
-            var JSONString = {};
-            JSONString["wall"] = "standard"; //used with different colors/textures
-            JSONString["id"] = obj.id; //used for matching windows and doors
-            JSONString["locked"] = obj.lockMovementX;
-            JSONString["position.x1"] = obj.path[0][1];
-            JSONString["position.y1"] = obj.path[0][2];
-            JSONString["position.x2"] = obj.path[1][3];
-            JSONString["position.y2"] = obj.path[1][4];
-            JSONString["curve.x"] = obj.path[1][1];
-            JSONString["curve.y"] = obj.path[1][2];
-            json.push(JSONString);
+            //try{
+                var JSONString = {};
+                JSONString["wall"] = "standard"; //used with different colors/textures
+                JSONString["id"] = obj.id; //used for matching windows and doors
+                JSONString["locked"] = obj.lockMovementX;
+                JSONString["position.x1"] = obj.item(0).path[0][1];
+                JSONString["position.y1"] = obj.item(0).path[0][2];
+                JSONString["position.x2"] = obj.item(0).path[1][3];
+                JSONString["position.y2"] = obj.item(0).path[1][4];
+                JSONString["curve.x"] = obj.item(0).path[1][1];
+                JSONString["curve.y"] = obj.item(0).path[1][2];
+                json.push(JSONString);
+            //}catch(e){console.log(e);}
         }
     }
     container = scene2DDoorMesh[n];
@@ -5565,20 +5567,22 @@ function scene2DCollectArrayFromContainer(n) {
         var obj = container[i];
         if (obj.name == 'door')
         {
-            var JSONString = {};
-            JSONString["door"] = obj.name;
-            JSONString["id"] = obj.id;
-            JSONString["locked"] = obj.lockMovementX;
-            JSONString["open"] = obj.open;
-            JSONString["direction"] = obj.direction;
-            JSONString["position.x1"] = obj.get("x1"); //obj.path[0][1];
-            JSONString["position.y1"] = obj.get("y1"); //obj.path[0][2];
-            JSONString["position.x2"] = obj.get("x2"); //obj.path[1][3];
-            JSONString["position.y2"] = obj.get("y2"); //obj.path[1][4];
-            JSONString["position.z"] = obj.z;
-            JSONString["curve.x"] = 0; //obj.path[1][1];
-            JSONString["curve.y"] = 0; //obj.path[1][2];
-            json.push(JSONString);
+            //try{
+                var JSONString = {};
+                JSONString["door"] = obj.name;
+                JSONString["id"] = obj.id;
+                JSONString["locked"] = obj.lockMovementX;
+                JSONString["open"] = obj.open;
+                JSONString["direction"] = obj.direction;
+                JSONString["position.x1"] = obj.get("x1"); //obj.path[0][1];
+                JSONString["position.y1"] = obj.get("y1"); //obj.path[0][2];
+                JSONString["position.x2"] = obj.get("x2"); //obj.path[1][3];
+                JSONString["position.y2"] = obj.get("y2"); //obj.path[1][4];
+                JSONString["position.z"] = obj.z;
+                JSONString["curve.x"] = 0; //obj.path[1][1];
+                JSONString["curve.y"] = 0; //obj.path[1][2];
+                json.push(JSONString);
+            //}catch(e){console.log(e);}
         }
     }
     return json;
@@ -5592,37 +5596,30 @@ function saveScene(online) {
 
         //console.log(JSON.stringify(terrain3DRawData));
 
-        zip.file("terrain3DHill.json", JSON.stringify(terrain3DRawHillData));
-        zip.file("terrain3DValley.json", JSON.stringify(terrain3DRawValleyData));
+        zip.file("scene3DTerrain.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DHouseGroundContainer)));
+        zip.file("scene3DTerrainHill.json", JSON.stringify(terrain3DRawHillData));
+        zip.file("scene3DTerrainValley.json", JSON.stringify(terrain3DRawValleyData));
 
         var JSONString = {};
         JSONString["AgentInfo"] = scene3DHouseContainer.name;
+
         for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
-            JSONString["Floor" + i] = scene3DFloorFurnitureContainer[i].name;
+            JSONString[i] = scene3DFloorFurnitureContainer[i].name;
         }
         zip.file("scene3DSettings.json", JSON.stringify(JSONString));
         zip.file("scene3DRoofContainer.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DRoofContainer)));
         zip.file("scene3DHouseContainer.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DHouseContainer)));
-        zip.file("scene3DHouseGroundContainer.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DHouseGroundContainer)));
 
-        for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++)
-        {
-            zip.file("scene3DFloorFurnitureContainer." + i + ".json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DFloorFurnitureContainer[i])));
-        }
-
+        var json3d = new Array();
+        var json2d = new Array();
+        
         for (var i = 0; i < scene2DWallMesh.length; i++)
         {
-            /*
-            scene2D.clear();
-            for (var o = 0; o < scene2DWallMesh[i].length; o++)
-            {
-                scene2D.add(scene2DWallMesh[i][o]);
-            }
-            zip.file("scene2DFloorContainer." + i + ".json", JSON.stringify(scene2D.toDatalessJSON()));
-            */
-
-            zip.file("scene2DFloorContainer." + i + ".json", JSON.stringify(scene2DCollectArrayFromContainer(i)));
+            json3d.push(scene3DCollectArrayFromContainer(scene3DFloorFurnitureContainer[i]));
+            json2d.push(scene2DCollectArrayFromContainer(i));
         }
+        zip.file("scene3DFloorContainer.json", JSON.stringify(json3d));
+        zip.file("scene2DFloorContainer.json", JSON.stringify(json2d));
 
         try{
             zip.file("house.jpg", imageBase64('imgHouse'), {
@@ -5638,8 +5635,8 @@ function saveScene(online) {
             var tx = zip.folder("obj/Textures");
 
             //var result= new THREE.OBJExporter().parse(scene3D.geometry); //MaterialExporter.js
-            var result = JSON.stringify(new THREE.ObjectExporter().parse(scene3D)); 
-            ob.file("THREE.Scene.json", result);
+            //var result = JSON.stringify(new THREE.ObjectExporter().parse(scene3D)); 
+            //ob.file("THREE.Scene.json", result);
 
             /*
             tx.file("house.jpg", imgData, {
@@ -5695,8 +5692,7 @@ function saveScene(online) {
         	saveAs(content, "scene.zip");
             window.location = "#close";
         }
-
-    }, 1500);
+    }, 4000);
 }
 
 function openScene(zipData) {
@@ -5705,7 +5701,7 @@ function openScene(zipData) {
     //zip.folder("Textures").load(data);
 
     try{
-        terrain3DRawHillData = JSON.parse(zip.file("terrain3DHill.json").asText());
+        terrain3DRawHillData = JSON.parse(zip.file("scene3DTerrainHill.json").asText());
         landscape.select('hill');
         $.each(terrain3DRawHillData, function(index)
         {
@@ -5716,7 +5712,7 @@ function openScene(zipData) {
     }catch(ex){}
 
     try{
-        terrain3DRawValleyData = JSON.parse(zip.file("terrain3DValley.json").asText());
+        terrain3DRawValleyData = JSON.parse(zip.file("scene3DTerrainValley.json").asText());
         landscape.select('valley');
         $.each(terrain3DRawValleyData, function(index)
         {
@@ -5726,65 +5722,72 @@ function openScene(zipData) {
         });
     }catch(ex){}
 
+    var json = JSON.parse(zip.file("scene2DFloorContainer.json").asText());
+    var i = 0;
+    $.each(json, function(index)
+    {
+        var w = 0;
+        var l = 0;
+        var d = 0;
+        //var objects2DWalls = JSON.parse(this);
+        console.log(this);
+
+        scene2DWallMesh[i] = [];
+        scene2DDoorMesh[i] = [];
+        
+        $.each(this, function(index)
+        {
+            if(this['door'] != undefined)
+            {
+                scene2DDoorMesh[i][d] = scene2DMakeDoor({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
+                scene2DDoorMesh[i][d].file = this['door'];
+                d++;
+            }
+            else if(this['window'] != undefined)
+            {
+                scene2DWindowMesh[i][w] = scene2DMakeWindow({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
+                scene2DWindowMesh[i][w].file = this['window'];
+                w++;
+            }
+            else if(this['wall'] != undefined)
+            {
+                scene2DWallMesh[i][l] = scene2DMakeWall({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['id'],i);
+                l++;
+            }
+        });
+        i++;
+    });
+
+    json = JSON.parse(zip.file("scene3DFloorContainer.json").asText());
+    i = 0;
+    $.each(json, function(index)
+    {
+        //var objects3DFurniture = JSON.parse(this);
+        $.each(this, function(index){
+            var note = null;
+            if(this.note != null)
+                note = this['note'];
+            //console.log(this['position.x']);
+            open3DModel(this['file'], scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
+        });
+        i++;
+    });
+
+    var objects3DHouse = JSON.parse(zip.file("scene3DHouseContainer.json").asText());
+    $.each(objects3DHouse, function(index){
+        open3DModel(this['file'], scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+    });
+    var objects3DRoof = JSON.parse(zip.file("scene3DRoofContainer.json").asText());
+    $.each(objects3DRoof, function(index){
+        open3DModel(this['file'], scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+    });
+    var objects3DSettings = JSON.parse(zip.file("scene3DSettings.json").asText());
+    scene3DHouseContainer.name = objects3DSettings['AgentInfo'];
     for (var i = 0; i < 4; i++){
         try{
-            var objects2DWalls = JSON.parse(zip.file("scene2DFloorContainer." + i + ".json").asText());
-            var w = 0;
-            var l = 0;
-            var d = 0;
-            scene2DWallMesh[i] = [];
-            scene2DDoorMesh[i] = [];
-
-            $.each(objects2DWalls, function(index){
-
-                if(this['door'] != undefined)
-                {
-                    scene2DDoorMesh[i][d] = scene2DMakeDoor({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
-                    scene2DDoorMesh[i][d].file = this['door'];
-                    d++;
-                }
-                else if(this['window'] != undefined)
-                {
-                    scene2DWindowMesh[i][w] = scene2DMakeWindow({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
-                    scene2DWindowMesh[i][w].file = this['window'];
-                    w++;
-                }
-                else if(this['wall'] != undefined)
-                {
-                    scene2DWallMesh[i][l] = scene2DMakeWall({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['id'],i);
-                    l++;
-                }
-            });
-        }catch(ex){}
-
-        try{
-            var objects3DFurniture = JSON.parse(zip.file("scene3DFloorFurnitureContainer." + i + ".json").asText());
-            $.each(objects3DFurniture, function(index){
-                var note = null;
-                if(this.note != null)
-                    note = this['note'];
-                //console.log(this['position.x']);
-                open3DModel(this['file'], scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
-            });
+            scene3DFloorFurnitureContainer[i].name = objects3DSettings[i]; 
         }catch(ex){}
     }
-    try{
-        var objects3DHouse = JSON.parse(zip.file("scene3DHouseContainer.json").asText());
-        $.each(objects3DHouse, function(index){
-            open3DModel(this['file'], scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
-        });
-        var objects3DRoof = JSON.parse(zip.file("scene3DRoofContainer.json").asText());
-        $.each(objects3DRoof, function(index){
-            open3DModel(this['file'], scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
-        });
-        var objects3DSettings = JSON.parse(zip.file("scene3DSettings.json").asText());
-        scene3DHouseContainer.name = objects3DSettings['AgentInfo'];
-        for (var i = 0; i < 4; i++){
-            try{
-                scene3DFloorFurnitureContainer[i].name = objects3DSettings['Floor' + i]; 
-            }catch(ex){}
-        }
-    }catch(ex){}
 
     //show2D(); //DEBUG 2D
     show3DHouse();
@@ -6220,7 +6223,7 @@ function sceneOpen(file) {
                 try {
                     openScene(data);
                 } catch (e) {
-                    console.log("failed to open scene " + e);
+                    alertify.alert("Failed to open Scene " + e);
                 }
                 
                 setTimeout(function()
@@ -7661,6 +7664,16 @@ $(document).ready(function() {
     $('.tooltip-save-menu').tooltipster({
                 interactive:true,
           content: $('<a href="#openLogin" onclick="saveScene(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="saveScene(false);" class="hi-icon icon-usb" style="color:white"></a>')
+    });
+
+    $('.tooltip-open-menu').tooltipster({
+                interactive:true,
+          content: $('<a href="#openLogin" onclick="saveScene(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="fileSelect(\'opendesign\')" class="hi-icon icon-usb" style="color:white"></a>')
+    });
+
+    $('.tooltip-tools-menu').tooltipster({
+                interactive:true,
+          content: $('<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot" style="color:white"></a><br/><a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand" style="color:white"></a>')
     });
 
     $('.tooltip').tooltipster({

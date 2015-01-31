@@ -83,3 +83,10 @@
 			#loader{
 				display:none;
 			}
+			#search-close{
+				position: absolute;
+				top: 80px;
+				right: 16%;
+				z-index: 9999;
+				display:none;
+			}

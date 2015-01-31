@@ -36,6 +36,7 @@ $(document).ready(function(){
 			}
 		}else{
 			var keyword		=		$(this).val();
+			$('#search-close').hide();
 			$('#loader').show();
 			setTimeout( function(){
 				$.ajax({
@@ -45,6 +46,7 @@ $(document).ready(function(){
 						$('#search_suggestion_holder').html(data);
 						$('#search_suggestion_holder').show();
 						$('#loader').hide();
+						$('#search-close').show();
 					}
 				});
 			},400);

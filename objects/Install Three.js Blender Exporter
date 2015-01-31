@@ -27,10 +27,17 @@ cat "$CONSTANTS_PATH.1" | sed -e "s/MAPS: False,/MAPS: True,/g" > "$CONSTANTS_PA
 rm "$CONSTANTS_PATH.0"
 rm "$CONSTANTS_PATH.1"
 
+#CONSTANTS_PATH="$BLENDER_PATH/io_mesh_threejs/export_threejs.py"
+#cat "$CONSTANTS_PATH" | sed -e "s/option_normals = True,/option_normals = False,/g" > "$CONSTANTS_PATH.0"
+#cat "$CONSTANTS_PATH.0" | sed -e "s/option_skinning = True,/option_skinning = False,/g" > "$CONSTANTS_PATH.1"
+#cat "$CONSTANTS_PATH.1" | sed -e "s/option_bones = True,/option_bones = False,/g" > "$CONSTANTS_PATH"
+#rm "$CONSTANTS_PATH.0"
+#rm "$CONSTANTS_PATH.1"
 
-CONSTANTS_PATH="$BLENDER_PATH/io_mesh_threejs/export_threejs.py"
-cat "$CONSTANTS_PATH" | sed -e "s/option_normals = True,/option_normals = False,/g" > "$CONSTANTS_PATH.0"
-cat "$CONSTANTS_PATH.0" | sed -e "s/option_skinning = True,/option_skinning = False,/g" > "$CONSTANTS_PATH.1"
-cat "$CONSTANTS_PATH.1" | sed -e "s/option_bones = True,/option_bones = False,/g" > "$CONSTANTS_PATH"
+CONSTANTS_PATH="$BLENDER_PATH/io_mesh_threejs/__init__.py"
+cat "$CONSTANTS_PATH" | sed -e "s/properties.option_normals = settings.get(\"option_normals\", True)/properties.option_normals = settings.get(\"option_normals\", False)/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH.0" | sed -e "s/properties.option_skinning = settings.get(\"option_skinning\", True)/properties.option_skinning = settings.get(\"option_skinning\", False)/g" > "$CONSTANTS_PATH.1"
+cat "$CONSTANTS_PATH.1" | sed -e "s/properties.option_bones = settings.get(\"option_bones\", True)/properties.option_bones = settings.get(\"option_bones\", False)/g" > "$CONSTANTS_PATH"
 rm "$CONSTANTS_PATH.0"
 rm "$CONSTANTS_PATH.1"
+

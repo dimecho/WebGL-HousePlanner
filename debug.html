@@ -280,10 +280,10 @@
 </style>
 
 <div id="openLogin" class="modalDialog">
-  <div id="wrap">
-    <a href="#close" class="close" onclick="document.getElementById('iframe').src = 'about:blank'">X</a>
-    <iframe src="" frameborder="0" id="iframe"></iframe> 
-  </div>
+    <div id="wrap">
+        <a href="#close" class="close" onclick="document.getElementById('iframe').src = 'about:blank'">X</a>
+        <iframe src="" frameborder="0" id="iframe"></iframe> 
+    </div>
 </div>
 
 <div id="scene" class="modalDialog">
@@ -315,46 +315,6 @@
             </ul>
         </div>
     </div>
-  </div>
-</div>
-
-<div id="openRegistration" class="modalDialog">
-  <div>
-    <a href="#close" class="close">X</a>
-    <script type="text/javascript">
-    $("#register").click(function() {
-      $.ajax("php/register.php", {
-          type: "POST",
-          data: "name=" + $("#name").val() + "&email=" + $("#email").val() + "&password=" + $("#password").val(),
-          success: function(html) {
-            document.getElementById('loading').style.display = 'none';
-            result = html.split('|');
-            if (result[0] == 'success') {
-              window.location.href = "index.php";
-            //} else {
-            }
-          },
-          beforeSend: function() {
-            document.getElementById('loading').style.display = 'block';
-          }
-      });
-      return false;
-    });
-    </script>
-    <br/>
-    <form method="post" action="" class="forms">
-      <label>
-        <input type="text" name="name" id="name" placeholder="Name" class="width-100" required />
-      </label>
-      <label>
-        <input type="email" name="email" id="email" placeholder="E-mail" class="width-100" required />
-      </label>
-      <label>
-        <input type="password" name="password" id="password" placeholder="Password" class="width-100" required />
-      </label>
-      <button id="register" class="btn-green width-100">Register</button>
-      <div id="loading" style="display:none"></div>
-    </form>
   </div>
 </div>
 
@@ -438,6 +398,7 @@
           <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
       </div>
       <img src="images/301.gif" id="loader" />
+      <span onclick="$('#search-box').val('');$('#search_suggestion_holder').hide();$('#search-close').hide();" class="icon-delete" style="font-size:18px" id="search-close"></span>
       <input id="search-box" placeholder="Search 3D Models" type="text" autocomplete="off" style="border-raius:2px;"/>
       <ul id="search_suggestion_holder"></ul>
     </div>
@@ -504,7 +465,7 @@
   </ul>
   <div id="links-left" style="width:160px;height:100px;">
       <a href="#openThumb" onclick="initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
-        <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="panoramas/3427/preview.jpg" alt="Property" style="width:150px;height:90px;border:5px solid #FFFFFF;border-radius:2px;"/>
+        <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;border:5px solid #FFFFFF;border-radius:2px;"/>
       </a>
   </div>
 
@@ -591,14 +552,17 @@
       <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
 			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
 			<a href="#" onclick="show2D()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
+      <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
-			<a href="#" onclick="fileSelect('opendesign')" class="hi-icon icon-open tooltip" title="Open" id="menuTopItem8"></a>
+			<a href="#" class="hi-icon icon-open tooltip-open-menu" title="Open" id="menuTopItem8"></a>
       <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
+      <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
 			<a href="#" class="hi-icon icon-share tooltip-share-menu" title="Share" id="menuTopItem12"></a>
-			<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
-			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>
+			<!--
+      <a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
+			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>-->
 			<a href="#openLogin" onclick="document.getElementById('iframe').src = '/profile/login'" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
-      <!--<a href="#openWebGLSettings" class="hi-icon icon-settings tooltip" title="WebGL Settings" id="menuTopItem16"></a>-->
+      <a href="#" class="hi-icon icon-settings tooltip-tools-menu" title="Tools" id="menuTopItem16"></a>
 		</div>
 	</div>
 
@@ -722,10 +686,7 @@
 </div>
 
 <script type="text/javascript" src="js/preloader.js"></script>
-<!--
-<script type="text/javascript" src="js/clippy.js"></script>
-<link rel="stylesheet" type="text/css" href="css/clippy.css" media="all">
--->
+
 <!--http://www.jquerybyexample.net/2013/05/jquery-scroll-page-automatically-by-few-pixels-after-every-few-seconds.html-->
 <!--<script type="text/javascript" src="js/iscroll.js"></script>-->
 
@@ -734,7 +695,6 @@
 var images = {
   //'loader1': 'objects/Platform/sky/day/nx.jpg',
 };
-//var Agent;
 //var myScroll;
 
 Royal_Preloader.config({
@@ -752,21 +712,7 @@ Royal_Preloader.config({
     if (getCookie("firstTimer") == null)
     {
       createCookie("firstTimer","1",5);
-      /*
-      clippy.load('Bonzi', function(agent) {
-        Agent = agent;
 
-        agent.show();
-        $('#WebGLHelp').hide();
-
-        //agent.moveTo(100,100);
-        //agent.animations();
-        agent.play("Searching");
-        setTimeout(function(){agent.speak("Hi, my name is Bonzi! I am your interactive assistant")}, 8000);
-        setTimeout(function(){agent.speak("Use top menu to switch between exterior, interior and floor plan views");agent.gestureAt(500,100)}, 15000);
-        setTimeout(function(){agent.play("Pleased");agent.hide()}, 18000);
-      });
-      */
     }
   }
 
@@ -801,38 +747,11 @@ function createCookie(name,value,days) {
     document.cookie = name+"="+value+expires+"; path=/";
 }
 
-$('#clippy').click(function (event) {
-  agentToggle();
-});
-
 $('#WebGLHelp').click(function (event) {
-  agentToggle();
-});
 
-function agentToggle() {
-  /*
-  if (Agent == null)
-  {
-    clippy.load('Bonzi', function(agent) {
-      Agent = agent;
-      Agent.show();
-      $('#WebGLHelp').hide();
-    });
-  }else{
-    if ($('#WebGLHelp').is(':visible'))
-    {
-      Agent.hide();
-      $('#WebGLHelp').hide();
-    }else{
-      Agent.show();
-      $('#WebGLHelp').show();
-    }
-  }
-  */
-}
+});
 
 </script>
-
 <!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->
 
 </body>
