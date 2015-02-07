@@ -121,6 +121,7 @@ var ViewNoteText = "";
 
 var leftButtonDown = false;
 var clickTime;
+var clickMenuTime;
 var doubleClickTime;
 
 var zoom2Dimg, 
@@ -1973,8 +1974,9 @@ function camera3DAnimateResetView()
 {
 	if (camera3DPositionCache != null && controls3D instanceof THREE.OrbitControls)
 	{
-		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-		//var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+        }).start();
+		var tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).start();
     }
 }
 
@@ -3983,17 +3985,30 @@ function selectFloor(next) {
     	
 		alertify.confirm("Add New Floor?", function (e) {
 		    if (e) {
-		        scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
-                scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
-		        scene3DFloorWallContainer[i] = new THREE.Object3D();
-                scene3DFloorShapeContainer[i] = new THREE.Object3D();
-                //scene3DFloorOtherContainer[i] = new THREE.Object3D();
-			    scene2DWallMesh[i] = new Array();
-			    scene2DWallDimentions[i] = new Array();
+                scene3DNewFloor();
 		    //} else { // user clicked "cancel"
 		    }
 		});
     }
+}
+
+function scene3DNewFloor(name)
+{
+    var i = scene3DFloorFurnitureContainer.length;
+
+    if(name == null)
+    {
+        name = "Floor " + i;
+    }
+
+    scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
+    scene3DFloorFurnitureContainer[i].name = name;
+    scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
+    scene3DFloorWallContainer[i] = new THREE.Object3D();
+    scene3DFloorShapeContainer[i] = new THREE.Object3D();
+    //scene3DFloorOtherContainer[i] = new THREE.Object3D();
+    scene2DWallMesh[i] = new Array();
+    scene2DWallDimentions[i] = new Array();
 }
 
 function selectMeasurement() {
@@ -4075,21 +4090,26 @@ function correctMenuHeight() {
 
     if (SCENE == 'house') {
         a = $("#menuRight3DHouse .cssmenu").height();
-        b = $("#menuRight3DHouse .scroll");
+        //b = $("#menuRight3DHouse .scroll");
+        b = $("#menuRight2D .cssmenu");
     } else if (SCENE == 'floor') {
         a = $("#menuRight3DFloor .cssmenu").height();
-        b = $("#menuRight3DFloor .scroll");
+        //b = $("#menuRight3DFloor .scroll");
+        b = $("#menuRight2D .cssmenu");
     } else if (SCENE == 'roof') {
         a = $("#menuRight3DRoof .cssmenu").height();
-        b = $("#menuRight3DRoof .scroll");
+        //b = $("#menuRight3DRoof .scroll");
+        b = $("#menuRight2D .cssmenu");
     } else if (SCENE == '2d') {
         a = $("#menuRight2D .cssmenu").height();
-        b = $("#menuRight2D .scroll");
+        //b = $("#menuRight2D .scroll");
+        b = $("#menuRight2D .cssmenu");
     } else {
         return;
     }
 
     $("#menuRightObjects .scroll").css('height', h);
+    //$("#menuRightObjects .flip").css('height', h);
 
     if (b.height() < h) {
         //console.log("H:" + a);
@@ -4146,7 +4166,7 @@ function onDocumentDoubleClick(event) {
 
     event.preventDefault();
 
-    if (scene3D.visible && controls3D instanceof THREE.OrbitControls) {
+    if (scene3D.visible && controls3D instanceof THREE.OrbitControls && SelectedObject == null) {
 
         var x = (event.clientX / window.innerWidth) * 2 - 1;
         var y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -4771,13 +4791,16 @@ $(document).on('keyup', function(event){
 });
 
 function on3DHouseMouseDown(event) {
-
 	on3DMouseDown(event);
+}
+
+function on3DHouseMouseUp(event) {
+
+	on3DMouseUp(event);
 
     if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
     {
         scene3D.add(scene3DPivotPoint);
-        
     //}
     //else if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseGroundContainer.children))
     //{
@@ -4795,23 +4818,8 @@ function on3DHouseMouseDown(event) {
     }
 }
 
-function on3DHouseMouseUp(event) {
-	on3DMouseUp(event);
-}
-
 function on3DFloorMouseDown(event) {
 	on3DMouseDown(event);
-
-    //if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorOtherContainer[FLOOR].children))
-    //{
-        if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR].children))
-        {
-            if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
-            {
-                scene3D.add(scene3DPivotPoint);
-            }
-        }
-    //}
 }
 
 Array.prototype.contains = function(obj) {
@@ -4837,7 +4845,7 @@ function on3DFloorMouseMove(event) {
     scene3DCutawayPlaneMesh.position.copy(v);
     scene3DCutawayPlaneMesh.lookAt(camera3D.position);
 
-    if( TWEEN.getAll().length == 0) //do not interfere with existing animations (performance)
+    if(TWEEN.getAll().length == 0) //do not interfere with existing animations (performance)
     {
         var collection = [];
         var originPoint = scene3DCutawayPlaneMesh.position.clone();
@@ -4873,6 +4881,14 @@ function on3DFloorMouseMove(event) {
 
 function on3DFloorMouseUp(event) {
 	on3DMouseUp(event);
+
+    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR].children))
+    {
+        if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
+        {
+            scene3D.add(scene3DPivotPoint);
+        }
+    }
 }
 
 function on3DMouseMove(event) {
@@ -4882,25 +4898,30 @@ function on3DMouseMove(event) {
     if (!leftButtonDown) {
         return;
     }
+    
+    clearTimeout(clickMenuTime);
+    //clickMenuTime = null;
 
     if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
         return;
     }
 
-    //console.log("mouse:" + event.clientX + " window:" + window.innerWidth);
+    //if(TWEEN.getAll().length == 0) { //do not interfere with existing animations (performance)
 
-    camera3DCube.position.copy(camera3D.position);
-    camera3DCube.position.sub(controls3D.center);
-    camera3DCube.position.setLength(18);
-    camera3DCube.lookAt(scene3DCube.position);
+        //console.log("mouse:" + event.clientX + " window:" + window.innerWidth);
 
-    if (event.clientX > window.innerWidth - 50)
-    {
-    	//console.log("set SceneAnimate");
-    	SceneAnimate = true; animate();
-    	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
-	}
+        camera3DCube.position.copy(camera3D.position);
+        camera3DCube.position.sub(controls3D.center);
+        camera3DCube.position.setLength(18);
+        camera3DCube.lookAt(scene3DCube.position);
 
+        if (event.clientX > window.innerWidth - 50)
+        {
+        	//console.log("set SceneAnimate");
+        	SceneAnimate = true; animate();
+        	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
+    	}
+    //}
     /*
     if (SelectedObject != null) {
 
@@ -5027,16 +5048,33 @@ function on3DMouseDown(event) {
 
     if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
 
-    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
-        return;
-    }
-
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    //clickTime = new Date().getTime();
-    
+    if (SelectedObject != null)
+    {
+        clickMenuTime = setTimeout(function(){
+            scene3DObjectUnselect();
+            if (controls3D instanceof THREE.TransformControls && !TransformConstrolsHighlighted)
+            {
+                //console.log(TransformConstrolsHighlighted);
+                controls3D.detach(SelectedObject);
+                
+                enableOrbitControls();
+
+                scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+                //$(renderer.domElement).unbind('mousemove', on3DMouseMove);
+            }
+        }, 500);
+    }
+
     $(renderer.domElement).bind('mousemove', on3DMouseMove);
+
+    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls || SelectedObject != null) {
+        return;
+    }
+
+    //clickTime = new Date().getTime();
     
     SceneAnimate = false;
 
@@ -5044,22 +5082,27 @@ function on3DMouseDown(event) {
 
     clickTime = setTimeout(function() {
         if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
-            //Auto close right menu
-            toggleRight('menuRight', false);
-            //document.getElementById('menuRight').setAttribute("class", "hide-right");
-            //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
-
-            //Auto close left menu
-            if (SCENE == 'house') {
-                toggleLeft('menuLeft3DHouse', false);
-
-            } else if (SCENE == 'floor') {
-                toggleLeft('menuLeft3DFloor', false);
-            }
+            toggleSideMenus(false);
         }
     }, 1400);
 }
 
+function toggleSideMenus(open) {
+
+    //Auto close right menu
+    toggleRight('menuRight', open);
+
+    //document.getElementById('menuRight').setAttribute("class", "hide-right");
+    //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+
+    //Auto close left menu
+    if (SCENE == 'house') {
+        toggleLeft('menuLeft3DHouse', open);
+
+    } else if (SCENE == 'floor') {
+        toggleLeft('menuLeft3DFloor', open);
+    }
+}
 
 function on3DMouseUp(event) {
 
@@ -5067,26 +5110,16 @@ function on3DMouseUp(event) {
 
     if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
 
-    if (controls3D instanceof THREE.TransformControls && !TransformConstrolsHighlighted)
-    {
-        //console.log(TransformConstrolsHighlighted);
-        controls3D.detach(SelectedObject);
-        
-        enableOrbitControls();
+    $(renderer.domElement).unbind('mousemove', on3DMouseMove);
 
-        scene3DObjectUnselect();
-        //$(renderer.domElement).unbind('mousemove', on3DMouseMove);
-    }
-
-    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
+    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls || SelectedObject != null) {
         return;
     }
 
-    $(renderer.domElement).unbind('mousemove', on3DMouseMove);
+    //mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    //mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
+    
 
     //if (SCENE == '2d') {
 
@@ -5184,24 +5217,10 @@ function on3DMouseUp(event) {
 
     clearTimeout(clickTime); //prevents from hiding menus too fast
 
-    if (SelectedObject != null) { //Restore menu after MouseMove
-        $('#WebGLInteractiveMenu').show();
-    }
-
     scene3D.remove(scene3DPivotPoint);
 
     if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0) {
-        //Auto open right menu
-        toggleRight('menuRight', true);
-        //document.getElementById('menuRight').setAttribute("class", "show-right");
-        //delay(document.getElementById("arrow-right"), "images/arrowright.png", 400);
-
-        //Auto open left menu
-        if (SCENE == 'house') {
-            toggleLeft('menuLeft3DHouse', true);
-        } else if (SCENE == 'floor') {
-            toggleLeft('menuLeft3DFloor', true);
-        }
+        toggleSideMenus(true);
     }
     //container.style.cursor = 'auto';
 }
@@ -5220,7 +5239,7 @@ function scene3DObjectSelectRemove() {
 function scene3DObjectSelectMenu(x, y, menuID) {
 
     //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
-    vector = new THREE.Vector3(x, y, 0.5);
+    vector = new THREE.Vector3(x, y, 0.1);
 
     var percX, percY
 
@@ -5244,12 +5263,12 @@ function scene3DObjectSelectMenu(x, y, menuID) {
     vector.x = percX * window.innerWidth; // - $(menuID).width(); // * 2;
     vector.y = percY * window.innerHeight; //- $(menuID).height() / 2;
 
-    $(menuID).css('top', vector.y).css('left', vector.x);
+    $(menuID).css('top', vector.y - 60).css('left', vector.x);
     $(menuID).show();
 
     if (SelectedObject != null)
     {
-        $('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()-64).css('left', vector.x - $('#WebGLTextureSelect').width() / 2);
+        //$('#WebGLTextureSelect').css('top', vector.y + $(menuID).height()-64).css('left', vector.x - $('#WebGLTextureSelect').width() / 2);
         //$('#WebGLTextureSelect').show();
 
         //$('#WebGLInteractiveMenu').bind('mousemove', on3DMouseMove);
@@ -5308,7 +5327,11 @@ function scene3DObjectSelectMenu(x, y, menuID) {
 function scene3DObjectSelect(x, y, camera, objectchildren) {
 
     //TODO: > http://stemkoski.github.io/Three.js/Outline.html
-
+    /*
+    if(SelectedObject != null)
+        return true;
+    */
+    
     //if (controls3D instanceof THREE.OrbitControls){
         vector = new THREE.Vector3(x, y, 0.5);
         //var projector = new THREE.Projector();
@@ -5336,10 +5359,13 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
         // and intersected by the Ray projected from the mouse position
 
         if (intersects.length > 0) { // case if mouse is not currently over an object
-            //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
-            controls3D.enabled = false;
 
+            //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
+            
             //if (SelectedObject != intersects[0].object){
+
+                //controls3D.enabled = false;
+
                 if (intersects[0].object.name.indexOf("Platform/note.jsz") >= 0)
                 {
                     SelectedNote = intersects[0].object;
@@ -5362,9 +5388,11 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
                     return true;
                 }
 
-                if (objectchildren == scene3DHouseContainer.children || objectchildren == scene3DFloorFurnitureContainer[FLOOR].children)
-                {
-                	scene3DObjectUnselect(); //avoid showing multiple selected objects
+                if (objectchildren == scene3DHouseContainer.children || objectchildren == scene3DFloorFurnitureContainer[FLOOR].children) { //avoid selecting ground
+                	
+                    clearTimeout(clickMenuTime);
+                   
+                    //scene3DObjectUnselect(); //avoid showing multiple selected objects
 
                 	SelectedObject = intersects[0].object;
 
@@ -5384,22 +5412,29 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
                 	//camera3D.lookAt(intersects[0].object.position);
                 	//camera3D.updateProjectionMatrix();
 
-                	camera3DPositionCache = camera3D.position.clone();
-                	camera3DPivotCache = controls3D.target.clone();
+                    if(intersects[0].distance > 6){
 
-                	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},1800).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-                    	
-                        //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
+                        camera3DPositionCache = camera3D.position.clone();
+                        camera3DPivotCache = controls3D.target.clone();
 
-                    	//glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
-                		//SelectedObject.add(glowMesh.object3d);
+                    	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 6},1500).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+                        	
+                            //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
 
-                    	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+                        	//glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
+                    		//SelectedObject.add(glowMesh.object3d);
 
-        			}).start();
-    				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-                    //var tween = new TWEEN.Tween(camera3D.lookAt).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-           
+                        	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+
+            			}).start();
+        				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},1500).easing(TWEEN.Easing.Quadratic.InOut).start();
+                        //var tween = new TWEEN.Tween(camera3D.lookAt).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+                        
+                    }else{
+                        scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+                    }
+
+                    toggleSideMenus(false);
                 }
                 else if (children == scene3DFloorWallContainer[FLOOR].children)
                 {
@@ -5415,8 +5450,13 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
             //}
             return true;
         } else {
-            scene3DObjectUnselect();
-            controls3D.enabled = true;
+            /*
+            console.log("unselect");
+            clickTime = setTimeout(function(){
+                scene3DObjectUnselect();
+            }, 1000);
+            */
+            //controls3D.enabled = true;
             return false;
         }
     //}
@@ -5445,15 +5485,15 @@ function scene3DObjectUnselect() {
         }
         else if(SelectedObject != null)
         {
-            camera3DAnimateResetView();
-
-            SelectedObject = null;
-            SelectedWall = null;
-
             $('#WebGLInteractiveMenu').hide();
             $('#WebGLWallPaintMenu').hide();
             $('#WebGLColorWheelSelect').hide();
             $('#WebGLTextureSelect').hide();
+
+            camera3DAnimateResetView();
+
+            SelectedObject = null;
+            SelectedWall = null;
         }
 
 	    camera3DPositionCache = null;
@@ -5524,6 +5564,7 @@ function scene3DCollectArrayFromContainer(container) {
         var JSONString = {};
         JSONString["file"] = container.children[i].children[0].name;
         try{ JSONString["note"] = container.children[i].children[2].name; }catch(e){}
+        JSONString["textures"] = "Textures";
         JSONString["position.x"] = container.children[i].children[0].position.x;
         JSONString["position.y"] = container.children[i].children[0].position.y;
         JSONString["position.z"] = container.children[i].children[0].position.z;
@@ -5549,6 +5590,8 @@ function scene2DCollectArrayFromContainer(n) {
             //try{
                 var JSONString = {};
                 JSONString["wall"] = "standard"; //used with different colors/textures
+                JSONString["interior"] = "";
+                JSONString["exterior"] = "";
                 JSONString["id"] = obj.id; //used for matching windows and doors
                 JSONString["locked"] = obj.lockMovementX;
                 JSONString["position.x1"] = obj.item(0).path[0][1];
@@ -6746,12 +6789,18 @@ function initMenu(id,item) {
         dataType: 'json',
         success: function(json){
             //var json = JSON.parse(data);
-            var menu = $("#" + id + " .scroll .cssmenu > ul");
+            var menu = $("#" + id + " .scroll");
+            //var menu = $("#" + id + " .cssmenu > ul");
             menu.empty();
             $.each(json.menu, function() {
                 menu.append(getMenuItem(this));
             });
+            /*
             $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
+                menuItemClick(this);
+            });
+            */
+            $("#" + id + " .cssmenu > ul > li > a").click(function(event) {
                 menuItemClick(this);
             });
         },
@@ -6804,9 +6853,12 @@ function insertSceneObject(path) {
     if(SCENE == 'house')
     {
     	o = scene3DHouseContainer.children.length-1;
-        x = scene3DHouseContainer.children[o].position.x + scene3DHouseContainer.children[o].geometry.boundingBox.max.x;
-        z = scene3DHouseContainer.children[o].position.z + scene3DHouseContainer.children[o].geometry.boundingBox.max.z;
-
+        x = 0;
+        z = 0;
+        try{
+            x = scene3DHouseContainer.children[o].position.x + scene3DHouseContainer.children[o].geometry.boundingBox.max.x;
+            z = scene3DHouseContainer.children[o].position.z + scene3DHouseContainer.children[o].geometry.boundingBox.max.z;
+        }catch(e){}
         //console.log(path + " x:" + x + " z:" + z);
         open3DModel(path, scene3DHouseContainer, x, 0, z, 0, 0, 1, true, null);
     }
@@ -6831,7 +6883,8 @@ function showRightObjectMenu(path) {
     }
 
     var menu = $("#menuRightObjects .scroll");
-    menu.append("<div id='menuLoading' style='position:relative;left:0;top:0;width:100%;height:100%;background-color:grey;opacity:0.5'>loading...</div>");
+    //var menu = $("#menuRightObjects .cssmenu > ul");
+    //menu.append("<div id='menuLoading' style='position:relative;left:0;top:0;width:100%;height:100%;background-color:grey;opacity:0.5'>loading...</div>");
 
     $('#menuRight3DHouse').hide();
     $('#menuRight3DFloor').hide();
@@ -6842,7 +6895,7 @@ function showRightObjectMenu(path) {
      $.ajax(path,{
         dataType: 'json',
         success: function(json){
-            var empty = "<div style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</div>";
+            var empty = "<li><span style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</span></li>";
             menu.empty();
             try
             {
@@ -6850,7 +6903,9 @@ function showRightObjectMenu(path) {
                 $.each(json.menu, function() {
                     if(Object.keys(json.menu).length > 0)
                     {
-                        menu.append(getMenuObjectItem(this));
+
+                        //menu.append(getMenuObjectItem(this));
+                        getMenuObjectItem(menu,this);
                     }
                     else
                     {
@@ -6862,13 +6917,16 @@ function showRightObjectMenu(path) {
             {
                 menu.append(empty); //local no json
             }
+
+            //$('.bttrlazyloading').trigger('bttrlazyloading.load');
+
             //$("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
             //    menuItemClick(this);
             //});
         }
     });
 
-    $('#menuLoading').remove();
+    //$('#menuLoading').remove();
 
     //correctMenuHeight();
 }
@@ -6913,6 +6971,7 @@ function showRightCatalogMenu() {
 
     $('#menuRightObjects').hide();
     $("#menuRightObjects .scroll").empty(); //empty ahead of time (faster)
+
     //correctMenuHeight();
 }
 
@@ -7339,6 +7398,39 @@ function animate()
     }
 }
 
+function webAddNewFloor() {
+    
+    if($("#webAddNewFloor").val())
+    {
+        scene3DNewFloor($("#webAddNewFloor").val());
+
+        var a = "<a href='#' onclick='camera3DFloorFlyIn(" + scene3DFloorFurnitureContainer.length + ")'><span>" + $("#webAddNewFloor").val() + "</span></a>";
+        var item = $("<li>").append(a);
+        $("#menuLeft3DHouseFloorList").append(item);
+    }
+}
+
+function webItemListGenerate() {
+
+    var list = $("#webItemListGenerate");
+    list.empty();
+
+    for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
+        
+        console.log(scene3DFloorFurnitureContainer[i].name)
+
+        for (var c = 0; c < scene3DFloorFurnitureContainer[i].children.length; c++) {
+
+            console.log(scene3DFloorFurnitureContainer[i].children[c].children[0].name);
+        }
+    }
+
+    for (var i = 0; i < scene3DHouseContainer.children.length; i++) {
+
+        console.log(scene3DHouseContainer.children[i].children[0].name);
+    }
+}
+
 function fileSelect(action) {
     // Check for the various File API support.
     if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -7696,13 +7788,6 @@ $(document).ready(function() {
         content: ''
     });
 
-    $('.scroll').jscroll({
-        loadingHtml: '',
-        //padding: 20,
-        //nextSelector: 'a.jscroll-next:last',
-        //contentSelector: 'li'
-    });
-
     //$('#dragElement').drags();
 
     $('.tooltip-right').tooltipster({
@@ -7737,5 +7822,5 @@ $(document).ready(function() {
     $('.editP').bind('blur', function() {
         $(this).hide().prev('#menuTop p').html($(this).val()).show();
     });
-
+    stroll.bind('.cssmenu ul');
 });

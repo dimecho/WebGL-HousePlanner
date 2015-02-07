@@ -307,6 +307,13 @@
   </div>
 </div>
 
+<div id="openAddNewFloor" class="modalDialog">
+    <div id="wrap">
+        <a href="#close" class="close" onclick="webAddNewFloor()">X</a>
+        <br/><input id="webAddNewFloor" placeholder="Floor Name" type="text" autocomplete="off"/><br/>
+    </div>
+</div>
+
 <div id="openSaving" class="modalDialog">
   <div id="savingSpinner" style="width:280px;height:200px">
     <br/><br/><center>Please Wait - Saving ...</center>
@@ -324,6 +331,13 @@
 	<div style="width:600px; height:300px">
 		<a href="#close" class="close">X</a>
 	</div>
+</div>
+
+<div id="openItemList" class="modalDialog">
+  <div style="width:600px;height:300px;background-image:url('images/background.png');background-repeat:repeat;">
+    <a href="#close" class="close">X</a>
+    <div id="webItemListGenerate"></div>
+  </div>
 </div>
 
 <div id="open3DTin" class="modalDialog">
@@ -347,8 +361,11 @@
           <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
           <!--<a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>-->
           <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
+          <a href="#openItemList" onclick="webItemListGenerate()" class="hi-icon icon-checklist tooltip-top" title="Item List"></a>
+          <!--
           <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
           <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
+          -->
       </div>
       <img src="images/301.gif" id="loader" />
       <span onclick="$('#search-box').val('');$('#search_suggestion_holder').hide();$('#search-close').hide();" class="icon-delete" style="font-size:18px" id="search-close"></span>
@@ -357,54 +374,40 @@
     </div>
 
     <div id="menuRight3DHouse">
-      <div class="scroll" data-ui="jscroll-default">
+      <!--<div class="scroll" data-ui="jscroll-default">-->
         <div class="cssmenu">
-          <ul></ul>
+          <ul class="flip scroll"></ul>
         </div>
-      </div>
+      <!--</div>-->
     </div>
 
     <div id="menuRight3DFloor">
-      <div class="scroll" data-ui="jscroll-default">
-        <div class="cssmenu">
-        <ul>
-        </ul>
-        </div>
+      <div class="cssmenu">
+        <ul class="flip scroll"></ul>
       </div>
     </div>
 
     <div id="menuRight3DRoof">
-      <div class="scroll" data-ui="jscroll-default">
-        <div class="cssmenu">
-        <ul>
-        </ul>
-        </div>
+      <div class="cssmenu">
+        <ul class="flip scroll"></ul>
       </div>
     </div>
                 
     <div id="menuRight2D">
-      <div class="scroll" data-ui="jscroll-default">
-        <div class="cssmenu">
-        <ul>
-        </ul>
-        </div>
+      <div class="cssmenu">
+        <ul class="flip scroll"></ul>
       </div>
     </div>
 
     <div id="menuRightObjects">
       <div class="cssmenu">
-        <ul>
-          <li><a href='#' onclick="showRightCatalogMenu()"><span>&#60; Back to Catalog</span></a></li>
-        </ul>
+        <ul><li><a href='#' onclick='showRightCatalogMenu()'><span>&#60; Back to Catalog</span></a></li></ul>
+        <ul class="flip scroll"></ul>
       </div>
-
-      <!--
-      <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div>
-      -->
-      <div class="scroll" data-ui="jscroll-default">
-        <!--<div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>-->
-      </div>
+      <!-- <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div> -->
+      <!--<div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>-->
     </div>
+
   </div>
 </div>
 <!-- END Slide Right Menu -->
@@ -416,28 +419,29 @@
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width:160px;height:100px;">
+  <div id="links-left" style="width:180px;height:100px;">
       <a href="#openThumb" onclick="initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
         <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;border:5px solid #FFFFFF;border-radius:2px;"/>
       </a>
   </div>
 
-  <div id="links-left" class='cssmenu' style="width:160px;margin-top:20px">
-        <ul>
-           <li class='active'><a href='#' onclick="camera3DFloorFlyIn(0)"><span>Basement</span></a></li>
-           <li class='has-sub'><a href='#'><span>Floor 1</span></a>
+  <div id="links-left" class='cssmenu' style="width:180px;margin-top:20px">
+        <ul id="menuLeft3DHouseFloorList" class="flip">
+            <li class='active'><a href='#openAddNewFloor'><span class="icon-add" style="font-size:18px;padding-right:5px"></span><span>Add New Floor</span></a></li>
+            <li><a href='#' onclick="camera3DFloorFlyIn(0)"><span>Basement</span></a></li>
+            <li class='has-sub'><a href='#'><span>Floor 1</span></a>
               <ul>
                  <li><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Living Room</span></a></li>
                  <li><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Kitchen</span></a></li>
                  <li class='last'><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Garage</span></a></li>
               </ul>
-           </li>
-           <li class='has-sub'><a href='#'><span>Floor 2</span></a>
+            </li>
+            <li class='has-sub'><a href='#'><span>Floor 2</span></a>
               <ul>
                  <li><a href='#' onclick="camera3DFloorFlyIn(2)"><span>Bedroom 1</span></a></li>
                  <li class='last'><a href='#' onclick="camera3DFloorFlyIn(2)"><span>Bedroom 2</span></a></li>
               </ul>
-           </li>
+            </li>
         </ul>
   </div>
 </div>

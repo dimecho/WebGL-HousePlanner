@@ -1,3 +1,6 @@
+/*
+http://designmodo.com/demo/css3accordionmenu/#one3
+*/
 /* Base Styles */
 .cssmenu,
 .cssmenu ul,
@@ -21,10 +24,13 @@
 .cssmenu {
   width: 100%;
 }
+
 .cssmenu > ul > li {
+  position: relative;
   cursor: pointer;
   background: #000;
   border-bottom: 1px solid #4c4e53;
+
 }
 .cssmenu > ul > li:last-child {
   border-bottom: 1px solid #3e3d3c;
@@ -157,4 +163,36 @@
 }
 */
 
+.scroll {
+  border: 1px solid #aaa;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  background: #fff;
+  list-style: none;
+}
 
+.objectItem {
+  /*
+  position: relative;
+  width: 100%;
+  top: 0;
+  left: 0;
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
+  transform: translateZ(0);
+ 
+  background-color: #fafafa;
+  font-size: 16px;
+  */
+
+  width:250px;
+  height:110px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+  border:1px solid #000000;
+  padding: 10px;
+  margin:15px;
+}

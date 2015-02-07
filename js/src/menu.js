@@ -104,25 +104,44 @@ function getMenuItem(itemData, last) {
     return item;
 }
 
-function getMenuObjectItem(itemData) {
+function getMenuObjectItem(menu,itemData) {
     //console.log(itemData);
-    var div = "<div class='objectItem' style='margin-let:auto;text-align:left;'>";
 
+    var li = "<li style='border:1px solid #aaa;text-align:center'>";
+    var div = "<div style='background-color:#fff;height:120px'>"
     var img = $("<img>", {
         id: itemData.name,
-        src: itemData.image,
+        src: "images/loader.gif", //itemData.image,
         href: "#",
         //width: "100%",
-        height: "100%"
+        //height: "100%",
+        "data-src": itemData.image,
+        "data-src-retina": itemData.image.slice(0, -4) + "@2x." + itemData.image.split('.').pop(),
+        style: "opacity: 0;transition: opacity .3s ease-in;height:100%"
+    });
+    /*
+    $(img).lazyload({
+        threshold : 200
+    });
+    */
+    
+    var a =  $("<a>", {href:"javascript:insertSceneObject('" + itemData.file + "')"}).append(img);
+    var divInfo = "<span class='objectItemInfo' style='height:40px'>";
+
+    var item = $(li).append($(div).append(a).append(divInfo));
+
+    menu.append(item);
+
+    //$(img).unveil();
+    $(img).unveil(200, function() {
+      $(this).load(function() {
+        this.style.opacity = 1;
+      });
     });
 
-    var a =  $("<a>", {href:"javascript:insertSceneObject('" + itemData.file + "')"}).append(img);
-    
-    var divInfo = "<div class='objectItemInfo'>";
+    //console.log(item);
 
-    var item = $(div).append(a).append(divInfo);
-
-    return item;
+    //return item;
 }
 
 /*

@@ -1,8 +1,8 @@
 {
     "menu": [{
-        "name": "Children Park",
-        "image": "./objects/Exterior/Backyard/children-park.jpg",
-        "file": "./objects/Exterior/Backyard/children-park.jsz",
+        "name": "Umbrella",
+        "image": "objects/Exterior/Backyard/umbrella.jpg",
+        "file": "objects/Exterior/Backyard/umbrella.jsz",
         "manufacturer": null,
         "model": null,
         "store": null,
