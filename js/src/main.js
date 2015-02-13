@@ -2016,7 +2016,8 @@ try{
     var data;
     var ext = js.split('.').pop();
     var textures = js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
-
+    
+    /*
     var onProgress = function ( xhr ) {
         if ( xhr.lengthComputable ) {
             var percentComplete = xhr.loaded / xhr.total * 100;
@@ -2025,10 +2026,11 @@ try{
     };
     var onError = function ( xhr ) {
     };
+    */
 
     var loader = new THREE.JSONLoader();
 
-    var callbackObject2 = function( object ) {
+    var callbackObject = function( object ) {
 
         /* 
         Texture Fix
@@ -2108,7 +2110,7 @@ try{
         object.rotation.x = xaxis;
         object.rotation.y = yaxis;
 
-        console.log("ObjectLoader2 add model to scene" + object.name);
+        console.log("ObjectLoader add model to scene" + object.name);
         scene3D.add(object); 
     }
 
@@ -2425,7 +2427,7 @@ try{
                     data = zip.file(filename).asText(); //console.log("unzip OK " + js);
                     data = JSON.parse(data);
 
-                    if (data.metadata.formatVersion == 3.1) //using export script io_mesh_threejs
+                    if (data.metadata.formatVersion == 3.1 || data.metadata.version == 3) //using export script io_mesh_threejs
                     {
                         console.log("using old format 3 " + js);
 
@@ -2441,9 +2443,9 @@ try{
 
                         console.log("using new format 4 " + js);
 
-                        loader = new THREE.ObjectLoader2(manager);
+                        loader = new THREE.ObjectLoader(manager);
                         loader.setTexturePath(textures);
-                        loader.parse(data,callbackObject2,onProgress,onError);
+                        loader.parse(data,callbackObject);
                     }
                 } catch (e) { //zip file was probably not found, load regular json
                     console.log("error catch " + e + " " + js.slice(0, -4) + ".json");
@@ -4820,6 +4822,14 @@ function on3DHouseMouseUp(event) {
 
 function on3DFloorMouseDown(event) {
 	on3DMouseDown(event);
+
+    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR].children))
+    {
+        //if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
+        //{
+            scene3D.add(scene3DPivotPoint);
+        //}
+    }
 }
 
 Array.prototype.contains = function(obj) {
@@ -4881,14 +4891,6 @@ function on3DFloorMouseMove(event) {
 
 function on3DFloorMouseUp(event) {
 	on3DMouseUp(event);
-
-    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR].children))
-    {
-        if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
-        {
-            scene3D.add(scene3DPivotPoint);
-        }
-    }
 }
 
 function on3DMouseMove(event) {
@@ -5881,7 +5883,10 @@ function scene3DFloorMeasurementsGenerate()
 function scene3DFloorMeasurementShow() {
     var show = true;
     for (var i = 0; i < scene3DFloorFurnitureContainer[FLOOR].children.length; i++) {
-        scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible = !scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible;
+        
+        if(scene3DFloorFurnitureContainer[FLOOR].children[i].position.y < 0.8)
+            scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible = !scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible;
+        
         show = scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible;
     }
     if (show)

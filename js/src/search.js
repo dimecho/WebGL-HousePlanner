@@ -54,8 +54,8 @@ $(document).ready(function(){
 	});
 	
 	$('#search_suggestion_holder').on('click','li',function(){
-		var value	=	$(this).text();
-		$('#search-box').val(value);
+		//var value	=	$(this).text();
+		//$('#search-box').val(value);
 		$('#search_suggestion_holder').hide();
 	});
 	

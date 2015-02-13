@@ -91,7 +91,7 @@ var TransformConstrolsHighlighted = false;
 
 			//// PLANES
 
-			var planeGeometry = new THREE.PlaneGeometry( 50, 50, 2, 2 );
+			var planeGeometry = new THREE.PlaneBufferGeometry( 50, 50, 2, 2 );
 			var planeMaterial = new THREE.MeshBasicMaterial( { wireframe: true } );
 			planeMaterial.side = THREE.DoubleSide;
 
@@ -148,8 +148,10 @@ var TransformConstrolsHighlighted = false;
 				if (child instanceof THREE.Mesh) {
 					child.updateMatrix();
 
-					var tempGeometry = new THREE.Geometry();
-					tempGeometry.merge( child.geometry, child.matrix );
+					//var tempGeometry = new THREE.Geometry();
+					//tempGeometry.merge( child.geometry, child.matrix );
+					var tempGeometry = child.geometry.clone();
+					tempGeometry.applyMatrix( child.matrix );
 
 					child.geometry = tempGeometry;
 					child.position.set( 0, 0, 0 );
@@ -245,13 +247,13 @@ var TransformConstrolsHighlighted = false;
 				[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.18, 0 ), new GizmoMaterial( { color: 0xffffff, opacity: 0.25 } ) ), [ 0, 0, 0 ], [ 0, 0, 0 ] ]
 			],
 			XY: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.26, 0.26, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.26, 0.26, 0 ] ]
 			],
 			YZ: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.26, 0.26 ], [ 0, Math.PI/2, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.26, 0.26 ], [ 0, Math.PI/2, 0 ] ]
 			],
 			XZ: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.26, 0, 0.26 ], [ -Math.PI/2, 0, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.5, 0.5 ), new GizmoMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.26, 0, 0.26 ], [ -Math.PI/2, 0, 0 ] ]
 			]
 		};
 
@@ -269,13 +271,13 @@ var TransformConstrolsHighlighted = false;
 				[ new THREE.Mesh( new THREE.OctahedronGeometry( 0.18, 0 ), new GizmoMaterial( { color: 0xffffff, opacity: 0.25 } ) ) ]
 			],
 			XY: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.6, 0.6 ), new GizmoMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.26, 0.26, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.6, 0.6 ), new GizmoMaterial( { color: 0xffff00, opacity: 0.25 } ) ), [ 0.26, 0.26, 0 ] ]
 			],
 			YZ: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.6, 0.6), new GizmoMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.26, 0.26 ], [ 0, Math.PI/2, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.6, 0.6), new GizmoMaterial( { color: 0x00ffff, opacity: 0.25 } ) ), [ 0, 0.26, 0.26 ], [ 0, Math.PI/2, 0 ] ]
 			],
 			XZ: [
-				[ new THREE.Mesh( new THREE.PlaneGeometry( 0.6, 0.6 ), new GizmoMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.26, 0, 0.26 ], [ -Math.PI/2, 0, 0 ] ]
+				[ new THREE.Mesh( new THREE.PlaneBufferGeometry( 0.6, 0.6 ), new GizmoMaterial( { color: 0xff00ff, opacity: 0.25 } ) ), [ 0.26, 0, 0.26 ], [ -Math.PI/2, 0, 0 ] ]
 			]
 		};
 
