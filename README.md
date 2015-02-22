@@ -8,7 +8,6 @@
 <td><img src="http://jackthewebber.com/wp-content/uploads/2013/07/icon-Jquery1.png" alt="" width="68" height="68" /></td>
 <td><img src="http://www.userlogos.org/files/logos/jumpordie/inkscape.png" alt="" width="90" height="64" /></td>
 <td><img src="http://upload.wikimedia.org/wikipedia/commons/3/39/WebGL_logo.png" alt="" width="80" height="40" /></td>
-<td><img src="http://www.kellycode.com/img/tools/icons/Three_JS-icon.png" alt="" width="100" height="30" /></td>
 </tr>
 </table><br/>
 

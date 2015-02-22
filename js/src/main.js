@@ -65,7 +65,7 @@ var scene3DFloorShapeContainer = []; //Three.js 3D Layer contains floor mesh+tex
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 
 var scene3DPivotPoint; // 3D rotational pivot point - 1 object
-var scene3DNote; // Sticky note visual 3D effect - 1 object
+//var scene3DNote; // Sticky note visual 3D effect - 1 object
 var scene3DCubeMesh; // Orange cube for visual orientation
 
 var sceneAmbientLight;
@@ -2427,7 +2427,7 @@ try{
                     data = zip.file(filename).asText(); //console.log("unzip OK " + js);
                     data = JSON.parse(data);
 
-                    if (data.metadata.formatVersion == 3.1 || data.metadata.version == 3) //using export script io_mesh_threejs
+                    if (data.metadata.formatVersion == 3.1) //using export script io_mesh_threejs
                     {
                         console.log("using old format 3 " + js);
 
@@ -4794,11 +4794,6 @@ $(document).on('keyup', function(event){
 
 function on3DHouseMouseDown(event) {
 	on3DMouseDown(event);
-}
-
-function on3DHouseMouseUp(event) {
-
-	on3DMouseUp(event);
 
     if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
     {
@@ -4818,6 +4813,11 @@ function on3DHouseMouseUp(event) {
             //}
         //}
     }
+}
+
+function on3DHouseMouseUp(event) {
+
+	on3DMouseUp(event);
 }
 
 function on3DFloorMouseDown(event) {
@@ -5220,6 +5220,7 @@ function on3DMouseUp(event) {
     clearTimeout(clickTime); //prevents from hiding menus too fast
 
     scene3D.remove(scene3DPivotPoint);
+    //scene3D.needsUpdate = true;
 
     if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0) {
         toggleSideMenus(true);
@@ -6103,22 +6104,6 @@ function scene3DFloorWallGenerate() {
             geometry.centroid.applyMatrix4(mesh.matrixWorld);
             */
 
-            scene3DFloorWallContainer[FLOOR].add(mesh);
-            //scene3DFloorWallContainer.2d = obj;
-
-            /*
-            http://stackoverflow.com/questions/26272564/how-to-increase-the-thickness-of-the-extrude-geometry-along-x-and-z-axis-three
-            */
-            var mesh_arr=new Array();
-            for(i=0.2;i<1;i++)
-            {
-                //cloned mesh,add position to the cloning mesh
-                mesh_arr[i] = mesh.clone();
-                mesh_arr[i].position.set(i,i,i);
-                mesh_arr[i].updateMatrix();
-                scene3DFloorWallContainer[FLOOR].add(mesh_arr[i]);
-            }
-
             /*
             http://stackoverflow.com/questions/7364150/find-object-by-id-in-array-of-javascript-objects
             */
@@ -6141,7 +6126,57 @@ function scene3DFloorWallGenerate() {
                 //console.log("ARRAY SEARCH " + result[0].file + " " + x + ":" + y + ":" + z + " " + a * 180 / Math.PI);
 
                 open3DModel(result[0].file, scene3DFloorDoorContainer, x, y, z, 0, a, 1.0, false, null);
+
+                /*
+                while (scene3DFloorDoorContainer.children.length == 0) {
+                    setTimeout(function(){}, 800);
+                }
+                */
+
+                try //Cut a whole in scene3DFloorWallContainer Mesh
+                {
+                    var o = scene3DFloorDoorContainer.children.length; //TODO: Have some error catch
+
+                    var cube_geometry = new THREE.CubeGeometry(scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.x, scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.y, scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.z);
+                    //var cube_geometry = new THREE.CubeGeometry(scene3DFloorDoorContainer.boundingBox.max.x, scene3DFloorDoorContainer.boundingBox.max.y, scene3DFloorDoorContainer.boundingBox.max.z);
+                    
+                    var cube_mesh = new THREE.Mesh(cube_geometry);
+                    cube_mesh.position.x = x;
+                    cube_mesh.position.y = 0; //y;
+                    cube_mesh.position.z = z;
+                    
+                    var DoorBSP = new ThreeBSP(cube_mesh);
+                    //var DoorBSP = new ThreeBSP(scene3DFloorDoorContainer);
+                    var WallBSP = new ThreeBSP(mesh);
+                    var WallCutBSP = WallBSP.subtract(DoorBSP);
+
+                    var result = WallCutBSP.toMesh(new THREE.MeshLambertMaterial({shading: THREE.SmoothShading}));
+                    //result.geometry.computeVertexNormals();
+                    mesh.geometry = result.geometry;
+                    
+                }catch(e){
+                    console.log("Cannot cut mesh (" + o + ") "  + result[0].file  + " " + e);
+                }
             }
+
+            scene3DFloorWallContainer[FLOOR].add(mesh);
+            //scene3DFloorWallContainer.2d = obj;
+
+            /*
+            http://stackoverflow.com/questions/26272564/how-to-increase-the-thickness-of-the-extrude-geometry-along-x-and-z-axis-three
+            */
+            
+            var mesh_arr=new Array();
+            for(i=0.2;i<1;i++)
+            {
+                //cloned mesh,add position to the cloning mesh
+                mesh_arr[i] = mesh.clone();
+                mesh_arr[i].position.set(i,i,i);
+                mesh_arr[i].updateMatrix();
+                scene3DFloorWallContainer[FLOOR].add(mesh_arr[i]);
+            }
+            
+
         }
     }
 

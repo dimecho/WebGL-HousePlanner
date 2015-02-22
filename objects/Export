@@ -14,7 +14,8 @@ do
 	#osascript -e 'tell application "Blender" to activate'
 	sleep 4
 
-	cliclick -w 640 -r c:300,30 c:60,60 c:60,415 c:350,500 c:1600,105
+	//cliclick -w 640 -r c:300,30 c:60,60 c:60,415 c:340,585 c:1600,105
+	cliclick -w 640 -r c:300,30 c:60,60 c:60,415 c:340,500 c:1600,105
 
 	while [ ! -f "$(basename "$f" .blend).json" ]
 	do
