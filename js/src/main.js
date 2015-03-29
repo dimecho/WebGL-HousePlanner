@@ -1808,7 +1808,7 @@ function camera3DNoteAdd()
 
 function scene3DFloorInsertAR()
 {
-    if (typeof NyARRgbRaster_Canvas2D == 'undefined') $.getScript("js/JSARToolKit.js", function(data, textStatus, jqxhr) {
+    if (typeof NyARRgbRaster_Canvas2D == 'undefined') $.getScript("js/dynamic/JSARToolKit.js", function(data, textStatus, jqxhr) {
         
     });
 }
@@ -5523,7 +5523,7 @@ function exportPDF() {
         alert('Sorry, your browser is not supported.');
     } else {
 
-        if (typeof jsPDF == 'undefined') $.getScript("js/jspdf.js", function(data, textStatus, jqxhr) {
+        if (typeof jsPDF == 'undefined') $.getScript("js/dynamic/jspdf.js", function(data, textStatus, jqxhr) {
         //if (typeof jsPDF == 'undefined') $.loadScript("js/jspdf.js", function(){
             /*
             console.log(data); //data returned
