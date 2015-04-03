@@ -41,6 +41,7 @@ var scene3D; //Three.js Canvas
 var scene3DCube; //Three.js Canvas
 var scene3DPanorama; //Three.js Canvas
 var scene2D; //Fabric.js Canvas
+var scene2DAdvanced; //Fabric.js Canvas
 var physics3D; //Cannon.js Engine (collisions and other cool stuff)
 
 var composer, dpr, effectFXAA;
@@ -262,6 +263,7 @@ function init(runmode,viewmode) {
     */
     scene2D = new fabric.Canvas('fabricjs', {
         isDrawingMode: false,
+        isTouchSupported: true,
         width: window.innerWidth,
         height: window.innerHeight
     });
@@ -271,7 +273,6 @@ function init(runmode,viewmode) {
         scene2D.freeDrawingBrush.width = 8; //parseInt(drawingLineWidthEl.value, 10) || 1;
         scene2D.freeDrawingBrush.shadowBlur = 0;
     }
-    fabric.isTouchSupported = true;
 
     //$('#canvas_container').css('overflow-x', 'scroll');
     //$('#canvas_container').css('overflow-y', 'scroll'); //'hidden');
@@ -288,8 +289,6 @@ function init(runmode,viewmode) {
     target = new THREE.Vector3();
 
     sceneNew();
-
-
 
     scene3DPivotPoint = new THREE.Object3D();
 
@@ -651,7 +650,6 @@ function init(runmode,viewmode) {
     scene3DInitializeRenderer();
 
     scene3DInitializePhysics();
-
 
     scene3DCube = new THREE.Scene();
     camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
@@ -1469,6 +1467,7 @@ function scene2DMakeDoor(v1,v2,c,z,open,direction,id) {
         startAngle: startAngle,
         endAngle: endAngle,
         stroke: '#000000',
+        strokeDashArray: [5, 5],
         strokeWidth: 2,
         fill: ''
     });
@@ -1476,12 +1475,14 @@ function scene2DMakeDoor(v1,v2,c,z,open,direction,id) {
 
     //Interactive Adjusting lines TODO: add mobileFix
     var line4 = new fabric.Line([v1.x, v1.y-10, v1.x, v1.y+10], {
-        stroke: '#00CC00',
+        //stroke: '#00CC00', //green
+        stroke: '#000000', //black
         strokeWidth: 6,
         name: "door-adjust-left"
     });
     var line5 = new fabric.Line([v2.x, v2.y-10, v2.x, v2.y+10], {
-        stroke: '#00CC00',
+        //stroke: '#00CC00', //green
+        stroke: '#000000', //black
         strokeWidth: 6,
         name: "door-adjust-right"
     });
@@ -2803,9 +2804,11 @@ var landscape = new function() {
         }
     };
 }
+
 function Degrees2Radians(degrees) {
     return degrees * (Math.PI / 180)
 }
+
 function getHeightData(img,scale) //return array with height data from img
 {
  if (scale == undefined) scale=1;
@@ -2835,6 +2838,7 @@ function getHeightData(img,scale) //return array with height data from img
      
     return data;
 }
+
 //========================================
 function show3DLandscape() {
 
@@ -3246,8 +3250,8 @@ function show2D() {
         selectable: false,
         opacity: 0.2
     }));
-    scene2DMakeGrid(40,'#6dcff6');
-    scene2DMakeGrid(20,'#E0E0E0');
+    scene2DMakeGrid(scene2D, 40,'#6dcff6');
+    scene2DMakeGrid(scene2D, 20,'#E0E0E0');
     //============================
 
     scene2DFloorShapeGenerate();
@@ -3292,13 +3296,83 @@ function show2D() {
     scene2D.on('mouse:down', function(event) {
         on2DMouseDown(event.e);
     });
+
     /*
     scene2D.on('mouse:move', function(event) {
         on2DMouseMove(event.e);
     });
     */
+
     scene2D.on('mouse:up', function(event) {
-        on2DMouseUp(event.e);
+        if(event.target.name == 'door' || event.target.name == 'window')
+        {
+            window.location = "#open2DDoorWindowAdjust";
+
+            //============================
+            scene2DAdvanced = new fabric.Canvas('fabricjs2', {
+                isDrawingMode: false,
+                isTouchSupported: true,
+                width: window.innerWidth*0.8-40, //80%
+                height: window.innerHeight*0.75-20 //75%
+            });
+            scene2DMakeGrid(scene2DAdvanced, 20,'#6dcff6');
+            //scene2DMakeGrid(scene2DAdvanced, 20,'#E0E0E0');
+            //============================
+
+            //...Sample front facing wall
+            //============================
+            scene2DDrawLine = new fabric.Line([200, 80, 850, 80], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+            scene2DDrawLine = new fabric.Line([200, 80, 200, 500], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+            scene2DDrawLine = new fabric.Line([850, 80, 850, 500], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+            scene2DDrawLine = new fabric.Line([200, 500, 850, 500], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+
+            scene2DDrawLine = new fabric.Rect({
+              left: 450,
+              top: 345,
+              fill: '#ffffff',
+              stroke: 'black',
+              width: 180,
+              height: 300,
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+            //============================
+        }
+        else
+        {
+            on2DMouseUp(event.e);
+        }
     });
     
     scene2D.on('mouse:over', function(e) {
@@ -3334,6 +3408,11 @@ function show2D() {
             e.target.item(1).set({stroke:'#ff6600'});
             scene2D.renderAll();
         }
+        else if (e.target.name == 'door') 
+        {
+            e.target.item(1).set({stroke:'#ff6600'});
+            scene2D.renderAll();
+        }
     });
 
     scene2D.on('mouse:out', function(e) {
@@ -3359,6 +3438,11 @@ function show2D() {
         else if (e.target.name == 'pivot') 
         {
             e.target.item(1).set({stroke:'#0066FF'});
+            scene2D.renderAll();
+        }
+        else if (e.target.name == 'door') 
+        {
+            e.target.item(1).set({stroke:'#00000'});
             scene2D.renderAll();
         }
     });
@@ -3457,7 +3541,10 @@ function show2D() {
        
             p.wall.item(0).path[1][1] = p.left;
             p.wall.item(0).path[1][2] = p.top;
-        
+        }
+        else  if (p.name == 'door' || p.name == 'window')
+        {
+
         }
     });
 
@@ -3773,7 +3860,7 @@ function hideElements() {
     //scene2DFloorContainer[0].traverse;
 }
 
-function scene2DMakeGrid(grid,color) {
+function scene2DMakeGrid(canvas2D, grid,color) {
 
     /*
     for (var x = 0; x <= scene2D.getWidth(); x += 25) {
@@ -3793,14 +3880,14 @@ function scene2DMakeGrid(grid,color) {
     */
 
     // create grid
-    for (var i = 0; i < (scene2D.getWidth() / grid); i++) {
-        scene2D.add(new fabric.Line([i * grid, 0, i * grid, scene2D.getWidth()], {
+    for (var i = 0; i < (canvas2D.getWidth() / grid); i++) {
+        canvas2D.add(new fabric.Line([i * grid, 0, i * grid, canvas2D.getWidth()], {
             stroke: color,
             strokeWidth: 1,
             selectable: false,
             //strokeDashArray: [5, 5]
         }));
-        scene2D.add(new fabric.Line([0, i * grid, scene2D.getWidth(), i * grid], {
+        canvas2D.add(new fabric.Line([0, i * grid, canvas2D.getWidth(), i * grid], {
             stroke: color,
             strokeWidth: 1,
             selectable: false,

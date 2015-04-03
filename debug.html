@@ -287,9 +287,9 @@
 </style>
 
 <div id="openLogin" class="modalDialog">
-    <div id="wrap">
+    <div style="width:400px;height:500px;">
         <a href="#close" class="close" onclick="document.getElementById('iframe').src = 'about:blank'">X</a>
-        <iframe src="" frameborder="0" id="iframe"></iframe> 
+        <iframe src="" frameborder="0" id="iframe" style="width:100%"></iframe>
     </div>
 </div>
 
@@ -325,21 +325,16 @@
   </div>
 </div>
 
+<div id="open2DDoorWindowAdjust" class="modalDialog">
+    <div style="width:80%;height:75%;">
+      <a href="#close" class="close">X</a>
+      <canvas id="fabricjs2"></canvas>
+    </div>
+</div>
+
 <div id="openPanoramaSelect" class="modalDialog">
   <div style="width:600px;height:400px">
     <a href="#close" class="close">X</a>
-    <style>
-    .panoFrame{
-      display:inline-block;
-      width:120px;
-      height:120px;
-      margin:0;
-      padding:0;
-    }
-     .panoFrameBordered{
-      border:2px solid black
-    }
-    </style>
     <div>
       <div class="panoFrame"></div>
       <div class="panoFrame panoFrameBordered"></div>
