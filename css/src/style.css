@@ -34,3 +34,13 @@ body{
 	margin-top: 0%;
 	background-color: #ffcb00;
 }
+.panoFrame{
+  display:inline-block;
+  width:120px;
+  height:120px;
+  margin:0;
+  padding:0;
+}
+ .panoFrameBordered{
+  border:2px solid black
+}

@@ -221,9 +221,18 @@ function init(runmode,viewmode) {
         document.getElementsByTagName("html")[0].style.overflow = "auto";
         return;
     }
-    
+
     $('#pxs_container').parallaxSlider();
-    window.location.href = "#scene";
+    
+    if (getCookie("firstTimer") == null)
+    {
+        createCookie("firstTimer","1",15);
+        window.location.href = "#Tutorial";
+    }
+    else
+    {
+        window.location.href = "#scene";
+    }
 
 	RUNMODE = runmode;
 	VIEWMODE = viewmode;
@@ -1910,7 +1919,7 @@ function camera3DWalkViewToggle()
                enableFirstPersonControls();
           }).start();
         }});
-        $('.alertify-message').append($.parseHTML("<img src='images/wasd-keyboard.jpg' /><br/><br/>Use (W,A,S,D) or arrow keys to move."));
+        $('.alertify-message').append($.parseHTML("<img src='images/help/wasd-keyboard.jpg' /><br/><br/>Use (W,A,S,D) or arrow keys to move."));
     }
     else
     {
@@ -7801,6 +7810,22 @@ function toggleTextureSelect() {
             $('#WebGLColorWheelSelect').show();
         }
     }
+}
+
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) return parts.pop().split(";").shift();
+}
+
+function createCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+    else var expires = "";
+    document.cookie = name+"="+value+expires+"; path=/";
 }
 
 $(document).ready(function() {
