@@ -103,7 +103,7 @@ var SESSION = '';
 var RUNMODE = 'local'; //database
 var VIEWMODE = 'designer' //public
 var RADIAN = Math.PI / 180;
-var SceneAnimate = true;
+var SceneAnimate = false;
 var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
@@ -1383,11 +1383,13 @@ function scene2DMakeWindow(v1,v2,c,z,open,direction,id) {
 
     var line2 = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
         stroke: '#000000',
-        strokeWidth: 4
+        strokeWidth: 4,
+        name:'window-frame'
     });
 
     group.push(line1);
     group.push(line2);
+
     /*
     if(open == "bay")
     {
@@ -1397,6 +1399,7 @@ function scene2DMakeWindow(v1,v2,c,z,open,direction,id) {
         }
     }
     */
+
     return new fabric.Group(group, {selectable:false, name:'window', z:z, open:open, direction:direction, id:id});
 }
 
@@ -1424,7 +1427,8 @@ function scene2DMakeDoor(v1,v2,c,z,open,direction,id) {
 
     var line2 = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
         stroke: '#000000',
-        strokeWidth: 4
+        strokeWidth: 4,
+        name: "door-frame"
     });
 
     group.push(line1);
@@ -1478,7 +1482,8 @@ function scene2DMakeDoor(v1,v2,c,z,open,direction,id) {
         stroke: '#000000',
         strokeDashArray: [5, 5],
         strokeWidth: 2,
-        fill: ''
+        fill: '',
+        name: "door-swing"
     });
     group.push(arc1);
 
@@ -1487,13 +1492,13 @@ function scene2DMakeDoor(v1,v2,c,z,open,direction,id) {
         //stroke: '#00CC00', //green
         stroke: '#000000', //black
         strokeWidth: 6,
-        name: "door-adjust-left"
+        //name: "door-adjust-left"
     });
     var line5 = new fabric.Line([v2.x, v2.y-10, v2.x, v2.y+10], {
         //stroke: '#00CC00', //green
         stroke: '#000000', //black
         strokeWidth: 6,
-        name: "door-adjust-right"
+        //name: "door-adjust-right"
     });
     group.push(line4);
     group.push(line5);
@@ -1890,10 +1895,13 @@ function camera3DNoteExit()
 
 function camera3DHouseEnter()
 {
-	camera3D.position.set(0, 20, 0);
-	//controls3D.target = new THREE.Vector3(0, 50, 0);
-	var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:6, z:20},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-    var tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    if(!SceneAnimate)
+    {
+	   camera3D.position.set(0, 20, 0);
+	   //controls3D.target = new THREE.Vector3(0, 50, 0);
+	   var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:6, z:20},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+        var tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    }
 }
 
 function camera3DWalkViewToggle()
@@ -2603,6 +2611,7 @@ function show3DHouse(skyload) {
     scene3DCube.add(scene3DCubeMesh);
 
     camera3DHouseEnter();
+
     animate();
 }
 
@@ -3277,8 +3286,6 @@ function show2D() {
         scene2D.add(scene2DExteriorMesh[FLOOR][i]);
     }
 
-
-
     //TODO: doubleclick resets Quardatic Curve
     //http://stackoverflow.com/questions/21511383/fabricjs-detect-mouse-over-object-path -> http://fabricjs.com/per-pixel-drag-drop/
     
@@ -3313,10 +3320,9 @@ function show2D() {
     */
 
     scene2D.on('mouse:up', function(event) {
-        if(event.target.name == 'door' || event.target.name == 'window')
+        if(event.target.name == 'door')
         {
             window.location = "#open2DDoorWindowAdjust";
-
             //============================
             scene2DAdvanced = new fabric.Canvas('fabricjs2', {
                 isDrawingMode: false,
@@ -3378,6 +3384,70 @@ function show2D() {
             scene2DAdvanced.add(scene2DDrawLine);
             //============================
         }
+        else if(event.target.name == 'window')
+        {
+            window.location = "#open2DDoorWindowAdjust";
+            //============================
+            scene2DAdvanced = new fabric.Canvas('fabricjs2', {
+                isDrawingMode: false,
+                isTouchSupported: true,
+                width: window.innerWidth*0.8-40, //80%
+                height: window.innerHeight*0.75-20 //75%
+            });
+            scene2DMakeGrid(scene2DAdvanced, 20,'#6dcff6');
+            //scene2DMakeGrid(scene2DAdvanced, 20,'#E0E0E0');
+            //============================
+
+             //...Sample front facing wall
+            //============================
+            scene2DDrawLine = new fabric.Line([200, 80, 850, 80], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+            scene2DDrawLine = new fabric.Line([200, 80, 200, 500], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+            scene2DDrawLine = new fabric.Line([850, 80, 850, 500], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+            scene2DDrawLine = new fabric.Line([200, 500, 850, 500], {
+                fill: 'blue',
+                stroke: 'black',
+                strokeWidth: 10,
+                strokeLineCap: 'round',
+                hasControls: false,
+                selectable: false
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+
+            scene2DDrawLine = new fabric.Rect({
+              left: 500,
+              top: 250,
+              fill: '#ffffff',
+              stroke: 'black',
+              width: 300,
+              height: 250,
+            });
+            scene2DAdvanced.add(scene2DDrawLine);
+            //============================
+        }
         else
         {
             on2DMouseUp(event.e);
@@ -3422,6 +3492,11 @@ function show2D() {
             e.target.item(1).set({stroke:'#ff6600'});
             scene2D.renderAll();
         }
+        else if (e.target.name == 'window') 
+        {
+            e.target.item(1).set({stroke:'#ff6600'});
+            scene2D.renderAll();
+        }
     });
 
     scene2D.on('mouse:out', function(e) {
@@ -3454,6 +3529,11 @@ function show2D() {
             e.target.item(1).set({stroke:'#00000'});
             scene2D.renderAll();
         }
+        else if (e.target.name == 'window') 
+        {
+            e.target.item(1).set({stroke:'#00000'});
+            scene2D.renderAll();
+        }
     });
 
     /*
@@ -3469,11 +3549,11 @@ function show2D() {
         
         var p = e.target;
 
-        scene2D.remove(scene2DDrawLine); //quickfix
-    
         if(p.lockMovementX) //precaution
             return;
 
+        scene2D.remove(scene2DDrawLine); //quickfix
+    
         //snap to grid
         p.set({
             left: Math.round(p.left / 20) * 20,
@@ -3483,7 +3563,8 @@ function show2D() {
         if (p.name == 'edge') {
             
             $('#menu2DTools').tooltipster('hide');
-            for (var i = 0; i < 2; i++)
+
+            for (var i = 0; i < p.line.length; i++)
             {
                 if(e.target.bend[i]){
                     scene2D.remove(e.target.bend[i]);
@@ -3491,10 +3572,10 @@ function show2D() {
             }
             //clearTimeout(clickTime);
 
-            for (var i = 0; i < 4; i++)
+            for (var i = 0; i < p.line.length; i++)
             {
-                if(p.line[i])
-                {
+                //if(p.line[i]){
+
                     var v1 = {x:p.line[i].item(0).path[0][1],y:p.line[i].item(0).path[0][2]};
                     var v2 = {x:p.line[i].item(0).path[1][3],y:p.line[i].item(0).path[1][4]};
                     var pivot = scene2DGetCenterPivot(v1,v2); //Original
@@ -3520,25 +3601,38 @@ function show2D() {
                     //console.log("length: " + n1);
 
                     //==== Doors and Windows Adjust ====
-                    if(p.doors[i]) //TODO: multi doors / wall
+                    if(p.doors[i] || p.windows[i]) //TODO: multi doors / wall
                     {
                         //console.log(p.doors[i][0].id)
 
-                        var scale = 50 / n1;
+                        var scale = 50 / n1; //TODO: calculate the scale ration dynamically?
                         //============ LERP Formula ==============
                         //start.x + (final.x - start.x) * progress;
                         var L1x = v2.x + (v1.x - v2.x) * scale;
                         var L1y = v2.y + (v1.y - v2.y) * scale;
                         //========================================
-                        p.doors[i][0].left = L1x;
-                        p.doors[i][0].top = L1y;
-
                         var r = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI;
-                        p.doors[i][0].angle = r;
+
+                        if(p.doors[i])
+                        {
+                            p.doors[i][0].left = L1x;
+                            p.doors[i][0].top = L1y;
+                            p.doors[i][0].angle = r;
+                        }
+                        if(p.windows[i])
+                        {
+                            scale = 200 / n1; //TODO: calculate the scale ration dynamically?
+                            L1x = v2.x + (v1.x - v2.x) * scale;
+                            L1y = v2.y + (v1.y - v2.y) * scale;
+                            //========================================
+                            p.windows[i][0].left = L1x;
+                            p.windows[i][0].top = L1y;
+                            p.windows[i][0].angle = r + 90; //TODO: Fix this
+                        }
                         //console.log("angle: " + p.doors[i].angle);
                     }
                     //==================================
-                }
+                //}
             }
         
             //scene2D.renderAll();
@@ -3550,9 +3644,9 @@ function show2D() {
        
             p.wall.item(0).path[1][1] = p.left;
             p.wall.item(0).path[1][2] = p.top;
-        }
-        else  if (p.name == 'door' || p.name == 'window')
-        {
+        //}
+        //else  if (p.name == 'door' || p.name == 'window')
+        //{
 
         }
     });
@@ -3625,17 +3719,35 @@ function show2D() {
         
         var showPivot = true;
 
-        for (var w = 0; w < circle.line.length; w++){
-            var result = scene2DDoorMesh[FLOOR].filter(function(e) { return e.id === circle.line[w].id; });
+        for (var x = 0; x < circle.line.length; x++){
+            //=========================
+            var result = scene2DDoorMesh[FLOOR].filter(function(e) { return e.id === circle.line[x].id; });
             if(result.length >= 1)
             {
-                circle.doors[w] = new Array();
-                showPivot = false;
+                circle.doors[x] = new Array();
+                if (x == 1)
+                    showPivot = false;
+            //}
+                for (var d = 0; d < result.length; d++){
+                    circle.doors[x][d] = result[d];
+                    scene2D.add(result[d]);
+                }
             }
-            for (var d = 0; d < result.length; d++){
-                circle.doors[w][d] = result[d];
-                scene2D.add(result[d]);
+            //=========================
+            result = scene2DWindowMesh[FLOOR].filter(function(e) { return e.id === circle.line[x].id; });
+            if(result.length >= 1)
+            {
+                //console.log(result);
+                circle.windows[x] = new Array();
+                if (x == 1)
+                    showPivot = false;
+            //}
+                for (var w = 0; w < result.length; w++){
+                    circle.windows[x][w] = result[w];
+                    scene2D.add(result[w]);
+                }
             }
+            //=========================
         }
         
         if(showPivot)
@@ -3647,10 +3759,11 @@ function show2D() {
         scene2D.add(scene2DDoorMesh[FLOOR][i]);
     }
     */
-
+    /*
     for (var i = 0; i < scene2DWindowMesh[FLOOR].length; i++) {
         scene2D.add(scene2DWindowMesh[FLOOR][i]);
     }
+    */
     //scene2DArrayToLineWalls();
 
     //scene2DCalculateWallLength();
@@ -3867,6 +3980,30 @@ function hideElements() {
     //scene2D.visible = b;
 
     //scene2DFloorContainer[0].traverse;
+}
+
+function scene2DSurfaceArea(p)
+{
+    /*
+    area = 0;
+    for( i = 0; i < N; i += 2 )
+       area += x[i+1]*(y[i+2]-y[i]) + y[i+1]*(x[i]-x[i+2]);
+    area /= 2;
+    */
+
+    //https://www.topcoder.com/community/data-science/data-science-tutorials/geometry-concepts-basic-concepts/#polygon_area
+    var area = 0;
+    var N = p.length;
+
+    for(i = 1; i+1<N; i++){
+        var x1 = p[i][0] - p[0][0];
+        var y1 = p[i][1] - p[0][1];
+        var x2 = p[i+1][0] - p[0][0];
+        var y2 = p[i+1][1] - p[0][1];
+        var cross = x1*y2 - x2*y1;
+        area += cross;
+    }
+    return Math.abs(cross/2.0);
 }
 
 function scene2DMakeGrid(canvas2D, grid,color) {
@@ -4725,8 +4862,9 @@ function on2DMouseUp(event) {
         $("#menuWallInput").css('top', scene2DWallGeometry[FLOOR][i][p][1]);
         $("#menuWallInput").show();
         */
+    }else{
+        scene2DFloorShapeGenerate();
     }
-    scene2DFloorShapeGenerate();
 }
 
 function on2DMouseMove(event) {
@@ -5016,8 +5154,10 @@ function on3DMouseMove(event) {
         if (event.clientX > window.innerWidth - 50)
         {
         	//console.log("set SceneAnimate");
-        	SceneAnimate = true; animate();
+        	SceneAnimate = true; 
         	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
+
+            animate();
     	}
     //}
     /*
@@ -5932,7 +6072,11 @@ function openScene(zipData) {
     }
 
     //show2D(); //DEBUG 2D
-    show3DHouse();
+
+    setTimeout(function() {
+        SceneAnimate = true;
+        show3DHouse();
+    }, 2000);
 }
 
 function imageBase64(id) {
@@ -6002,50 +6146,61 @@ function scene3DFloorObjectWallMeasurementAjust() {
 
 function scene2DFloorShapeGenerate() {
 
-    var shape = scene2D.getItemByName("floorshape");
-    var count = 1;
     var path;
-    
-    for (var objects in scene2DWallMesh[FLOOR])
+    var shape = scene2D.getItemByName("floorshape");
+    if (shape == null)
     {
-        var obj = scene2DWallMesh[FLOOR][objects];
+        //Generate 2D Vector Floor Shape
+        path = " Q 0, 0, 0, 0".repeat(scene2DWallMesh[FLOOR].length);
+        path = "M 0 0" + path;  //console.log(path);
 
-        if (obj.name == "wall"){
-            //console.log(obj.item(0));
-
-            var x1 = obj.item(0).path[0][1];
-            var y1 = obj.item(0).path[0][2];
-            var cx = obj.item(0).path[1][1];
-            var cy = obj.item(0).path[1][2];
-            var x2 = obj.item(0).path[1][3];
-            var y2 = obj.item(0).path[1][4];
-
-            if (shape == null)
-            {
-                //Generate 2D Vector Floor Shape
-
-                path = " Q 0, 0, 0, 0".repeat(scene2DWallMesh[FLOOR].length);
-                path = "M 0 0" + path;  //console.log(path);
-
-                shape = new fabric.Path(path, {strokeWidth: 1, stroke: 'black', selectable:false, hasControls: false, name:'floorshape', opacity:0.6});
-                fabric.util.loadImage('objects/FloorPlan/Default/7.png', function(img) {
-                  shape.fill = new fabric.Pattern({
-                    source: img,
-                    repeat: 'repeat'
-                  });
-                  //scene2D.renderAll();
-                });
-                scene2D.add(shape);
-            }
-            if(count == 1)
-            {
-                shape.path[0][1] = x1; shape.path[0][2] = y1;
-            }
-            shape.path[count][1] = cx; shape.path[count][2] = cy;
-            shape.path[count][3] = x2; shape.path[count][4] = y2;
-            count++;
-        }
+        shape = new fabric.Path(path, {strokeWidth: 1, stroke: 'black', selectable:false, hasControls: false, name:'floorshape', opacity:0.6});
+        fabric.util.loadImage('objects/FloorPlan/Default/7.png', function(img) {
+          shape.fill = new fabric.Pattern({
+            source: img,
+            repeat: 'repeat'
+          });
+          //scene2D.renderAll();
+        });
+        scene2D.add(shape);
     }
+    var count = 1;
+    
+    //var obj = scene2DWallMesh[FLOOR][0];
+    //shape.path[0][1] = obj.item(0).path[0][1]; //x1
+    //shape.path[0][2] = obj.item(0).path[0][2]; //y1
+
+    for(i=0; i<scene2DWallMesh[FLOOR].length; i++)
+    {
+        var obj = scene2DWallMesh[FLOOR][i];
+
+        //console.log(obj.item(0));
+        
+        if(count == 1)
+        {
+            shape.path[0][1] = obj.item(0).path[0][1]; //x1
+            shape.path[0][2] = obj.item(0).path[0][2]; //y1
+        }
+        shape.path[count][1] = obj.item(0).path[1][1]; //cx
+        shape.path[count][2] = obj.item(0).path[1][2]; //cy
+        shape.path[count][3] = obj.item(0).path[1][3]; //x2 
+        shape.path[count][4] = obj.item(0).path[1][4]; //y2
+        count++;
+        
+        /*
+        shape.path[i][1] = obj.item(0).path[1][1]; //cx
+        shape.path[i][2] = obj.item(0).path[1][2]; //cy
+        shape.path[i][3] = obj.item(0).path[1][3]; //x2 
+        shape.path[i][4] = obj.item(0).path[1][4]; //y2
+        */
+    }
+
+    var p = new Array();
+    for(i=0; i<count; i++)
+    {
+        p.push([shape.path[i][1],shape.path[i][2]]);
+    }
+    console.log("Surface Area: " + scene2DSurfaceArea(p));
 }
 
 function scene3DLevelWallGenerate() {
@@ -7153,7 +7308,10 @@ function animateRotate() {
         return;
 
     if(!SceneAnimate)
+    {
         animate();
+        return;
+    }
 
     requestAnimationFrame(animateRotate);
     var delta = clock.getDelta();
@@ -7415,6 +7573,11 @@ function animateHouse()
 {
     if (_animate != 1)
         return;
+
+    if (SceneAnimate){
+        animate();
+        return;
+    }
 
     requestAnimationFrame(animateHouse);
     var delta = clock.getDelta();

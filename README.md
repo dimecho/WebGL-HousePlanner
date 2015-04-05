@@ -20,7 +20,7 @@ The project is currently unfinished (~25%) but has great concept ideas: exterior
 
 Now available as open-source.
 
-Live Preview: http://houseplanner.iroot.ca
+[View Demo](http://houseplanner.iroot.ca/start)
 
 ## License
 
