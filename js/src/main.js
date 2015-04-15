@@ -817,11 +817,16 @@ function scene3DInitializeRenderer()
         alpha: false,
         //clearColor: 0x34583e,
         //clearAlpha: 0.5
-        //preserveDrawingBuffer: false
+        preserveDrawingBuffer: false,
+        //autoUpdateObjects: true
     });
 
-    renderer.shadowMapEnabled = true;
-    //renderer.shadowMapDebug = true;
+    renderer.autoClear = false; //REQUIRED: for split screen
+    renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
+    //renderer.shadowMap.debug = true; //shadowMapDebug = true;
+    //renderer.gammaInput = true;
+    //renderer.gammaOutput = true;
+    
     /*
     renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
     renderer.shadowMapSoft = true;
@@ -839,7 +844,6 @@ function scene3DInitializeRenderer()
     */
     renderer.setSize(window.innerWidth, window.innerHeight);
     //renderer.setClearColor(0x4584b4, 0);
-    renderer.autoClear = false; //REQUIRED: for split screen
     renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
     //renderer.physicallyBasedShading = true;
     //renderer.sortObjects = true; //when scene is opening this make sure clouds stay on top
@@ -853,7 +857,6 @@ function scene3DInitializeRenderer()
     });
     rendererCube.setSize(100, 100);
    
-
     dpr = 1;
     if (window.devicePixelRatio !== undefined) {
       dpr = window.devicePixelRatio;
@@ -5029,11 +5032,11 @@ $(document).on('keyup', function(event){
 function on3DHouseMouseDown(event) {
 	on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer.children))
+    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer))
     {
         scene3D.add(scene3DPivotPoint);
     //}
-    //else if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseGroundContainer.children))
+    //else if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseGroundContainer))
     //{
         //if (SelectedObject != null)
         //{
@@ -5057,9 +5060,9 @@ function on3DHouseMouseUp(event) {
 function on3DFloorMouseDown(event) {
 	on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR].children))
+    if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR]))
     {
-        //if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR].children))
+        //if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorWallContainer[FLOOR]))
         //{
             scene3D.add(scene3DPivotPoint);
         //}
@@ -5468,6 +5471,8 @@ function scene3DObjectSelectRemove() {
 
     if (SCENE == 'house') {
         scene3DHouseContainer.remove(SelectedObject);
+        //console.log(SelectedObject.uuid);
+ 
     } else if (SCENE == 'floor') {
         scene3DFloorFurnitureContainer[FLOOR].remove(SelectedObject);
     }
@@ -5486,7 +5491,7 @@ function scene3DObjectSelectMenu(x, y, menuID) {
     //vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
     if (SelectedObject != null)
     {
-    	vector = vector.setFromMatrixPosition(SelectedObject.matrixWorld);
+    	vector = vector.setFromMatrixPosition(SelectedObject.children[0].matrixWorld);
 	}
 	else if (SelectedWall != null)
 	{
@@ -5563,7 +5568,7 @@ function scene3DObjectSelectMenu(x, y, menuID) {
     //$('#WebGLInteractiveMenu').show();
 }
 
-function scene3DObjectSelect(x, y, camera, objectchildren) {
+function scene3DObjectSelect(x, y, camera, object) {
 
     //TODO: > http://stemkoski.github.io/Three.js/Outline.html
     /*
@@ -5577,7 +5582,7 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
         //projector.unprojectVector(vector, camera);
         vector.unproject(camera);
         var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-        var intersects = raycaster.intersectObjects(objectchildren,true); //recursive! pickup objects within objects (example: notes)
+        var intersects = raycaster.intersectObjects(object.children,true); //recursive! pickup objects within objects (example: notes)
 
         //var raycaster = projector.pickingRay(vector.clone(), camera3D);
         //if (scene3DHouseContainer instanceof THREE.Object3D) {
@@ -5599,7 +5604,7 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
 
         if (intersects.length > 0) { // case if mouse is not currently over an object
 
-            //console.log("Intersects " + intersects.length + ":" + intersects[0].object.id);
+            console.log(intersects[0].object);
             
             //if (SelectedObject != intersects[0].object){
 
@@ -5627,13 +5632,22 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
                     return true;
                 }
 
-                if (objectchildren == scene3DHouseContainer.children || objectchildren == scene3DFloorFurnitureContainer[FLOOR].children) { //avoid selecting ground
+                if (object == scene3DHouseContainer || object == scene3DFloorFurnitureContainer[FLOOR]) { //avoid selecting ground
                 	
                     clearTimeout(clickMenuTime);
                    
                     //scene3DObjectUnselect(); //avoid showing multiple selected objects
 
-                	SelectedObject = intersects[0].object;
+                	//SelectedObject = intersects[0].object;
+
+                    //Select root group including any attached objects (ex: notes, measurements)
+                    for (var i = 0; i < object.children.length; i++) {
+                        if (object.children[i].children[0].uuid == intersects[0].object.uuid)
+                        {
+                            SelectedObject = object.children[i];
+                            break;
+                        }
+                    }
 
                     //https://github.com/mrdoob/three.js/issues/1689
 
@@ -5656,7 +5670,7 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
                         camera3DPositionCache = camera3D.position.clone();
                         camera3DPivotCache = controls3D.target.clone();
 
-                    	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 6},1500).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+                    	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.children[0].position.x, y:SelectedObject.children[0].position.y+4, z:SelectedObject.children[0].position.z + 6},1500).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
                         	
                             //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
 
@@ -5666,7 +5680,7 @@ function scene3DObjectSelect(x, y, camera, objectchildren) {
                         	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
 
             			}).start();
-        				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},1500).easing(TWEEN.Easing.Quadratic.InOut).start();
+        				var tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.children[0].position.x, y:SelectedObject.children[0].position.y, z:SelectedObject.children[0].position.z},1500).easing(TWEEN.Easing.Quadratic.InOut).start();
                         //var tween = new TWEEN.Tween(camera3D.lookAt).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
                         
                     }else{
