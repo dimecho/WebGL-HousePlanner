@@ -273,6 +273,7 @@ function init(runmode,viewmode) {
     scene2D = new fabric.Canvas('fabricjs', {
         isDrawingMode: false,
         isTouchSupported: true,
+        preserveObjectStacking: true,
         width: window.innerWidth,
         height: window.innerHeight
     });
@@ -1083,17 +1084,6 @@ function onPanoramaTouchMove( event ) {
 }
 
 function scene2DMakeWall(v1,v2,c,id,i) {
-    /*
-    var line = new fabric.Line(coords, {
-        fill: 'black',
-        stroke: 'black',
-        strokeWidth: 12,
-        lockRotation: true,
-        perPixelTargetFind: true,
-        strokeLineCap: 'round',
-        selectable: true
-    });
-    */
 
     if(id == null)
         id = Math.random().toString(36).substring(7);
@@ -1112,14 +1102,13 @@ function scene2DMakeWall(v1,v2,c,id,i) {
         c.y = p.y1 + (p.y2 - p.y1) / 2; //center
     }
 
-    var line = new fabric.Path('M 0 0 Q 0, 0, 0, 0', { fill: '', strokeWidth: 12, stroke: 'black' });
+    var line = new fabric.Path('M 0 0 Q 0 0 0 0', { fill: null });
     line.path[0][1] = v1.x;
     line.path[0][2] = v1.y;
     line.path[1][1] = c.x; //curve left
     line.path[1][2] = c.y; //curve right
     line.path[1][3] = v2.x;
     line.path[1][4] = v2.y;
-    //line.set({ left: coords[0], top: coords[1] });
 
     //TODO: parallel quadratic curves as shape with pattern
     /*
@@ -1162,8 +1151,23 @@ function scene2DMakeWall(v1,v2,c,id,i) {
     */
     
     var group = new Array();
+    //group.push(line);
 
-    group.push(line);
+    //Fix for fabric.js 1.5.0 - Must have proper Array with type:"path"
+    line.clone(function (clone) {
+        clone.set({left: 0, top: 0});
+        clone.set({stroke: 'black', strokeWidth: 12});
+        group.push(clone);
+    });
+
+    line.clone(function (clone) {
+        clone.set({left: 0, top: 0});
+        clone.set({stroke: 'green', strokeWidth: 3});
+        //console.log(line);
+        //console.log(clone);
+        //group.push(clone);
+    });
+
 
     //TODO: Move pivot point inside this group!
     /*
@@ -3451,6 +3455,22 @@ function show2D() {
             scene2DAdvanced.add(scene2DDrawLine);
             //============================
         }
+        else if(event.target.name == 'edge')
+        {
+            /* 
+            A quick fix for offset pivots
+            https://github.com/kangax/fabric.js/wiki/Fabric-gotchas
+            */
+            for (var i = 0; i < event.target.line.length; i++)
+            {
+                event.target.pivot[i].setCoords();
+            }
+            scene2DFloorShapeGenerate();
+        }
+        else if(event.target.name == 'pivot')
+        {
+            scene2DFloorShapeGenerate();
+        }
         else
         {
             on2DMouseUp(event.e);
@@ -3597,6 +3617,7 @@ function show2D() {
                         pivot = scene2DGetCenterPivot(v1,v2); //New
                         p.line[i].item(0).path[1][1] = pivot.x; p.line[i].item(0).path[1][2] = pivot.y;
                         p.pivot[i].left = pivot.x; p.pivot[i].top = pivot.y
+                        //p.pivot[i].setCoords();
                     }
          
                     //========== Line Length ===========
@@ -3647,6 +3668,9 @@ function show2D() {
        
             p.wall.item(0).path[1][1] = p.left;
             p.wall.item(0).path[1][2] = p.top;
+            
+            //p.wall.item(0).setCoords();
+            //scene2D.calcOffset();
         //}
         //else  if (p.name == 'door' || p.name == 'window')
         //{
@@ -6208,13 +6232,14 @@ function scene2DFloorShapeGenerate() {
         shape.path[i][4] = obj.item(0).path[1][4]; //y2
         */
     }
-
+    /*
     var p = new Array();
     for(i=0; i<count; i++)
     {
         p.push([shape.path[i][1],shape.path[i][2]]);
     }
     console.log("Surface Area: " + scene2DSurfaceArea(p));
+    */
 }
 
 function scene3DLevelWallGenerate() {
@@ -6273,8 +6298,8 @@ function scene3DFloorWallGenerate() {
         var wall = scene2DWallMesh[FLOOR][w];
 
         if (wall.name == "wall") { //avoid picking arrows which are path also
-
-            //console.log(wall.type + " x1:" + wall.path[0][1] + " y1:" + wall.path[0][2] + " x2:" + wall.path[1][3] + " y2:" + wall.path[1][4] + " cx:" + wall.path[1][1] + " cy:" + wall.path[1][2]);
+            console.log(wall);
+            //console.log(wall.type + " x1:" + wall._objects[0].path[0][1] + " y1:" + wall._objects[0].path[0][2] + " x2:" + wall._objects[0].path[1][3] + " y2:" + wall._objects[0].path[1][4] + " cx:" + wall._objects[0].path[1][1] + " cy:" + wall._objects[0].path[1][2]);
 
             //SVG
             var x1 = (wall.item(0).path[0][1]/100) * 2 - 1;
@@ -6397,7 +6422,7 @@ function scene3DFloorWallGenerate() {
                     setTimeout(function(){}, 800);
                 }
                 */
-
+                /*
                 try //Cut a whole in scene3DFloorWallContainer Mesh
                 {
                     var o = scene3DFloorDoorContainer.children.length; //TODO: Have some error catch
@@ -6422,6 +6447,7 @@ function scene3DFloorWallGenerate() {
                 }catch(e){
                     console.log("Cannot cut mesh (" + o + ") "  + result[0].file  + " " + e);
                 }
+                */
             }
 
             scene3DFloorWallContainer[FLOOR].add(mesh);
@@ -6441,7 +6467,6 @@ function scene3DFloorWallGenerate() {
                 scene3DFloorWallContainer[FLOOR].add(mesh_arr[i]);
             }
             
-
         }
     }
 
