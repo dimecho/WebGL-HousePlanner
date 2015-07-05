@@ -95,7 +95,7 @@
         if (distance < 1.4) {
             float tiles = 0.4 / 20.0;
             float val = mod(vUv.y, tiles);
-            if (mod(vUv.x, tiles) < .003 || mod(vUv.y, tiles) < .003) {
+            if (mod(vUv.x, tiles) < .003 || mod(vUv.y, tiles) < 0.003) {
                 gl_FragColor = gl_FragColor * (distance / 3.0);
                 gl_FragColor.a = 1.0;
             }
@@ -128,13 +128,13 @@
     void main()
     {
         // Base Color
-        gl_FragColor = vec4(0.5, 0.7, 1.0, .7);
+        gl_FragColor = vec4(0.5, 0.7, 1.0, 0.7);
         
         float low_tide = sin(radians(time / 10.0)); // Mostly animation speed
         
         // Determine at what point the elevation must be for the foam to display
         low_tide -= 1.5;
-        low_tide *= .3;
+        low_tide *= 0.3;
         
         if (vDisplacement > low_tide + water_level) {
             gl_FragColor = mix(
@@ -195,9 +195,8 @@ function init()
             ring_center: { type: 'v3', value: new THREE.Vector3() },
             ring_radius: { type: 'f', value: 1.8 }
         },
-        attributes: {
-            displacement: { type: 'f', value: [] }
-        },
+        //attributes: new Array({ type: 'f', value: [] }),
+        attributes: { displacement: { type: 'f', value: [] }},
         vertexShader: document.getElementById( 'groundVertexShader' ).textContent,
         fragmentShader: document.getElementById( 'groundFragmentShader' ).textContent
     });
@@ -206,9 +205,12 @@ function init()
     ground.materials = [texture];
 
     ground.dynamic = true;
+
     ground.displacement = ground.materials[0].attributes.displacement;
+    //ground.displacement = ground.materials[0].attributes[0];
     for (var i = 0; i < ground.geometry.vertices.length; i++) {
         ground.materials[0].attributes.displacement.value.push(0);
+        //ground.materials[0].attributes[0].value.push(0);
     }
     ground.rotation.x = Degrees2Radians(-90);
     scene.add(ground);
@@ -220,18 +222,22 @@ function init()
                 water_level: { type: 'f', value: -2 },
                 time: { type: 'f', value: 0 }
             },
-            attributes: {
-                displacement: { type: 'f', value: [] }
-            },
+            //attributes: new Array({ type: 'f', value: [] }),
+            attributes: { displacement: { type: 'f', value: [] }},
             vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
             fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent,
             transparent: true
         })
     );
     ground.water.dynamic = true;
+
     ground.water.displacement = ground.water.material.attributes.displacement;
+    //ground.water.displacement = ground.water.material.attributes[0];
+    console.log(ground.water.material);
+    console.log(ground.water.displacement);
     for (var i = 0; i < ground.water.geometry.vertices.length; i++) {
         ground.water.material.attributes.displacement.value.push(0);
+        //ground.water.material.attributes[0].value.push(0);
     }
     ground.water.position.z = -2;
     ground.add(ground.water);
@@ -375,7 +381,8 @@ var landscape = new function() {
                 vertice_index = verticeIndex(vertice);
                 distance = Math.sqrt(Math.pow(mouse_info.vertex_coordinates.x - vertice.x, 2) + Math.pow(mouse_info.vertex_coordinates.y - vertice.y, 2));
                 
-                ground.displacement.value[vertice_index] += Math.pow(radius - distance, .5) * .03;
+                //console.log(ground);
+                ground.displacement.value[vertice_index] += Math.pow(radius - distance, 0.5) * 0.03;
                 ground.displacement.needsUpdate = true;
             }
         },
@@ -397,7 +404,7 @@ var landscape = new function() {
                 vertice_index = verticeIndex(vertice);
                 distance = Math.sqrt(Math.pow(mouse_info.vertex_coordinates.x - vertice.x, 2) + Math.pow(mouse_info.vertex_coordinates.y - vertice.y, 2));
                 
-                ground.displacement.value[vertice_index] -= Math.pow(radius - distance, .5) * .03;
+                ground.displacement.value[vertice_index] -= Math.pow(radius - distance, 0.5) * 0.03;
                 ground.displacement.needsUpdate = true;
             }
         }

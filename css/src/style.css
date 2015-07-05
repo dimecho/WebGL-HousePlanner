@@ -1,4 +1,8 @@
 body, html {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
     overflow: hidden;
 }
 
@@ -11,8 +15,81 @@ body{
 	user-select: none;
 }
 
-#WebGLCanvas  {
-    background-color: #ffffff;
+#WebGLTextureSelect {
+  display: none;
+  background: #fff;
+
+  background: -moz-linear-gradient(#fff, #999);
+  background: -webkit-linear-gradient(#fff, #999);
+  background: -o-linear-gradient(#fff, #999);
+
+  -moz-background-clip: padding;     /* Firefox 3.6 */
+  -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
+  background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
+  border: 10px solid rgba(0,0,0,0.3);
+
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  border-radius: 10px;
+
+  text-align: center;
+  position:absolute;
+
+  width: 75px;
+  height: 300px;
+}
+
+#menuFloorSelector
+{
+  width:100%;
+  position: absolute;
+  top:70px;
+  left:0;
+  color: #333333;
+  font-size: 20px;
+  z-index:10;
+}
+
+.image-circular {
+  position: absolute;
+  top:10px;
+  left:80px;
+  width: 80px;
+  height: 80px;
+  border: 5px solid #ffffff;
+  overflow: hidden;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%;
+  z-index:10;
+}
+.image-circular img {
+  height: 100%;
+  width: auto;
+}
+
+
+#WebGLCanvas {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+}
+
+#engine3DCanvas {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+#engine2DCanvas {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
 }
 
 .panel{

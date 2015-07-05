@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
   <meta name="apple-mobile-web-app-capable" content="yes"/>
 
-  <script type="text/javascript" src="js/jquery.js?v=2.1.1"></script>
+  <script type="text/javascript" src="js/jquery.js?v=2.1.4"></script>
   <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
-
+  
   <script>
     $.ajax("js/houseplanner.jsz",{
         contentType: "application/zip",
@@ -40,32 +40,7 @@
   -->
   <link rel="stylesheet" type="text/css" href="font/style.css" />
   <link rel="stylesheet" type="text/css" href="css/houseplanner.css"/>
-  
-  <script id="vs" type="x-shader/x-vertex">
-    varying vec2 vUv;
 
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-    }
-  </script>
-  <script id="fs" type="x-shader/x-fragment">
-
-    uniform sampler2D map;
-    uniform vec3 fogColor;
-    uniform float fogNear;
-    uniform float fogFar;
-    varying vec2 vUv;
-
-    void main() {
-      float depth = gl_FragCoord.z / gl_FragCoord.w;
-      float fogFactor = smoothstep( fogNear, fogFar, depth );
-
-      gl_FragColor = texture2D( map, vUv );
-      gl_FragColor.w *= pow( gl_FragCoord.z, 20.0 );
-      gl_FragColor = mix( gl_FragColor, vec4( fogColor, gl_FragColor.w ), fogFactor );
-    }
-  </script>
   <script id="groundVertexShader" type="x-shader/x-fragment">
     
     attribute float displacement;
@@ -214,14 +189,6 @@
         }
     }
   </script>
-    <audio id="HTMLSound" autobuffer>
-        <source src="sounds/sound1.ogg" type="application/ogg" />
-        <source src="sounds/sound1.mp3" type="audio/mpeg" />
-    </audio>
-    <audio id="HTMLMusic" autobuffer loop>
-        <source src="sounds/music1.ogg" type="application/ogg" />
-        <source src="sounds/music1.mp3" type="audio/mpeg" />
-    </audio>
 <!--[if gte IE 9]>
   <style type="text/css">
     .gradient {
@@ -241,14 +208,26 @@
 </style>
 
 <!-- Tutorial -->
-<div id="Tutorial" class="modalDialog" style="background:rgba(0,0,0,0.4);">
-    <div style="width:550px;height:280px;">
-      <a href="#scene" class="close">X</a>
-      <br/><h2>WebGL HousePlanner Project</h2>
-      <br/>This project was started by working with real-estate realtors and the idea to bring 3D property views to online users without any software installs.
-      <br/><br/>If you would like to support more development <a href="https://github.com/poofik/WebGL-HousePlanner" target="_blank">visit here</a>
-      <br/><br/><br/><p><a class="btn" href="#Tutorial-1">Continue Tutorial</a></p>
+<div id="start" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+  <div style="width:550px;height:280px;">
+    <a href="#scene" class="close">X</a>
+    <div>
+        <div style="width:200px;float:left;display:inline-block;">
+          <br/><img src="images/agent.jpg" width="140" haight="180" />
+          <br/>
+          <br/>
+          Agent Name<br/>
+          (111)-111-1111<br/>
+          123 Street Name Rd.
+        </div>
+        <div style="margin-left:200px;">
+          <br/><h2>WebGL Experiment</h2>
+          <br/>3D property listings online.
+          <br/><br/><a href="#Tutorial-1">Start Tutorial.</a>
+          <br/><br/><br/><p><a class="btn" href="#scene">3D Property Listings</a></p>
+        </div>
     </div>
+  </div>
 </div>
 <div id="Tutorial-1" class="modalDialog" style="background:rgba(0,0,0,0.4);">
     <div style="position:absolute;left:200px;top:120px;background:rgba(0,0,0,0);"><img src="images/help/pointer-left.png" /></div>
@@ -371,7 +350,7 @@
   </div>
 </div>
 
-<div id="openThumb" class="modalDialog">
+<div id="panorama" class="modalDialog">
 	<div style="width:80%;height:90%;margin:2% auto;">
 		<a href="#close" class="close" onclick="disposePanorama('WebGLPanoramaHouse')">X</a>
     <div id="WebGLPanoramaHouse" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
@@ -462,7 +441,7 @@
   </div>
 </div>
 <!-- END Slide Right Menu -->
-
+<div class="image-circular"><a href="#start"><img src="images/agent.jpg" alt="" /></a></div>
 <!-- Slide Left Menu -->
 <div id="menuLeft3DHouse" class="hide-left" style="display:none;width:240px;">
   <ul id="tab-left">
@@ -471,8 +450,8 @@
     </li>
   </ul>
   <div id="links-left" style="width:180px;height:100px;">
-      <a href="#openThumb" onclick="initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
-        <img class="tooltip-top" title="MLS#: 123456<br/>Agent: Alyson" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;border:5px solid #FFFFFF;border-radius:2px;"/>
+      <a href="#panorama" onclick="initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
+        <img class="tooltip-top" title="MLS#: 123456" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;border:5px solid #FFFFFF;border-radius:2px;"/>
       </a>
   </div>
 
@@ -611,50 +590,14 @@
 <!-- UI -->
 
 <!-- http://threejs.org/editor -->
-<style>
-#WebGLTextureSelect {
-  display: none;
-  background: #fff;
-
-  background: -moz-linear-gradient(#fff, #999);
-  background: -webkit-linear-gradient(#fff, #999);
-  background: -o-linear-gradient(#fff, #999);
-
-  -moz-background-clip: padding;     /* Firefox 3.6 */
-  -webkit-background-clip: padding;  /* Safari 4? Chrome 6? */
-  background-clip: padding-box;      /* Firefox 4, Safari 5, Opera 10, IE 9 */
-  border: 10px solid rgba(0,0,0,0.3);
-
-  -webkit-border-radius: 10px;
-  -moz-border-radius: 10px;
-  border-radius: 10px;
-
-  text-align: center;
-  position:absolute;
-
-  width: 75px;
-  height: 300px;
-}
-
-#menuFloorSelector
-{
-  width:100%;
-  position: absolute;
-  top:70px;
-  left:0;
-  left:0;
-  color: #333333;
-  font-size: 20px;
-  z-index:10;
-}
-</style>
 
 <form action="" method="post" enctype="multipart/form-data" id="uploadForm" style="display:none">
   <input type="file" name="fileInput" id="fileInput"  hidden />
   <input type="submit" id="fileSubmit" value="Upload" hidden />
 </form>
 
-<div id="WebGLCanvas" style="display:none">
+<div id="engine3D" style="display:none">
+    <div id="WebGLCanvas"></div>
     <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
     <div id="WebGLInteractiveMenu" style="display:none;"></div>
 
@@ -684,7 +627,7 @@
     <div id="WebGLTextureSelect" style="display:none;width:60%;height:120px;"></div>
 </div>
 
-<div id="HTMLCanvas" style="display:none">
+<div id="engine2D" style="display:none">
   <div id="zoom2DLevel" style="position:absolute;left:10px;bottom:0;z-index:2">
     <form id="drawForm">
       <input id="zoom2DSlider" type="range" min="10" max="50" value="10" onchange="drawImage();" onkeyup="drawImage();" style="width:240px" />

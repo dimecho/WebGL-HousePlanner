@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ROOT="$(dirname "$0")"
-BLENDER_PATH=/Applications/blender.app/Contents/Resources/2.73/scripts/addons/
+BLENDER_PATH=/Applications/blender.app/Contents/Resources/2.74/scripts/addons/
 
 cd "$ROOT"
 cp "Platform/io_three.zip" "$BLENDER_PATH"
@@ -9,36 +9,16 @@ cd "$BLENDER_PATH"
 unzip -o "io_three.zip"
 rm "io_three.zip"
 
-cd "$ROOT"
-cp "Platform/io_mesh_threejs.zip" "$BLENDER_PATH"
-cd "$BLENDER_PATH"
-unzip -o "io_mesh_threejs.zip"
-rm "io_mesh_threejs.zip"
-
 CONSTANTS_PATH="$BLENDER_PATH/io_three/constants.py"
 
 cat "$CONSTANTS_PATH" | sed -e "s/COPY_TEXTURES: True,/COPY_TEXTURES: False,/g" > "$CONSTANTS_PATH.0"
 cat "$CONSTANTS_PATH.0" | sed -e "s/UVS: False,/UVS: True,/g" > "$CONSTANTS_PATH.1"
 cat "$CONSTANTS_PATH.1" | sed -e "s/MATERIALS: False,/MATERIALS: True,/g" > "$CONSTANTS_PATH.0"
-cat "$CONSTANTS_PATH.0" | sed -e "s/ENABLE_PRECISION: False,/ENABLE_PRECISION: True,/g" > "$CONSTANTS_PATH.1"
-cat "$CONSTANTS_PATH.1" | sed -e "s/DEFAULT_PRECISION = 6/DEFAULT_PRECISION = 3/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH.0" | sed -e "s/FACE_MATERIALS: False,/FACE_MATERIALS: True,/g" > "$CONSTANTS_PATH.1"
+cat "$CONSTANTS_PATH.1" | sed -e "s/ENABLE_PRECISION: False,/ENABLE_PRECISION: True,/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH.0" | sed -e "s/DEFAULT_PRECISION = 6/DEFAULT_PRECISION = 3/g" > "$CONSTANTS_PATH.1"
 #cat "$CONSTANTS_PATH.0" | sed -e "s/MIX_COLORS: False,/MIX_COLORS: True,/g" > "$CONSTANTS_PATH.1"
-cat "$CONSTANTS_PATH.0" | sed -e "s/MAPS: False,/MAPS: True,/g" > "$CONSTANTS_PATH.1"
-cat "$CONSTANTS_PATH.1" | sed -e "s/SCENE: False,/SCENE: True,/g" > "$CONSTANTS_PATH"
+cat "$CONSTANTS_PATH.1" | sed -e "s/MAPS: False,/MAPS: True,/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH.0" | sed -e "s/SCENE: False,/SCENE: True,/g" > "$CONSTANTS_PATH"
 rm "$CONSTANTS_PATH.0"
 rm "$CONSTANTS_PATH.1"
-
-#CONSTANTS_PATH="$BLENDER_PATH/io_mesh_threejs/export_threejs.py"
-#cat "$CONSTANTS_PATH" | sed -e "s/option_normals = True,/option_normals = False,/g" > "$CONSTANTS_PATH.0"
-#cat "$CONSTANTS_PATH.0" | sed -e "s/option_skinning = True,/option_skinning = False,/g" > "$CONSTANTS_PATH.1"
-#cat "$CONSTANTS_PATH.1" | sed -e "s/option_bones = True,/option_bones = False,/g" > "$CONSTANTS_PATH"
-#rm "$CONSTANTS_PATH.0"
-#rm "$CONSTANTS_PATH.1"
-
-CONSTANTS_PATH="$BLENDER_PATH/io_mesh_threejs/__init__.py"
-cat "$CONSTANTS_PATH" | sed -e "s/properties.option_normals = settings.get(\"option_normals\", True)/properties.option_normals = settings.get(\"option_normals\", False)/g" > "$CONSTANTS_PATH.0"
-cat "$CONSTANTS_PATH.0" | sed -e "s/properties.option_skinning = settings.get(\"option_skinning\", True)/properties.option_skinning = settings.get(\"option_skinning\", False)/g" > "$CONSTANTS_PATH.1"
-cat "$CONSTANTS_PATH.1" | sed -e "s/properties.option_bones = settings.get(\"option_bones\", True)/properties.option_bones = settings.get(\"option_bones\", False)/g" > "$CONSTANTS_PATH"
-rm "$CONSTANTS_PATH.0"
-rm "$CONSTANTS_PATH.1"
-
