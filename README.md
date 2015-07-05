@@ -1,12 +1,11 @@
 <p align="center">
 <img src="https://github.com/poofik/webgl-houseplanner/raw/master/objects/Platform/Textures/logo.png" alt="" width="256" height="256" />
 </p>
-<br/>
 
 # WebGL HousePlanner - 3D Home Staging #
 **version 1.0**
 
-Real-estate floorplans and decorative 3D home staging online - no software installs, any webGL platform.
+Real-estate showcase and decorative 3D home staging online - no software installs, any webGL platform.
 
 The project is currently in experimental stage with great concept ideas:
 
