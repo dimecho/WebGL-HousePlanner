@@ -92,6 +92,12 @@ body{
     padding: 0px;
 }
 
+#dragElement {
+  width:100px;
+  height:100px;
+  z-index: 11;
+}
+
 .panel{
 	min-width: 100%;
 	height: 98%;

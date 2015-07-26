@@ -5,7 +5,7 @@
 # WebGL HousePlanner - 3D Home Staging #
 **version 1.0**
 
-Real-estate showcase and decorative 3D home staging online - no software installs, any webGL platform.
+Real-estate showcase 3D home properties online - no software installs, any webGL platform.
 
 The project is currently in experimental stage with great concept ideas:
 

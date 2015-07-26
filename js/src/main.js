@@ -86,7 +86,7 @@ var camera3DQuad = [3];
 var camera3DQuadGrid;
 var camera3DCube;
 var camera3DPanorama;
-var camera3DMirrorReflection;
+//var camera3DMirrorReflection;
 
 var groundGrid;
 var groundMesh;
@@ -97,7 +97,7 @@ var skyMesh;
 //var weatherSkyNightMesh;
 var weatherSkyGeometry;
 var weatherSkyMaterial;
-var weatherSkyMesh;
+var weatherSkyCloudsMesh;
 var weatherSkyRainbowMesh;
 
 var SESSION = '';
@@ -161,20 +161,22 @@ var scene2DWallBearingMaterialSelect;
 var physics3DContainer; //Fake 3D objects (CANNON.Box) that get passed to Cannon Engine
 
 var animation = [];
+var requestAnimationID;
+/*
 var particlePivot;
 var particlePivotEmitter;
 var particleWeather;
+*/
 
-var sunlight = { enabled : false }; //SUNLIGHT RAYS
+var options = { sunlight : false, clouds: true, rainbow: true };
 
 //var particleClouds;
 var mouse; //THREE.Vector2()
 var touch; //THREE.Vector2()
 var target; //THREE.Vector3();
 var clock;
-var _animate = 1; 
 //var engine;
-var manager;
+//var manager;
 var projector;
 var vector;
 var geometry;
@@ -301,6 +303,12 @@ function init(runmode,viewmode) {
 
     scene3DPivotPoint = new THREE.Object3D();
 
+    var geometry = new THREE.BoxGeometry( 15, 15, 3 ); //new THREE.PlaneGeometry(15, 15,3);
+    geometry.computeBoundingBox();
+    material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+    scene3DCutawayPlaneMesh = new THREE.Mesh(geometry, material);
+
+    /*
     particlePivot = new SPE.Group({});
     particleWeather = new SPE.Group({});
     //weatherRainParticle = new SPE.Group({});
@@ -344,14 +352,11 @@ function init(runmode,viewmode) {
         alive: 0,
         isStatic: 0
     });
+    */
 
-    geometry = new THREE.BoxGeometry( 15, 15, 3 ); //new THREE.PlaneGeometry(15, 15,3);
-    geometry.computeBoundingBox();
-    material = new THREE.MeshBasicMaterial( {color: 0xffff00, shininess: 0, side: THREE.DoubleSide} );
-    scene3DCutawayPlaneMesh = new THREE.Mesh(geometry, material);
-   
     //This is a true coolness factor (difficult to code, but visually stands out!)
     //============================================
+    /*
     terrain3DMaterial = new THREE.ShaderMaterial({
         uniforms: {
             texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G36096.jpg' )},
@@ -366,14 +371,14 @@ function init(runmode,viewmode) {
         },
         attributes: new Array({ type: 'f', value: [] }), //v72
         //attributes: { displacement: { type: 'f', value: [] }}, //v71
-        vertexShader: document.getElementById( 'groundVertexShader' ).textContent,
-        fragmentShader: document.getElementById( 'groundFragmentShader' ).textContent,
+        vertexShader: loadShader("shaders/ground.vertex.fx", 'vertex'),
+        fragmentShader: loadShader("shaders/ground.fragment.fx", 'fragment'),
         shininess: 0
         //fog: false,
         //lights: true
     });
-
-    geometry = new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices);
+    
+    var geometry = new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices);
     //geometry = scene3DHouseGroundContainer.children[0].children[0].geometry.clone();
     //geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
     //geometry = new THREE.CircleGeometry( 15, 64 );
@@ -398,8 +403,8 @@ function init(runmode,viewmode) {
             },
             attributes: new Array({ type: 'f', value: [] }), //v72
             //attributes: { displacement: { type: 'f', value: [] }}, //v71
-            vertexShader: document.getElementById( 'waterVertexShader' ).textContent,
-            fragmentShader: document.getElementById( 'waterFragmentShader' ).textContent,
+            vertexShader: loadShader("shaders/water.vertex.fx", 'vertex'),
+            fragmentShader: loadShader("shaders/water.fragment.fx", 'fragment'),
             shininess: 0,
             transparent: true
         })
@@ -412,6 +417,7 @@ function init(runmode,viewmode) {
     }
     terrain3D.water.position.z = -1;
     terrain3D.add(terrain3D.water);
+    */
     //============================================
 
     //FIND TRUE MESH CENTER
@@ -461,16 +467,18 @@ function init(runmode,viewmode) {
             camera3D.lookAt(scene3D.position);
     }).start();
     */
-    //camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 
+    //camera3D.lookAt(new THREE.Vector3(0, 0, 0));
     //camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
     //camera2D.lookAt(new THREE.Vector3(0, 0, 0));
     //camera2D.position.z = 5000; // the camera starts at 0,0,0 so pull it back
 
+    /*
     camera3DMirrorReflection = new THREE.CubeCamera(0.1, 10, 30);
     //camera3DMirrorReflection.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
     camera3DMirrorReflection.renderTarget.width = camera3DMirrorReflection.renderTarget.height = 3;
     //camera3DMirrorReflection.position.y = -20;
+    */
 
     //================================
     //Top View Camera
@@ -528,7 +536,6 @@ function init(runmode,viewmode) {
     scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
     scene2DDrawLineContainer.add(scene2DDrawLine);
     
-
     texture = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0001.png');
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
@@ -553,7 +560,6 @@ function init(runmode,viewmode) {
     var cubeMaterials = [
         new THREE.MeshBasicMaterial({
             color: 0x33AA55,
-            shininess: 0,
             transparent: true,
             opacity: 0.9,
             shading: THREE.FlatShading,
@@ -561,7 +567,6 @@ function init(runmode,viewmode) {
         }),
         new THREE.MeshBasicMaterial({
             color: 0x55CC00,
-            shininess: 0,
             transparent: true,
             opacity: 0.9,
             shading: THREE.FlatShading,
@@ -569,7 +574,6 @@ function init(runmode,viewmode) {
         }),
         new THREE.MeshBasicMaterial({
             color: 0x000000,
-            shininess: 0,
             transparent: true,
             opacity: 0.9,
             shading: THREE.FlatShading,
@@ -577,7 +581,6 @@ function init(runmode,viewmode) {
         }),
         new THREE.MeshBasicMaterial({
             color: 0x000000,
-            shininess: 0,
             transparent: true,
             opacity: 0.9,
             shading: THREE.FlatShading,
@@ -585,7 +588,6 @@ function init(runmode,viewmode) {
         }),
         new THREE.MeshBasicMaterial({
             color: 0x0000FF,
-            shininess: 0,
             transparent: true,
             opacity: 0.9,
             shading: THREE.FlatShading,
@@ -593,7 +595,6 @@ function init(runmode,viewmode) {
         }),
         new THREE.MeshBasicMaterial({
             color: 0x5555AA,
-            shininess: 0,
             transparent: true,
             opacity: 0.9,
             shading: THREE.FlatShading,
@@ -608,7 +609,6 @@ function init(runmode,viewmode) {
 
     scene3DCubeMesh = new THREE.Line(geometry, new THREE.LineDashedMaterial({
         color: 0xff3700,
-        shininess: 0,
         dashSize: 3,
         gapSize: 1,
         linewidth: 2
@@ -618,46 +618,7 @@ function init(runmode,viewmode) {
     //scene3DCubeMesh = new THREE.Mesh(cubeG, material);
     scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
 
-    var fog = new THREE.Fog(0x4584b4, -100, 1000);
-    weatherSkyMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-            "map": {
-                type: "t",
-                //value: texture
-            },
-            "fogColor": {
-                type: "c",
-                value: fog.color
-            },
-            "fogNear": {
-                type: "f",
-                value: fog.near
-            },
-            "fogFar": {
-                type: "f",
-                value: fog.far
-            },
-        },
-        vertexShader: loadShader("shaders/clouds.vertex.fx", 'vertex'),
-        fragmentShader: loadShader("shaders/clouds.fragment.fx", 'fragment'),
-        depthWrite: false,
-        depthTest: false,
-        shininess: 0,
-        transparent: true
-    });
-
-    weatherSkyGeometry = new THREE.Geometry();
-    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
-    for (var i = 0; i < 20; i++) 
-    {
-        plane.position.x = getRandomInt(-20, 20);
-        plane.position.y = getRandomInt(5.5, 10);
-        plane.position.z = i;
-        plane.rotation.z = getRandomInt(5, 10);
-        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
-        plane.updateMatrix();
-        weatherSkyGeometry.merge(plane.geometry, plane.matrix);
-    }
+   
     //THREE.GeometryUtils.merge(geometry, mesh);
 
     //scene2D.add(new THREE.GridHelper(100, 10));
@@ -669,6 +630,8 @@ function init(runmode,viewmode) {
     scene3DInitializeRenderer();
 
     scene3DInitializePhysics();
+
+    scene3DInitializeClouds();
 
     scene3DCube = new THREE.Scene();
     camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
@@ -712,14 +675,15 @@ function init(runmode,viewmode) {
     });
     */
     
-   	enableOrbitControls();
+   	//enableOrbitControls();
 
+    /*
     manager = new THREE.LoadingManager();
     manager.onProgress = function ( item, loaded, total ) {
         //console.log( item, loaded, total );
         //var material = new THREE.MeshFaceMaterial(materials);
     };
-
+    */
     //scene3DSky();
     scene3DInitializeLights();
     
@@ -728,16 +692,19 @@ function init(runmode,viewmode) {
     $('#menuWeatherText').html("Sunny");
     $('#menuDayNightText').html("Day");
 
-    open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
-    open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
-    open3DModel("objects/Platform/pivotpoint.sea", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
+    //animateHouse();
 
-    show3DHouse(true);
+
+    show3DHouse();
 
     //For debugging purposes
     //========================
-    //sceneOpen('scene1.zip');
+    //sceneOpen('scene2.zip');
     //========================
+
+    open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
+    open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
+    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
 }
 
 /**
@@ -749,7 +716,6 @@ function init(runmode,viewmode) {
 function loadShader(shader, type)
 {
     return $.ajax({
-        type: "GET",
         url: shader,
         async: false,
         beforeSend: function (req) {
@@ -786,6 +752,8 @@ function scene3DFreeMemory()
         }
         //scene3DObjectUnselect();
     }
+    //skyMesh = new THREE.Object3D();
+    //scene3D.remove(skyMesh);
     //scene3D = null;
     //scene3D = new THREE.Scene();
 }
@@ -802,6 +770,83 @@ function scene2DFreeMemory()
     {
         scene2D.remove(object);
     }
+}
+
+function scene3DInitializeClouds()
+{
+    /* 
+    =======================
+    Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+    =======================
+    */
+    /*
+    $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+        options.async = false;
+    });
+    */
+    //=====================
+
+    weatherSkyCloudsMesh =  new THREE.Mesh();
+    weatherSkyRainbowMesh = new THREE.Mesh();
+
+    $.ajax({
+        url: "shaders/clouds.vertex.fx",
+        //async: false,
+        beforeSend: function (req) {
+            req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
+        },
+        success: function(vertex_data){
+            $.ajax({
+                url: "shaders/clouds.fragment.fx",
+                //async: false,
+                beforeSend: function (req) {
+                    req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
+                },
+                success: function(fragment_data){
+                    var fog = new THREE.Fog(0x4584b4, -100, 1000);
+                    weatherSkyMaterial = new THREE.ShaderMaterial({
+                        uniforms: {
+                            "map": {
+                                type: "t",
+                                //value: texture
+                            },
+                            "fogColor": {
+                                type: "c",
+                                value: fog.color
+                            },
+                            "fogNear": {
+                                type: "f",
+                                value: fog.near
+                            },
+                            "fogFar": {
+                                type: "f",
+                                value: fog.far
+                            },
+                        },
+                        vertexShader: vertex_data,
+                        fragmentShader: fragment_data,
+                        depthWrite: false,
+                        depthTest: false,
+                        transparent: true
+                    });
+                    weatherSkyGeometry = new THREE.Geometry();
+                    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
+                    for (var i = 0; i < 20; i++) 
+                    {
+                        plane.position.x = getRandomInt(-20, 20);
+                        plane.position.y = getRandomInt(5.5, 10);
+                        plane.position.z = i;
+                        plane.rotation.z = getRandomInt(5, 10);
+                        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
+                        plane.updateMatrix();
+                        weatherSkyGeometry.merge(plane.geometry, plane.matrix);
+                    }
+                    scene3DSetWeather();
+                    scene3DSunlight(); //SUNLIGHT RAYS
+                }
+            }); 
+        }
+    });
 }
 
 function scene3DInitializePhysics()
@@ -826,31 +871,29 @@ function scene3DInitializePhysics()
 
 function scene3DInitializeRenderer()
 {
+    var dpr = 1;
+    if (window.devicePixelRatio !== undefined) {
+      dpr = window.devicePixelRatio;
+    }
+
     renderer = new THREE.WebGLRenderer({
-        devicePixelRatio: window.devicePixelRatio || 1,
+        devicePixelRatio: dpr,
         antialias: false,
-        //alpha: true,
-        alpha: false,
-        //clearColor: 0x34583e,
-        //clearAlpha: 0.5
-        preserveDrawingBuffer: false,
+        alpha: true,
+        //alpha: false,
+        //preserveDrawingBuffer: false
         //autoUpdateObjects: true
     });
 
     renderer.autoClear = false; //REQUIRED: for split screen
     renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
     //renderer.shadowMap.debug = true; //shadowMapDebug = true;
-    renderer.shadowMapSoft = true;
-    //renderer.gammaInput = true;
-    //renderer.gammaOutput = true;
-
-   
-    
-    /*
-    renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
+    //renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
     renderer.shadowMapSoft = true;
     renderer.shadowMapAutoUpdate = true;
-    */
+    //renderer.gammaInput = true;
+    //renderer.gammaOutput = true;
+    
     /*
     renderer = new THREE.WebGLDeferredRenderer({
         width: window.innerWidth,
@@ -862,25 +905,20 @@ function scene3DInitializeRenderer()
     });
     */
     renderer.setSize(window.innerWidth, window.innerHeight);
-    //renderer.setClearColor(0x4584b4, 0);
-    renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
+    //renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
     //renderer.physicallyBasedShading = true;
     //renderer.sortObjects = true; //when scene is opening this make sure clouds stay on top
-    renderer.setClearColor(0xffffff, 1);
+    //renderer.setClearColor(0xffffff, 1);
 
     rendererCube = new THREE.WebGLRenderer({
+        devicePixelRatio: dpr,
         antialias: false,
         alpha: true,
         //transparent: true,
         //preserveDrawingBuffer: false
     });
     rendererCube.setSize(100, 100);
-   
-    dpr = 1;
-    if (window.devicePixelRatio !== undefined) {
-      dpr = window.devicePixelRatio;
-    }
-
+    /*
     effectFXAA = new THREE.ShaderPass(THREE.FXAAShader);
     effectFXAA.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
     effectFXAA.renderToScreen = true;
@@ -889,7 +927,7 @@ function scene3DInitializeRenderer()
     composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
     composer.addPass( new THREE.RenderPass( scene3D, camera3D ) );
     composer.addPass(effectFXAA);
-
+    */
     document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
     document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
 }
@@ -927,94 +965,87 @@ function makeScreenshot()
     */
 }
 
-function buildPanorama(container,files,X,Y,Z,shader)
+function buildPanorama(container,files,X,Y,Z,preloader,mesh)
 {
-    if(shader){
+    //Low Resolution
+    var sides = [
+        'panoramas/' + files + '/' + preloader + 'right.jpg',
+        'panoramas/' + files + '/' + preloader + 'left.jpg',
+        'panoramas/' + files + '/' + preloader + 'top.jpg',
+        'panoramas/' + files + '/' + preloader + 'bottom.jpg',
+        'panoramas/' + files + '/' + preloader + 'front.jpg',
+        'panoramas/' + files + '/' + preloader + 'back.jpg'
+    ];
 
-        var urls = [
-            'panoramas/' + files + '/right.jpg',
-            'panoramas/' + files + '/left.jpg',
-            'panoramas/' + files + '/top.jpg',
-            'panoramas/' + files + '/bottom.jpg',
-            'panoramas/' + files + '/front.jpg',
-            'panoramas/' + files + '/back.jpg'
-        ];
+    var cubemap = THREE.ImageUtils.loadTextureCube(sides);
+    //cubemap.format = THREE.RGBFormat;
 
-        var cubemap = THREE.ImageUtils.loadTextureCube(urls); // load textures
-        //cubemap.format = THREE.RGBFormat;
+    var shader = THREE.ShaderLib['cube'];
+    var skyBoxMaterial = new THREE.ShaderMaterial( {
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        //uniforms: uniforms,
+        uniforms: {
+            "tCube": { type: "t", value: cubemap },
+            "tFlip": { type: "f", value: -1 }
+        },
+        depthWrite: false,
+        side: THREE.BackSide
+    });
+    var skybox = new THREE.Mesh(
+        new THREE.CubeGeometry(X, Y, Z),
+        skyBoxMaterial
+    );
+    if(mesh)
+        container.remove(mesh);
+    container.add(skybox);
 
-        var shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
-        shader.uniforms['tCube'].value = cubemap; // apply textures to shader
+    if(preloader == "_") //High Resolution
+        buildPanorama(container,files,X,Y,Z,"",skybox);
 
-        // create shader material
-        var skyBoxMaterial = new THREE.ShaderMaterial( {
-            fragmentShader: shader.fragmentShader,
-            vertexShader: shader.vertexShader,
-            uniforms: shader.uniforms,
-            depthWrite: false,
-            shininess: 0,
+    /*
+    //Low Resolution
+    var sides = [
+        new THREE.MeshBasicMaterial({
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_right.jpg'),
             side: THREE.BackSide
-        });
+        }),
+        new THREE.MeshBasicMaterial({
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_left.jpg'),
+            side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_top.jpg'),
+            side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+          map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_bottom.jpg'),
+          side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_front.jpg'),
+           side: THREE.BackSide
+        }),
+        new THREE.MeshBasicMaterial({
+           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_back.jpg'),
+           side: THREE.BackSide
+        }),
+    ];
+    var geometry = new THREE.BoxGeometry(X,Y,Z);
+    //console.log(geometry);
+    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(sides));
 
-        var skybox = new THREE.Mesh(
-            new THREE.CubeGeometry(X, Y, Z),
-            skyBoxMaterial
-        );
-        container.add(skybox.clone());
+    container.add(mesh);
 
-    }else{
-    
-        
-        //Low Resolution
-        var sides = [
-            new THREE.MeshBasicMaterial({
-                map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_right.jpg'),
-                shininess: 0,
-                side: THREE.BackSide
-            }),
-            new THREE.MeshBasicMaterial({
-                map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_left.jpg'),
-                shininess: 0,
-                side: THREE.BackSide
-            }),
-            new THREE.MeshBasicMaterial({
-                map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_top.jpg'),
-                shininess: 0,
-                side: THREE.BackSide
-            }),
-            new THREE.MeshBasicMaterial({
-              map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_bottom.jpg'),
-              shininess: 0,
-              side: THREE.BackSide
-            }),
-            new THREE.MeshBasicMaterial({
-               map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_front.jpg'),
-               shininess: 0,
-               side: THREE.BackSide
-            }),
-            new THREE.MeshBasicMaterial({
-               map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_back.jpg'),
-               shininess: 0,
-               side: THREE.BackSide
-            }),
-        ];
-        var geometry = new THREE.BoxGeometry(X,Y,Z);
-        //console.log(geometry);
-        var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(sides));
-
-        container.add(mesh);
-
-        //High Resolution
-        /*
-        var textureloader = new THREE.TextureLoader();
-        textureloader.load('panoramas/' + files + '/right.jpg', function (texture) { sides[0].map=texture; });
-        textureloader.load('panoramas/' + files + '/left.jpg', function (texture) { sides[1].map=texture; });
-        textureloader.load('panoramas/' + files + '/top.jpg', function (texture) { sides[2].map=texture; });
-        textureloader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture; });
-        textureloader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture; });
-        textureloader.load('panoramas/' + files + '/back.jpg', function (texture) {sides[5].map = texture;});
-        */
-    }
+    //High Resolution
+    var textureloader = new THREE.TextureLoader();
+    textureloader.load('panoramas/' + files + '/right.jpg', function (texture) { sides[0].map=texture; });
+    textureloader.load('panoramas/' + files + '/left.jpg', function (texture) { sides[1].map=texture; });
+    textureloader.load('panoramas/' + files + '/top.jpg', function (texture) { sides[2].map=texture; });
+    textureloader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture; });
+    textureloader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture; });
+    textureloader.load('panoramas/' + files + '/back.jpg', function (texture) {sides[5].map = texture;});
+    */
     
     /*
     var geometry = new THREE.SphereGeometry( 500, 60, 40 );
@@ -1071,14 +1102,11 @@ function initPanorama(id, files, W,H)
     //buildPanorama(scene,files, 512, 512);
     //scene3DPanorama.add(scene);
 
-
-    buildPanorama(scene3DPanorama,files, 1024, 1024, 1024);
-
+    buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_");
 
     document.getElementById(id).removeChild(spinner.el);
 
     $('#' + id).show();
-
     animatePanorama();
 
     //TODO: update onWindowResize();
@@ -2275,13 +2303,6 @@ function camera3DFloorFlyIn(floor)
     }).start();
 }
 
-function camera3DFloorEnter()
-{
-	camera3D.position.set(0, 10, 0);
-	var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:10, z:12},1800).easing(TWEEN.Easing.Quadratic.InOut).start();
-    tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},1800).easing(TWEEN.Easing.Quadratic.InOut).start();
-}
-
 function camera3DNoteAdd()
 {
   //TODO: bring up 3d note up close and html form
@@ -2357,15 +2378,16 @@ function camera3DNoteExit()
     tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
 }
 
-function camera3DHouseEnter()
+function camera3DAnimate(x,y,z,speed)
 {
-    if(!SceneAnimate)
-    {
-	   camera3D.position.set(0, 20, 0);
-	   //controls3D.target = new THREE.Vector3(0, 50, 0);
-	   var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:6, z:20},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-       tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-    }
+    //if(!SceneAnimate){
+	    //camera3D.position.set(0, 6, 20);
+	    //controls3D.target = new THREE.Vector3(0, 50, 0);
+        //camera3D.position.set(0, 20, 0);
+        //camera3D.position.set(sx, sy, sz);
+	    var tween = new TWEEN.Tween(camera3D.position).to({x:x, y:y, z:z},speed).easing(TWEEN.Easing.Quadratic.InOut).start();
+        tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},speed).easing(TWEEN.Easing.Quadratic.InOut).start();
+    //}
 }
 
 function camera3DWalkViewToggle()
@@ -2416,26 +2438,29 @@ function enableTransformControls(mode)
     $('#WebGLInteractiveMenu').hide();
     $('#WebGLTextureSelect').hide();
 
-    scene3D.add(controls3D);
+    //scene3D.add(controls3D);
 }
 
 function enableOrbitControls()
-{   
-    /*
-    if (controls3D instanceof THREE.OrbitControls) //do not cause error first-time
+{
+    if (controls3D instanceof THREE.OrbitControls)
     {
-        controls3D.enabled = false;
+        controls3D.enabled = true;
+        return;
     }
-    */
+    
     controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
     controls3D.minDistance = 3;
     controls3D.maxDistance = 25; //Infinity;
     //controls3D.minPolarAngle = 0; // radians
     //controls3D.maxPolarAngle = Math.PI; // radians
     controls3D.maxPolarAngle = Math.PI / 2; //Don't let to go below the ground
-    controls3D.target = new THREE.Vector3(0, 0, 0); //+ object.lookAT!
+    //controls3D.target.set(THREE.Vector3(0, 0, 0)); //+ object.lookAT!
     controls3D.enabled = true;
+
+    //camera3DAnimate(0,20,0, 500);
 }
+
 function enableFirstPersonControls()
 {
     controls3D.enabled = false;
@@ -2452,13 +2477,16 @@ function enableFirstPersonControls()
     //controls3D.target = new THREE.Vector3(0, 0, 0);
     //camera3D.lookAt(new THREE.Vector3(0, 0, 0));
 }
+
 function camera3DAnimateResetView()
 {
 	if (camera3DPositionCache !== null && controls3D instanceof THREE.OrbitControls)
 	{
+        /*
 		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
         }).start();
 		tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).start();
+        */
     }
 }
 
@@ -2510,9 +2538,7 @@ try{
     };
     */
 
-    var loader;
-
-    var callbackObject = function( object, json) {
+    var callbackObject = function(object, note) {
 
         /* 
         Texture Fix
@@ -2522,11 +2548,20 @@ try{
 
         object.name = js;
 
+        object.boundingBox = [];
+        object.boundingBox.max = [];
+        object.boundingBox.max.x = 0;
+        object.boundingBox.max.y = 0;
+        object.boundingBox.max.z = 0;
+
+
         var geometry = new THREE.BufferGeometry();
         var meshArray = new THREE.Object3D();
         var geometryMerge = new THREE.Geometry();
         var materials = [];
      
+        //console.log(object);
+
         //console.log(json.object.children[m].matrix);
 
         //var colors = new Float32Array(2 * object.faces.length * 3 * 3);
@@ -2548,8 +2583,16 @@ try{
                 //child.geometry.computeBoundingSphere(); //already done by .load
 
                 child.geometry.computeFaceNormals();
+                //child.geometry.computeTangents();
                 child.geometry.computeVertexNormals(); // requires correct face normals
                 child.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
+
+                if(object.boundingBox.max.x < child.geometry.boundingBox.max.x)
+                    object.boundingBox.max.x = child.geometry.boundingBox.max.x;
+                if(object.boundingBox.max.y < child.geometry.boundingBox.max.y)
+                    object.boundingBox.max.y = child.geometry.boundingBox.max.y;
+                if(object.boundingBox.max.z < child.geometry.boundingBox.max.z)
+                    object.boundingBox.max.z = child.geometry.boundingBox.max.z;
 
                 //child.geometry.dynamic = true;
                 child.castShadow = true;
@@ -2568,13 +2611,17 @@ try{
                     //console.log(child.material)
                     //child.material.shading = THREE.SmoothShading;
                     //child.material.side = THREE.DoubleSide; //Normally this will slow things down > do "solidify" with Blender
-                    child.material.depthWrite = true; //Blender exports fix
+                    //child.material.depthWrite = true; //Blender exports fix
                     //child.material.offset = 0; //v72
                     //child.material.repeat = 0; //v72
                     //if(child.material.shininess == 1) //TODO: Fix this with Blender Exporter
                     
-                    if(child.material.shininess - 10 > 1)
+                    if((child.material.shininess - 10) > 1)
+                    {
                         child.material.shininess = child.material.shininess - 10; //Looks like Blender uses different # - offset to equalize same look
+                    }else if(child.material.shininess == 0 ){
+                        child.material.shininess = 0.1;
+                    }
 
                     //child.material.vertexColors = true;
                     //child.material.ambient = 0x999999;
@@ -2590,214 +2637,15 @@ try{
                         side: THREE.DoubleSide,
                     });
                     */
-                    console.log(js + " > opacity:" + child.material.opacity);
+                    //console.log(js + " > opacity:" + child.material.opacity);
 
                     if(child.material.opacity < 1) //glass transparency fix
                     {
                         child.material.transparent = true;
-                        //child.material.opacity = 0.6;
                         //child.material.vertexColors = false;
-                    /*}
-                    else if(child.material.opacity == 0)
-                    {
-                        child.material.transparent = true;
-                        child.material.opacity = 1.0;
-                    */
-                    }
-                    else
-                    {
+                    }else{
                         child.material.transparent = false;
                     }
-                }
-                //if ( json.diffuseMap !== undefined ) material.map = THREE.ImageUtils.loadTexture(json.diffuseMap);
-                //if ( json.bumpMap !== undefined ) material.bumpMap = THREE.ImageUtils.loadTexture(json.bumpMap);
-                //if(child.material.DbgName == "treewood"){
-                /*
-                var c = new THREE.Color( 0xffffff );
-                //c.setHSL(1.0, 1.0, 0.7);
-                c.setRGB( Math.random(), Math.random(), Math.random());
-                //child.material.color = c;
-                console.log("Faces:Colors " + child.geometry.faces.length + ":" + child.geometry.colors.length);
-                var colors = new Float32Array(child.geometry.faces.length * 3);
-                var i = -1;
-                child.geometry.faces.forEach(function (face, index) {
-                    if(i == -1)
-                        i = index;
-                    colors[i + 0] = c.r;
-                    colors[i + 1] = c.g;
-                    colors[i + 2] = c.b;
-                    //console.log("Color (" + i + ") " + colors[i + 0] + ":" + colors[i + 1] + ":" + colors[i + 2])
-                    i += 3;
-                });
-                //console.log(new THREE.BufferAttribute(colors, 3));
-                //child.material.color = THREE.BufferAttribute(colors, 3);
-                //child.geometry.color = THREE.BufferAttribute(colors, 3);
-
-                //console.log(child.geometry);
-                //child.scale.set(1,1,1);
-                //console.log(child);
-                //var buffer = new THREE.BufferGeometry().setFromObject(child);
-                
-                var buffer = new THREE.BufferGeometry().fromGeometry(child.geometry);
-                buffer.computeFaceNormals();
-                buffer.computeVertexNormals(); // requires correct face normals
-                //buffer.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
-                
-                var matrix = new THREE.Matrix4();
-                matrix.set(json.object.children[m].matrix);
-                
-                //buffer.applyMatrix(matrix); //matrix gets lost for no reason - pull it from json > causes trigger of computeBoundingSphere()
-                //buffer.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-               
-                console.log(buffer);
-
-                var bufferMesh = new THREE.Mesh(buffer, child.material);
-
-                bufferMesh.position.x = x;
-                bufferMesh.position.y = y;
-                bufferMesh.position.z = z;
-                bufferMesh.rotation.x = xaxis;
-                bufferMesh.rotation.y = yaxis;
-                bufferMesh.scale = child.scale;
-
-                meshArray.add(bufferMesh);
-                */
-
-                //geometryMerge.merge(buffer);
-                //materials.push(child.material);
-
-                //THREE.GeometryUtils.merge(geometry, child.geometry);
-                //child.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-                //child.geometry.addAttribute('normal', new THREE.BufferAttribute(normals, 3));
-                //child.geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-                //child.geometry.colorsNeedUpdate = true;
-                //}
-                //console.log(renderer.info);
-                //child.material.shading = THREE.FlatShading;
-                //child.material.vertexColors = THREE.FaceColors;
-                //child.material.vertexColors = THREE.VertexColors;
-                if(objectContainer == scene3DFloorFurnitureContainer[FLOOR])
-                {
-                    var material = new THREE.LineBasicMaterial({
-                        color: 0x000000,
-                        shininess: 0,
-                        linewidth: 2
-                    });
-                    var geometry = new THREE.Geometry();
-
-                    var x1 = x - child.geometry.boundingBox.max.z;
-                    var z1 = z - child.geometry.boundingBox.max.x;
-                    var x2 = x + child.geometry.boundingBox.max.z;
-                    var z2 = z + child.geometry.boundingBox.max.x;
-                   
-                    //TODO: if y > 0
-                    //var arrow = new THREE.ArrowHelper(direction, firstVector, computeDistance(node1, node2) - 32, co);
-
-                    //horizontal
-                    geometry.vertices.push(new THREE.Vector3(x1+0.2, 0.1, z1));
-                    geometry.vertices.push(new THREE.Vector3(x2-0.2, 0.1, z1));
-
-                    //vertical
-                    geometry.vertices.push(new THREE.Vector3(x1, 0.1, z1+0.2));
-                    geometry.vertices.push(new THREE.Vector3(x1, 0.1, z2-0.2));
-
-                    //var offset = scene3DFloorFurnitureContainer[FLOOR].children[i].centroid.clone();
-                    //geometry.applyMatrix(new THREE.Matrix4().makeTranslation( -offset.x, 0, -offset.z ) );
-                    //objMesh.position.copy( objMesh.centroid );
-         
-                    //var line = new THREE.Line(geometry, material);
-                    var line = new THREE.Line(geometry, material, THREE.LineSegments); //v72
-                    //var line = new THREE.Line(geometry, material, THREE.LinePieces); //v71
-                    line.position.y = 0.1;
-                    //line.dynamic = true;
-
-                    var realLifeDimentions = [];
-                    var geometryText = [];
-                    realLifeDimentions[0] = child.geometry.boundingBox.max.x * 200;
-                    realLifeDimentions[1] = child.geometry.boundingBox.max.z * 200;
-                    //realLifeDimentions[2]  = child.geometry.boundingBox.max.y * 200;
-                    
-                    for (var u = 0; u <= 1; u++)
-                    {
-                        var units = "";
-
-                        if (realLifeDimentions[u] > 100)
-                        {
-                            units = (realLifeDimentions[u]/100).toFixed(2) + " m";
-                        }else{
-                            units = Math.round(realLifeDimentions[u]) + " cm";
-                        }
-
-                        geometryText[u] = new THREE.TextGeometry(units, {
-                            font: 'helvetiker', // Must be lowercase!
-                            weight: 'normal',
-                            size: 0.2,
-                            height: 0.01
-                        });
-                        geometryText[u].computeBoundingBox();
-                    }
-                    
-                    var textMeshL = new THREE.Mesh(geometryText[0], material);
-                    textMeshL.position.x = x - geometryText[0].boundingBox.max.x/2;
-                    textMeshL.position.y = 0.1;
-                    textMeshL.position.z = z1 - 0.1;
-                    textMeshL.rotation.x = -1.5;
-
-                    var textMeshW = new THREE.Mesh(geometryText[1], material);
-                    textMeshW.position.x = x1 - 0.1;
-                    textMeshW.position.y = 0.1;
-                    textMeshW.position.z = z + geometryText[1].boundingBox.max.x/2;
-                    textMeshW.rotation.x = -1.55;
-                    textMeshW.rotation.z = 1.6;
-
-                    //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
-
-                    //object.add(textMeshL);
-                    //object.add(textMeshW);
-                    
-                    line.add(textMeshL);
-                    line.add(textMeshW);
-
-                    object.add(line);
-
-                    //textMeshL.visible = false;
-                    //textMeshW.visible = false;
-                    line.visible = false;
-
-                    //console.log("Calculating " + mesh.name + " measurements " + mesh.position.x + ":" + mesh.position.z + " " + mesh.geometry.boundingBox.max.x + ":" + mesh.geometry.boundingBox.max.z);
-                }
-
-                if(note != null)
-                {
-                    //var object = new THREE.Object3D();
-
-                    var material = new THREE.MeshBasicMaterial( { color: 0x000000, shininess: 0 } );
-                    var geometry = new THREE.TextGeometry(note, {
-                        font: 'helvetiker', // Must be lowercase!
-                        weight: 'normal',
-                        size: 0.05,
-                        height: 0.01
-                    });
-                    var textMesh = new THREE.Mesh(geometry, material);
-                    //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
-                    //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
-                    textMesh.position.x = 1.25;
-                    textMesh.position.y = 0.5;
-                    textMesh.position.z = 0.05;
-                    textMesh.rotation.y = 1.5;
-                    textMesh.name = note;
-
-                    open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
-
-                    object.add(textMesh);
-                    //console.log( js + " Add Note: " + note);
-
-                    //objectContainer.add(object);
-                    //objectContainer.add(mesh);
-
-                //}else{
-                    //if (object instanceof THREE.Object3D) {
-                    //objectContainer.add(mesh);
                 }
                 
             }else if (child instanceof THREE.PointLight) {
@@ -2842,10 +2690,129 @@ try{
         object.rotation.y = yaxis + Math.PI;
         //object.rotation.z = zaxis;
 
-        console.log("ObjectLoader add model to scene" + object.name);
+        console.log("ObjectLoader add model to scene " + object.name);
         objectContainer.add(object);
-        
 
+        /*
+        After automatic translation to BufferedGeometry
+        ===============================================
+        */
+         if(note)
+        {
+            var material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+            var geometry = new THREE.TextGeometry(note, {
+                font: 'helvetiker', // Must be lowercase!
+                weight: 'normal',
+                size: 0.05,
+                height: 0.01
+            });
+            var textMesh = new THREE.Mesh(geometry, material);
+            //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
+            //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
+            textMesh.position.x = 1.25;
+            textMesh.position.y = 0.5;
+            textMesh.position.z = 0.05;
+            textMesh.rotation.y = 1.5;
+            textMesh.name = note;
+
+            open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
+            object.add(textMesh);
+            
+            console.log( js + " Add Note: '" + note + "'");
+        }
+
+        if(objectContainer == scene3DFloorFurnitureContainer[FLOOR])
+        {
+            var material = new THREE.LineBasicMaterial({
+                color: 0x000000,
+                linewidth: 2
+            });
+            var geometry = new THREE.Geometry();
+
+            var x1 = x - object.boundingBox.max.x*3;
+            var z1 = z - object.boundingBox.max.z*3;
+            var x2 = x + object.boundingBox.max.x*3;
+            var z2 = z + object.boundingBox.max.z*3;
+
+            console.log(js + " > " + object.boundingBox.max.z + " " + object.boundingBox.max.x + " " + object.boundingBox.max.y)
+           
+            //TODO: if y > 0
+            //var arrow = new THREE.ArrowHelper(direction, firstVector, computeDistance(node1, node2) - 32, co);
+
+            //horizontal
+            geometry.vertices.push(new THREE.Vector3(x1, 0, z1));
+            geometry.vertices.push(new THREE.Vector3(x2, 0, z1));
+
+            //vertical
+            geometry.vertices.push(new THREE.Vector3(x1, 0, z1));
+            geometry.vertices.push(new THREE.Vector3(x1, 0, z2));
+
+            //var offset = scene3DFloorFurnitureContainer[FLOOR].children[i].centroid.clone();
+            //geometry.applyMatrix(new THREE.Matrix4().makeTranslation( -offset.x, 0, -offset.z ) );
+            //objMesh.position.copy( objMesh.centroid );
+ 
+            //var line = new THREE.Line(geometry, material);
+            var line = new THREE.Line(geometry, material, THREE.LineSegments); //v72
+            //var line = new THREE.Line(geometry, material, THREE.LinePieces); //v71
+            line.position.y = 0.01;
+            //line.dynamic = true;
+
+            var realLifeDimentions = [];
+            var geometryText = [];
+            realLifeDimentions[0] = object.boundingBox.max.z * 400;
+            realLifeDimentions[1] = object.boundingBox.max.x * 400;
+            //realLifeDimentions[2]  = child.geometry.boundingBox.max.y * 200;
+            
+            for (var u = 0; u <= 1; u++)
+            {
+                var units = "";
+
+                if (realLifeDimentions[u] > 100)
+                {
+                    units = (realLifeDimentions[u]/100).toFixed(2) + " m";
+                }else{
+                    units = Math.round(realLifeDimentions[u]) + " cm";
+                }
+
+                geometryText[u] = new THREE.TextGeometry(units, {
+                    font: 'helvetiker', // Must be lowercase!
+                    weight: 'normal',
+                    size: 0.2,
+                    height: 0.01
+                });
+                geometryText[u].computeBoundingBox();
+            }
+            
+            var textMeshL = new THREE.Mesh(geometryText[0], material);
+            textMeshL.position.x = x - geometryText[0].boundingBox.max.x/2;
+            textMeshL.position.y = 0.01;
+            textMeshL.position.z = z1 - 0.1;
+            textMeshL.rotation.x = -1.5;
+
+            var textMeshW = new THREE.Mesh(geometryText[1], material);
+            textMeshW.position.x = x1 - 0.1;
+            textMeshW.position.y = 0.01;
+            textMeshW.position.z = z + geometryText[1].boundingBox.max.x/2;
+            textMeshW.rotation.x = -1.55;
+            textMeshW.rotation.z = 1.6;
+
+            //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
+
+            //object.add(textMeshL);
+            //object.add(textMeshW);
+            
+            line.add(textMeshL);
+            line.add(textMeshW);
+
+            object.add(line);
+
+            //textMeshL.visible = false;
+            //textMeshW.visible = false;
+            line.visible = false;
+
+            //console.log("Calculating " + mesh.name + " measurements " + mesh.position.x + ":" + mesh.position.z + " " + mesh.geometry.boundingBox.max.x + ":" + mesh.geometry.boundingBox.max.z);
+        }
+        
         //var bufferMesh = new THREE.Mesh(geometry, object.children[0].material);
         //bufferMesh.scale.set(1,1,1);
         //objectContainer.add(bufferMesh);
@@ -2869,300 +2836,6 @@ try{
 
         //objectContainer.add(meshArray);
         //===========================
-        
-    };
-
-    var callback = function(geometry, materials) {
-        /*
-        var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial({
-            map: materials[0],
-            envMap: camera3DMirrorReflection.renderTarget
-        })); 
-		*/
-        //console.log(materials);
-
-        //for (var i = 0; i < materials.length; i++) {
-
-        //materials[i].map.wrapS = THREE.RepeatWrapping;
-        //materials[i].map.wrapT = THREE.RepeatWrapping;
-        //materials[i].map.repeat.set(14, 14);
-        //console.log(materials[i].map);
-        //}
-
-        //geometry.mergeVertices(); //speed things up ?
-        //geometry.computeFaceNormals(); //already done by .load
-        //geometry.computeBoundingSphere(); //already done by .load
-        geometry.computeVertexNormals(); // requires correct face normals
-        geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
-        
-
-        //materials.side = THREE.DoubleSide;
-
-        /*
-        Create material and activate the 'doubleSided' attribute to force the
-        rendering of both sides of each face (front and back). This prevents the so called
-        'backface culling'. Usually, only the side is rendered, whose normal vector points
-        towards the camera. The other side is not rendered (backface culling). But this
-        performance optimization sometimes leads to wholes in the surface. When this happens
-        in your surface, simply set 'doubleSided' to 'true'.
-        */
-        
-        materials.forEach(function (material) {
-
-            material.side = THREE.DoubleSide; //DEBUG - Normally this will slow things down
-            
-            if(material.opacity < 1) //glass transparency fix
-            {
-                material.transparent = true;
-            }else{
-                material.transparent = false;
-            }
-            
-            material.depthWrite = true; //Blender exports fix
-            //material.map.minFilter = THREE.LinearFilter; //does not work for all models?
-            //material.map.anisotropy = 2; //focus blur (16=unblured 1=blured)
-
-            //material.doubleSided = true;
-            //material.ambient = 0x999999;
-            //material.color = 0xffffff;
-            //material.specular = 0xffffff;
-            //material.shininess = 0;
-            //material.morphTargets = true;
-            //material.morphNormals = true;
-            //var lm = THREE.ImageUtils.loadTexture('../assets/textures/lightmap/lm-1.png');
-            //material.lightMap: lm,
-            //material.map = material
-
-            //THREE.js 72 Fix
-            material.offset = 0;
-            material.repeat = 0;
-        });
-
-        //http://stackoverflow.com/questions/29133137/three-js-looking-for-an-alternative-to-meshfacematerial
-        //var material = new THREE.MeshPhongMaterial(materials);
-        //var material = new THREE.MeshNormalMaterial(materials);
-        //var material = new THREE.MeshBasicMaterial(materials);
-        //var material = new THREE.MeshLambertMaterial(materials);
-        /*var material = new THREE.MeshBasicMaterial({
-            //depthWrite: false, // This is always underneath every other object
-            //offset:0,
-            map: materials[1]
-            //materialmap:materials
-        });
-        var material = new THREE.MeshBasicMaterial({
-            map: THREE.ImageUtils.loadTexture("diffuse.jpg"),
-            aoMap: THREE.ImageUtils.loadTexture("lightmap.jpg"), // your lightmap used as aoMap
-            aoMapIntensity: 0.5,
-            side: THREE.DoubleSide,
-        });
-        */
-
-        //var mesh = new THREE.SkinnedMesh( geometry, materials, false ); //v72
-        var material = new THREE.MeshFaceMaterial(materials); //v71
-        var mesh = new THREE.Mesh(geometry, material); //v71
-
-        mesh.name = js;
-        
-        //mesh.overdraw = true; //??? repeat textures?
-
-        mesh.castShadow = true;
-
-        if (shadow)
-            mesh.receiveShadow = true;
-
-        //mesh.morphTargets = true;
-        //mesh.morphNormals = true;
-        //mesh.vertexColors = THREE.FaceColors;
-        //mesh.shading = THREE.FlatShading;
-
-        /*
-        if (ratio != 1) {
-            geometry.computeBoundingBox();
-            var box = geometry.boundingBox;
-            ratio = ratio / box.max.y //calculate scale ratio or var box = new THREE.Box3().setFromObject( object );
-            mesh.scale.x = mesh.scale.y = mesh.scale.z = ratio;
-            //console.log("width " + box.max.x);
-            mesh.castShadow = false;
-            mesh.receiveShadow = false;
-        }
-        */
-        /*
-        var animation = new THREE.Animation( mesh, geometry.animation );
-        animation.timeScale = 0.5;
-        animation.play();
-        */
-
-        mesh.position.x = x;
-        mesh.position.y = y;
-        mesh.position.z = z;
-        mesh.rotation.x = xaxis;
-        mesh.rotation.y = yaxis;
-     
-        //mesh.matrixAutoUpdate = true;
-        //mesh.updateMatrix();
-
-        var object = new THREE.Object3D();
-
-        object.add(mesh);
-        
-        if(objectContainer == scene3DFloorFurnitureContainer[FLOOR]) {
-            material = new THREE.LineBasicMaterial({
-                color: 0x000000,
-                shininess: 0,
-                linewidth: 2
-            });
-            geometry = new THREE.Geometry();
-
-            var x1 = mesh.position.x - mesh.geometry.boundingBox.max.z;
-            var z1 = mesh.position.z - mesh.geometry.boundingBox.max.x;
-            var x2 = mesh.position.x + mesh.geometry.boundingBox.max.z;
-            var z2 = mesh.position.z + mesh.geometry.boundingBox.max.x;
-           
-            //TODO: if y > 0
-            //var arrow = new THREE.ArrowHelper(direction, firstVector, computeDistance(node1, node2) - 32, co);
-
-            //horizontal
-            geometry.vertices.push(new THREE.Vector3(x1+0.2, 0.1, z1));
-            geometry.vertices.push(new THREE.Vector3(x2-0.2, 0.1, z1));
-
-            //vertical
-            geometry.vertices.push(new THREE.Vector3(x1, 0.1, z1+0.2));
-            geometry.vertices.push(new THREE.Vector3(x1, 0.1, z2-0.2));
-
-            //var offset = scene3DFloorFurnitureContainer[FLOOR].children[i].centroid.clone();
-            //geometry.applyMatrix(new THREE.Matrix4().makeTranslation( -offset.x, 0, -offset.z ) );
-            //objMesh.position.copy( objMesh.centroid );
- 
-            //var line = new THREE.Line(geometry, material);
-            var line = new THREE.Line(geometry, material, THREE.LineSegments); //v72
-            //var line = new THREE.Line(geometry, material, THREE.LinePieces);//v71
-            line.position.y = 0.1;
-            //line.dynamic = true;
-
-            var realLifeDimentions = [];
-            var geometryText = [];
-            realLifeDimentions[0] = mesh.geometry.boundingBox.max.x * 200;
-            realLifeDimentions[1] = mesh.geometry.boundingBox.max.z * 200;
-            //realLifeDimentions[2]  = mesh.geometry.boundingBox.max.y * 200;
-            
-            for (var u = 0; u <= 1; u++)
-            {
-                var units = "";
-
-                if (realLifeDimentions[u] > 100)
-                {
-                    units = (realLifeDimentions[u]/100).toFixed(2) + " m";
-                }else{
-                    units = Math.round(realLifeDimentions[u]) + " cm";
-                }
-
-                geometryText[u] = new THREE.TextGeometry(units, {
-                    font: 'helvetiker', // Must be lowercase!
-                    weight: 'normal',
-                    size: 0.2,
-                    height: 0.01
-                });
-                geometryText[u].computeBoundingBox();
-            }
-            
-            var textMeshL = new THREE.Mesh(geometryText[0], material);
-            textMeshL.position.x = mesh.position.x - geometryText[0].boundingBox.max.x/2;
-            textMeshL.position.y = 0.1;
-            textMeshL.position.z = z1 - 0.1;
-            textMeshL.rotation.x = -1.5;
-
-            var textMeshW = new THREE.Mesh(geometryText[1], material);
-            textMeshW.position.x = x1 - 0.1;
-            textMeshW.position.y = 0.1;
-            textMeshW.position.z = mesh.position.z + geometryText[1].boundingBox.max.x/2;
-            textMeshW.rotation.x = -1.55;
-            textMeshW.rotation.z = 1.6;
-
-            //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
-
-            //object.add(textMeshL);
-            //object.add(textMeshW);
-            
-            line.add(textMeshL);
-            line.add(textMeshW);
-
-            object.add(line);
-
-            //textMeshL.visible = false;
-            //textMeshW.visible = false;
-            line.visible = false;
-
-            //console.log("Calculating " + mesh.name + " measurements " + mesh.position.x + ":" + mesh.position.z + " " + mesh.geometry.boundingBox.max.x + ":" + mesh.geometry.boundingBox.max.z);
-        }
-        
-        if(note !== null)
-        {
-            //var object = new THREE.Object3D();
-
-            material = new THREE.MeshBasicMaterial( { color: 0x000000, shininess: 0 } );
-            geometry = new THREE.TextGeometry(note, {
-                font: 'helvetiker', // Must be lowercase!
-                weight: 'normal',
-                size: 0.05,
-                height: 0.01
-            });
-            var textMesh = new THREE.Mesh(geometry, material);
-            //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
-            //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
-            textMesh.position.x = 1.25;
-            textMesh.position.y = 0.5;
-            textMesh.position.z = 0.05;
-            textMesh.rotation.y = 1.5;
-            textMesh.name = note;
-
-            open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
-
-            object.add(textMesh);
-            //console.log( js + " Add Note: " + note);
-
-            //objectContainer.add(object);
-            //objectContainer.add(mesh);
-
-        //}else{
-            //if (object instanceof THREE.Object3D) {
-            //objectContainer.add(mesh);
-        }
-
-        objectContainer.add(object);
-
-        /*
-        object.traverse( function( node ) {
-            if( node.material ) {
-                node.material.side = THREE.DoubleSide;
-            }
-        });
-
-        pointLight = new THREE.PointLight( 0xffaa00 );
-            pointLight.position.set( 0, 0, 0 );
-            scene.add( pointLight );
-        */
-
-        //} else {
-        //    console.log("settings mesh");
-        //    object = mesh;
-        //}
-
-        //http://code.tutsplus.com/tutorials/webgl-with-threejs-models-and-animation--net-35993
-        //animation[animation.length-1] = new THREE.MorphAnimation(mesh);
-        //animation[animation.length-1].play();
-
-        //THREE.Collisions.colliders.push(THREE.CollisionUtils.MeshOBB(mesh));
-    };
-
-    var onProgress = function (xhr)
-    {
-        if ( xhr.lengthComputable ) {
-            var percentComplete = xhr.loaded / xhr.total * 100;
-            console.log( Math.round(percentComplete, 2) + '% downloaded' );
-        }
-    };
-
-    var onError = function ( xhr ) {
     };
 
 
@@ -3210,17 +2883,22 @@ try{
 		*/
 
         $.ajax(js,{
+            
             contentType: "application/zip",
             beforeSend: function (req) {
               req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
             },
+            //async: true,
+            //dataType: "binary",
+            //processData: false,
+            //responseType:'arraybuffer',
             success: function(data){
-                try {
+                //try {
                     var zip = new JSZip(data);
                     
                     //zip.load(binary.read('string'));
                     data = zip.file(filename).asText(); //console.log("unzip OK " + js);
-                    data = JSON.parse(data);
+                    data = $.parseJSON(data); //JSON.parse(data);
 
                     //if (data.metadata.formatVersion == 3.1){ //using export script io_mesh_threejs
                     //    console.log("using old format 3 " + js);
@@ -3233,14 +2911,21 @@ try{
                         */
 
                         //console.log("using new format 4 " + js);
+                        /*
+                        var manager = new THREE.LoadingManager();
+                        manager.onProgress = function ( item, loaded, total ) {
+                            //console.log( item, loaded, total );
+                        };
+                        */
+                        var loader = new THREE.ObjectLoader(); //new THREE.ObjectLoader(manager);
 
-                        loader = new THREE.ObjectLoader(manager);
                         //loader.setTexturePath(textures); //v71
                         //loader.parse(data,callbackObject); //v71
 
                         //=======================================
                         //Blender Export v72 Fix
                         //=======================================
+                        
                         for (var i = 0; i < data.textures.length; i++) {
                             if(data.textures[i].mapping)
                                 data.textures[i].mapping = THREE.UVMapping;
@@ -3262,10 +2947,14 @@ try{
                                 data.textures[i].wrap = [THREE.RepeatWrapping,THREE.RepeatWrapping];
                             }
                         }
+                        
                         for (var i = 0; i < data.images.length; i++) {
-                            if(data.images[i].url)
+                            if(data.images[i].url){
                                 data.images[i].url = textures + data.images[i].url;
+                                //console.log(js + ">" + data.images[i].url);
+                            }
                         }
+                        
                         for (var i = 0; i < data.object.children.length; i++) {
                             var material_uuid = data.object.children[i].material;
                             var geometry_uuid = data.object.children[i].geometry;
@@ -3290,24 +2979,21 @@ try{
                             for (var m = 0; m < data.materials.length; m++) {
                                 if (data.materials[m].uuid == material_uuid){
                                     data.materials[m].opacity = geometry_opacity;
-                                    data.materials[m].shininess = 0; //data.materials[m].shininess - 10;
                                     break;
-                                //}else{
-                                    //data.materials[m].shininess
                                 }
                             }
                         }
-
+                        
                         //=======================================
-                        callbackObject(loader.parse(data),data); //v72
+                        callbackObject(loader.parse(data), note); //v72
                         //=======================================
                     //}
-                } catch (e) { //zip file was probably not found, load regular json
-                    console.log("Other 3D format " + e + " " + js.slice(0, -4) + "");
+                //} catch (e) { //zip file was probably not found, load regular json
+                    //console.log("Other 3D format " + e + " " + js.slice(0, -4) + "");
 
                     //loader = new THREE.JSONLoader();
                     //loader.load(js.slice(0, -4) + ".json", callback, textures);
-                }
+                //}
             },
             error: function(xhr, textStatus, errorThrown){
 				alertify.alert("3D Model (" + js + ") Loading Error");
@@ -3422,49 +3108,17 @@ function cube(size) {
     return geometry;
 }
 
-function show3DHouse(skyload) {
+function show3DHouse() {
+
+    enableOrbitControls();
 
     //Something interesting from the web (maybe someday) -> http://inear.se/urbanjungle
     //Math behind the scenes explained here http://www.inear.se/2014/03/urban-jungle-street-view/
-    
-    _animate = -1;
     scene3DFreeMemory();
     hideElements();
-    if(!skyload)
-    {
-        //scene3DFreeMemory();
-        console.log("show3DHouse Call");
-        //scene3D = new THREE.Scene();
-    }
     SCENE = 'house';
 
     initMenu("menuRight3DHouse","Exterior/index.json");
-
-    scene3DSetSky(DAY);
-
-    if(skyload)
-    {
-        scene3DSetWeather();
-        scene3DSunlight(); //SUNLIGHT RAYS
-    }
-    
-    scene3D.add(skyMesh);
-    scene3D.add(weatherSkyMesh);
-    scene3D.add(weatherSkyRainbowMesh);
-
-    scene3DSetLight();
-
-    //the camera defaults to position (0,0,0) so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
-    //camera3D.position.set(0, 6, 20);
-    enableOrbitControls();
-
-    scene3DFloorWallGenerate();
-
-    //initObjectCollisions(scene3DHouseContainer);
-
-    //$(renderer.domElement).bind('mousemove', on3DMouseMove);
-    //$(renderer.domElement).bind('mousedown', on3DMouseDown);
-    //$(renderer.domElement).bind('mouseup', on3DMouseUp);
 
     $(renderer.domElement).bind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).bind('mouseup', on3DHouseMouseUp);
@@ -3483,6 +3137,7 @@ function show3DHouse(skyload) {
          $('#menuBottomItem' + item).show();
     });
     $('#menuBottom').show();
+    $('#engine3D').show();
 
     toggleRight('menuRight', true);
     toggleLeft('menuLeft3DHouse', true);
@@ -3490,12 +3145,30 @@ function show3DHouse(skyload) {
     menuSelect(1, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
+    scene3DSetSky(DAY);
+    scene3D.add(skyMesh);
+
+    if(options.clouds)
+        scene3D.add(weatherSkyCloudsMesh);
+    if(options.rainbow)
+        scene3D.add(weatherSkyRainbowMesh);
+    
+    scene3DSetLight();
+
+    scene3DFloorWallGenerate();
+
+    //initObjectCollisions(scene3DHouseContainer);
+
+    //$(renderer.domElement).bind('mousemove', on3DMouseMove);
+    //$(renderer.domElement).bind('mousedown', on3DMouseDown);
+    //$(renderer.domElement).bind('mouseup', on3DMouseUp);
+
     //scene3DHouseContainer.traverse;
 
     //TODO: Loop and show based in ID name
 
     scene3D.add(scene3DHouseGroundContainer);
-    scene3D.add(scene3DHouseFXContainer);
+    //scene3D.add(scene3DHouseFXContainer);
     scene3D.add(scene3DHouseContainer);
     scene3D.add(scene3DRoofContainer);
 
@@ -3506,11 +3179,13 @@ function show3DHouse(skyload) {
     }
     scene3DCube.add(scene3DCubeMesh);
 
-    camera3DHouseEnter();
+    //console.trace();
 
+    setTimeout(function() {
+        camera3DAnimate(0,6,20, 1000);
+    }, 1500);
+    
     animate();
-
-    $('#engine3D').show();
 }
 
 //========================================
@@ -3759,14 +3434,12 @@ function getHeightData(img,scale) //return array with height data from img
 //========================================
 function show3DLandscape() {
 
-    _animate = -1;
     SceneAnimate = false;
     scene3DFreeMemory();
     hideElements();
     //scene3D = new THREE.Scene();
     SCENE = 'landscape';
 
-    //scene3DSetBackground('blue');
     scene3DSetSky('day');
     scene3DSetLight();
 
@@ -3827,7 +3500,6 @@ function show3DLandscape() {
 
 function show3DFloor() {
 
-    _animate = -1;
     SceneAnimate = false;
     scene3DFreeMemory();
     hideElements();
@@ -3835,9 +3507,7 @@ function show3DFloor() {
     SCENE = 'floor';
 
     initMenu("menuRight3DFloor","Interior/index.json");
-
-    //scene3DSetBackground('blue');
-    scene3DSetSky('0000');
+    
     scene3DSetLight();
 
     enableOrbitControls();
@@ -3849,6 +3519,7 @@ function show3DFloor() {
     //TODO: Loop and show based in ID name / floor
     //scene3D.add(scene3DContainer);
 
+    //scene3DSetSky('0000');
     scene3D.add(skyMesh);
     scene3D.add(scene3DFloorGroundContainer);
     
@@ -3864,7 +3535,6 @@ function show3DFloor() {
     }catch(e){}
     */
    
-
     //scene3D.add(scene3DCutawayPlaneMesh); //DEBUG
 
     scene3D.add(scene3DFloorFurnitureContainer[FLOOR]); //furnishings
@@ -3874,7 +3544,8 @@ function show3DFloor() {
         scene3DFloorMeasurementsGenerate();
         //scene3D.add(scene3DFloorMeasurementsContainer[FLOOR]);
         for (var i = 0; i < scene3DFloorFurnitureContainer[FLOOR].children.length; i++) {
-            scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible = true;
+            if(scene3DFloorFurnitureContainer[FLOOR].children[i].children[1])
+                scene3DFloorFurnitureContainer[FLOOR].children[i].children[1].visible = true;
         }
     }
 
@@ -3912,13 +3583,15 @@ function show3DFloor() {
 
     $('#engine3D').show();
 
+    setTimeout(function() {
+        camera3DAnimate(0,10,12, 1000);
+    }, 500);
+
     animate();
-    camera3DFloorEnter();
 }
 
 function show3DFloorLevel() {
-
-    _animate = -1;
+ 
     SceneAnimate = false;
     scene3DFreeMemory();
     hideElements();
@@ -3946,12 +3619,12 @@ function show3DFloorLevel() {
 
     //$('#HTMLCanvas').hide();
     $('#engine3D').show();
+
     animate();
 }
 
 function show3DRoofDesign() {
-
-    _animate = -1;
+ 
     SceneAnimate = false;
     scene3DFreeMemory();
     hideElements();
@@ -3987,6 +3660,7 @@ function show3DRoofDesign() {
 
     //$('#HTMLCanvas').hide();
     $('#engine3D').show();
+
     animate();
 }
 
@@ -4021,7 +3695,7 @@ function scene3DSunlight() {
     God Rays (Sunlight Effect)
     http://threejs.org/examples/webgl_sunlight_godrays.html
     */
-    if(sunlight.enabled)
+    if(options.sunlight)
     {
         var sunPosition = new THREE.Vector3( 0, 10, -10 );
         var materialDepth = new THREE.MeshDepthMaterial();
@@ -4124,8 +3798,8 @@ function scene2DZoom(SCALE_FACTOR) {
 
 function show2D() {
 
-    _animate = -1;
-    SceneAnimate = false;
+    animateStop();
+
     scene3DFreeMemory();
     scene2DFreeMemory();
     hideElements();
@@ -4547,8 +4221,6 @@ function show2D() {
 
     scene2DJoinLines();
 
-   
-
     //scene2D.add(adjustcircle);
     /*
     for (var i = 0; i < scene2DDoorMesh[FLOOR].length; i++) {
@@ -4816,10 +4488,10 @@ function hideElements() {
 
     //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
     //$(renderer.domElement).unbind('mouseup', on3DMouseUp);
-    $(renderer.domElement).unbind('dblclick', onDocumentDoubleClick);
-
+    
     $(renderer.domElement).unbind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DHouseMouseUp);
+    $(renderer.domElement).unbind('dblclick', onDocumentDoubleClick);
 
     $(renderer.domElement).unbind('mousedown', on3DFloorMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DFloorMouseUp);
@@ -4827,6 +4499,7 @@ function hideElements() {
     $(renderer.domElement).unbind('mousemove', on3DFloorMouseMove);
     $(renderer.domElement).unbind('mousedown', on3DLandscapeMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DLandscapeMouseUp);
+
     //$(renderer.domElement).unbind('mouseout', on3DLandscapeMouseUp);
 
     disposePanorama('WebGLPanorama');
@@ -4925,15 +4598,10 @@ function scene2DMakeGrid(canvas2D, grid,color) {
     }
 }
 
-function scene3DSetWeather() {
-    /*
-    if (engine instanceof ParticleEngine) {
-        engine.destroy();
-        engine = null;
-    }
-    */
-    particleWeather = new SPE.Group({});
-    scene3D.remove(particleWeather.mesh);
+function scene3DSetWeather()
+{
+    //particleWeather = new SPE.Group({});
+    //scene3D.remove(particleWeather.mesh);
 
     if (WEATHER == "sunny") {
 
@@ -4946,32 +4614,34 @@ function scene3DSetWeather() {
         //engine.initialize();
 
         /*
-    weatherSnowMesh = {
-        positionStyle: Type.CUBE,
-        positionBase: new THREE.Vector3(0, 20, 0),
-        positionSpread: new THREE.Vector3(30, 0, 30),
+        weatherSnowMesh = {
+            positionStyle: Type.CUBE,
+            positionBase: new THREE.Vector3(0, 20, 0),
+            positionSpread: new THREE.Vector3(30, 0, 30),
 
-        velocityStyle: Type.CUBE,
-        velocityBase: new THREE.Vector3(0, 5, 0),
-        velocitySpread: new THREE.Vector3(20, 20, 20),
-        accelerationBase: new THREE.Vector3(0, -10, 0),
+            velocityStyle: Type.CUBE,
+            velocityBase: new THREE.Vector3(0, 5, 0),
+            velocitySpread: new THREE.Vector3(20, 20, 20),
+            accelerationBase: new THREE.Vector3(0, -10, 0),
 
-        angleBase: 0,
-        angleSpread: 50,
-        angleVelocityBase: 0,
-        angleVelocitySpread: 5,
+            angleBase: 0,
+            angleSpread: 50,
+            angleVelocityBase: 0,
+            angleVelocitySpread: 5,
 
-        particleTexture: THREE.ImageUtils.loadTexture('./images/snowflake.png'),
+            particleTexture: THREE.ImageUtils.loadTexture('./images/snowflake.png'),
 
-        sizeTween: new ParticleTween([0.5, 1], [1, 0.6]),
-        colorBase: new THREE.Vector3(0.66, 1.0, 0.9), // H,S,L
-        opacityTween: new ParticleTween([2, 3], [0.8, 0]),
+            sizeTween: new ParticleTween([0.5, 1], [1, 0.6]),
+            colorBase: new THREE.Vector3(0.66, 1.0, 0.9), // H,S,L
+            opacityTween: new ParticleTween([2, 3], [0.8, 0]),
 
-        particlesPerSecond: 50,
-        particleDeathAge: 3.0,
-        emitterDeathAge: 180
-    };
-    */
+            particlesPerSecond: 50,
+            particleDeathAge: 3.0,
+            emitterDeathAge: 180
+        };
+        */
+
+        /*
         particleWeather = new SPE.Group({
             texture: THREE.ImageUtils.loadTexture("./images/snowflake.png"),
             maxAge: 180,
@@ -4985,45 +4655,46 @@ function scene3DSetWeather() {
         });
 
         var particleEmitter = new SPE.Emitter( {
-                type: 'cube',
-                particleCount: 50, //particlesPerSecond
-                position: new THREE.Vector3(0, 20, 0),
-                positionSpread: new THREE.Vector3(30, 0, 30),
-                acceleration: new THREE.Vector3(0, -10, 0),
-                accelerationSpread: new THREE.Vector3( 0, -10, 0 ),
-                velocity: new THREE.Vector3( 0, 5, 0 ),
-                velocitySpread: new THREE.Vector3(20, 20, 20),
-                sizeStart: 0.5,
-                sizeStartSpread: 1,
-                sizeMiddle: 1,
-                sizeMiddleSpread: 0.6,
-                sizeEnd: 1,
-                sizeEndSpread: 0.6,
-                angleStart: 0,
-                angleStartSpread: 50,
-                angleMiddle: 0,
-                angleMiddleSpread: 0,
-                angleEnd: 0,
-                angleEndSpread: 5,
-                angleAlignVelocity: false,
-                colorStart: new THREE.Color( 0xffffff ),
-                colorStartSpread: new THREE.Vector3(0, 0, 0),
-                colorMiddle: new THREE.Color( 0xffffff ),
-                colorMiddleSpread: new THREE.Vector3( 0, 0, 0 ),
-                colorEnd: new THREE.Color( 0xffffff ),
-                colorEndSpread: new THREE.Vector3(0, 0, 0),
-                opacityStart: 1,
-                opacityStartSpread: 0,
-                opacityMiddle: 1,
-                opacityMiddleSpread: 0,
-                opacityEnd: 1,
-                opacityEndSpread: 0,
-                duration: null,
-                alive: 3.0,
-                isStatic: 0
+            type: 'cube',
+            particleCount: 50, //particlesPerSecond
+            position: new THREE.Vector3(0, 20, 0),
+            positionSpread: new THREE.Vector3(30, 0, 30),
+            acceleration: new THREE.Vector3(0, -10, 0),
+            accelerationSpread: new THREE.Vector3( 0, -10, 0 ),
+            velocity: new THREE.Vector3( 0, 5, 0 ),
+            velocitySpread: new THREE.Vector3(20, 20, 20),
+            sizeStart: 0.5,
+            sizeStartSpread: 1,
+            sizeMiddle: 1,
+            sizeMiddleSpread: 0.6,
+            sizeEnd: 1,
+            sizeEndSpread: 0.6,
+            angleStart: 0,
+            angleStartSpread: 50,
+            angleMiddle: 0,
+            angleMiddleSpread: 0,
+            angleEnd: 0,
+            angleEndSpread: 5,
+            angleAlignVelocity: false,
+            colorStart: new THREE.Color( 0xffffff ),
+            colorStartSpread: new THREE.Vector3(0, 0, 0),
+            colorMiddle: new THREE.Color( 0xffffff ),
+            colorMiddleSpread: new THREE.Vector3( 0, 0, 0 ),
+            colorEnd: new THREE.Color( 0xffffff ),
+            colorEndSpread: new THREE.Vector3(0, 0, 0),
+            opacityStart: 1,
+            opacityStartSpread: 0,
+            opacityMiddle: 1,
+            opacityMiddleSpread: 0,
+            opacityEnd: 1,
+            opacityEndSpread: 0,
+            duration: null,
+            alive: 3.0,
+            isStatic: 0
         });
         particleWeather.addEmitter(particleEmitter);
         scene3D.add(particleWeather.mesh);
+        */
 
     } else if (WEATHER == "rainy") {
 
@@ -5032,43 +4703,53 @@ function scene3DSetWeather() {
         //engine.initialize();
     }
 
-    scene3D.remove(weatherSkyMesh);
+    scene3D.remove(weatherSkyCloudsMesh);
     scene3D.remove(weatherSkyRainbowMesh);
 
     if (DAY == 'day') {
+
         //scene3D.add(weatherSkyDayMesh);
-        texture = new THREE.ImageUtils.loadTexture('images/cloud.png');
-        texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-        texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-        weatherSkyMaterial.uniforms.map.value = texture;
-        weatherSkyMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
+        if(options.clouds)
+        {
+            texture = new THREE.ImageUtils.loadTexture('images/cloud.png');
+            texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
+            texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
+            weatherSkyMaterial.uniforms.map.value = texture;
+            weatherSkyCloudsMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
+            scene3D.add(weatherSkyCloudsMesh);
+        }
 
-        texture = new THREE.ImageUtils.loadTexture('images/rainbow.png');
-        texture.minFilter = THREE.LinearFilter;
-        var materialRainbow = weatherSkyMaterial.clone();
-        materialRainbow.uniforms.map.value = texture;
+        if(options.rainbow)
+        {
+            texture = new THREE.ImageUtils.loadTexture('images/rainbow.png');
+            texture.minFilter = THREE.LinearFilter;
+            var materialRainbow = weatherSkyMaterial.clone();
+            materialRainbow.uniforms.map.value = texture;
 
-        geometry = new THREE.Geometry();
-        var plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
-        plane.position.x = getRandomInt(1, 15);
-        plane.position.y = getRandomInt(5, 8);
-        plane.position.z = -2;
-        plane.updateMatrix();
-        geometry.merge(plane.geometry, plane.matrix);
-        weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialRainbow);
+            geometry = new THREE.Geometry();
+            var plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
+            plane.position.x = getRandomInt(1, 15);
+            plane.position.y = getRandomInt(5, 8);
+            plane.position.z = -2;
+            plane.updateMatrix();
+            geometry.merge(plane.geometry, plane.matrix);
+            weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialRainbow);
 
-        //scene3D.add(weatherSkyRainbowMesh);
+            scene3D.add(weatherSkyRainbowMesh);
+        }
     }
     else if (DAY == 'night')
     {
-        texture = new THREE.ImageUtils.loadTexture('images/cloud2.png');
-        texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-        texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-        weatherSkyMaterial.uniforms.map.value = texture;
-        weatherSkyMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
+        if(options.clouds)
+        {
+            texture = new THREE.ImageUtils.loadTexture('images/cloud2.png');
+            texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
+            texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
+            weatherSkyMaterial.uniforms.map.value = texture;
+            weatherSkyCloudsMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
+            scene3D.add(weatherSkyCloudsMesh);
+        }
     }
-
-    //scene3D.add(weatherSkyMesh);
 }
 
 function menuSelect(item, id, color) {
@@ -5161,8 +4842,8 @@ function selectDayNight() {
     scene3DSetWeather();
 
     scene3D.add(skyMesh);
-    scene3D.add(weatherSkyMesh);
-    scene3D.add(weatherSkyRainbowMesh);
+    //scene3D.add(weatherSkyCloudsMesh);
+    //scene3D.add(weatherSkyRainbowMesh);
 }
 
 function selectWeather() {
@@ -5193,8 +4874,9 @@ function onWindowResize() {
         //camera2D.aspect = window.innerWidth / window.innerHeight;
         //camera2D.updateProjectionMatrix();
     //}
-    effectFXAA.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
-    composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+
+    //effectFXAA.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+    //composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     correctMenuHeight();
@@ -5348,7 +5030,7 @@ function onDocumentDoubleClick(event) {
 
             //particlePivotEmitter.position = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z);
             
-
+            /*
             particlePivot = new SPE.Group({
                 texture: THREE.ImageUtils.loadTexture("images/star.png"),
                 maxAge: 4.0,
@@ -5360,15 +5042,13 @@ function onDocumentDoubleClick(event) {
                 depthTest: true,
                 blending: THREE.AdditiveBlending
             });
-
             particlePivotEmitter.disable();
             particlePivotEmitter.position = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z),
             particlePivot.addEmitter(particlePivotEmitter);
-
             scene3D.add(scene3DPivotPoint);
             scene3D.add(particlePivot.mesh);
-
             particlePivotEmitter.enable();
+            */
 
             var tween = new TWEEN.Tween(controls3D.target).to({x:intersects[0].point.x, y:0, z:intersects[0].point.z},800).easing(TWEEN.Easing.Quadratic.InOut).start();
 
@@ -5376,11 +5056,8 @@ function onDocumentDoubleClick(event) {
 
             doubleClickTime = setTimeout(function() {
                 scene3D.remove(scene3DPivotPoint);
-
-                //engine.destroy();
-                //engine = null;
-                particlePivotEmitter.disable();
-                scene3D.remove(particlePivot.mesh);
+                //particlePivotEmitter.disable();
+                //scene3D.remove(particlePivot.mesh);
                 //particlePivot = new SPE.Group({});
 
             }, 4000);
@@ -6032,8 +5709,7 @@ function on3DMouseMove(event) {
         	//console.log("set SceneAnimate");
         	SceneAnimate = true; 
         	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
-
-            animate();
+            //animate();
     	}
     //}
     /*
@@ -6167,6 +5843,7 @@ function on3DMouseDown(event) {
 
     if (SelectedObject !== null)
     {
+        //console.log("on3DMouseDown unselect objet");
         clickMenuTime = setTimeout(function(){
             scene3DObjectUnselect();
             if (controls3D instanceof THREE.TransformControls && !TransformConstrolsHighlighted)
@@ -6183,11 +5860,11 @@ function on3DMouseDown(event) {
     }
 
     $(renderer.domElement).bind('mousemove', on3DMouseMove);
-
+    /*
     if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls || SelectedObject !== null) {
         return;
     }
-
+    */
     //clickTime = new Date().getTime();
     
     SceneAnimate = false;
@@ -6329,12 +6006,13 @@ function on3DMouseUp(event) {
 
     //} else {
 
-    clearTimeout(clickTime); //prevents from hiding menus too fast
-    
+     
     scene3D.remove(scene3DPivotPoint);
     //scene3DPivotPoint.traverse( function ( object ) { object.visible = false; } );
 
     //scene3D.needsUpdate = true;
+
+    clearTimeout(clickTime); //prevents from hiding menus too fast
 
     if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0) {
         toggleSideMenus(true);
@@ -6873,7 +6551,7 @@ function openScene(zipData) {
 
     zip = new JSZip(zipData);
     //zip.folder("Textures").load(data);
-
+    /*
     try{
         terrain3DRawHillData = JSON.parse(zip.file("scene3DTerrainHill.json").asText());
         landscape.select('hill');
@@ -6895,7 +6573,7 @@ function openScene(zipData) {
             //console.log(this);
         });
     }catch(ex){}
-
+    */
     var i = 0;
     $.each(JSON.parse(zip.file("scene2DFloorContainer.json").asText()), function(index)
     {
@@ -6939,7 +6617,7 @@ function openScene(zipData) {
             var note = null;
             if(this.note !== null)
                 note = this.note;
-            //console.log(this['position.x']);
+            console.log(this.file);
             open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
         });
         i++;
@@ -6949,23 +6627,37 @@ function openScene(zipData) {
         open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
+    var result = JSON.parse(zip.file("scene3DHouseContainer.json").asText())
+    for (var k in result) {
+        //console.log(k, result[k]);
+        var item = result[k];
+        //console.log(item);
+        //setTimeout(function() {
+            open3DModel(item.file, scene3DRoofContainer, item['position.x'], item['position.y'], item['position.z'], item['rotation.x'], item['rotation.y'], 1, true, null);
+        //}, 100);
+        //open3DModel(item.file, scene3DHouseContainer, item.position.x, item.position.y, item.position.z, item.rotation.x, item.rotation.y, 1, true, null);
+    }
+    /*
     $.each(JSON.parse(zip.file("scene3DHouseContainer.json").asText()), function(index){
-        open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        //setTimeout(function() {
+            open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        //}, 100);
     });
-
+    */
+    
     $.each(JSON.parse(zip.file("scene3DRoofContainer.json").asText()), function(index){
         open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
-
+    
     try{
         var options = JSON.parse(zip.file("options.json").asText());
         //console.log(options);
 
-        if(options.settings.clouds == false)
-            scene3D.remove(weatherSkyMesh);
+        if(options.settings.clouds === false)
+            options.clouds = false;
         
-        if(options.settings.rainbow == false)
-            scene3D.remove(weatherSkyRainbowMesh);
+        if(options.settings.rainbow === false)
+            options.rainbow = false;
 
         for (var i = 0; i < options.floor.length; i++){
             //console.log(options.floor[i].name);
@@ -6973,9 +6665,9 @@ function openScene(zipData) {
         }
     }catch(ex){}
     //show2D(); //DEBUG 2D
-
+    
     setTimeout(function() {
-        SceneAnimate = true;
+        SceneAnimate = false; //true;
         show3DHouse();
     }, 2000);
 
@@ -7015,7 +6707,6 @@ function scene3DFloorMeasurementsGenerate()
 {
     material = new THREE.LineBasicMaterial({
         color: 0x000000,
-        shininess: 0,
         linewidth: 2
     });
 
@@ -7166,7 +6857,6 @@ function scene3DLevelWallGenerate() {
     var geometry = new THREE.BoxGeometry(15, 4, 13);
     var material = new THREE.MeshBasicMaterial({
         color: 0xE0E0E0,
-        shininess: 0
     });
     var mesh = new THREE.Mesh(geometry,material);
     mesh.position.y = 2;
@@ -7176,7 +6866,6 @@ function scene3DLevelWallGenerate() {
     geometry = new THREE.BoxGeometry(10, 4, 9);
     material = new THREE.MeshBasicMaterial({
         color: 0xB0B0B0,
-        shininess: 0
     });
     mesh = new THREE.Mesh(geometry,material);
     mesh.position.x = 2.5;
@@ -7308,7 +6997,6 @@ function scene3DFloorWallGenerate() {
                 map: scene3DWallInteriorTextureDefault,
                 transparent: true,
                 opacity: 0.6,
-                shininess: 0
                 //side: THREE.DoubleSide,
                 //wireframe: true
             });
@@ -7461,7 +7149,7 @@ function scene3DFloorWallGenerate() {
         geometry.faceVertexUvs[0].push([ uvs[0], uvs[1], uvs[2]] );
         */
 
-        material = new THREE.MeshBasicMaterial({ map: texture, shininess: 0});
+        material = new THREE.MeshBasicMaterial({ map: texture});
 
         //material = new THREE.MeshLambertMaterial( { map: texture } );
         //material = new THREE.MeshPhongMaterial({ map: texture, shininess: 4});
@@ -7515,8 +7203,7 @@ function sceneOpen(file) {
     document.getElementById('engine3D').appendChild(spinner.el);
     document.getElementById("start").getElementsByClassName("close")[0].setAttribute('href', "#close");
 
-    setTimeout(function()
-    {
+    //setTimeout(function(){
         $.ajax("scenes/" + file,{
             contentType: "application/zip",
             beforeSend: function (req) {
@@ -7524,9 +7211,12 @@ function sceneOpen(file) {
             },
             success: function(data){
                 try {
-                    //sceneNew();
-                    scene3DHouseGroundContainer = new THREE.Object3D();
-                    openScene(data);
+                    camera3DAnimate(0,20,0,1500);
+                    setTimeout(function() {
+                        //sceneNew();
+                        scene3DHouseGroundContainer = new THREE.Object3D();
+                        openScene(data);
+                    }, 2000);
                 } catch (e) {
                     alertify.alert("Failed to open Scene " + e);
                 }
@@ -7534,10 +7224,10 @@ function sceneOpen(file) {
                 setTimeout(function()
                 {
                     document.getElementById('engine3D').removeChild(spinner.el);
-                }, 2000);
+                }, 1800);
             }
         });
-    }, 1000);
+    //}, 1000);
 }
 
 function sceneNew() {
@@ -7752,7 +7442,7 @@ function scene3DSetLight() {
     if (SCENE == 'house') {
         if (DAY == 'day') {
 
-            if (sunlight.enabled) 
+            if (options.sunlight) 
             {
                 //SUNLIGHT RAYS
                 sceneAmbientLight = new THREE.AmbientLight(0x555555, 0.1); //SUNLIGHT RAYS
@@ -7828,9 +7518,10 @@ function scene3DSetSky(set) {
         }else if(set == 'night'){
             files =  "2057";
         }
-        console.log("build Panorama: " + files);
+        //console.log("build Panorama: " + files);
 
-        buildPanorama(skyMesh, files, 75, 75, 75, true);
+        skyMesh = new THREE.Object3D();
+        buildPanorama(skyMesh, files, 75, 75, 75,"");
         skyMesh.position.y = 5;
         
         /*
@@ -7843,22 +7534,6 @@ function scene3DSetSky(set) {
         }else{
             files = files + "0000/";
         }
-        
-        var sides = [files + 'front.jpg', files + 'back.jpg', files + 'top.jpg', files + 'bottom.jpg', files + 'left.jpg', files + 'right.jpg'];
-
-        var scCube = THREE.ImageUtils.loadTextureCube(sides);
-        //scCube.format = THREE.RGBFormat;
-
-        var shader = THREE.ShaderLib["cube"]; // prepare skybox material (shader)
-        shader.uniforms["tCube"].value = scCube;
-
-        material = new THREE.ShaderMaterial({
-            fragmentShader: shader.fragmentShader,
-            vertexShader: shader.vertexShader,
-            uniforms: shader.uniforms,
-            depthWrite: false,
-            side: THREE.BackSide
-        });
 
         if (set != 'day') {
             
@@ -8294,7 +7969,8 @@ function animatePanorama() {
 
     if (rendererPanorama instanceof THREE.WebGLRenderer)
     {
-        requestAnimationFrame(animatePanorama);
+        requestAnimationID = window.requestAnimationFrame(animatePanorama);
+
         var delta = clock.getDelta();
 
         mouse.x +=  0.1;
@@ -8307,7 +7983,6 @@ function animatePanorama() {
         target.z = Math.sin( phi ) * Math.sin( theta );
 
         camera3DPanorama.lookAt(target);
-
         //camera3DPanorama.position.copy(camera3DPanorama.target).negate(); // distortion
         
         rendererPanorama.render(scene3DPanorama, camera3DPanorama);
@@ -8318,10 +7993,7 @@ function animatePanorama() {
     }
 }
 
-function animateRotate() {
-
-    if (_animate != 0)
-        return;
+function animateHouseRotate() {
 
     if(!SceneAnimate)
     {
@@ -8329,7 +8001,8 @@ function animateRotate() {
         return;
     }
 
-    requestAnimationFrame(animateRotate);
+    requestAnimationID = window.requestAnimationFrame(animateHouseRotate);
+
     var delta = clock.getDelta();
 
     var rotateSpeed = delta * 0.19; //.005; //Date.now() * 0.0001; //.01;
@@ -8360,16 +8033,14 @@ function animateRotate() {
 
     //controls3D.update(delta);
     renderer.render(scene3D, camera3D);
+
     //TWEEN.update();
 }
 
 function animateFloor()
 {
-    if (_animate != 2)
-        return;
-
-    requestAnimationFrame(animateFloor);
-    var delta = clock.getDelta();
+    requestAnimationID = window.requestAnimationFrame(animateFloor);
+    //var delta = clock.getDelta();
     /*
     move the CubeCamera to the position of the object that has a reflective surface,
     "take a picture" in each direction and apply it to the surface.
@@ -8383,39 +8054,39 @@ function animateFloor()
     sceneSpotLight.visible = false; //Do not reflect light
     //scene3DFloorGroundContainer.children[0].visible = false; //because refrection camera is below the floor
     //scene3D.remove(scene3DFloorGroundContainer); //because refrection camera is below the floor
-    camera3DMirrorReflection.updateCubeMap(renderer, scene3D); //capture the reflection
-    sceneSpotLight.visible = true;
+
+    //camera3DMirrorReflection.updateCubeMap(renderer, scene3D); //capture the reflection
+
+    //sceneSpotLight.visible = true;
     //cene3D.add(scene3DFloorGroundContainer);
     //scene3DFloorGroundContainer.children[0].visible = true;
 
-    particlePivot.tick(delta);
-    controls3D.update(delta);
+    //particlePivot.tick(delta);
+    controls3D.update();
 
-    renderer.clear();
-
+    //renderer.clear();
+    renderer.render( scene3D, camera3D );
+    /*
     if(leftButtonDown){
 
         renderer.render( scene3D, camera3D );
     }else{
         composer.render(delta);
     }
-
+    */
     TWEEN.update();
 }
 
 function animateLandscape()
 {
-    if (_animate != 4)
-        return;
+    requestAnimationID = window.requestAnimationFrame(animateLandscape);
 
-    requestAnimationFrame(animateLandscape);
-
-    var delta = clock.getDelta(); //have to call this before getElapsedTime()
+    //var delta = clock.getDelta(); //have to call this before getElapsedTime()
     //var time = clock.getElapsedTime();
 
     //terrain3DMaterial.map = terrain3D.getSculptDisplayTexture();
     if(controls3D.enabled && leftButtonDown && TOOL3DLANDSCAPE == "rotate")
-        controls3D.update(delta);
+        controls3D.update();
 
     //renderer.autoClear = false;
     //renderer.clear();
@@ -8428,7 +8099,7 @@ function animateLandscape()
 
 function renderSunlight()
 {
-    if ( sunlight.enabled ) {
+    if ( options.sunlight ) {
 
         var sunPosition = new THREE.Vector3( 0, 10, -10 );
         var materialDepth = new THREE.MeshDepthMaterial();
@@ -8541,13 +8212,15 @@ function renderSunlight()
         sunlight.scene.overrideMaterial = null;
 
     } else {
-        renderer.clear();
-
+        //renderer.clear();
+        renderer.render( scene3D, camera3D );
+        /*
         if(leftButtonDown){
             renderer.render( scene3D, camera3D );
         }else{
             composer.render();
         }
+        */
     }
 }
 
@@ -8567,13 +8240,12 @@ function animateClouds()
     }
     */
 
-    if(weatherSkyMesh)
-    {
-        weatherSkyMesh.rotation.y = camera3D.rotation.y; //spiral
-        weatherSkyMesh.rotation.z = camera3D.rotation.z; //side-to-side
-        weatherSkyMesh.rotation.x = camera3D.rotation.x; //top
-        weatherSkyMesh.position.x = camera3D.position.x / 1.5;
-    }
+    //if(weatherSkyCloudsMesh){
+        weatherSkyCloudsMesh.rotation.y = camera3D.rotation.y; //spiral
+        weatherSkyCloudsMesh.rotation.z = camera3D.rotation.z; //side-to-side
+        weatherSkyCloudsMesh.rotation.x = camera3D.rotation.x; //top
+        weatherSkyCloudsMesh.position.x = camera3D.position.x / 1.5;
+    //}
 
     //weatherSkyDayMesh.position.z = camera3D.position.z;
     //weatherSkyDayMesh.rotation = camera3D.rotation;
@@ -8587,52 +8259,51 @@ function animateClouds()
 
 function animateHouse()
 {
-    if (_animate != 1)
-        return;
-
+    /*
     if (SceneAnimate){
         animate();
         return;
     }
+    */
+    requestAnimationID = window.requestAnimationFrame(animateHouse);
 
-    requestAnimationFrame(animateHouse);
-    var delta = clock.getDelta();
+    //var delta = clock.getDelta();
+    
+    //if (controls3D instanceof THREE.OrbitControls){
+        //particlePivot.tick(delta);
+        //particleWeather.tick(delta);
 
-    if (controls3D instanceof THREE.OrbitControls)
-    {
-        particlePivot.tick(delta);
-        particleWeather.tick(delta);
+    animateClouds();
 
-        animateClouds();
-
-        rendererCube.render(scene3DCube, camera3DCube);
         /*
         for (var a in animation) {
             a.update(delta * 0.8);
         }
         */
-    }
-    controls3D.update(delta);
-
-    renderSunlight(); //renderer.render(scene3D, camera3D);
+    //}
     
+    controls3D.update();
+
+    //renderSunlight(); //renderer.render(scene3D, camera3D);
+    /*
     if(getScreenshotData == true){
         getScreenshotData = false;
         window.open(renderer.domElement.toDataURL('image/png'), 'Final');
     }
+    */
+    
+    //renderer.clear();
+    renderer.render( scene3D, camera3D );
+    rendererCube.render(scene3DCube, camera3DCube);
 
     TWEEN.update();
 
-    //stats.update();
     /*
     var timer = Date.now() * 0.0005;
-
     camera.position.x = Math.cos( timer ) * 10;
     camera.position.y = 2;
     camera.position.z = Math.sin( timer ) * 10;
-
     camera.lookAt( scene.position );
-
     particleLight.position.x = Math.sin( timer * 4 ) * 3009;
     particleLight.position.y = Math.cos( timer * 5 ) * 4000;
     particleLight.position.z = Math.cos( timer * 4 ) * 3009;
@@ -8645,16 +8316,12 @@ function animateHouse()
 
 function animateRoof()
 {
-    if (_animate != 3)
-        return;
-
-    requestAnimationFrame(animateRoof);
-
+    requestAnimationID = window.requestAnimationFrame(animateRoof);
     // setViewport parameters:
     //  lower_left_x, lower_left_y, viewport_width, viewport_height
 
     //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-    renderer.clear();
+    //renderer.clear();
 
     // upper left corner
     renderer.setViewport(0, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
@@ -8678,37 +8345,45 @@ function animateRoof()
     renderer.render(scene3D, camera3DQuad[3]); //perspective
 }
 
+function animateStop()
+{
+    //http://stackoverflow.com/questions/10735922/how-to-stop-a-requestanimationframe-recursion-loop
+    if(requestAnimationID)
+    {
+        window.cancelAnimationFrame(requestAnimationID);
+        requestId = undefined;
+        SceneAnimate = false;
+    }
+}
+
 function animate()
 {
     //Look into Threading this with WebWorkers > http://www.html5rocks.com/en/tutorials/workers/basics/
+    console.log("animate");
+
+    animateStop();
 
     if (SCENE == 'house')
     {
         if (SceneAnimate)
         {
-            _animate = 0;
-            camera3D.position.set(0, 6, 20);
             TWEEN.removeAll(); //avoid any tween checks whilre rotating (faster)
-            animateRotate();
+            //camera3D.position.set(0, 6, 20);
+            animateHouseRotate();
         }else{
-            _animate = 1;
             animateHouse();
-            //camera3DHouseEnter();
         }
     }
     else if (SCENE == 'floor')
     {
-        _animate = 2;
         animateFloor();
     }
     else if (SCENE == 'landscape' || SCENE == 'floorlevel')
     {
-        _animate = 4;
         animateLandscape();
     }
     else if (SCENE == 'roof')
     {
-        _animate = 3;
         animateRoof();
     }
 }

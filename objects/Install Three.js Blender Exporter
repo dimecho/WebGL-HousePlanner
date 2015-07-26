@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ROOT="$(dirname "$0")"
-BLENDER_PATH=/Applications/blender.app/Contents/Resources/2.74/scripts/addons/
+BLENDER_PATH=/Applications/blender.app/Contents/Resources/2.75/scripts/addons/
 
 cd "$ROOT"
 cp "Platform/io_three.zip" "$BLENDER_PATH"
