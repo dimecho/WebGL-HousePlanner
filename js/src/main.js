@@ -78,7 +78,6 @@ var sceneSpotLight;
 //var scenePointLight;
 
 var controls3D; //Multi-Class three.js controls library objects - Orbit, FirstPerson and Transform
-
 var camera3D;
 var camera3DPositionCache;
 var camera3DPivotCache;
@@ -90,21 +89,18 @@ var camera3DPanorama;
 
 var groundGrid;
 var groundMesh;
-//var glowMesh;
-
 var skyMesh;
-//var weatherSkyDayMesh;
-//var weatherSkyNightMesh;
 var weatherSkyGeometry;
 var weatherSkyMaterial;
 var weatherSkyCloudsMesh;
 var weatherSkyRainbowMesh;
+//var weatherSkyDayMesh;
+//var weatherSkyNightMesh;
 
 var SESSION = '';
 var RUNMODE = 'local'; //database
 var VIEWMODE = 'designer'; //public
 var RADIAN = (Math.PI / 180);
-var SceneAnimate = false;
 var SCENE = 'house';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
@@ -119,9 +115,9 @@ var SelectedObject = null;
 var SelectedNote = null;
 var SelectedPicture = null;
 var SelectedWall = null;
-var ViewNoteText = "";
 
 var leftButtonDown = false;
+var rightButtonDown = false;
 var clickTime;
 var clickMenuTime;
 var doubleClickTime;
@@ -161,6 +157,7 @@ var scene2DWallBearingMaterialSelect;
 var physics3DContainer; //Fake 3D objects (CANNON.Box) that get passed to Cannon Engine
 
 var animation = [];
+var scene3DAnimateRotate = false;
 var requestAnimationID;
 /*
 var particlePivot;
@@ -168,7 +165,7 @@ var particlePivotEmitter;
 var particleWeather;
 */
 
-var options = { sunlight : false, clouds: true, rainbow: true };
+var settings = { sunlight : false, clouds: true, rainbow: true, panorama_day: "2056", panorama_night: "2057", autorotate: false };
 
 //var particleClouds;
 var mouse; //THREE.Vector2()
@@ -183,9 +180,6 @@ var geometry;
 var material;
 var texture;
 var mesh;
-var zip;
-
-//var stats;
 
 var terrain3D;
 var terrain3DMaterial;
@@ -221,8 +215,8 @@ function init(runmode,viewmode) {
     }
 
     $('#pxs_container').parallaxSlider();
-    
-    if (getCookie("firstTimer") === null)
+
+    if (getCookie("firstTimer"))
     {
         createCookie("firstTimer","1",15);
         window.location.href = "#start";
@@ -750,7 +744,7 @@ function scene3DFreeMemory()
             }
             */
         }
-        //scene3DObjectUnselect();
+        scene3DObjectUnselect();
     }
     //skyMesh = new THREE.Object3D();
     //scene3D.remove(skyMesh);
@@ -2355,22 +2349,22 @@ function camera3DPictureExit()
 
 function camera3DNoteEnter()
 {
-    if (ViewNoteText === "")
-        return;
-    //camera3D.add(SelectedNote);
+    if (SelectedNote.name !== "")
+    {
+        //camera3D.add(SelectedNote);
 
-    var pLocal = new THREE.Vector3( 0, -0.5, -0.6 );
-    var target = pLocal.applyMatrix4(camera3D.matrixWorld);
+        var pLocal = new THREE.Vector3( 0, -0.5, -0.6 );
+        var target = pLocal.applyMatrix4(camera3D.matrixWorld);
 
-    var tween = new TWEEN.Tween(SelectedNote.position).to(target,2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-        $('#WebGLNote').show();
-    }).start();
-    tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+        var tween = new TWEEN.Tween(SelectedNote.position).to(target,2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+            $('#WebGLNote').show();
+        }).start();
+        tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
+    }
 }
 
 function camera3DNoteExit()
 {
-    ViewNoteText = "";
     $('#WebGLNote').hide();
    
     //camera3D.remove(SelectedNote);
@@ -2380,14 +2374,14 @@ function camera3DNoteExit()
 
 function camera3DAnimate(x,y,z,speed)
 {
-    //if(!SceneAnimate){
+    if(!scene3DAnimateRotate){
 	    //camera3D.position.set(0, 6, 20);
 	    //controls3D.target = new THREE.Vector3(0, 50, 0);
         //camera3D.position.set(0, 20, 0);
         //camera3D.position.set(sx, sy, sz);
 	    var tween = new TWEEN.Tween(camera3D.position).to({x:x, y:y, z:z},speed).easing(TWEEN.Easing.Quadratic.InOut).start();
         tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},speed).easing(TWEEN.Easing.Quadratic.InOut).start();
-    //}
+    }
 }
 
 function camera3DWalkViewToggle()
@@ -2405,7 +2399,7 @@ function camera3DWalkViewToggle()
         if (e) {
             camera3DPositionCache = camera3D.position.clone();
             camera3DPivotCache = controls3D.target.clone();
-            SceneAnimate = false;
+            scene3DAnimateRotate = false;
 
             //TODO: anmate left and right menu hide
             var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:1.5, z:18},2000).easing(TWEEN.Easing.Quadratic.InOut).start();  
@@ -2554,7 +2548,6 @@ try{
         object.boundingBox.max.y = 0;
         object.boundingBox.max.z = 0;
 
-
         var geometry = new THREE.BufferGeometry();
         var meshArray = new THREE.Object3D();
         var geometryMerge = new THREE.Geometry();
@@ -2610,7 +2603,7 @@ try{
                 {
                     //console.log(child.material)
                     //child.material.shading = THREE.SmoothShading;
-                    //child.material.side = THREE.DoubleSide; //Normally this will slow things down > do "solidify" with Blender
+                    child.material.side = THREE.DoubleSide; //Normally this will slow things down > do "solidify" with Blender
                     //child.material.depthWrite = true; //Blender exports fix
                     //child.material.offset = 0; //v72
                     //child.material.repeat = 0; //v72
@@ -3122,6 +3115,7 @@ function show3DHouse() {
 
     $(renderer.domElement).bind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).bind('mouseup', on3DHouseMouseUp);
+    $(renderer.domElement).bind('mouseup', on3DHouseMouseMove);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
     if (TOOL3DINTERACTIVE == 'moveXY') {
@@ -3148,9 +3142,9 @@ function show3DHouse() {
     scene3DSetSky(DAY);
     scene3D.add(skyMesh);
 
-    if(options.clouds)
+    if(settings.clouds)
         scene3D.add(weatherSkyCloudsMesh);
-    if(options.rainbow)
+    if(settings.rainbow)
         scene3D.add(weatherSkyRainbowMesh);
     
     scene3DSetLight();
@@ -3182,7 +3176,7 @@ function show3DHouse() {
     //console.trace();
 
     setTimeout(function() {
-        camera3DAnimate(0,6,20, 1000);
+        camera3DAnimate(0,6,18, 1000);
     }, 1500);
     
     animate();
@@ -3434,7 +3428,7 @@ function getHeightData(img,scale) //return array with height data from img
 //========================================
 function show3DLandscape() {
 
-    SceneAnimate = false;
+    scene3DAnimateRotate = false;
     scene3DFreeMemory();
     hideElements();
     //scene3D = new THREE.Scene();
@@ -3500,7 +3494,7 @@ function show3DLandscape() {
 
 function show3DFloor() {
 
-    SceneAnimate = false;
+    scene3DAnimateRotate = false;
     scene3DFreeMemory();
     hideElements();
     //scene3D = new THREE.Scene();
@@ -3592,7 +3586,7 @@ function show3DFloor() {
 
 function show3DFloorLevel() {
  
-    SceneAnimate = false;
+    scene3DAnimateRotate = false;
     scene3DFreeMemory();
     hideElements();
     //scene3D = new THREE.Scene();
@@ -3625,7 +3619,7 @@ function show3DFloorLevel() {
 
 function show3DRoofDesign() {
  
-    SceneAnimate = false;
+    scene3DAnimateRotate = false;
     scene3DFreeMemory();
     hideElements();
     //scene3D = new THREE.Scene();
@@ -3695,7 +3689,7 @@ function scene3DSunlight() {
     God Rays (Sunlight Effect)
     http://threejs.org/examples/webgl_sunlight_godrays.html
     */
-    if(options.sunlight)
+    if(settings.sunlight)
     {
         var sunPosition = new THREE.Vector3( 0, 10, -10 );
         var materialDepth = new THREE.MeshDepthMaterial();
@@ -4491,12 +4485,14 @@ function hideElements() {
     
     $(renderer.domElement).unbind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DHouseMouseUp);
+    $(renderer.domElement).unbind('mousemove', on3DHouseMouseMove);
+
     $(renderer.domElement).unbind('dblclick', onDocumentDoubleClick);
 
     $(renderer.domElement).unbind('mousedown', on3DFloorMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DFloorMouseUp);
-    
     $(renderer.domElement).unbind('mousemove', on3DFloorMouseMove);
+
     $(renderer.domElement).unbind('mousedown', on3DLandscapeMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DLandscapeMouseUp);
 
@@ -4709,7 +4705,7 @@ function scene3DSetWeather()
     if (DAY == 'day') {
 
         //scene3D.add(weatherSkyDayMesh);
-        if(options.clouds)
+        if(settings.clouds)
         {
             texture = new THREE.ImageUtils.loadTexture('images/cloud.png');
             texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
@@ -4719,7 +4715,7 @@ function scene3DSetWeather()
             scene3D.add(weatherSkyCloudsMesh);
         }
 
-        if(options.rainbow)
+        if(settings.rainbow)
         {
             texture = new THREE.ImageUtils.loadTexture('images/rainbow.png');
             texture.minFilter = THREE.LinearFilter;
@@ -4740,7 +4736,7 @@ function scene3DSetWeather()
     }
     else if (DAY == 'night')
     {
-        if(options.clouds)
+        if(settings.clouds)
         {
             texture = new THREE.ImageUtils.loadTexture('images/cloud2.png');
             texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
@@ -5522,7 +5518,8 @@ function on3DLandscapeMouseDown(event) {
 
     event.preventDefault();
     //event.stopPropagation();
-    if (event.which == 1) leftButtonDown = true;
+    if (event.which == 1) 
+        leftButtonDown = true;
 
     controls3D.enabled = false;
 
@@ -5617,6 +5614,7 @@ function on3DHouseMouseUp(event) {
 }
 
 function on3DFloorMouseDown(event) {
+
 	on3DMouseDown(event);
 
     if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DFloorFurnitureContainer[FLOOR]))
@@ -5628,95 +5626,155 @@ function on3DFloorMouseDown(event) {
     }
 }
 
+function on3DFloorMouseUp(event) {
+    on3DMouseUp(event);
+
+    var o = 0.1;
+    if(SelectedObject === null)
+    {
+       o = 0.5;
+    }
+    //TODO: exception for collision wall
+    for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++)
+        tween = new TWEEN.Tween(scene3DFloorWallContainer[FLOOR].children[i].material).to({opacity:o}, 500).start();
+}
+
+function on3DCubeMove()
+{
+    /*
+    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
+        return;
+    }
+    */
+    //clearTimeout(clickMenuTime);
+    console.log("cube move");
+    camera3DCube.position.copy(camera3D.position);
+    camera3DCube.position.sub(controls3D.center);
+    camera3DCube.position.setLength(18);
+    camera3DCube.lookAt(scene3DCube.position);
+    //camera3DCube.needsUpdate = true;
+}
+
+function on3DObjectMove(container,event)
+{
+    var collision = false;
+    var x = (event.clientX / window.innerWidth) * 2 - 1;
+    var y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+    var vector = new THREE.Vector3(x, y, 0.5);
+    vector.unproject(camera3D);
+    var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+    var intersects = raycaster.intersectObjects(container.children,true);
+    if (intersects.length > 0) { //No need to check - ground will always be there (faster)
+        //if (!collision){
+             
+            if(leftButtonDown)
+            {
+                $('#WebGLSelectMenu').tooltipster('hide');
+                //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
+                SelectedObject.position.x = intersects[0].point.x;
+                SelectedObject.position.z = intersects[0].point.z;
+            }
+            else if(rightButtonDown)
+            {
+                $('#WebGLSelectMenu').tooltipster('hide');
+                SelectedObject.rotation.y = intersects[0].point.x;
+            }
+        //}
+    }
+}
+
+function on3DHouseMouseMove(event) {
+
+    event.preventDefault();
+
+    //if (!leftButtonDown)
+    //   return;
+
+    if(SelectedObject !== null)
+    {   
+        on3DObjectMove(scene3DHouseGroundContainer.children,event);
+    }else{
+        on3DCubeMove();
+    }
+}
+
 function on3DFloorMouseMove(event) {
 
 	event.preventDefault();
 
-    if (!leftButtonDown) {
-        return;
-    }
+    //if (!leftButtonDown)
+    //    return;
 
-    var tween;
-    var v = new THREE.Vector3( 0, 0, 8 ); //TODO: make this dynamic
-    v.applyQuaternion(camera3D.quaternion);
-    scene3DCutawayPlaneMesh.position.copy(v);
-    scene3DCutawayPlaneMesh.lookAt(camera3D.position);
-
-    if(TWEEN.getAll().length === 0) //do not interfere with existing animations (performance)
+    if(SelectedObject !== null)
     {
-        var collection = [];
-        var originPoint = scene3DCutawayPlaneMesh.position.clone();
-      
-        for (var vertexIndex = 0; vertexIndex < scene3DCutawayPlaneMesh.geometry.vertices.length; vertexIndex++)
+        on3DObjectMove(scene3DFloorGroundContainer,event);
+    }else{
+        var tween;
+        var v = new THREE.Vector3( 0, 0, 8 ); //TODO: make this dynamic
+        v.applyQuaternion(camera3D.quaternion);
+        scene3DCutawayPlaneMesh.position.copy(v);
+        scene3DCutawayPlaneMesh.lookAt(camera3D.position);
+
+        if(TWEEN.getAll().length === 0) //do not interfere with existing animations (performance)
         {
-            var localVertex = scene3DCutawayPlaneMesh.geometry.vertices[vertexIndex].clone();
-            var globalVertex = localVertex.applyMatrix4(scene3DCutawayPlaneMesh.matrix);
-            var directionVector = globalVertex.sub(scene3DCutawayPlaneMesh.position);
-            
-            var ray = new THREE.Raycaster(originPoint,directionVector.clone().normalize());
-            var collisionResults = ray.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
-
-            if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
+            var collection = [];
+            var originPoint = scene3DCutawayPlaneMesh.position.clone();
+          
+            for (var vertexIndex = 0; vertexIndex < scene3DCutawayPlaneMesh.geometry.vertices.length; vertexIndex++)
             {
-                //console.log("Intersects " + collisionResults.length);
-                //if(collisionResults[0].object.material.opacity > 0.1)
-                    tween = new TWEEN.Tween(collisionResults[0].object.material).to({opacity:0.1}, 800).start();
+                var localVertex = scene3DCutawayPlaneMesh.geometry.vertices[vertexIndex].clone();
+                var globalVertex = localVertex.applyMatrix4(scene3DCutawayPlaneMesh.matrix);
+                var directionVector = globalVertex.sub(scene3DCutawayPlaneMesh.position);
+                
+                var ray = new THREE.Raycaster(originPoint,directionVector.clone().normalize());
+                var collisionResults = ray.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
 
-                collection.push(collisionResults[0].object.id);
-                //break;
+                if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
+                {
+                    //console.log("Intersects " + collisionResults.length);
+                    //if(collisionResults[0].object.material.opacity > 0.1)
+                        tween = new TWEEN.Tween(collisionResults[0].object.material).to({opacity:0.1}, 800).start();
+
+                    collection.push(collisionResults[0].object.id);
+                    //break;
+                }
             }
         }
-
-        for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++)
-        {
-            if (collection.indexOf(scene3DFloorWallContainer[FLOOR].children[i].id) == -1)
-                tween = new TWEEN.Tween(scene3DFloorWallContainer[FLOOR].children[i].material).to({opacity:0.5}, 500).start();
-            //console.log(scene3DFloorWallContainer[FLOOR].children[i].id);
-        }
+        on3DCubeMove();
     }
-}
-
-function on3DFloorMouseUp(event) {
-	on3DMouseUp(event);
 }
 
 function on3DMouseMove(event) {
 
     event.preventDefault();
 
-    if (!leftButtonDown) {
-        return;
-    }
-    
-    clearTimeout(clickMenuTime);
-    //clickMenuTime = null;
-
-    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
+    if (!leftButtonDown || !rightButtonDown ||controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
         return;
     }
 
-    //if(TWEEN.getAll().length == 0) { //do not interfere with existing animations (performance)
-
+    //if(TWEEN.getAll().length == 0) { //do not interfere with existing animations
+        clearTimeout(clickMenuTime);
         //console.log("mouse:" + event.clientX + " window:" + window.innerWidth);
+     
+            camera3DCube.position.copy(camera3D.position);
+            camera3DCube.position.sub(controls3D.center);
+            camera3DCube.position.setLength(18);
+            camera3DCube.lookAt(scene3DCube.position);
+        
 
-        camera3DCube.position.copy(camera3D.position);
-        camera3DCube.position.sub(controls3D.center);
-        camera3DCube.position.setLength(18);
-        camera3DCube.lookAt(scene3DCube.position);
-
+        /*
         if (event.clientX > window.innerWidth - 50)
         {
-        	//console.log("set SceneAnimate");
-        	SceneAnimate = true; 
+        	scene3DAnimateRotate = true; 
         	leftButtonDown = false; //TODO: fix this if mouse is outside screen mouseup never triggered
-            //animate();
+            animate();
     	}
+        */
     //}
+
     /*
     if (SelectedObject != null) {
-
-        var x = (event.clientX / window.innerWidth) * 2 - 1;
-        var y = -(event.clientY / window.innerHeight) * 2 + 1;
 
         $('#WebGLInteractiveMenu').hide();
         $('#WebGLTextureSelect').hide();
@@ -5836,21 +5894,26 @@ function on3DMouseDown(event) {
 
     event.preventDefault();
 
-    if (event.which == 1) leftButtonDown = true; // Left mouse button was pressed, set flag
+    if (event.which === 1) 
+        leftButtonDown = true; // Left mouse button was pressed, set flag
+
+    if (event.which === 3) 
+        rightButtonDown = true; // Left mouse button was pressed, set flag
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    if (SelectedObject !== null)
+    //scene3DObjectUnselect();
+    /*
+    if (SelectedObject != null)
     {
-        //console.log("on3DMouseDown unselect objet");
+        console.log("on3DMouseDown unselect objet");
         clickMenuTime = setTimeout(function(){
-            scene3DObjectUnselect();
+            //scene3DObjectUnselect();
             if (controls3D instanceof THREE.TransformControls && !TransformConstrolsHighlighted)
             {
                 //console.log(TransformConstrolsHighlighted);
                 controls3D.detach(SelectedObject);
-                
                 enableOrbitControls();
 
                 scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
@@ -5858,8 +5921,8 @@ function on3DMouseDown(event) {
             }
         }, 500);
     }
-
-    $(renderer.domElement).bind('mousemove', on3DMouseMove);
+    */
+    //$(renderer.domElement).bind('mousemove', on3DMouseMove);
     /*
     if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls || SelectedObject !== null) {
         return;
@@ -5867,9 +5930,7 @@ function on3DMouseDown(event) {
     */
     //clickTime = new Date().getTime();
     
-    SceneAnimate = false;
-
-    //renderer.antialias = false;
+    scene3DAnimateRotate = false;
 
     clickTime = setTimeout(function() {
         if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
@@ -5899,18 +5960,35 @@ function on3DMouseUp(event) {
 
     event.preventDefault();
 
-    if (event.which == 1) leftButtonDown = false; // Left mouse button was released, clear flag
+    if (event.which == 1) 
+        leftButtonDown = false; // Left mouse button was released, clear flag
 
-    $(renderer.domElement).unbind('mousemove', on3DMouseMove);
+    if (event.which == 3)
+        rightButtonDown = false;
 
-    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls || SelectedObject !== null) {
+
+    if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
         return;
     }
 
-    //mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    //mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    scene3D.remove(scene3DPivotPoint);
 
-    
+    clearTimeout(clickTime); //prevents from hiding menus too fast
+
+    if(SelectedObject != null)
+    {
+
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        //var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},1000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+           var v = scene3DObjectSelectMenuPosition(mouse.x,mouse.y);
+            $('#WebGLSelectMenu').css({ position: 'absolute', left: v.x, top: v.y-50 });
+            $('#WebGLSelectMenu').tooltipster('show');
+        //}).start();
+    }else{
+
+
 
     //if (SCENE == '2d') {
 
@@ -6006,16 +6084,10 @@ function on3DMouseUp(event) {
 
     //} else {
 
-     
-    scene3D.remove(scene3DPivotPoint);
-    //scene3DPivotPoint.traverse( function ( object ) { object.visible = false; } );
-
-    //scene3D.needsUpdate = true;
-
-    clearTimeout(clickTime); //prevents from hiding menus too fast
-
-    if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0) {
-        toggleSideMenus(true);
+        clickTime = setTimeout(function() {
+            if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0)
+                toggleSideMenus(true);
+        }, 1400);
     }
     //container.style.cursor = 'auto';
 }
@@ -6031,12 +6103,13 @@ function scene3DObjectSelectRemove() {
     }
     
     scene3DObjectUnselect();
+    //controls3D.enabled = true;
 }
 
-function scene3DObjectSelectMenu(x, y, menuID) {
-
+function scene3DObjectSelectMenuPosition(x, y) 
+{
     //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
-    vector = new THREE.Vector3(x, y, 0.1);
+    var vector = new THREE.Vector3(x, y, 0.1);
 
     var percX, percY;
 
@@ -6044,12 +6117,12 @@ function scene3DObjectSelectMenu(x, y, menuID) {
     //vector = projector.projectVector(vector.setFromMatrixPosition(SELECTED.matrixWorld), camera3D); //vector will give us position relative to the world
     if (SelectedObject !== null)
     {
-    	vector = vector.setFromMatrixPosition(SelectedObject.children[0].matrixWorld);
-	}
-	else if (SelectedWall !== null)
-	{
-		vector = vector.setFromMatrixPosition(SelectedWall.matrixWorld);
-	}
+        vector = vector.setFromMatrixPosition(SelectedObject.matrixWorld);
+    }
+    else if (SelectedWall !== null)
+    {
+        vector = vector.setFromMatrixPosition(SelectedWall.matrixWorld);
+    }
     vector.project(camera3D); //vector will give us position relative to the world
     
     // translate our vector so that percX=0 represents the left edge, percX=1 is the right edge, percY=0 is the top edge, and percY=1 is the bottom edge.
@@ -6059,6 +6132,13 @@ function scene3DObjectSelectMenu(x, y, menuID) {
     // scale these values to our viewport size
     vector.x = percX * window.innerWidth; // - $(menuID).width(); // * 2;
     vector.y = percY * window.innerHeight; //- $(menuID).height() / 2;
+    return vector;
+}
+
+function scene3DObjectSelectMenu(x, y, menuID) {
+
+    //http://zachberry.com/blog/tracking-3d-objects-in-2d-with-three-js/
+    var vector = scene3DObjectSelectMenuPosition(x,y);
 
     $(menuID).css('top', vector.y - 60).css('left', vector.x);
     $(menuID).show();
@@ -6129,178 +6209,186 @@ function scene3DObjectSelect(x, y, camera, object) {
         return true;
     */
 
-    //if (controls3D instanceof THREE.OrbitControls){
+    if (controls3D instanceof THREE.OrbitControls){
+
         vector = new THREE.Vector3(x, y, 0.5);
-        //var projector = new THREE.Projector();
-        //projector.unprojectVector(vector, camera);
         vector.unproject(camera);
+
         var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
         var intersects = raycaster.intersectObjects(object.children,true); //recursive! pickup objects within objects (example: notes)
 
-        //var raycaster = projector.pickingRay(vector.clone(), camera3D);
-        //if (scene3DHouseContainer instanceof THREE.Object3D) {
+        //console.log(object);
 
-        //TODO: Find better way of detection - avoiding variable store
-        /*
-        if (SCENE == 'house') {
-            intersects = raycaster.intersectObjects(scene3DHouseContainer.children);
-        } else if (SCENE == 'floor') {
-            intersects = raycaster.intersectObjects(scene3DFloorFurnitureContainer[FLOOR].children);
-        } else {
-            return;
-        }
-    	*/
-
-
-        // INTERSECTED = the object in the scene currently closest to the camera 
-        // and intersected by the Ray projected from the mouse position
-
-        if (intersects.length > 0) { // case if mouse is not currently over an object
-
+        if (intersects.length > 0)
+        {
             //console.log(intersects[0].object);
-            
-            //if (SelectedObject != intersects[0].object){
+            //if (intersects[0].object == scene3DHouseGroundContainer)
+                //return;
 
-                //controls3D.enabled = false;
+            //if (SelectedObject !== intersects[0].object){
+
+                scene3DObjectUnselect(); //avoid showing multiple selected objects
+                controls3D.enabled = false;
+
+                SelectedObject = scene3DObjectSelectedRoot(object,intersects[0].object.uuid);
 
                 if (intersects[0].object.name.indexOf("Platform/note.jsz") >= 0)
                 {
                     SelectedNote = intersects[0].object;
                     camera3DPositionCache = SelectedNote.position.clone();
                     camera3DPivotCache = SelectedNote.rotation.clone();
-                    
-                    ViewNoteText = "test"; //TODO: get object text maybe .name will be a slit array | ???
                     camera3DNoteEnter();
-                    
-                    return true;
                 }
-                else if (intersects[0].object.name.indexOf("Platform/camera.jsz") >= 0)
+                else if (SelectedObject.name.indexOf("Platform/camera.jsz") >= 0)
                 {
-                    SelectedPicture = intersects[0].object;
+                    //TODO: Hide on second click
+                    /*
+                    SelectedPicture = SelectedObject;
                     camera3DPositionCache = SelectedPicture.position.clone();
                     camera3DPivotCache = SelectedPicture.rotation.clone();
-                    
                     camera3DPictureEnter();
-                    
-                    return true;
+                    */
                 }
+                else if (SelectedObject.children === scene3DFloorWallContainer[FLOOR].children)
+                {
+                    SelectedWall = intersects[0].object;
+                    scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLWallPaintMenu');
 
-                if (object == scene3DHouseContainer || object == scene3DFloorFurnitureContainer[FLOOR]) { //avoid selecting ground
-                	
-                    clearTimeout(clickMenuTime);
-                   
-                    //scene3DObjectUnselect(); //avoid showing multiple selected objects
+                }else{
 
-                	//SelectedObject = intersects[0].object;
+                    //clearTimeout(clickMenuTime);
+                    //SelectedObject = intersects[0].object;
 
-                    //Select root group including any attached objects (ex: notes, measurements)
-                    for (var i = 0; i < object.children.length; i++) {
-                        if (object.children[i].children[0].uuid == intersects[0].object.uuid)
+                    var name = "{highlighteMesh}";
+                    var highlighteMesh = SelectedObject.children[SelectedObject.children.length-1];
+                    var c= 0x00ff00;
+                    if(rightButtonDown)
+                        c=0xFFFF00;
+                    var highlightedMaterial = new THREE.MeshBasicMaterial( { color: c, side: THREE.BackSide, opacity: 0.5, transparent: true} );
+
+                    if(highlighteMesh.name !== name) //speed things up
+                    {
+                        highlighteMesh = SelectedObject.clone();
+                        highlighteMesh.name = name;
+                        highlighteMesh.position.set(0,0,0);
+                        highlighteMesh.rotation.set(0,0,0);
+                        highlighteMesh.scale.multiplyScalar(1.06);
+                        SelectedObject.add(highlighteMesh);
+                    }else{
+                        highlighteMesh.visible = true;
+                    }
+
+                    for (var i = 0; i < highlighteMesh.children.length; i++)
+                    {
+                        if(highlighteMesh.children[i].type === "Mesh")
                         {
-                            SelectedObject = object.children[i];
-                            break;
+                            //console.log(o.children[i]);
+                            highlighteMesh.children[i].material = highlightedMaterial;
+                            highlighteMesh.children[i].material.depthWrite = true;
+                            highlighteMesh.children[i].material.depthTest = true;
+                        }else{
+                            highlighteMesh.remove(highlighteMesh.children[i]); //do not save lines to highlighted mesh
                         }
                     }
-                    
-                    //https://github.com/mrdoob/three.js/issues/1689
 
-                    /*
-                    var destinationQuaternion = new THREE.Quaternion(SELECTED.position.x, SELECTED.position.y, SELECTED.position.z, 1);
-                    var newQuaternion = new THREE.Quaternion();
-                    THREE.Quaternion.slerp(camera3D.quaternion, destinationQuaternion, newQuaternion, 0.07);
-                    camera3D.quaternion = newQuaternion;
-                    camera3D.quaternion.normalize();
-                    scene3D.updateMatrixWorld();
-                    */
+                    $('#WebGLSelectMenu').tooltipster('update', '<a href="#item" onclick="" class="lo-icon icon-info" style="color:#606060"></a><a href="#" onclick="" class="lo-icon icon-settings" style="color:#606060"></a>');
+                    var v = scene3DObjectSelectMenuPosition(mouse.x,mouse.y);
+                    $('#WebGLSelectMenu').css({ position: 'absolute', left: v.x, top: v.y-50, 'z-index': 0});
 
-                    //Focus on 3D object
-                	//camera3D.fov = currentFov.fov;
-                	//camera3D.lookAt(intersects[0].object.position);
-                	//camera3D.updateProjectionMatrix();
-
-                    if(intersects[0].distance > 6){
-
+                    if(intersects[0].distance > 8){
                         camera3DPositionCache = camera3D.position.clone();
                         camera3DPivotCache = controls3D.target.clone();
 
-                    	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.children[0].position.x, y:SelectedObject.children[0].position.y+4, z:SelectedObject.children[0].position.z + 6},1500).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-                        	
-                            //http://jeromeetienne.github.io/threex.geometricglow/examples/geometricglowmesh.html
-
-                        	//glowMesh = new THREEx.GeometricGlowMesh(SelectedObject);
-                    		//SelectedObject.add(glowMesh.object3d);
-
-                        	scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+                    	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},1000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+                            $('#WebGLSelectMenu').tooltipster('show');
+                        	//scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
             			}).start();
-        				tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.children[0].position.x, y:SelectedObject.children[0].position.y, z:SelectedObject.children[0].position.z},1500).easing(TWEEN.Easing.Quadratic.InOut).start();
-                        //var tween = new TWEEN.Tween(camera3D.lookAt).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-                        
-                    }else{
-                        scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
-                    }
 
+                        tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},1000).easing(TWEEN.Easing.Quadratic.InOut).start();
+                                    
+        			  }else{
+                       $('#WebGLSelectMenu').tooltipster('show');
+                        //scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+                    }
+                    
                     toggleSideMenus(false);
                 }
-                else if (children == scene3DFloorWallContainer[FLOOR].children)
-                {
-                	SelectedWall = intersects[0].object;
-                    scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLWallPaintMenu');
-                }
-
-                // example of customization of the default glowMesh
-                //var insideUniforms = glowMesh.insideMesh.material.uniforms;
-                //insideUniforms.glowColor.value.set('hotpink');
-                //var outsideUniforms = glowMesh.outsideMesh.material.uniforms;
-                //outsideUniforms.glowColor.value.set('hotpink');
             //}
             return true;
         } else {
-            /*
-            console.log("unselect");
-            clickTime = setTimeout(function(){
-                scene3DObjectUnselect();
-            }, 1000);
-            */
-            //controls3D.enabled = true;
+
+            scene3DObjectUnselect();
+            
             return false;
         }
-    //}
+    }
 }
 
+
+function scene3DObjectSelectedRoot(object,uuid)
+{
+    //BufferedGeometry Fix - Select root group including any attached objects (ex: notes, measurements)
+
+    for (var a = 0; a < object.children.length; a++) {
+        for (var b = 0; b < object.children[a].children.length; b ++) {
+            if (object.children[a].children[b].uuid === uuid)
+                return object.children[a];
+        }
+    }
+    return object;
+}
 function scene3DObjectUnselect() {
 
     if (controls3D instanceof THREE.OrbitControls)
     {
-        /*
-    	if (glowMesh instanceof THREEx.GeometricGlowMesh)
-    	{
-        	SelectedObject.remove(glowMesh.object3d);
-    	}
-        */
+        if(SelectedObject != null)
+        {
+            
 
-        if(SelectedNote !== null)
-        {
-            camera3DNoteExit();
-            SelectedNote = null;
-        }
-        else if(SelectedPicture !== null)
-        {
-            camera3DPictureExit();
-            SelectedPicture = null;
-        }
-        else if(SelectedObject !== null)
-        {
+            //console.log(SelectedObject);
+
+            var highlighteMesh = SelectedObject.children[SelectedObject.children.length-1];
+
+            //console.log(highlighteMesh);
+
+            if(highlighteMesh.name === "{highlighteMesh}")    
+                highlighteMesh.visible = false;
+            //SelectedObject.remove(SelectedObject.children[SelectedObject.children.length-1]);
+
+            //for (var i = 0; i < SelectedObject.children.length; i++) {
+                /*
+                SelectedObject.children[i].material.opacity = 1.0;
+                SelectedObject.children[i].material.color.setHex( SelectedObject.currentHex );
+                SelectedObject.children[i].material.transparent = false;
+                SelectedObject.children[i].material.depthWrite  = true;
+                SelectedObject.children[i].material.depthTest = true;
+                */
+            //}
+            SelectedObject = null;
+            SelectedWall = null;
+
+            $('#WebGLSelectMenu').tooltipster('hide');
             $('#WebGLInteractiveMenu').hide();
             $('#WebGLWallPaintMenu').hide();
             $('#WebGLColorWheelSelect').hide();
             $('#WebGLTextureSelect').hide();
 
-            camera3DAnimateResetView();
+            //camera3DAnimateResetView();
 
-            SelectedObject = null;
-            SelectedWall = null;
+        }
+        else if(SelectedNote !== null)
+        {
+            SelectedNote = null;
+            camera3DNoteExit();
+            
+        }
+        else if(SelectedPicture !== null)
+        {
+            SelectedPicture = null;
+            camera3DPictureExit();
         }
 
+        controls3D.enabled = true;
 	    camera3DPositionCache = null;
 		camera3DPivotCache = null;
 
@@ -6449,15 +6537,13 @@ function saveScene(online) {
         zip.file("scene3DTerrainHill.json", JSON.stringify(terrain3DRawHillData));
         zip.file("scene3DTerrainValley.json", JSON.stringify(terrain3DRawValleyData));
 
-        var options= {};
-        options.settings = {};
-        options.floors = [];
-        options.settings.clouds = true;
-        options.settings.rainbow = true;
+        var o= {};
+        o.settings = settings;
+        o.floors = [];
         for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
-            options.floors.push(JSON.stringify('"name":"' + scene3DFloorFurnitureContainer[i].name + '"'));
+            o.floors.push(JSON.stringify('"name":"' + scene3DFloorFurnitureContainer[i].name + '"'));
         }
-        zip.file("options.json", JSON.stringify(options));
+        zip.file("options.json", JSON.stringify(o));
 
         zip.file("scene3DRoofContainer.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DRoofContainer)));
         zip.file("scene3DHouseContainer.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DHouseContainer)));
@@ -6549,7 +6635,7 @@ function saveScene(online) {
 
 function openScene(zipData) {
 
-    zip = new JSZip(zipData);
+    var zip = new JSZip(zipData);
     //zip.folder("Textures").load(data);
     /*
     try{
@@ -6627,50 +6713,33 @@ function openScene(zipData) {
         open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
-    var result = JSON.parse(zip.file("scene3DHouseContainer.json").asText())
-    for (var k in result) {
-        //console.log(k, result[k]);
-        var item = result[k];
-        //console.log(item);
-        //setTimeout(function() {
-            open3DModel(item.file, scene3DRoofContainer, item['position.x'], item['position.y'], item['position.z'], item['rotation.x'], item['rotation.y'], 1, true, null);
-        //}, 100);
-        //open3DModel(item.file, scene3DHouseContainer, item.position.x, item.position.y, item.position.z, item.rotation.x, item.rotation.y, 1, true, null);
-    }
-    /*
     $.each(JSON.parse(zip.file("scene3DHouseContainer.json").asText()), function(index){
         //setTimeout(function() {
             open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
         //}, 100);
     });
-    */
     
     $.each(JSON.parse(zip.file("scene3DRoofContainer.json").asText()), function(index){
         open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
     
     try{
-        var options = JSON.parse(zip.file("options.json").asText());
-        //console.log(options);
-
-        if(options.settings.clouds === false)
-            options.clouds = false;
-        
-        if(options.settings.rainbow === false)
-            options.rainbow = false;
-
-        for (var i = 0; i < options.floor.length; i++){
-            //console.log(options.floor[i].name);
-            scene3DFloorFurnitureContainer[i].name =  options.floor[i].name; 
+        var o = JSON.parse(zip.file("options.json").asText());
+        //console.log(o);
+        settings = o.settings;
+        for (var i = 0; i < o.floor.length; i++){
+            //console.log(o.floor[i].name);
+            scene3DFloorFurnitureContainer[i].name =  o.floor[i].name; 
         }
     }catch(ex){}
     //show2D(); //DEBUG 2D
     
     setTimeout(function() {
-        SceneAnimate = false; //true;
         show3DHouse();
+        setTimeout(function() {
+            scene3DAnimateRotate = settings.autorotate;
+        }, 4000);
     }, 2000);
-
 }
 
 function imageBase64(id) {
@@ -7442,7 +7511,7 @@ function scene3DSetLight() {
     if (SCENE == 'house') {
         if (DAY == 'day') {
 
-            if (options.sunlight) 
+            if (settings.sunlight) 
             {
                 //SUNLIGHT RAYS
                 sceneAmbientLight = new THREE.AmbientLight(0x555555, 0.1); //SUNLIGHT RAYS
@@ -7514,9 +7583,9 @@ function scene3DSetSky(set) {
         var files = '0000';
 
         if(set == 'day'){
-            files = "2056";
+            files = settings.panorama_day;
         }else if(set == 'night'){
-            files =  "2057";
+            files =  settings.panorama_night;
         }
         //console.log("build Panorama: " + files);
 
@@ -7995,13 +8064,10 @@ function animatePanorama() {
 
 function animateHouseRotate() {
 
-    if(!SceneAnimate)
-    {
-        animate();
-        return;
-    }
-
     requestAnimationID = window.requestAnimationFrame(animateHouseRotate);
+
+    if(!scene3DAnimateRotate)
+        animate();
 
     var delta = clock.getDelta();
 
@@ -8031,7 +8097,7 @@ function animateHouseRotate() {
 
     animateClouds();
 
-    //controls3D.update(delta);
+    //controls3D.update();
     renderer.render(scene3D, camera3D);
 
     //TWEEN.update();
@@ -8099,7 +8165,7 @@ function animateLandscape()
 
 function renderSunlight()
 {
-    if ( options.sunlight ) {
+    if ( settings.sunlight ) {
 
         var sunPosition = new THREE.Vector3( 0, 10, -10 );
         var materialDepth = new THREE.MeshDepthMaterial();
@@ -8259,13 +8325,10 @@ function animateClouds()
 
 function animateHouse()
 {
-    /*
-    if (SceneAnimate){
-        animate();
-        return;
-    }
-    */
     requestAnimationID = window.requestAnimationFrame(animateHouse);
+
+    if (scene3DAnimateRotate)
+        animate();
 
     //var delta = clock.getDelta();
     
@@ -8292,7 +8355,7 @@ function animateHouse()
     }
     */
     
-    //renderer.clear();
+    renderer.clear();
     renderer.render( scene3D, camera3D );
     rendererCube.render(scene3DCube, camera3DCube);
 
@@ -8352,22 +8415,19 @@ function animateStop()
     {
         window.cancelAnimationFrame(requestAnimationID);
         requestId = undefined;
-        SceneAnimate = false;
     }
 }
 
 function animate()
 {
     //Look into Threading this with WebWorkers > http://www.html5rocks.com/en/tutorials/workers/basics/
-    console.log("animate");
-
     animateStop();
 
     if (SCENE == 'house')
     {
-        if (SceneAnimate)
+        if (scene3DAnimateRotate)
         {
-            TWEEN.removeAll(); //avoid any tween checks whilre rotating (faster)
+            //TWEEN.removeAll(); //avoid any tween checks whilre rotating (faster)
             //camera3D.position.set(0, 6, 20);
             animateHouseRotate();
         }else{
@@ -8667,7 +8727,8 @@ function toggleTextureSelect() {
 function getCookie(name) {
   var value = "; " + document.cookie;
   var parts = value.split("; " + name + "=");
-  if (parts.length == 2) return parts.pop().split(";").shift();
+  if (parts.length == 2) 
+    return parts.pop().split(";").shift();
 }
 
 function createCookie(name,value,days) {
@@ -8790,6 +8851,17 @@ $(document).ready(function() {
         interactive:true,
         contentAsHTML: true,
         content: ''
+    });
+
+    $('#WebGLSelectMenu').tooltipster({
+        theme: 'tooltipster-light',
+        trigger: 'custom',
+        touchDevices: true,
+        //delay: 200,
+        interactive:true,
+        position: 'top',
+        contentAsHTML: true,
+        content: '',
     });
 
     //$('#dragElement').drags();

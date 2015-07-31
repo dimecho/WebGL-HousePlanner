@@ -165,6 +165,25 @@
 </div>
 <!-- End of Tutorial -->
 
+<div id="item" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+  <div style="width:640px;height:380px;">
+    <a href="#" class="close">X</a>
+    <div>
+        <div style="width:300px;float:left;display:inline-block;">
+          <img src="images/item.png" />
+          <br/>
+          Location<br/>
+        </div>
+        <div style="margin-left:340px;">
+          <br/><h2>Item Name</h2>
+          <br/>Item description
+          <br/><br/><br/><br/><br/>
+          <br/><br/><br/><br/><br/>
+        </div>
+    </div>
+  </div>
+</div>
+
 <div id="openLogin" class="modalDialog">
     <div style="width:400px;height:500px;">
         <a href="#close" class="close" onclick="document.getElementById('iframe').src = 'about:blank'">X</a>
@@ -497,6 +516,7 @@
 <div id="engine3D" style="display:none">
     <div id="WebGLCanvas"></div>
     <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
+    <div id="WebGLSelectMenu" style="position:absolute"></div>
     <div id="WebGLInteractiveMenu" style="display:none;"></div>
 
     <form id="WebGLNote" style="position:absolute;left:40%;top:40%;display:none;">
