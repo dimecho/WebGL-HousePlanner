@@ -60,6 +60,7 @@
   <script type="text/javascript" src="js/src/dxfparser.js"></script>
   <script type="text/javascript" src="js/src/main.js"></script>
   <script type="text/javascript" src="js/src/search.js"></script>
+  <script type="text/javascript" src="js/src/split-pane.js"></script>
 
   <script type="text/javascript">
   $(document).ready(function() {
@@ -93,6 +94,8 @@
   <link rel="stylesheet" type="text/css" href="css/src/parallaxslider.css" />
   <link rel="stylesheet" type="text/css" href="css/src/search.css" />
   <link rel="stylesheet" type="text/css" href="css/src/button.css" />
+  <link rel="stylesheet" type="text/css" href="css/src/split-pane.css" />
+  <link rel="stylesheet" type="text/css" href="css/src/pretty-split-pane.css" />
 
   <!--[if gte IE 9]>
     <style type="text/css">
@@ -515,6 +518,47 @@
 
 <div id="engine3D" style="display:none">
     <div id="WebGLCanvas"></div>
+    <div id="WebGLSplitCanvas">
+        <div class="pretty-split-pane-frame">
+            <div class="split-pane fixed-bottom" id="split-pane-1">
+                <div class="split-pane-component" id="top-component">
+                    <div class="split-pane fixed-left" id="split-pane-2">
+                        <div class="split-pane-component" id="left-component">
+                            <div class="pretty-split-pane-component-inner">
+                                <div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="split-pane-divider" id="vertical-divider"></div>
+                        <div class="split-pane-component" id="right-component">
+                            <div class="pretty-split-pane-component-inner">
+                                <div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="split-pane-divider" id="horizontal-divider"></div>
+                <div class="split-pane-component" id="bottom-component">
+                    <div class="split-pane fixed-left" id="split-pane-2">
+                        <div class="split-pane-component" id="left-component">
+                            <div class="pretty-split-pane-component-inner">
+                                <div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="split-pane-divider" id="vertical-divider"></div>
+                        <div class="split-pane-component" id="right-component">
+                            <div class="pretty-split-pane-component-inner">
+                                <div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
     <div id="WebGLSelectMenu" style="position:absolute"></div>
     <div id="WebGLInteractiveMenu" style="display:none;"></div>
