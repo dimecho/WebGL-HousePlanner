@@ -47,6 +47,10 @@ var physics3D; //Cannon.js Engine (collisions and other cool stuff)
 var composer, dpr, effectFXAA;
 var renderer, rendererCube, rendererPanorama;
 
+var rendererQuad = [4];
+var camera3DQuad = [4];
+var camera3DQuadGrid;
+
 var scene3DRoofContainer; //Contains Roof Design
 var scene3DHouseContainer; //Contains all Exterior 3D objects by floor (trees,fences)
 var scene3DHouseGroundContainer; //Grass Ground - 1 object
@@ -81,8 +85,6 @@ var controls3D; //Multi-Class three.js controls library objects - Orbit, FirstPe
 var camera3D;
 var camera3DPositionCache;
 var camera3DPivotCache;
-var camera3DQuad = [3];
-var camera3DQuadGrid;
 var camera3DCube;
 var camera3DPanorama;
 //var camera3DMirrorReflection;
@@ -90,6 +92,7 @@ var camera3DPanorama;
 var groundGrid;
 var groundMesh;
 var skyMesh;
+var skyFloorMesh;
 var weatherSkyGeometry;
 var weatherSkyMaterial;
 var weatherSkyCloudsMesh;
@@ -374,15 +377,6 @@ function init(runmode,viewmode) {
     ]);
     */
 
-    //60 times more geometry
-    //THREE.GeometryUtils.merge(geometry, otherGeometry);
-
-    /*
-    https://www.udacity.com/course/viewer#!/c-cs291/l-158750187/m-169414761
-    */
-    //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 80);
-
     /*
     Cutaway View - width, height, fov, near, far, orthoNear, orthoFar
     https://github.com/mrdoob/three.js/issues/1909
@@ -409,36 +403,6 @@ function init(runmode,viewmode) {
     */
 
     //================================
-    //Top View Camera
-    camera3DQuad[0] = new THREE.OrthographicCamera(
-        window.innerWidth / -100, // Left
-        window.innerWidth / 100, // Right
-        window.innerHeight / 80, // Top
-        window.innerHeight / -100, // Bottom
-        -30, // Near 
-        30); // Far -- enough to see the skybox
-    camera3DQuad[0].up = new THREE.Vector3(0, 0, -1);
-    camera3DQuad[0].lookAt(new THREE.Vector3(0, -1, 0));
-
-    //Front View Camera
-    camera3DQuad[1] = new THREE.OrthographicCamera(
-        window.innerWidth / -150, window.innerWidth / 150,
-        window.innerHeight / 80, window.innerHeight / -350, -30, 30);
-    camera3DQuad[1].lookAt(new THREE.Vector3(0, 0, -1));
-    camera3DQuad[1].position.set(0, 0, 10);
-
-    //Side View Camera
-    camera3DQuad[2] = new THREE.OrthographicCamera(window.innerWidth / -150, window.innerWidth / 150, window.innerHeight / 80, window.innerHeight / -350, -30, 30);
-    camera3DQuad[2].lookAt(new THREE.Vector3(1, 0, 0));
-    //camera3DQuad[2].position.set(0, 0, 0);
-
-    //3D View Camera
-    camera3DQuad[3] = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 50);
-    camera3DQuad[3].position.set(0, 14, 8);
-    camera3DQuad[3].lookAt(new THREE.Vector3(0, 0, 0));
-
-    camera3DQuadGrid = new THREE.GridHelper(25, 1);
-    camera3DQuadGrid.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
 
     /*
     scene3DWallInteriorTextureDefault = new THREE.ImageUtils.loadTexture('objects/Platform/Textures/C0001.jpg');
@@ -566,12 +530,7 @@ function init(runmode,viewmode) {
 
     scene3DInitializeClouds();
 
-    scene3DCube = new THREE.Scene();
-    camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
-    camera3DCube.up = camera3D.up;
-    scene3DCube.add(camera3DCube);
-    scene3DCube.add(scene3DCubeMesh);
-    $(rendererCube.domElement).bind('mousemove', onCubeMouseMove);
+
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
     $(window).bind('resize', onWindowResize);
@@ -608,7 +567,7 @@ function init(runmode,viewmode) {
     });
     */
     
-   	enableOrbitControls();
+   	scene3DenableOrbitControls(camera3D,renderer.domElement);
 
     /*
     manager = new THREE.LoadingManager();
@@ -630,7 +589,6 @@ function init(runmode,viewmode) {
     open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
     open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
     open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
-
 
     show3DHouse();
 
@@ -691,6 +649,15 @@ function scene3DFreeMemory()
             scene3D.remove(obj);
         }
         scene3DObjectUnselect();
+    }
+
+    if(camera3DQuad[0] instanceof THREE.OrthographicCamera)
+    {
+        for(i = 0; i<4; i++)
+        {
+            camera3DQuad[i] = null;
+            rendererQuad[i] = null;
+        }
     }
     //skyMesh = new THREE.Object3D();
     //scene3D.remove(skyMesh);
@@ -896,23 +863,128 @@ function scene3DInitializePhysics()
     */
 }
 
+function scene3DInitializeRendererQuadSize()
+{
+    if(camera3DQuad[0] instanceof THREE.OrthographicCamera)
+    {
+        for(i = 0; i<4; i++){
+           
+            var w = $("#WebGLSplitCanvas-" + i).parent().parent().width();
+            var h = $("#WebGLSplitCanvas-" + i).parent().parent().height();
+            //console.log(w+ ":" + h);
+
+            camera3DQuad[i].aspect = w / h;
+            camera3DQuad[i].updateProjectionMatrix();
+            rendererQuad[i].setSize(w, h);
+        }
+    }
+}
+
+function scene3DInitializeRendererQuad()
+{
+    $('div.split-pane').splitPane();
+
+    for(i = 0; i<4; i++){
+
+        rendererQuad[i] = new THREE.WebGLRenderer({
+            devicePixelRatio: dpr,
+            antialias: false,
+            //alpha: true,
+            //autoClear: false
+        });
+        rendererQuad[i].setClearColor( 0xffffff );
+        $('#WebGLSplitCanvas-' + i).append(rendererQuad[i].domElement);
+
+        //var w = $("#WebGLSplitCanvas-" + i).parent().parent().width();
+        //var h = $("#WebGLSplitCanvas-" + i).parent().parent().height();
+        //camera3DQuad[i] = new THREE.OrthographicCamera( w / - 2, w / 2, h / 2, h / - 2, -30, 30 );
+    }
+
+    //Top View Camera
+    camera3DQuad[0] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-0").parent().parent().width() / - 60, $("#WebGLSplitCanvas-0").parent().parent().width() / 60, $("#WebGLSplitCanvas-0").parent().parent().height() / 10, $("#WebGLSplitCanvas-0").parent().parent().height() / - 10, -30, 30 );
+    camera3DQuad[0].up = new THREE.Vector3(0, 0, -1);
+    camera3DQuad[0].lookAt(new THREE.Vector3(0, -1, 0));
+
+    //Front View Camera
+    camera3DQuad[1] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-1").parent().parent().width() / - 60, $("#WebGLSplitCanvas-1").parent().parent().width() / 60, $("#WebGLSplitCanvas-1").parent().parent().height() / 10, $("#WebGLSplitCanvas-1").parent().parent().height() / - 10, -30, 30 );
+    //camera3DQuad[1].lookAt(new THREE.Vector3(0, 0, -1));
+    //camera3DQuad[1].position.set(0, 0, 0);
+    camera3DQuad[1].lookAt(new THREE.Vector3(1, 0, 0));
+    camera3DQuad[1].position.set(0, 0, 0);
+
+    //Side View Camera
+    camera3DQuad[2] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-2").parent().parent().width() / - 60, $("#WebGLSplitCanvas-2").parent().parent().width() / 60, $("#WebGLSplitCanvas-2").parent().parent().height() / 10, $("#WebGLSplitCanvas-2").parent().parent().height() / - 40, -30, 30 );
+    camera3DQuad[2].lookAt(new THREE.Vector3(1, 0, 0));
+    camera3DQuad[2].position.set(0, 0, 0);
+
+    //3D View Camera
+    camera3DQuad[3] = new THREE.PerspectiveCamera(70, $("#WebGLSplitCanvas-3").parent().width() / $("#WebGLSplitCanvas-3").parent().height(), 1, 50);
+    camera3DQuad[3].position.set(0, 14, 8);
+    camera3DQuad[3].lookAt(new THREE.Vector3(0, 0, 0));
+
+    camera3DQuadGrid = new THREE.GridHelper(15, 1);
+    camera3DQuadGrid.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
+
+    scene3DInitializeRendererQuadSize();
+
+    //controls3DDebug = new THREE.OrbitControls(camera3DQuad[0], rendererQuad[0].domElement);
+    //controls3DDebug.enabled = true;
+
+    /*
+    var pane = $('div.split-pane').children('.split-pane-divider');
+
+    function triggerSplitterDrop (vDrop) {
+        var offset = pane.offset();
+        var ev = {
+            which: 1,
+            pageX: offset.left,
+            pageY: offset.top
+        };
+        var mdEvent = $.Event('mousedown', ev);
+
+        ev.pageY = vDrop || offset.top;
+        var mmEvent = $.Event('mousemove', ev);
+        var muEvent = $.Event('mouseup', ev);
+
+        pane.trigger(mdEvent);
+        pane.trigger(mmEvent);
+        pane.trigger(muEvent);
+    }
+    */
+}
+
 function scene3DInitializeRenderer()
 {
-    var dpr = 1;
+    /*
+    https://www.udacity.com/course/viewer#!/c-cs291/l-158750187/m-169414761
+    */
+    //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 80);
+
+    scene3DCube = new THREE.Scene();
+    camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
+    camera3DCube.up = camera3D.up;
+
+    //scene3DCube.add(camera3DCube);
+    scene3DCube.add(scene3DCubeMesh);
+
+    //$(rendererCube.domElement).bind('mousemove', onCubeMouseMove);
+
+    dpr = 1;
     if (window.devicePixelRatio !== undefined) {
       dpr = window.devicePixelRatio;
     }
 
     renderer = new THREE.WebGLRenderer({
         devicePixelRatio: dpr,
-        antialias: false,
+        antialias: true, //false,
         alpha: true,
         //alpha: false,
         //preserveDrawingBuffer: false
         //autoUpdateObjects: true
     });
 
-    renderer.autoClear = false; //REQUIRED: for split screen
+    //renderer.autoClear = false; //REQUIRED: for split screen
     renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
     //renderer.shadowMap.debug = true; //shadowMapDebug = true;
     //renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
@@ -955,6 +1027,7 @@ function scene3DInitializeRenderer()
     composer.addPass( new THREE.RenderPass( scene3D, camera3D ) );
     composer.addPass(effectFXAA);
     */
+    
     document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
     document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
 }
@@ -994,7 +1067,9 @@ function makeScreenshot()
 
 function buildPanorama(container,files,X,Y,Z,preloader,mesh)
 {
-    //Low Resolution
+    if(container.children.length > 0)
+        return;
+
     var sides = [
         'panoramas/' + files + '/' + preloader + 'right.jpg',
         'panoramas/' + files + '/' + preloader + 'left.jpg',
@@ -1003,6 +1078,7 @@ function buildPanorama(container,files,X,Y,Z,preloader,mesh)
         'panoramas/' + files + '/' + preloader + 'front.jpg',
         'panoramas/' + files + '/' + preloader + 'back.jpg'
     ];
+    //console.log(files + " " + preloader);
 
     var cubemap = THREE.ImageUtils.loadTextureCube(sides);
     cubemap.minFilter = THREE.LinearFilter;
@@ -1024,11 +1100,13 @@ function buildPanorama(container,files,X,Y,Z,preloader,mesh)
         new THREE.CubeGeometry(X, Y, Z),
         skyBoxMaterial
     );
-    if(mesh)
+
+    if(!(mesh instanceof THREE.Mesh))
         container.remove(mesh);
+
     container.add(skybox);
 
-    if(preloader == "_") //High Resolution
+    if(preloader === "_") //High Resolution
         buildPanorama(container,files,X,Y,Z,"",skybox);
 
     /*
@@ -1130,7 +1208,7 @@ function initPanorama(id, files, W,H)
     //buildPanorama(scene,files, 512, 512);
     //scene3DPanorama.add(scene);
 
-    buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_");
+    buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_",null);
 
     document.getElementById(id).removeChild(spinner.el);
 
@@ -1501,6 +1579,60 @@ function scene2DMakeWallSelect(v1,v2,line,pivot)
     });
 
     return r;
+}
+
+function scene3DSplitViewTop()
+{
+    var w = window.innerWidth/1.4;
+    var h = window.innerHeight*0.2;
+
+    $("#left-component-1").css({ width: w });
+    $("#right-component-1").css({ left: w });
+    $("#vertical-divider-1").css({ left: w });
+
+    $("#bottom-component").css({ height: h });
+    $("#top-component").css({ bottom: h });
+    $("#horizontal-divider").css({ bottom: h });
+
+    scene3DInitializeRendererQuadSize();
+}
+
+function scene3DSplitViewFront()
+{
+
+    var w = window.innerWidth*0.3;
+    var h = window.innerHeight*0.2;
+
+    $("#left-component-1").css({ width: w });
+    $("#right-component-1").css({ left: w });
+    $("#vertical-divider-1").css({ left: w });
+
+    $("#bottom-component").css({ height: h });
+    $("#top-component").css({ bottom: h });
+    $("#horizontal-divider").css({ bottom: h });
+
+    scene3DInitializeRendererQuadSize();
+}
+
+function scene3DSplitViewSide()
+{
+    var w = window.innerWidth*0.15;
+    var h = window.innerHeight/1.4;
+
+    $("#left-component-1").css({ width: w });
+    $("#right-component-1").css({ left: w });
+    $("#vertical-divider-1").css({ left: w });
+
+    $("#bottom-component").css({ height: h });
+    $("#top-component").css({ bottom: h });
+    $("#horizontal-divider").css({ bottom: h });
+
+    scene3DInitializeRendererQuadSize();
+}
+
+function scene3DSplitView3D()
+{
+    
 }
 
 function scene2DMakeWallCurvedPivot(v1,v2,line,lock)
@@ -2425,7 +2557,7 @@ function camera3DWalkViewToggle()
         camera3DPositionCache = new THREE.Vector3(0, 6, 20);
         camera3DPivotCache = new THREE.Vector3(0, 0, 0);
         camera3DAnimateResetView();
-        enableOrbitControls();
+        scene3DenableOrbitControls(camera3D,renderer.domElement);
     }
     else if (controls3D instanceof THREE.OrbitControls)
     {
@@ -2469,14 +2601,16 @@ function enableTransformControls(mode)
     //scene3D.add(controls3D);
 }
 
-function enableOrbitControls()
+function scene3DenableOrbitControls(camera, element)
 {
+    
     if (controls3D instanceof THREE.OrbitControls){
         //console.log("enable THREE.OrbitControls");
         controls3D.enabled = true;
     }else{
-        //console.log("new THREE.OrbitControls");
-        controls3D = new THREE.OrbitControls(camera3D, renderer.domElement);
+        
+        console.log("new THREE.OrbitControls");
+        controls3D = new THREE.OrbitControls(camera, element);
         controls3D.minDistance = 3;
         controls3D.maxDistance = 25; //Infinity;
         //controls3D.minPolarAngle = 0; // radians
@@ -2550,585 +2684,541 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
         //var material = new THREE.MeshFaceMaterial(materials);
     };
     */
-try{
-    var data;
-    var ext = js.split('.').pop();
-    var textures = js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
-    
-    /*
-    var onProgress = function ( xhr ) {
-        if ( xhr.lengthComputable ) {
-            var percentComplete = xhr.loaded / xhr.total * 100;
-            console.log( Math.round(percentComplete, 2) + '% downloaded' );
-        }
-    };
-    var onError = function ( xhr ) {
-    };
-    */
-
-    //var manager = new THREE.LoadingManager();
-    /*          
-    manager.onProgress = function ( item, loaded, total ) {
-        //console.log( item, loaded, total );
-    };
-    */
-
-    var callbackObject = function(object) {
-
-        /* 
-        Texture Fix
-        https://github.com/denzp/three.js
-        https://github.com/denzp/three.js/commit/c069ec1b26014b55bc961846feaf7f7554fc2bb2
+    try{
+        var data;
+        var ext = js.split('.').pop();
+        var textures = js.substring(0, js.lastIndexOf("/") + 1) + "Textures/";
+        
+        /*
+        var onProgress = function ( xhr ) {
+            if ( xhr.lengthComputable ) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                console.log( Math.round(percentComplete, 2) + '% downloaded' );
+            }
+        };
+        var onError = function ( xhr ) {
+        };
         */
 
-        object.name = js;
+        //var manager = new THREE.LoadingManager();
+        /*          
+        manager.onProgress = function ( item, loaded, total ) {
+            //console.log( item, loaded, total );
+        };
+        */
 
-        object.boundingBox = [];
-        object.boundingBox.max = [];
-        object.boundingBox.max.x = 0;
-        object.boundingBox.max.y = 0;
-        object.boundingBox.max.z = 0;
+        var callbackObject = function(object) {
 
-        //var geometry = new THREE.BufferGeometry();
-        //var meshArray = new THREE.Object3D();
-        //var geometryMerge = new THREE.Geometry();
-        var materials = [];
-     
-        //console.log(object);
-
-        //console.log(json.object.children[m].matrix);
-
-        //var colors = new Float32Array(2 * object.faces.length * 3 * 3);
-        //var buffer = new THREE.Geometry().fromBufferGeometry(child.geometry);
-        //object.geometry = buffer;
-
-        object.traverse( function ( child ) {
-
-            if (child instanceof THREE.Mesh )
-            {
-                //console.log(child.geometry);
-
-                //https://jsperf.com/json-vs-base64
-                //https://github.com/mrdoob/three.js/issues/3349
-                //https://github.com/bhouston/three.js/tree/base64-arraybuffer/src/loaders
-               
-                //child.geometry.mergeVertices(); //speed things up ?
-                //child.geometry.computeFaceNormals(); //already done by .load
-                //child.geometry.computeBoundingSphere(); //already done by .load
-
-                child.geometry.computeFaceNormals();
-                //child.geometry.computeTangents();
-                child.geometry.computeVertexNormals(); // requires correct face normals
-                child.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
-
-                if(object.boundingBox.max.x < child.geometry.boundingBox.max.x)
-                    object.boundingBox.max.x = child.geometry.boundingBox.max.x;
-                if(object.boundingBox.max.y < child.geometry.boundingBox.max.y)
-                    object.boundingBox.max.y = child.geometry.boundingBox.max.y;
-                if(object.boundingBox.max.z < child.geometry.boundingBox.max.z)
-                    object.boundingBox.max.z = child.geometry.boundingBox.max.z;
-
-                //child.geometry.dynamic = true;
-                child.castShadow = true;
-                if (shadow)
-                    child.receiveShadow = true;
-                /*
-                if(child.material !== null)
-                {
-                    child.texture.wrapS = THREE.ClampToEdgeWrapping; //THREE.RepeatWrapping;
-                    child.texture.wrapT = THREE.ClampToEdgeWrapping; //THREE.RepeatWrapping;
-                }
-                */
-                    
-                if(child.material !== null)
-                {
-                    //console.log(child.material)
-                    //child.material.shading = THREE.SmoothShading;
-                    child.material.side = THREE.DoubleSide; //Normally this will slow things down > do "solidify" with Blender
-                    //child.material.depthWrite = true; //Blender exports fix
-                    //child.material.offset = 0; //v72
-                    //child.material.repeat = 0; //v72
-                    
-                    if((child.material.shininess - 10) > 1)
-                    {
-                        child.material.shininess = child.material.shininess - 10; //Looks like Blender uses different # - offset to equalize same look
-                    }else if(child.material.shininess == 0 ){
-                        child.material.shininess = 0.1;
-                    }
-
-                    //child.material.vertexColors = true;
-                    //child.material.ambient = 0x999999;
-                    //child.material.color = 0xffffff;
-                    //child.material.specular = 0xffffff;
-                    //child.material.morphTargets = true;
-                    //child.material.morphNormals = true;
-                    /*
-                    var material = new THREE.MeshBasicMaterial({
-                        map: THREE.ImageUtils.loadTexture("diffuse.jpg"),
-                        aoMap: THREE.ImageUtils.loadTexture("lightmap.jpg"), // your lightmap used as aoMap
-                        aoMapIntensity: 0.5,
-                        side: THREE.DoubleSide,
-                    });
-                    */
-                    //console.log(js + " > opacity:" + child.material.opacity);
-
-                    if(child.material.opacity < 1) //glass transparency fix
-                    {
-                        child.material.transparent = true;
-                        //child.material.vertexColors = false;
-                    }else{
-                        child.material.transparent = false;
-                    }
-
-                    //=============================
-                    //Texture Quality Improvement
-                    //=============================
-                    if(child.material.map !== null){
-                        if(child.material.map.image.complete){
-                        //while(!child.material.map.image.complete)
-                        //    setTimeout(function(){ foo },100);
-                            var isImagePowerOfTwo = THREE.Math.isPowerOfTwo(child.material.map.image.width) && THREE.Math.isPowerOfTwo(child.material.map.image.height);
-                            if(!isImagePowerOfTwo)
-                            {
-                                var texture = new THREE.Texture(scene3DGenerateClampToEdgeTexture(child.material.map.image));
-                                if (texture) texture.needsUpdate = true;
-                                texture.minFilter = THREE.LinearFilter;
-                                child.material.map = texture;
-                                //child.material.map.image = scene3DGenerateClampToEdgeTexture(child.material.map.image);
-                                //child.material.map.image.needsUpdate = true;
-                            }
-                        }
-                    }
-                    
-                    //============================
-                }
-                
-            }else if (child instanceof THREE.PointLight) {
-                console.log("light found!");
-
-                //pointLight = new THREE.PointLight( 0xffaa00 );
-                //pointLight.position.set( 0, 0, 0 );
-                //scene3D.add( object );
-            }
-            /*
-            if ( object.userData.rotating === true ) {
-
-                rotatingObjects.push( object );
-            }
-
-            if ( object instanceof THREE.MorphAnimMesh ) {
-
-                morphAnimatedObjects.push( object );
-            }
-
-            if ( object instanceof THREE.SkinnedMesh ) {
-
-                if ( object.geometry.animation ) {
-
-                    var animation = new THREE.Animation( object, object.geometry.animation );
-                    animation.play();
-                }
-            }
+            /* 
+            Texture Fix
+            https://github.com/denzp/three.js
+            https://github.com/denzp/three.js/commit/c069ec1b26014b55bc961846feaf7f7554fc2bb2
             */
-        });
 
-        //geometry.groupsNeedUpdate = true; //v71
+            object.name = js;
 
-        //console.log(object);
-        //object.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-        
-        object.position.x = x;
-        object.position.y = y;
-        object.position.z = z;
+            object.boundingBox = [];
+            object.boundingBox.max = [];
+            object.boundingBox.max.x = 0;
+            object.boundingBox.max.y = 0;
+            object.boundingBox.max.z = 0;
 
-        object.rotation.x = xaxis;
-        object.rotation.y = yaxis + Math.PI;
-        //object.rotation.z = zaxis;
-        
-        console.log("ObjectLoader add model to scene " + object.name);
-        objectContainer.add(object);
+            //var geometry = new THREE.BufferGeometry();
+            //var meshArray = new THREE.Object3D();
+            //var geometryMerge = new THREE.Geometry();
+            var materials = [];
+         
+            //console.log(object);
 
-        /*
-        After automatic translation to BufferedGeometry
-        ===============================================
-        */
-        if(note)
-        {
-            var material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
-            var geometry = new THREE.TextGeometry(note, {
-                font: 'helvetiker', // Must be lowercase!
-                weight: 'normal',
-                size: 0.05,
-                height: 0.01
-            });
-            var textMesh = new THREE.Mesh(geometry, material);
-            //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
-            //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
-            textMesh.position.x = 1.25;
-            textMesh.position.y = 0.5;
-            textMesh.position.z = 0.05;
-            textMesh.rotation.y = 1.5;
-            textMesh.name = note;
+            //console.log(json.object.children[m].matrix);
 
-            open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
-            object.add(textMesh);
-            
-            console.log( js + " Add Note: '" + note + "'");
-        }
-        
-        if(objectContainer == scene3DFloorFurnitureContainer[FLOOR])
-        {
-            var material = new THREE.LineBasicMaterial({
-                color: 0x000000,
-                linewidth: 2
-            });
-            var geometry = new THREE.Geometry();
+            //var colors = new Float32Array(2 * object.faces.length * 3 * 3);
+            //var buffer = new THREE.Geometry().fromBufferGeometry(child.geometry);
+            //object.geometry = buffer;
 
-            var x1 = x - object.boundingBox.max.x*3;
-            var z1 = z - object.boundingBox.max.z*3;
-            var x2 = x + object.boundingBox.max.x*3;
-            var z2 = z + object.boundingBox.max.z*3;
+            object.traverse( function ( child ) {
 
-            //console.log(js + " > " + object.boundingBox.max.z + " " + object.boundingBox.max.x + " " + object.boundingBox.max.y)
-           
-            //TODO: if y > 0
-            //var arrow = new THREE.ArrowHelper(direction, firstVector, computeDistance(node1, node2) - 32, co);
-
-            //horizontal
-            geometry.vertices.push(new THREE.Vector3(x1, 0, z1));
-            geometry.vertices.push(new THREE.Vector3(x2, 0, z1));
-
-            //vertical
-            geometry.vertices.push(new THREE.Vector3(x1, 0, z1));
-            geometry.vertices.push(new THREE.Vector3(x1, 0, z2));
-
-            //var offset = scene3DFloorFurnitureContainer[FLOOR].children[i].centroid.clone();
-            //geometry.applyMatrix(new THREE.Matrix4().makeTranslation( -offset.x, 0, -offset.z ) );
-            //objMesh.position.copy( objMesh.centroid );
- 
-            //var line = new THREE.Line(geometry, material);
-            var line = new THREE.Line(geometry, material, THREE.LineSegments); //v72
-            //var line = new THREE.Line(geometry, material, THREE.LinePieces); //v71
-            line.position.y = 0.01;
-            //line.dynamic = true;
-
-            var realLifeDimentions = [];
-            var geometryText = [];
-            realLifeDimentions[0] = object.boundingBox.max.z * 400;
-            realLifeDimentions[1] = object.boundingBox.max.x * 400;
-            //realLifeDimentions[2]  = child.geometry.boundingBox.max.y * 200;
-            
-            for (var u = 0; u <= 1; u++)
-            {
-                var units = "";
-
-                if (realLifeDimentions[u] > 100)
+                if (child instanceof THREE.Mesh )
                 {
-                    units = (realLifeDimentions[u]/100).toFixed(2) + " m";
-                }else{
-                    units = Math.round(realLifeDimentions[u]) + " cm";
-                }
+                    //console.log(child.geometry);
 
-                geometryText[u] = new THREE.TextGeometry(units, {
-                    font: 'helvetiker', // Must be lowercase!
-                    weight: 'normal',
-                    size: 0.2,
-                    height: 0.01
-                });
-                geometryText[u].computeBoundingBox();
-            }
-            
-            var textMeshL = new THREE.Mesh(geometryText[0], material);
-            textMeshL.position.x = x - geometryText[0].boundingBox.max.x/2;
-            textMeshL.position.y = 0.01;
-            textMeshL.position.z = z1 - 0.1;
-            textMeshL.rotation.x = -1.5;
+                    //https://jsperf.com/json-vs-base64
+                    //https://github.com/mrdoob/three.js/issues/3349
+                    //https://github.com/bhouston/three.js/tree/base64-arraybuffer/src/loaders
+                   
+                    //child.geometry.mergeVertices(); //speed things up ?
+                    //child.geometry.computeFaceNormals(); //already done by .load
+                    //child.geometry.computeBoundingSphere(); //already done by .load
 
-            var textMeshW = new THREE.Mesh(geometryText[1], material);
-            textMeshW.position.x = x1 - 0.1;
-            textMeshW.position.y = 0.01;
-            textMeshW.position.z = z + geometryText[1].boundingBox.max.x/2;
-            textMeshW.rotation.x = -1.55;
-            textMeshW.rotation.z = 1.6;
+                    child.geometry.computeFaceNormals();
+                    //child.geometry.computeTangents();
+                    child.geometry.computeVertexNormals(); // requires correct face normals
+                    child.geometry.computeBoundingBox(); // otherwise geometry.boundingBox will be undefined
 
-            //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
+                    if(object.boundingBox.max.x < child.geometry.boundingBox.max.x)
+                        object.boundingBox.max.x = child.geometry.boundingBox.max.x;
+                    if(object.boundingBox.max.y < child.geometry.boundingBox.max.y)
+                        object.boundingBox.max.y = child.geometry.boundingBox.max.y;
+                    if(object.boundingBox.max.z < child.geometry.boundingBox.max.z)
+                        object.boundingBox.max.z = child.geometry.boundingBox.max.z;
 
-            //object.add(textMeshL);
-            //object.add(textMeshW);
-            
-            line.add(textMeshL);
-            line.add(textMeshW);
-
-            object.add(line);
-
-            //textMeshL.visible = false;
-            //textMeshW.visible = false;
-            line.visible = false;
-
-            //console.log("Calculating " + mesh.name + " measurements " + mesh.position.x + ":" + mesh.position.z + " " + mesh.geometry.boundingBox.max.x + ":" + mesh.geometry.boundingBox.max.z);
-        }
-        
-        
-        //var bufferMesh = new THREE.Mesh(geometry, object.children[0].material);
-        //bufferMesh.scale.set(1,1,1);
-        //objectContainer.add(bufferMesh);
-
-        //geometry = new THREE.BufferGeometry().setFromObject(object);
-        //console.log(geometry);
-        //===========================
-        //var bufferMesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial( materials ));
-        //buffer_geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-        //buffer_geometry.addAttribute('normal', new THREE.BufferAttribute(normals, 3));
-        //buffer_geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-        //buffer_geometry.computeBoundingSphere();
-
-        /*
-        meshArray.position.x = x;
-        meshArray.position.y = y;
-        meshArray.position.z = z;
-        meshArray.rotation.x = xaxis;
-        meshArray.rotation.y = yaxis;
-        */
-
-        //objectContainer.add(meshArray);
-        //===========================
-    };
-
-
-    if (js.split('.').pop() == 'jsz') //zipped json file
-    {
-        var filename = js.split('/').pop().slice(0, -4) + ".json";
-
-        /*
-        var fullpath = window.location.pathname; // + window.location.search;
-        var r = /[^\/]*$/;
-        fullpath = fullpath.replace(r, '');
-        console.log(fullpath + "objects/" + js + " > " + filename + " > " + ext);
-        */
-        /*
-        switch (window.location.protocol) {
-            case 'http:':
-            case 'https:':
-
-                $.get(url, function(data) {
-                    zip.load(data);
-                    data = zip.file(filename + ".js").asText();
-                    console.log(data);
-                });
-				
-                break;
-            case 'file:':
-
-				//Looks like jQuery method has a limit of 422315 ?
-				
-                $("#fileJQueryLoad").load(url, function(response, status, xhr) {
-                    if (status == "error") {
-                        console.log(xhr.status + " " + xhr.statusText);
-                    } else {
-                        //console.log(response);
-                        zip.load(response);
-        data = zip.file(filename + ".json").asText();
-                        console.log(data);
+                    //child.geometry.dynamic = true;
+                    child.castShadow = true;
+                    if (shadow)
+                        child.receiveShadow = true;
+                    /*
+                    if(child.material !== null)
+                    {
+                        child.texture.wrapS = THREE.ClampToEdgeWrapping; //THREE.RepeatWrapping;
+                        child.texture.wrapT = THREE.ClampToEdgeWrapping; //THREE.RepeatWrapping;
                     }
-                });
-				
-                url = "objects/" + js.slice(0, -4) + ".json";
-                break;
-            default:
-        }
-		*/
-
-        $.ajax(js,{
-            
-            contentType: "application/zip",
-            beforeSend: function (req) {
-              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
-            },
-            //async: true,
-            //dataType: "binary",
-            //processData: false,
-            //responseType:'arraybuffer',
-            success: function(data){
-                //try {
-                    var zip = new JSZip(data);
-                    
-                    //zip.load(binary.read('string'));
-                    data = zip.file(filename).asText(); //console.log("unzip OK " + js);
-                    data = $.parseJSON(data); //JSON.parse(data);
-
-                    //if (data.metadata.formatVersion == 3.1){ //using export script io_mesh_threejs
-                    //    console.log("using old format 3 " + js);
-                    //    //loader = new THREE.JSONLoader();
-                    //    var result = loader.parse(data, textures);
-                    //    callback(result.geometry, result.materials);
-                    //}else{ //using export script io_three
-                        /*
-                        https://github.com/mrdoob/three.js/wiki/JSON-Texture-format-4
-                        */
-
-                        //console.log("using new format 4 " + js);
-                        //var manager = new THREE.LoadingManager();
-                        var loader = new THREE.ObjectLoader(); //new THREE.ObjectLoader(manager);
-                        loader.setTexturePath(textures);
-
-                        //=======================================
-                        //Blender Export v72 Fix
-                        //=======================================
-                        for (var i = 0; i < data.textures.length; i++) {
-
-                            if(data.textures[i].mapping)
-                                data.textures[i].mapping = THREE[data.textures[i].mapping];
-
-                            if(data.textures[i].minFilter)
-                                data.textures[i].minFilter = THREE[data.textures[i].minFilter];
-                            
-                            if(data.textures[i].magFilter)
-                                data.textures[i].magFilter = THREE[data.textures[i].magFilter];
-
-                            if(data.textures[i].wrap)
-                            {
-                                //data.textures[i].wrap = [THREE.ClampToEdgeWrapping,THREE.ClampToEdgeWrapping];
-                                data.textures[i].wrap = [THREE.RepeatWrapping,THREE.RepeatWrapping];
-                            }
+                    */
+                        
+                    if(child.material !== null)
+                    {
+                        //console.log(child.material)
+                        //child.material.shading = THREE.SmoothShading;
+                        child.material.side = THREE.DoubleSide; //Normally this will slow things down > do "solidify" with Blender
+                        //child.material.depthWrite = true; //Blender exports fix
+                        //child.material.offset = 0; //v72
+                        //child.material.repeat = 0; //v72
+                        
+                        if((child.material.shininess - 10) > 1)
+                        {
+                            child.material.shininess = child.material.shininess - 10; //Looks like Blender uses different # - offset to equalize same look
+                        }else if(child.material.shininess == 0 ){
+                            child.material.shininess = 0.1;
                         }
+
+                        //child.material.vertexColors = true;
+                        //child.material.ambient = 0x999999;
+                        //child.material.color = 0xffffff;
+                        //child.material.specular = 0xffffff;
+                        //child.material.morphTargets = true;
+                        //child.material.morphNormals = true;
                         /*
-                        for (var i = 0; i < data.images.length; i++) {
-                            if(data.images[i].url)
-                                data.images[i].url = textures + data.images[i].url;
-                        }
+                        var material = new THREE.MeshBasicMaterial({
+                            map: THREE.ImageUtils.loadTexture("diffuse.jpg"),
+                            aoMap: THREE.ImageUtils.loadTexture("lightmap.jpg"), // your lightmap used as aoMap
+                            aoMapIntensity: 0.5,
+                            side: THREE.DoubleSide,
+                        });
                         */
-                        for (var i = 0; i < data.object.children.length; i++) {
+                        //console.log(js + " > opacity:" + child.material.opacity);
 
-                            //======================================================
-                            //FIX for r72dev [openning same 3D models more than once]
-                            //======================================================
-                            data.object.children[i].uuid = THREE.Math.generateUUID();
-                            //======================================================
+                        if(child.material.opacity < 1) //glass transparency fix
+                        {
+                            child.material.transparent = true;
+                            //child.material.vertexColors = false;
+                        }else{
+                            child.material.transparent = false;
+                        }
 
-                            var geometry_opacity = 1;
-                            for (var g = 0; g < data.geometries.length; g++) {
-                                if (data.geometries[g].uuid == data.object.children[i].geometry){
-                                    //data.geometries[g].uuid = THREE.Math.generateUUID();
-                                    //data.object.children[i].geometry = data.geometries[g].uuid;
-                                    geometry_opacity = data.geometries[g].materials[0].opacity;
-                                    break;
-                                }
-                            }
-                            if(geometry_opacity == 0)
-                                geometry_opacity = 0.99;
-                            //====================================
-                            for (var m = 0; m < data.materials.length; m++) {
-                                //======================================================
-                                //FIX for r72dev [openning same 3D models textures - one texture per material]
-                                //======================================================
-                                for (var t = 0; t < data.textures.length; t++){
-                                    if (data.textures[t].uuid == data.materials[m].map){
-                                        data.textures[t].uuid = THREE.Math.generateUUID();
-                                        data.materials[m].map = data.textures[t].uuid;
-                                        break;
-                                    }
-                                }
-                                //==================================
-                                if (data.materials[m].uuid == data.object.children[i].material){
-                    
-                                    data.materials[m].opacity = geometry_opacity;
-
-                                    var material_uuid = THREE.Math.generateUUID();
-                                    for (var ii = 0; ii < data.object.children.length; ii++) {
-                                        if (data.object.children[ii].material == data.materials[m].uuid)
-                                            data.object.children[ii].material = material_uuid;
-                                    }
-                                    data.materials[m].uuid = material_uuid;
-                                    break;
+                        //=============================
+                        //Texture Quality Improvement
+                        //=============================
+                        if(child.material.map !== null){
+                            if(child.material.map.image.complete){
+                            //while(!child.material.map.image.complete)
+                            //    setTimeout(function(){ foo },100);
+                                var isImagePowerOfTwo = THREE.Math.isPowerOfTwo(child.material.map.image.width) && THREE.Math.isPowerOfTwo(child.material.map.image.height);
+                                if(!isImagePowerOfTwo)
+                                {
+                                    var texture = new THREE.Texture(scene3DGenerateClampToEdgeTexture(child.material.map.image));
+                                    if (texture) texture.needsUpdate = true;
+                                    texture.minFilter = THREE.LinearFilter;
+                                    child.material.map = texture;
+                                    //child.material.map.image = scene3DGenerateClampToEdgeTexture(child.material.map.image);
+                                    //child.material.map.image.needsUpdate = true;
                                 }
                             }
                         }
                         
-                        //=======================================
-                        loader.parse(data, callbackObject);
-                        //=======================================
-                    //}
-                //} catch (e) { //zip file was probably not found, load regular json
-                    //console.log("Other 3D format " + e + " " + js.slice(0, -4) + "");
-                   
-                //}
-            },
-            error: function(xhr, textStatus, errorThrown){
-				alertify.alert("3D Model (" + js + ") Loading Error");
-			}
-        });
-    /*
-    } else if (js.split('.').pop() == 'sea') {
-        loader = new THREE.SEA3D(true);
-        //var basicMap = new THREE.MeshBasicMaterial( {color:0x000000} )
-        loader.onComplete = function( e ) {
-            var i = loader.meshes.length;
-            while(i--){
-                var m = loader.meshes[i];
-                //m.name = js;
-                /
-                m.position.x = x;
-                m.position.y = y;
-                m.position.z = z;
-                m.rotation.x = xaxis;
-                m.rotation.y = yaxis;
-                /
-                objectContainer.add(m);
-            }
-            console.log("SEA3D add model to scene" + js.slice(0, -4));
-            console.log(loader);
-            //objectContainer.add(loader);
-        }
-        loader.parser = THREE.SEA3D.DEFAULT;
-        //loader.parser = THREE.SEA3D.BUFFER;
-        loader.load(js);
-        /
-        loader = new THREE.SEA3D.Pool();
-        loader.load( [js], function()
-        {
-            console.log(loader.getList());
-        });
-        /
-        */
+                        //============================
+                    }
+                    
+                }else if (child instanceof THREE.PointLight) {
+                    console.log("light found!");
 
-    } else if (js.split('.').pop() == 'obj') {
+                    //pointLight = new THREE.PointLight( 0xffaa00 );
+                    //pointLight.position.set( 0, 0, 0 );
+                    //scene3D.add( object );
+                }
+                /*
+                if ( object.userData.rotating === true ) {
 
-        //loader = new THREE.OBJMTLLoader();
-        loader = new THREE.OBJLoader();
+                    rotatingObjects.push( object );
+                }
 
-        //loader.load(js, js.slice(0, -4) + '.mtl', function (object)
-        loader.load(js, function (object)
-        {
-            object.name = js;
+                if ( object instanceof THREE.MorphAnimMesh ) {
+
+                    morphAnimatedObjects.push( object );
+                }
+
+                if ( object instanceof THREE.SkinnedMesh ) {
+
+                    if ( object.geometry.animation ) {
+
+                        var animation = new THREE.Animation( object, object.geometry.animation );
+                        animation.play();
+                    }
+                }
+                */
+            });
+
+            //geometry.groupsNeedUpdate = true; //v71
+
+            //console.log(object);
+            //object.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
             object.position.x = x;
             object.position.y = y;
             object.position.z = z;
-            object.rotation.x = xaxis;
-            object.rotation.y = yaxis;
 
-            console.log("OBJMTL add model to scene" + js.slice(0, -4));
-            console.log(object);
+            object.rotation.x = xaxis;
+            object.rotation.y = yaxis + Math.PI;
+            //object.rotation.z = zaxis;
+            
+            console.log("ObjectLoader add model to scene " + object.name);
             objectContainer.add(object);
 
-        }, onProgress, onError);
+            /*
+            After automatic translation to BufferedGeometry
+            ===============================================
+            */
+            if(note)
+            {
+                var material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+                var geometry = new THREE.TextGeometry(note, {
+                    font: 'helvetiker', // Must be lowercase!
+                    weight: 'normal',
+                    size: 0.05,
+                    height: 0.01
+                });
+                var textMesh = new THREE.Mesh(geometry, material);
+                //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
+                //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
+                textMesh.position.x = 1.25;
+                textMesh.position.y = 0.5;
+                textMesh.position.z = 0.05;
+                textMesh.rotation.y = 1.5;
+                textMesh.name = note;
 
-        //loader.load(js, callback, textures);
+                open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
+                object.add(textMesh);
+                
+                console.log( js + " Add Note: '" + note + "'");
+            }
+            
+            if(objectContainer == scene3DFloorFurnitureContainer[FLOOR])
+            {
+                var material = new THREE.LineBasicMaterial({
+                    color: 0x000000,
+                    linewidth: 2
+                });
+                var geometry = new THREE.Geometry();
+
+                var x1 = x - object.boundingBox.max.x*3;
+                var z1 = z - object.boundingBox.max.z*3;
+                var x2 = x + object.boundingBox.max.x*3;
+                var z2 = z + object.boundingBox.max.z*3;
+
+                //console.log(js + " > " + object.boundingBox.max.z + " " + object.boundingBox.max.x + " " + object.boundingBox.max.y)
+               
+                //TODO: if y > 0
+                //var arrow = new THREE.ArrowHelper(direction, firstVector, computeDistance(node1, node2) - 32, co);
+
+                //horizontal
+                geometry.vertices.push(new THREE.Vector3(x1, 0, z1));
+                geometry.vertices.push(new THREE.Vector3(x2, 0, z1));
+
+                //vertical
+                geometry.vertices.push(new THREE.Vector3(x1, 0, z1));
+                geometry.vertices.push(new THREE.Vector3(x1, 0, z2));
+
+                //var offset = scene3DFloorFurnitureContainer[FLOOR].children[i].centroid.clone();
+                //geometry.applyMatrix(new THREE.Matrix4().makeTranslation( -offset.x, 0, -offset.z ) );
+                //objMesh.position.copy( objMesh.centroid );
+     
+                //var line = new THREE.Line(geometry, material);
+                var line = new THREE.Line(geometry, material, THREE.LineSegments); //v72
+                //var line = new THREE.Line(geometry, material, THREE.LinePieces); //v71
+                line.position.y = 0.01;
+                //line.dynamic = true;
+
+                var realLifeDimentions = [];
+                var geometryText = [];
+                realLifeDimentions[0] = object.boundingBox.max.z * 400;
+                realLifeDimentions[1] = object.boundingBox.max.x * 400;
+                //realLifeDimentions[2]  = child.geometry.boundingBox.max.y * 200;
+                
+                for (var u = 0; u <= 1; u++)
+                {
+                    var units = "";
+
+                    if (realLifeDimentions[u] > 100)
+                    {
+                        units = (realLifeDimentions[u]/100).toFixed(2) + " m";
+                    }else{
+                        units = Math.round(realLifeDimentions[u]) + " cm";
+                    }
+
+                    geometryText[u] = new THREE.TextGeometry(units, {
+                        font: 'helvetiker', // Must be lowercase!
+                        weight: 'normal',
+                        size: 0.2,
+                        height: 0.01
+                    });
+                    geometryText[u].computeBoundingBox();
+                }
+                
+                var textMeshL = new THREE.Mesh(geometryText[0], material);
+                textMeshL.position.x = x - geometryText[0].boundingBox.max.x/2;
+                textMeshL.position.y = 0.01;
+                textMeshL.position.z = z1 - 0.1;
+                textMeshL.rotation.x = -1.5;
+
+                var textMeshW = new THREE.Mesh(geometryText[1], material);
+                textMeshW.position.x = x1 - 0.1;
+                textMeshW.position.y = 0.01;
+                textMeshW.position.z = z + geometryText[1].boundingBox.max.x/2;
+                textMeshW.rotation.x = -1.55;
+                textMeshW.rotation.z = 1.6;
+
+                //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
+
+                //object.add(textMeshL);
+                //object.add(textMeshW);
+                
+                line.add(textMeshL);
+                line.add(textMeshW);
+
+                object.add(line);
+
+                //textMeshL.visible = false;
+                //textMeshW.visible = false;
+                line.visible = false;
+
+                //console.log("Calculating " + mesh.name + " measurements " + mesh.position.x + ":" + mesh.position.z + " " + mesh.geometry.boundingBox.max.x + ":" + mesh.geometry.boundingBox.max.z);
+            }
+            
+            
+            //var bufferMesh = new THREE.Mesh(geometry, object.children[0].material);
+            //bufferMesh.scale.set(1,1,1);
+            //objectContainer.add(bufferMesh);
+
+            //geometry = new THREE.BufferGeometry().setFromObject(object);
+            //console.log(geometry);
+            //===========================
+            //var bufferMesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial( materials ));
+            //buffer_geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+            //buffer_geometry.addAttribute('normal', new THREE.BufferAttribute(normals, 3));
+            //buffer_geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+            //buffer_geometry.computeBoundingSphere();
+
+            /*
+            meshArray.position.x = x;
+            meshArray.position.y = y;
+            meshArray.position.z = z;
+            meshArray.rotation.x = xaxis;
+            meshArray.rotation.y = yaxis;
+            */
+
+            //objectContainer.add(meshArray);
+            //===========================
+        };
+
+
+        if (js.split('.').pop() == 'jsz') //zipped json file
+        {
+            var filename = js.split('/').pop().slice(0, -4) + ".json";
+
+            /*
+            var fullpath = window.location.pathname; // + window.location.search;
+            var r = /[^\/]*$/;
+            fullpath = fullpath.replace(r, '');
+            console.log(fullpath + "objects/" + js + " > " + filename + " > " + ext);
+            */
+            /*
+            switch (window.location.protocol) {
+                case 'http:':
+                case 'https:':
+
+                    $.get(url, function(data) {
+                        zip.load(data);
+                        data = zip.file(filename + ".js").asText();
+                        console.log(data);
+                    });
+    				
+                    break;
+                case 'file:':
+
+    				//Looks like jQuery method has a limit of 422315 ?
+    				
+                    $("#fileJQueryLoad").load(url, function(response, status, xhr) {
+                        if (status == "error") {
+                            console.log(xhr.status + " " + xhr.statusText);
+                        } else {
+                            //console.log(response);
+                            zip.load(response);
+            data = zip.file(filename + ".json").asText();
+                            console.log(data);
+                        }
+                    });
+    				
+                    url = "objects/" + js.slice(0, -4) + ".json";
+                    break;
+                default:
+            }
+    		*/
+
+            $.ajax(js,{
+                
+                contentType: "application/zip",
+                beforeSend: function (req) {
+                  req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+                },
+                //async: true,
+                //dataType: "binary",
+                //processData: false,
+                //responseType:'arraybuffer',
+                success: function(data){
+                    //try {
+                        var zip = new JSZip(data);
+                        
+                        //zip.load(binary.read('string'));
+                        data = zip.file(filename).asText(); //console.log("unzip OK " + js);
+                        data = $.parseJSON(data); //JSON.parse(data);
+
+                        //if (data.metadata.formatVersion == 3.1){ //using export script io_mesh_threejs
+                        //    console.log("using old format 3 " + js);
+                        //    //loader = new THREE.JSONLoader();
+                        //    var result = loader.parse(data, textures);
+                        //    callback(result.geometry, result.materials);
+                        //}else{ //using export script io_three
+                            /*
+                            https://github.com/mrdoob/three.js/wiki/JSON-Texture-format-4
+                            */
+
+                            //console.log("using new format 4 " + js);
+                            //var manager = new THREE.LoadingManager();
+                            var loader = new THREE.ObjectLoader(); //new THREE.ObjectLoader(manager);
+                            loader.setTexturePath(textures);
+
+                            //=======================================
+                            //Blender Export v72 Fix
+                            //=======================================
+                            for (var i = 0; i < data.textures.length; i++) {
+
+                                if(data.textures[i].mapping)
+                                    data.textures[i].mapping = THREE[data.textures[i].mapping];
+
+                                if(data.textures[i].minFilter)
+                                    data.textures[i].minFilter = THREE[data.textures[i].minFilter];
+                                
+                                if(data.textures[i].magFilter)
+                                    data.textures[i].magFilter = THREE[data.textures[i].magFilter];
+
+                                if(data.textures[i].wrap)
+                                {
+                                    //data.textures[i].wrap = [THREE.ClampToEdgeWrapping,THREE.ClampToEdgeWrapping];
+                                    data.textures[i].wrap = [THREE.RepeatWrapping,THREE.RepeatWrapping];
+                                }
+                            }
+                            /*
+                            for (var i = 0; i < data.images.length; i++) {
+                                if(data.images[i].url)
+                                    data.images[i].url = textures + data.images[i].url;
+                            }
+                            */
+                            for (var i = 0; i < data.object.children.length; i++) {
+
+                                //======================================================
+                                //FIX for r72dev [openning same 3D models more than once]
+                                //======================================================
+                                data.object.children[i].uuid = THREE.Math.generateUUID();
+                                //======================================================
+
+                                var geometry_opacity = 1;
+                                for (var g = 0; g < data.geometries.length; g++) {
+                                    if (data.geometries[g].uuid == data.object.children[i].geometry){
+                                        //data.geometries[g].uuid = THREE.Math.generateUUID();
+                                        //data.object.children[i].geometry = data.geometries[g].uuid;
+                                        geometry_opacity = data.geometries[g].materials[0].opacity;
+                                        break;
+                                    }
+                                }
+                                if(geometry_opacity == 0)
+                                    geometry_opacity = 0.99;
+                                //====================================
+                                for (var m = 0; m < data.materials.length; m++) {
+                                    //======================================================
+                                    //FIX for r72dev [openning same 3D models textures - one texture per material]
+                                    //======================================================
+                                    for (var t = 0; t < data.textures.length; t++){
+                                        if (data.textures[t].uuid == data.materials[m].map){
+                                            data.textures[t].uuid = THREE.Math.generateUUID();
+                                            data.materials[m].map = data.textures[t].uuid;
+                                            break;
+                                        }
+                                    }
+                                    //==================================
+                                    if (data.materials[m].uuid == data.object.children[i].material){
+                        
+                                        data.materials[m].opacity = geometry_opacity;
+
+                                        var material_uuid = THREE.Math.generateUUID();
+                                        for (var ii = 0; ii < data.object.children.length; ii++) {
+                                            if (data.object.children[ii].material == data.materials[m].uuid)
+                                                data.object.children[ii].material = material_uuid;
+                                        }
+                                        data.materials[m].uuid = material_uuid;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            //=======================================
+                            loader.parse(data, callbackObject);
+                            //=======================================
+                        //}
+                    //} catch (e) { //zip file was probably not found, load regular json
+                        //console.log("Other 3D format " + e + " " + js.slice(0, -4) + "");
+                       
+                    //}
+                },
+                error: function(xhr, textStatus, errorThrown){
+    				alertify.alert("3D Model (" + js + ") Loading Error");
+    			}
+            });
+
+        } else if (js.split('.').pop() == 'obj') {
+
+            //loader = new THREE.OBJMTLLoader();
+            loader = new THREE.OBJLoader();
+
+            //loader.load(js, js.slice(0, -4) + '.mtl', function (object)
+            loader.load(js, function (object)
+            {
+                object.name = js;
+                object.position.x = x;
+                object.position.y = y;
+                object.position.z = z;
+                object.rotation.x = xaxis;
+                object.rotation.y = yaxis;
+
+                console.log("OBJMTL add model to scene" + js.slice(0, -4));
+                console.log(object);
+                objectContainer.add(object);
+
+            }, onProgress, onError);
+
+            //loader.load(js, callback, textures);
+        }
+    }catch(e){
+        console.log("open3DModel Error " + e);
     }
-}catch(e){
-    console.log("open3DModel Error " + e);
 }
-}
-
-function guuid() {
-    var d = new Date().getTime();
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = (d + Math.random()*16)%16 | 0;
-        d = Math.floor(d/16);
-        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
-    });
-    return uuid;
-};
-
 
 function scene3DGenerateClampToEdgeTexture(img) {
     // var texture = new THREE.Texture( scene3DGenerateClampToEdgeTexture( ) );
@@ -3209,15 +3299,13 @@ function cube(size) {
 
 function show3DHouse() {
 
-    enableOrbitControls();
-
-    //Something interesting from the web (maybe someday) -> http://inear.se/urbanjungle
-    //Math behind the scenes explained here http://www.inear.se/2014/03/urban-jungle-street-view/
     scene3DFreeMemory();
     hideElements();
     SCENE = 'house';
 
     initMenu("menuRight3DHouse","Exterior/index.json");
+
+    scene3DenableOrbitControls(camera3D,renderer.domElement);
 
     $(renderer.domElement).bind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).bind('mouseup', on3DHouseMouseUp);
@@ -3237,7 +3325,6 @@ function show3DHouse() {
          $('#menuBottomItem' + item).show();
     });
     $('#menuBottom').show();
-    $('#engine3D').show();
 
     toggleRight('menuRight', true);
     toggleLeft('menuLeft3DHouse', true);
@@ -3246,6 +3333,7 @@ function show3DHouse() {
     correctMenuHeight();
 
     scene3DSetSky(DAY);
+    //scene3DSetSky('0000');
     scene3D.add(skyMesh);
 
     if(settings.clouds)
@@ -3258,10 +3346,6 @@ function show3DHouse() {
     scene3DFloorWallGenerate();
 
     //initObjectCollisions(scene3DHouseContainer);
-
-    //$(renderer.domElement).bind('mousemove', on3DMouseMove);
-    //$(renderer.domElement).bind('mousedown', on3DMouseDown);
-    //$(renderer.domElement).bind('mouseup', on3DMouseUp);
 
     //scene3DHouseContainer.traverse;
 
@@ -3280,6 +3364,8 @@ function show3DHouse() {
     scene3DCube.add(scene3DCubeMesh);
 
     //console.trace();
+    $('#engine3D').show();
+    $('#WebGLCanvas').show();
 
     setTimeout(function() {
         camera3DAnimate(0,6,18, 1000);
@@ -3543,7 +3629,7 @@ function show3DLandscape() {
     scene3DSetSky('day');
     scene3DSetLight();
 
-    enableOrbitControls();
+    scene3DenableOrbitControls(camera3D,renderer.domElement);
 
     camera3D.position.set(10, 10, 15);
     camera3D.lookAt(scene3D.position);
@@ -3566,6 +3652,7 @@ function show3DLandscape() {
     correctMenuHeight();
 
     $('#engine3D').show();
+    $('#WebGLCanvas').show();
 
     //texture = THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G3756.jpg' )
     //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -3607,20 +3694,20 @@ function show3DFloor() {
     SCENE = 'floor';
 
     initMenu("menuRight3DFloor","Interior/index.json");
-    
-    scene3DSetLight();
 
-    enableOrbitControls();
-
-    scene3DFloorWallGenerate();
+    scene3DenableOrbitControls(camera3D,renderer.domElement);
 
     //camera3D.position.set(0, 10, 12);
     
     //TODO: Loop and show based in ID name / floor
     //scene3D.add(scene3DContainer);
 
-    //scene3DSetSky('0000');
-    scene3D.add(skyMesh);
+    buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
+    scene3D.add(skyFloorMesh);
+
+    scene3DSetLight();
+
+    scene3DFloorWallGenerate();
     
     /*
     scene3D.add(camera3DMirrorReflection);
@@ -3681,9 +3768,10 @@ function show3DFloor() {
     menuSelect(0,'menuLeft3DFloorItem','#ff3700');
     correctMenuHeight();
 
-    $('#engine3D').show();
-
     scene3DCube.add(scene3DCubeMesh);
+
+    $('#engine3D').show();
+    $('#WebGLCanvas').show();
 
     setTimeout(function() {
         camera3DAnimate(0,10,12, 1000);
@@ -3704,7 +3792,7 @@ function show3DFloorLevel() {
     scene3DSetSky('day');
     scene3DSetLight();
 
-    enableOrbitControls();
+    scene3DenableOrbitControls(camera3D,renderer.domElement);
 
     camera3D.position.set(10, 10, 15);
     camera3D.lookAt(scene3D.position);
@@ -3722,6 +3810,7 @@ function show3DFloorLevel() {
 
     //$('#HTMLCanvas').hide();
     $('#engine3D').show();
+    $('#WebGLCanvas').show();
 
     animate();
 }
@@ -3731,23 +3820,24 @@ function show3DRoofDesign() {
     scene3DAnimateRotate = false;
     scene3DFreeMemory();
     hideElements();
-    //scene3D = new THREE.Scene();
     SCENE = 'roof';
 
     initMenu("menuRight3DRoof","Roof/index.json");
 
-    scene3DSetBackground('split');
+    //scene3DSetBackground('split');
     scene3DSetLight();
 
     //camera3D.position.set(0, 4, 12);
+    //var ambientLight = new THREE.AmbientLight( Math.random() * 0x10 );
+        
+    scene3DInitializeRendererQuad();
 
-    scene3D.add(camera3DQuad[0]);
-    scene3D.add(camera3DQuad[1]);
-    scene3D.add(camera3DQuad[2]);
-    scene3D.add(camera3DQuad[3]);
     scene3D.add(camera3DQuadGrid);
-
     scene3D.add(scene3DRoofContainer);
+
+    $("#WebGLSplitCanvas-0").bind('mousemove', on3DRoofSplit0MouseMove);
+    $("#WebGLSplitCanvas").bind('mouseup', on3DRoofVDividerMouseUp);
+    
 
     //scene3D.add(sceneHemisphereLight);
     //scene3D.add( new THREE.AxisHelper(100) );
@@ -3761,8 +3851,11 @@ function show3DRoofDesign() {
     menuSelect(4, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
+    //$('div.split-pane').splitPane();
+    
     //$('#HTMLCanvas').hide();
     $('#engine3D').show();
+    $('#WebGLSplitCanvas').show();
 
     animate();
 }
@@ -4558,8 +4651,8 @@ function hideElements() {
     if (renderer === undefined)
         return;
 
-    renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-    renderer.clear();
+    //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+    //renderer.clear();
     
     scene3DCube.remove(scene3DCubeMesh);
     
@@ -4598,6 +4691,9 @@ function hideElements() {
 
     $(renderer.domElement).unbind('dblclick', onDocumentDoubleClick);
 
+    $("#WebGLSplitCanvas-0").unbind('mousemove', on3DRoofSplit0MouseMove);
+    $("#WebGLSplitCanvas").unbind('mouseup', on3DRoofVDividerMouseUp);
+
     $(renderer.domElement).unbind('mousedown', on3DFloorMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DFloorMouseUp);
     $(renderer.domElement).unbind('mousemove', on3DFloorMouseMove);
@@ -4612,6 +4708,8 @@ function hideElements() {
 
     $('#engine2D').hide();
     $('#engine3D').hide();
+    $('#WebGLCanvas').hide();
+    $('#WebGLSplitCanvas').hide();
 
     $('#menuLeft3DHouse').hide();
     $('#menuLeft3DLandscape').hide();
@@ -4973,17 +5071,16 @@ function selectWeather() {
 }
 
 function onWindowResize() {
-    //if (scene3D.visible) {
-        camera3D.aspect = window.innerWidth / window.innerHeight;
-        camera3D.updateProjectionMatrix();
-        //} else if (scene2D.visible) {
-        //camera2D.aspect = window.innerWidth / window.innerHeight;
-        //camera2D.updateProjectionMatrix();
-    //}
 
-    //effectFXAA.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
-    //composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+    camera3D.aspect = window.innerWidth / window.innerHeight;
+    camera3D.updateProjectionMatrix();
+    /*
+    effectFXAA.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+    composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+    */
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    scene3DInitializeRendererQuadSize();
 
     correctMenuHeight();
 }
@@ -5696,11 +5793,11 @@ $(document).on('keyup', function(event){
 });
 
 function on3DHouseMouseDown(event) {
+
 	on3DMouseDown(event);
 
     if (!scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseContainer)){
-        //BUG: FOr some reason causes objects to go blank?
-        //scene3D.add(scene3DPivotPoint);
+        scene3D.add(scene3DPivotPoint);
 
     //}
     //else if (scene3DObjectSelect(mouse.x, mouse.y, camera3D, scene3DHouseGroundContainer))
@@ -5711,12 +5808,30 @@ function on3DHouseMouseDown(event) {
             //if (SelectedObject != null && (mouse.x > max || mouse.y > max))
             //{
                 //controls3D.detach(SelectedObject);
-                //enableOrbitControls();
+                //scene3DenableOrbitControls(camera3D);
                 //camera3DAnimateResetView();
                 //return;
             //}
         //}
     }
+}
+
+
+function on3DRoofVDividerMouseUp(event) {
+    scene3DInitializeRendererQuadSize();
+}
+
+function on3DRoofSplit0MouseMove(event) {
+
+}
+function on3DRoofSplit1MouseMove(event) {
+
+}
+function on3DRoofSplit2MouseMove(event) {
+
+}
+function on3DRoofSplit3MouseMove(event) {
+
 }
 
 function on3DHouseMouseUp(event) {
@@ -5738,6 +5853,7 @@ function on3DFloorMouseDown(event) {
 }
 
 function on3DFloorMouseUp(event) {
+
     on3DMouseUp(event);
 
     var o = 0.1;
@@ -5757,12 +5873,14 @@ function on3DCubeMove()
         return;
     }
     */
+    console.log("cube move");
     //clearTimeout(clickMenuTime);
     //console.log("cube move");
     camera3DCube.position.copy(camera3D.position);
     camera3DCube.position.sub(controls3D.center);
     camera3DCube.position.setLength(18);
     camera3DCube.lookAt(scene3DCube.position);
+    camera3DCube.updateMatrixWorld();
     //camera3DCube.needsUpdate = true;
 }
 
@@ -5784,7 +5902,7 @@ function on3DObjectMove(container,event)
         var intersects = raycaster.intersectObjects(container.children,true);
         if (intersects.length > 0) { //No need to check - ground will always be there (faster)
             //if (!collision){
-                 
+                 //controls3D.enabled = false;
                 if(leftButtonDown)
                 {
                     $('#WebGLSelectMenu').tooltipster('hide');
@@ -5807,12 +5925,13 @@ function on3DHouseMouseMove(event) {
     //if (!leftButtonDown)
     //   return;
 
+    if(TWEEN.getAll().length !== 0) //do not interfere with existing animations (performance)
+        return;
+
     if(SelectedObject !== null)
-    {   
-        on3DObjectMove(scene3DHouseGroundContainer.children,event);
-    }else{
+        on3DObjectMove(scene3DHouseGroundContainer,event);
+    else
         on3DCubeMove();
-    }
 }
 
 function on3DFloorMouseMove(event) {
@@ -5821,6 +5940,9 @@ function on3DFloorMouseMove(event) {
 
     //if (!leftButtonDown)
     //    return;
+
+    if(TWEEN.getAll().length !== 0) //do not interfere with existing animations (performance)
+        return;
 
     if(SelectedObject !== null)
     {
@@ -5832,31 +5954,29 @@ function on3DFloorMouseMove(event) {
         scene3DCutawayPlaneMesh.position.copy(v);
         scene3DCutawayPlaneMesh.lookAt(camera3D.position);
 
-        if(TWEEN.getAll().length === 0) //do not interfere with existing animations (performance)
+        var collection = [];
+        var originPoint = scene3DCutawayPlaneMesh.position.clone();
+      
+        for (var vertexIndex = 0; vertexIndex < scene3DCutawayPlaneMesh.geometry.vertices.length; vertexIndex++)
         {
-            var collection = [];
-            var originPoint = scene3DCutawayPlaneMesh.position.clone();
-          
-            for (var vertexIndex = 0; vertexIndex < scene3DCutawayPlaneMesh.geometry.vertices.length; vertexIndex++)
+            var localVertex = scene3DCutawayPlaneMesh.geometry.vertices[vertexIndex].clone();
+            var globalVertex = localVertex.applyMatrix4(scene3DCutawayPlaneMesh.matrix);
+            var directionVector = globalVertex.sub(scene3DCutawayPlaneMesh.position);
+            
+            var ray = new THREE.Raycaster(originPoint,directionVector.clone().normalize());
+            var collisionResults = ray.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
+
+            if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
             {
-                var localVertex = scene3DCutawayPlaneMesh.geometry.vertices[vertexIndex].clone();
-                var globalVertex = localVertex.applyMatrix4(scene3DCutawayPlaneMesh.matrix);
-                var directionVector = globalVertex.sub(scene3DCutawayPlaneMesh.position);
-                
-                var ray = new THREE.Raycaster(originPoint,directionVector.clone().normalize());
-                var collisionResults = ray.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
+                //console.log("Intersects " + collisionResults.length);
+                //if(collisionResults[0].object.material.opacity > 0.1)
+                    tween = new TWEEN.Tween(collisionResults[0].object.material).to({opacity:0.1}, 800).start();
 
-                if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
-                {
-                    //console.log("Intersects " + collisionResults.length);
-                    //if(collisionResults[0].object.material.opacity > 0.1)
-                        tween = new TWEEN.Tween(collisionResults[0].object.material).to({opacity:0.1}, 800).start();
-
-                    collection.push(collisionResults[0].object.id);
-                    //break;
-                }
+                collection.push(collisionResults[0].object.id);
+                //break;
             }
         }
+        
         on3DCubeMove();
     }
 }
@@ -6008,7 +6128,7 @@ function on3DMouseMove(event) {
 
 function on3DMouseDown(event) {
 
-    //event.preventDefault();
+    event.preventDefault();
 
     if (event.which === 1) 
         leftButtonDown = true; // Left mouse button was pressed, set flag
@@ -6030,7 +6150,7 @@ function on3DMouseDown(event) {
             {
                 //console.log(TransformConstrolsHighlighted);
                 controls3D.detach(SelectedObject);
-                enableOrbitControls();
+                scene3DenableOrbitControls(camera3D);
 
                 scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
                 //$(renderer.domElement).unbind('mousemove', on3DMouseMove);
@@ -6340,9 +6460,10 @@ function scene3DObjectSelect(x, y, camera, object) {
         {
             //console.log(intersects[0].object);
             //if (intersects[0].object == scene3DHouseGroundContainer)
-                //return;
+            //    return;
+            //controls3D.enabled = false;
 
-            //if (SelectedObject !== intersects[0].object){
+            if (SelectedObject !== intersects[0].object){
 
                 scene3DObjectUnselect(); //avoid showing multiple selected objects
                 controls3D.enabled = false;
@@ -6414,7 +6535,13 @@ function scene3DObjectSelect(x, y, camera, object) {
                     var v = scene3DObjectSelectMenuPosition(mouse.x,mouse.y);
                     $('#WebGLSelectMenu').css({ position: 'absolute', left: v.x, top: v.y-50, 'z-index': 0});
 
-                    if(intersects[0].distance > 8){
+                    var bbX = 0;
+                    //var bbY = 0;
+                    if(SelectedObject.boundingBox)
+                        bbX = SelectedObject.boundingBox.max.x;
+                        //bbY = SelectedObject.boundingBox.max.y;
+                   
+                    if(intersects[0].distance > 8 && bbX < 4){
                         camera3DPositionCache = camera3D.position.clone();
                         camera3DPivotCache = controls3D.target.clone();
 
@@ -6432,15 +6559,15 @@ function scene3DObjectSelect(x, y, camera, object) {
                     
                     toggleSideMenus(false);
                 }
-            //}
-            return true;
+                return true;
+            }
+            
         } else {
 
             scene3DObjectUnselect();
-            
-            return false;
         }
     }
+    return false;
 }
 
 
@@ -7435,6 +7562,7 @@ function sceneNew() {
     //scene3DPivotPoint = new THREE.Object3D();
 
     skyMesh = new THREE.Object3D();
+    skyFloorMesh = new THREE.Object3D();
 
     //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
     //==============================================
@@ -7713,11 +7841,11 @@ function scene3DSetSky(set) {
         }else if(set == 'night'){
             files =  settings.panorama_night;
         }
-        //console.log("build Panorama: " + files);
 
         skyMesh = new THREE.Object3D();
-        buildPanorama(skyMesh, files, 75, 75, 75,"");
+        buildPanorama(skyMesh, files, 75, 75, 75,"",null);
         skyMesh.position.y = 5;
+        //console.log("build Panorama: " + files);
         
         /*
         var files = 'panoramas/';
@@ -8259,16 +8387,17 @@ function animateFloor()
     //particlePivot.tick(delta);
     controls3D.update();
 
-    renderer.clear();
+    //renderer.clear();
     renderer.render( scene3D, camera3D );
     /*
     if(leftButtonDown){
 
         renderer.render( scene3D, camera3D );
     }else{
-        composer.render(delta);
+        composer.render();
     }
     */
+
     TWEEN.update();
 }
 
@@ -8478,10 +8607,11 @@ function animateHouse()
         }
         */
     //}
+    //if(controls3D.enabled)
+        controls3D.update();
 
-    controls3D.update();
+    rendererCube.render(scene3DCube, camera3DCube);
 
-    //renderSunlight(); //renderer.render(scene3D, camera3D);
     /*
     if(getScreenshotData == true){
         getScreenshotData = false;
@@ -8489,10 +8619,19 @@ function animateHouse()
     }
     */
     
-    renderer.clear();
+    //renderer.clear();
     renderer.render( scene3D, camera3D );
-    rendererCube.render(scene3DCube, camera3DCube);
+    /*
+    if(leftButtonDown){
+        renderer.render( scene3D, camera3D );
+    }else{
+        composer.render();
+    }
+    */
 
+    //renderSunlight(); 
+    
+   
     TWEEN.update();
 
     /*
@@ -8514,32 +8653,17 @@ function animateHouse()
 function animateRoof()
 {
     requestAnimationID = window.requestAnimationFrame(animateRoof);
-    // setViewport parameters:
-    //  lower_left_x, lower_left_y, viewport_width, viewport_height
 
-    //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
-    //renderer.clear();
+    for(i = 0; i<4; i++){
+        rendererQuad[i].render(scene3D, camera3DQuad[i]);
+    }
+}
 
-    // upper left corner
-    renderer.setViewport(0, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-    renderer.render(scene3D, camera3DQuad[0]); //top
+function animateRoof0()
+{
+    requestAnimationID = window.requestAnimationFrame(animateRoof);
 
-    // upper right corner
-    renderer.setViewport(0.5 * window.innerWidth, 0.5 * window.innerHeight, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-    renderer.render(scene3D, camera3DQuad[1]); //front 
-
-    // lower left corner
-    renderer.setViewport(0, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-    //camera3DQuad[2].updateProjectionMatrix();
-    renderer.render(scene3D, camera3DQuad[2]); //side
-
-    // lower right corner
-    renderer.setViewport(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-    //renderer.setScissor(0.5 * window.innerWidth, 0, 0.5 * window.innerWidth, 0.5 * window.innerHeight);
-    //renderer.enableScissorTest(true);
-    //camera3DQuad[3].updateProjectionMatrix();
-
-    renderer.render(scene3D, camera3DQuad[3]); //perspective
+    rendererQuad[0].render(scene3D, camera3DQuad[0]);
 }
 
 function animateStop()

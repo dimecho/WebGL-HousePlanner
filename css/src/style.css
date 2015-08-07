@@ -1,4 +1,5 @@
 body, html {
+    min-height: 100%;
     height: 100%;
     width: 100%;
     padding: 0;
@@ -70,7 +71,6 @@ body{
   width: auto;
 }
 
-
 #WebGLCanvas {
   width: 100%;
   height: 100%;
@@ -78,18 +78,26 @@ body{
   padding: 0px;
 }
 
-#engine3DCanvas {
-    width: 100%;
-    height: 100%;
-    margin: 0px;
-    padding: 0px;
+#WebGLSplitCanvas {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display:none
 }
 
-#engine2DCanvas {
+#engine3D {
     width: 100%;
     height: 100%;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
+}
+
+#engine2D {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 #dragElement {

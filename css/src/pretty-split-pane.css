@@ -1,43 +1,43 @@
 #top-component {
-	bottom: 20em;
+	bottom: 50%;
 	margin-bottom: 5px;
-}
-
-#horizontal-divider {
-	bottom: 20em;
-	height: 5px;
 }
 
 #bottom-component {
-	height: 20em;
+	height: 50%;
 }
 
-#left-component {
-	width: 20em;
-}
-
-#vertical-divider {
-	left: 20em;
-	width: 5px;
-}
-
-#right-component {
-	left: 20em;
-	margin-left: 5px;
-}
-
-#top-component2 {
-	bottom: 50%;
-	margin-bottom: 5px;
-}
-
-#horizontal-divider2 {
+#horizontal-divider {
 	bottom: 50%;
 	height: 5px;
 }
 
-#bottom-component2 {
-	height: 50%;
+#vertical-divider-1 {
+	left: 40em;
+	width: 5px;
+}
+
+#left-component-1 {
+	width: 40em;
+}
+
+#right-component-1 {
+	left: 40em;
+	margin-left: 5px;
+}
+
+#vertical-divider-2 {
+	left: 40em;
+	width: 5px;
+}
+
+#left-component-2 {
+	width: 40em;
+}
+
+#right-component-2 {
+	left: 40em;
+	margin-left: 5px;
 }
 			
 .pretty-split-pane-frame {
@@ -59,6 +59,7 @@
 	background: white;
 	width: 100%;
 	height: 100%;
-	padding: 0 1em;
-	overflow: auto;
+	padding: 0;
+	margin: 0;
+	overflow: hidden;
 }
