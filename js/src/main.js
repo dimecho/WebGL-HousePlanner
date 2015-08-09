@@ -44,7 +44,7 @@ var scene2D; //Fabric.js Canvas
 var scene2DAdvanced; //Fabric.js Canvas
 var physics3D; //Cannon.js Engine (collisions and other cool stuff)
 
-var composer, dpr, effectFXAA;
+var dpr;
 var renderer, rendererCube, rendererPanorama;
 
 var rendererQuad = [4];
@@ -195,6 +195,14 @@ var fileReader; //HTML5 local file reader
 //var colliderSystem = [];
 var getScreenshotData = false;
 
+var FXAAPass;
+var SSAOPass;
+var effectComposer;
+var depthMaterial, depthRenderTarget;
+var depthScale = 1.0;
+var FXAAProcessing = { enabled : true}; // renderMode: 0('framebuffer'), 1('onlyAO')
+var SSAOProcessing = { enabled : false, renderMode: 0 }; // renderMode: 0('framebuffer'), 1('onlyAO')
+
 function init(runmode,viewmode) {
 
     if (!Detector.webgl)
@@ -298,7 +306,7 @@ function init(runmode,viewmode) {
 
     scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DPivotPoint = new THREE.Object3D();
-    sceneNew();
+    
 
     var geometry = new THREE.BoxGeometry( 15, 15, 3 ); //new THREE.PlaneGeometry(15, 15,3);
     geometry.computeBoundingBox();
@@ -530,7 +538,7 @@ function init(runmode,viewmode) {
 
     scene3DInitializeClouds();
 
-
+    sceneNew();
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
     $(window).bind('resize', onWindowResize);
@@ -589,6 +597,9 @@ function init(runmode,viewmode) {
     open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
     open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
     open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
+
+
+    //scene3DInitializePostprocessing();
 
     show3DHouse();
 
@@ -676,6 +687,59 @@ function scene2DFreeMemory()
     for (var object in objects)
     {
         scene2D.remove(object);
+    }
+}
+
+function scene3DInitializePostprocessing()
+{
+
+    effectComposer = new THREE.EffectComposer( renderer );
+    effectComposer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+
+    var renderPass = new THREE.RenderPass( scene3D, camera3D ); // Setup render pass
+    effectComposer.addPass( renderPass );
+
+    if(SSAOProcessing.enabled)
+    {
+        // Setup depth pass
+        var depthShader = THREE.ShaderLib[ "depthRGBA" ];
+        var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
+        depthMaterial = new THREE.ShaderMaterial( { fragmentShader: depthShader.fragmentShader, vertexShader: depthShader.vertexShader, uniforms: depthUniforms, blending: THREE.NoBlending } );
+        depthRenderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
+
+        // Setup SSAO pass
+        SSAOPass = new THREE.ShaderPass( THREE.SSAOShader );
+        SSAOPass.renderToScreen = true;
+
+        //ssaoPass.uniforms[ "tDiffuse" ].value will be set by ShaderPass
+        SSAOPass.uniforms[ "tDepth" ].value = depthRenderTarget;
+        SSAOPass.uniforms[ 'size' ].value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+        SSAOPass.uniforms[ 'cameraNear' ].value = camera3D.near;
+        SSAOPass.uniforms[ 'cameraFar' ].value = camera3D.far;
+        SSAOPass.uniforms[ 'onlyAO' ].value = ( SSAOProcessing.renderMode == 1 );
+        SSAOPass.uniforms[ 'aoClamp' ].value = 0.3;
+        SSAOPass.uniforms[ 'lumInfluence' ].value = 0.5;
+
+        effectComposer.addPass( SSAOPass ); // Add pass to effect composer
+    }
+
+    /*
+    if ( value == 0 ) { // framebuffer
+        ssaoPass.uniforms[ 'onlyAO' ].value = false;
+    } else if ( value == 1 ) {  // onlyAO
+        ssaoPass.uniforms[ 'onlyAO' ].value = true;
+    } else {
+        console.error( "Not define renderModeChange type: " + value );
+    }
+    */
+
+    if(FXAAProcessing.enabled)
+    {
+        FXAAPass = new THREE.ShaderPass(THREE.FXAAShader);
+        FXAAPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+        FXAAPass.renderToScreen = true;
+
+        effectComposer.addPass(FXAAPass); // Add pass to effect composer
     }
 }
 
@@ -977,19 +1041,22 @@ function scene3DInitializeRenderer()
 
     renderer = new THREE.WebGLRenderer({
         devicePixelRatio: dpr,
-        antialias: true, //false,
-        alpha: true,
+        antialias: false,
+        //alpha: true,
         //alpha: false,
         //preserveDrawingBuffer: false
         //autoUpdateObjects: true
     });
 
     //renderer.autoClear = false; //REQUIRED: for split screen
+    /*
     renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
-    //renderer.shadowMap.debug = true; //shadowMapDebug = true;
-    //renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
     renderer.shadowMapSoft = true;
     renderer.shadowMapAutoUpdate = true;
+    */
+    //renderer.shadowMap.debug = true; //shadowMapDebug = true;
+    //renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
+
     //renderer.gammaInput = true;
     //renderer.gammaOutput = true;
     
@@ -1017,16 +1084,6 @@ function scene3DInitializeRenderer()
         //preserveDrawingBuffer: false
     });
     rendererCube.setSize(100, 100);
-    /*
-    effectFXAA = new THREE.ShaderPass(THREE.FXAAShader);
-    effectFXAA.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
-    effectFXAA.renderToScreen = true;
-
-    composer = new THREE.EffectComposer( renderer );
-    composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
-    composer.addPass( new THREE.RenderPass( scene3D, camera3D ) );
-    composer.addPass(effectFXAA);
-    */
     
     document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
     document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
@@ -2609,7 +2666,7 @@ function scene3DenableOrbitControls(camera, element)
         controls3D.enabled = true;
     }else{
         
-        console.log("new THREE.OrbitControls");
+        //console.log("new THREE.OrbitControls");
         controls3D = new THREE.OrbitControls(camera, element);
         controls3D.minDistance = 3;
         controls3D.maxDistance = 25; //Infinity;
@@ -5074,10 +5131,16 @@ function onWindowResize() {
 
     camera3D.aspect = window.innerWidth / window.innerHeight;
     camera3D.updateProjectionMatrix();
-    /*
-    effectFXAA.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
-    composer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
-    */
+
+    //Shader Post Processing
+    //========================
+    if(SSAOProcessing.enabled)
+        SSAOPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+    if(FXAAProcessing.enabled)
+        FXAAPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+    effectComposer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+    //========================
+
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     scene3DInitializeRendererQuadSize();
@@ -7546,10 +7609,10 @@ function sceneOpen(file) {
 
 function sceneNew() {
    
+    animateStop();
     //scene3DFreeMemory();
     //hideElements();
-    animateStop();
-
+    
     scene3D = new THREE.Scene();
 
     scene3DRoofContainer = new THREE.Object3D();
@@ -7584,6 +7647,7 @@ function sceneNew() {
         scene3DWallInteriorTextures[i] = new Array();
         scene3DWallExteriorTextures[i] = new Array();
     }
+
     //==============================================
     /*
     manager = new THREE.LoadingManager();
@@ -7592,6 +7656,10 @@ function sceneNew() {
     };
     */
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
+
+    scene3DenableOrbitControls(camera3D,renderer.domElement);
+
+    scene3DInitializePostprocessing();
 }
 
 function scene2DMakeWallPivotCircle(left, top, lock) {
@@ -8388,15 +8456,24 @@ function animateFloor()
     controls3D.update();
 
     //renderer.clear();
-    renderer.render( scene3D, camera3D );
-    /*
-    if(leftButtonDown){
+    //renderer.render( scene3D, camera3D );
 
+    if(leftButtonDown){
         renderer.render( scene3D, camera3D );
     }else{
-        composer.render();
+        //renderer.clear();
+        if (SSAOProcessing.enabled)
+        {
+            // Render depth into depthRenderTarget
+            scene3D.overrideMaterial = depthMaterial;
+            renderer.render( scene3D, camera3D, depthRenderTarget, true );
+
+            // Render renderPass and SSAO shaderPass
+            scene3D.overrideMaterial = null;
+        }
+
+        effectComposer.render();
     }
-    */
 
     TWEEN.update();
 }
@@ -8584,15 +8661,15 @@ function animateClouds()
 
 function animateHouse()
 {
+
     requestAnimationID = window.requestAnimationFrame(animateHouse);
-    
+
     if (scene3DAnimateRotate)
     {
         animate();
         return;
     }
     
-
     //var delta = clock.getDelta();
     
     //if (controls3D instanceof THREE.OrbitControls){
@@ -8601,16 +8678,19 @@ function animateHouse()
 
     animateClouds();
 
+
         /*
         for (var a in animation) {
             a.update(delta * 0.8);
         }
         */
     //}
-    //if(controls3D.enabled)
+    if(controls3D.enabled)
+    {
         controls3D.update();
 
-    rendererCube.render(scene3DCube, camera3DCube);
+        rendererCube.render(scene3DCube, camera3DCube);
+    }
 
     /*
     if(getScreenshotData == true){
@@ -8619,8 +8699,24 @@ function animateHouse()
     }
     */
     
-    //renderer.clear();
-    renderer.render( scene3D, camera3D );
+    if(leftButtonDown){
+        renderer.render( scene3D, camera3D );
+    }else{
+        //renderer.clear();
+        if (SSAOProcessing.enabled)
+        {
+            // Render depth into depthRenderTarget
+            scene3D.overrideMaterial = depthMaterial;
+            renderer.render( scene3D, camera3D, depthRenderTarget, true );
+
+            // Render renderPass and SSAO shaderPass
+            scene3D.overrideMaterial = null;
+        }
+
+        effectComposer.render();
+    }
+
+    TWEEN.update();
     /*
     if(leftButtonDown){
         renderer.render( scene3D, camera3D );
@@ -8632,7 +8728,7 @@ function animateHouse()
     //renderSunlight(); 
     
    
-    TWEEN.update();
+   
 
     /*
     var timer = Date.now() * 0.0005;
