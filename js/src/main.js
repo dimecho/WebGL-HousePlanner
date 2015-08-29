@@ -61,6 +61,7 @@ var scene3DCutawayPlaneMesh; //Virtual mesh used to detect collisions "cut-aways
 var scene3DLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DLevelWallContainer; //Floor Level arrengment Ground - 1 object
 var scene3DFloorFurnitureContainer = []; //Three.js contains all Floor 3D objects by floor (sofas,tables)
+var scene3DAxisHelper;
 //var scene3DFloorOtherContainer = []; //Three.js contains all other objects, cameras, notes
 var scene3DFloorMeasurementsContainer = []; //Three.js contains floor measurements: angles, wall size - lines & text (note: objects have their own measurement meshes)
 var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
@@ -306,7 +307,7 @@ function init(runmode,viewmode) {
 
     scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DPivotPoint = new THREE.Object3D();
-    
+    scene3DAxisHelper = new THREE.AxisHelper(2);
 
     var geometry = new THREE.BoxGeometry( 15, 15, 3 ); //new THREE.PlaneGeometry(15, 15,3);
     geometry.computeBoundingBox();
@@ -692,15 +693,18 @@ function scene2DFreeMemory()
 
 function scene3DInitializePostprocessing()
 {
+    //if(!(effectComposer instanceof THREE.EffectComposer)){
+        console.log("init EffectComposer");
+        effectComposer = new THREE.EffectComposer( renderer );
+        effectComposer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
 
-    effectComposer = new THREE.EffectComposer( renderer );
-    effectComposer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+        var renderPass = new THREE.RenderPass( scene3D, camera3D ); // Setup render pass
+        effectComposer.addPass( renderPass );
+    //}
 
-    var renderPass = new THREE.RenderPass( scene3D, camera3D ); // Setup render pass
-    effectComposer.addPass( renderPass );
-
-    if(SSAOProcessing.enabled)
+    if(SSAOProcessing.enabled) // && !(SSAOPass instanceof THREE.ShaderPass))
     {
+        console.log("init SSAOShader");
         // Setup depth pass
         var depthShader = THREE.ShaderLib[ "depthRGBA" ];
         var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
@@ -733,8 +737,9 @@ function scene3DInitializePostprocessing()
     }
     */
 
-    if(FXAAProcessing.enabled)
+    if(FXAAProcessing.enabled) // && !(FXAAPass instanceof THREE.ShaderPass))
     {
+        console.log("init FXAAShader");
         FXAAPass = new THREE.ShaderPass(THREE.FXAAShader);
         FXAAPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
         FXAAPass.renderToScreen = true;
@@ -1049,11 +1054,11 @@ function scene3DInitializeRenderer()
     });
 
     //renderer.autoClear = false; //REQUIRED: for split screen
-    /*
+    
     renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
     renderer.shadowMapSoft = true;
     renderer.shadowMapAutoUpdate = true;
-    */
+    
     //renderer.shadowMap.debug = true; //shadowMapDebug = true;
     //renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
 
@@ -1137,6 +1142,7 @@ function buildPanorama(container,files,X,Y,Z,preloader,mesh)
     ];
     //console.log(files + " " + preloader);
 
+    /*
     var cubemap = THREE.ImageUtils.loadTextureCube(sides);
     cubemap.minFilter = THREE.LinearFilter;
     //cubemap.format = THREE.RGBFormat;
@@ -1165,8 +1171,8 @@ function buildPanorama(container,files,X,Y,Z,preloader,mesh)
 
     if(preloader === "_") //High Resolution
         buildPanorama(container,files,X,Y,Z,"",skybox);
-
-    /*
+    */
+    
     //Low Resolution
     var sides = [
         new THREE.MeshBasicMaterial({
@@ -1208,7 +1214,6 @@ function buildPanorama(container,files,X,Y,Z,preloader,mesh)
     textureloader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture; });
     textureloader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture; });
     textureloader.load('panoramas/' + files + '/back.jpg', function (texture) {sides[5].map = texture;});
-    */
     
     /*
     var geometry = new THREE.SphereGeometry( 500, 60, 40 );
@@ -3364,6 +3369,8 @@ function show3DHouse() {
 
     scene3DenableOrbitControls(camera3D,renderer.domElement);
 
+    //SSAOProcessing.enabled = false;
+
     $(renderer.domElement).bind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).bind('mouseup', on3DHouseMouseUp);
     $(renderer.domElement).bind('mouseup', on3DHouseMouseMove);
@@ -3753,6 +3760,10 @@ function show3DFloor() {
     initMenu("menuRight3DFloor","Interior/index.json");
 
     scene3DenableOrbitControls(camera3D,renderer.domElement);
+
+    //SSAOProcessing.enabled = true;
+    //FXAAProcessing.enabled = false;
+    //scene3DInitializePostprocessing();
 
     //camera3D.position.set(0, 10, 12);
     
@@ -6615,10 +6626,12 @@ function scene3DObjectSelect(x, y, camera, object) {
 
                         tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},1000).easing(TWEEN.Easing.Quadratic.InOut).start();
                                     
-        			  }else{
+        			}else{
                        $('#WebGLSelectMenu').tooltipster('show');
                         //scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
                     }
+
+                    SelectedObject.add(scene3DAxisHelper);
                     
                     toggleSideMenus(false);
                 }
@@ -6652,8 +6665,8 @@ function scene3DObjectUnselect() {
     {
         if(SelectedObject != null)
         {
-            
 
+            SelectedObject.remove(scene3DAxisHelper);
             //console.log(SelectedObject);
 
             var highlighteMesh = SelectedObject.children[SelectedObject.children.length-1];
@@ -6673,6 +6686,9 @@ function scene3DObjectUnselect() {
                 SelectedObject.children[i].material.depthTest = true;
                 */
             //}
+
+            
+
             SelectedObject = null;
             SelectedWall = null;
 
