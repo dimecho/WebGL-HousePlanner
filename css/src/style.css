@@ -52,11 +52,13 @@ body{
 }
 
 .image-circular {
+  /*
   position: absolute;
   top:10px;
   left:80px;
   width: 80px;
   height: 80px;
+  */
   border: 5px solid #ffffff;
   overflow: hidden;
   -webkit-border-radius: 50%;

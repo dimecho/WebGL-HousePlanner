@@ -190,6 +190,8 @@ var terrain3DMaterial;
 var terrain3DRawHillData = [];
 var terrain3DRawValleyData = [];
 
+var terrainShader;
+
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
 
@@ -755,6 +757,83 @@ function scene3DInitializeWater()
 
 function scene3DInitializeGround()
 {
+    /*
+    var n = 0;
+    function loaded() {
+        n++;
+        console.log("loaded: " + n);
+ 
+        if (n == 3) {
+            //terrain.visible = true;
+            console.log('ff');
+            //render();
+        }
+    }
+    */
+    // load the heightmap we created as a texture
+    //var texture = THREE.ImageUtils.loadTexture('assets/combined.png', null, loaded);
+ 
+    // load two other textures we'll use to make the map look more real
+    var detailTexture = THREE.ImageUtils.loadTexture('objects/Landscape/Textures/G36096.jpg'); //, null, loaded);
+
+    terrainShader = THREE.ShaderTerrain[ "terrain" ];
+    uniformsTerrain = THREE.UniformsUtils.clone(terrainShader.uniforms);
+
+    // how to treat abd scale the normal texture
+    uniformsTerrain[ "tNormal" ].texture = detailTexture;
+    uniformsTerrain[ "uNormalScale" ].value = 0.5;
+
+    // displacement is heightmap (greyscale image)
+    //uniformsTerrain[ "tDisplacement" ].value = texture;
+    //uniformsTerrain[ "uDisplacementScale" ].value = 15;
+
+    // the following textures can be use to finetune how the map is shown. These are good defaults for simple rendering
+    uniformsTerrain[ "tDiffuse1" ].value = detailTexture;
+    uniformsTerrain[ "tDetail" ].texture = detailTexture;
+    uniformsTerrain[ "enableDiffuse1" ].value = true;
+    //uniformsTerrain[ "enableDiffuse2" ].value = true;
+    //uniformsTerrain[ "enableSpecular" ].value = true;
+
+    // diffuse is based on the light reflection
+    //uniformsTerrain[ "uDiffuseColor" ].value.setHex(0xcccccc);
+    //uniformsTerrain[ "uSpecularColor" ].value.setHex(0xff0000);
+
+    // is the base color of the terrain
+    //uniformsTerrain[ "uAmbientColor" ].value.setHex(0x0000cc);
+ 
+    // how shiny is the terrain
+    //uniformsTerrain[ "uShininess" ].value = 3;
+
+    // handles light reflection
+    //uniformsTerrain[ "uRepeatOverlay" ].value.set(3, 3);
+
+    terrain3DMaterial = new THREE.ShaderMaterial({
+        uniforms:       uniformsTerrain,
+        vertexShader:   terrainShader.vertexShader,
+        fragmentShader: terrainShader.fragmentShader,
+        lights:         true,
+        fog:            false
+    });
+
+    var geometryTerrain = new THREE.PlaneGeometry( 40, 40);
+    //geometryTerrain.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+    geometryTerrain.computeFaceNormals();
+    geometryTerrain.computeVertexNormals();
+    //geometryTerrain.computeTangents();
+
+    /*
+    for (var i = 0, len = geometry.faces.length; i < len; i++) {
+        var face = geometry.faces[i].clone();
+        face.materialIndex = 1;
+        geometry.faces.push(face);
+        geometry.faceVertexUvs[0].push(geometry.faceVertexUvs[0][i].slice(0));
+    }
+    */
+
+    terrain3D = new THREE.Mesh(geometryTerrain, terrain3DMaterial);
+    terrain3D.rotation.x = -Math.PI / 2;
+
+    /*
     $.ajax({
         url: "shaders/ground.vertex.fx",
         //async: false,
@@ -805,7 +884,7 @@ function scene3DInitializeGround()
                         //terrain3D.materials[0].attributes.displacement.value.push(0); //v71
                     }
                     terrain3D.rotation.x = Degrees2Radians(-90);
-                    /*
+                    /
                     terrain3D.water = new THREE.Mesh(
                         new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices ),
                         new THREE.ShaderMaterial({
@@ -828,11 +907,12 @@ function scene3DInitializeGround()
                     }
                     terrain3D.water.position.z = -1;
                     terrain3D.add(terrain3D.water);
-                    */
+                    /
                 }
             }); 
         }
     });
+    */
 }
 
 function scene3DInitializeClouds()
@@ -3439,7 +3519,8 @@ function show3DHouse() {
 }
 
 //========================================
-/** CONFIG **/
+/*
+//CONFIG
 var plots_x = 20;
 var plots_y = 20;
 var plot_vertices = 2;
@@ -3447,7 +3528,7 @@ var plot_vertices = 2;
 var map_left = plots_x /  -2;
 var map_top = plots_y / -2;
 
-/** MOUSE **/
+//MOUSE
 var terrain3DMouse = {
     x: 0,
     y: 0,
@@ -3485,7 +3566,7 @@ var updateMouseCoordinates = function() {
     }
 };
 
-/** VERTEX POINTS **/
+//VERTEX POINTS
 var verticeIndex = function(vertice) {
     return vertice.x + vertice.y * ((plots_x * plot_vertices) + 1);
 };
@@ -3553,7 +3634,7 @@ var findLattices = (function() {
     };
 })();
 
-/** LANDSCAPING **/
+//LANDSCAPING
 function lanscape() {
     var landscape_tool = null;
     
@@ -3646,9 +3727,7 @@ function lanscape() {
     };
 }
 
-function Degrees2Radians(degrees) {
-    return degrees * (Math.PI / 180);
-}
+
 
 function getHeightData(img,scale) //return array with height data from img
 {
@@ -3680,8 +3759,13 @@ function getHeightData(img,scale) //return array with height data from img
      
     return data;
 }
-
+*/
 //========================================
+
+function Degrees2Radians(degrees) {
+    return degrees * (Math.PI / 180);
+}
+
 function show3DLandscape() {
 
     scene3DAnimateRotate = false;
@@ -5787,9 +5871,10 @@ function on3DLandscapeMouseMove(event) {
         //if (terrain3DMouse.state == 1) {
         //    terrain3DMouse.state = 2;
         //}
+        /*
         updateMouse(event);
         updateMouseCoordinates();
-
+        */
         //if (leftButtonDown)
             //landscape.onmousemove();
     }
