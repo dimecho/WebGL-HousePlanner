@@ -417,7 +417,7 @@ var landscape = new function() {
         button: 0,
         state: 0, // 0 - up, 1 - down, 2 - dragging,
         point: null,
-        plot_coordinates: {x: null, y: null},
+        //plot_coordinates: {x: null, y: null},
         vertex_coordinates: {x: null, y: null}
     };
     var updateMouse = function updateMouse(e) {
@@ -436,11 +436,11 @@ var landscape = new function() {
 
         var intersection = ray.intersectObjects(ground.children);
         if (intersection.length > 0) {
-
+            console.log("move");
             mouse_info.point = intersection[0].point;
             
-            mouse_info.plot_coordinates.x = Math.floor(mouse_info.point.x - map_left);
-            mouse_info.plot_coordinates.y = Math.floor(mouse_info.point.z - map_top);
+            //mouse_info.plot_coordinates.x = Math.floor(mouse_info.point.x - map_left);
+            //mouse_info.plot_coordinates.y = Math.floor(mouse_info.point.z - map_top);
             
             mouse_info.vertex_coordinates.x = Math.floor((mouse_info.point.x * plot_vertices) - (map_left * plot_vertices));
             mouse_info.vertex_coordinates.y = Math.floor((mouse_info.point.z * plot_vertices) - (map_top * plot_vertices));

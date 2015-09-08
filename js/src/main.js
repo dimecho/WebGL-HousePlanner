@@ -187,10 +187,7 @@ var mesh;
 
 var terrain3D;
 var terrain3DMaterial;
-var terrain3DRawHillData = [];
-var terrain3DRawValleyData = [];
-
-var terrainShader;
+//var terrainShader;
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
@@ -620,11 +617,11 @@ function init(runmode,viewmode) {
  * @param {String} URL
  * @param {String} The type of shader [vertex|fragment]
  */
-function loadShader(shader, type)
+function loadShader(shader, type, async)
 {
     return $.ajax({
         url: shader,
-        async: false,
+        async: async,
         beforeSend: function (req) {
             req.overrideMimeType('text/plain; charset=x-shader/x-' + type); //important - set for binary!
         }
@@ -758,23 +755,8 @@ function scene3DInitializeWater()
 function scene3DInitializeGround()
 {
     /*
-    var n = 0;
-    function loaded() {
-        n++;
-        console.log("loaded: " + n);
- 
-        if (n == 3) {
-            //terrain.visible = true;
-            console.log('ff');
-            //render();
-        }
-    }
-    */
-    // load the heightmap we created as a texture
-    //var texture = THREE.ImageUtils.loadTexture('assets/combined.png', null, loaded);
- 
-    // load two other textures we'll use to make the map look more real
-    var detailTexture = THREE.ImageUtils.loadTexture('objects/Landscape/Textures/G36096.jpg'); //, null, loaded);
+    //var texture = THREE.ImageUtils.loadTexture('assets/combined.png', null, loaded); // load the heightmap we created as a texture
+    var detailTexture = THREE.ImageUtils.loadTexture('objects/Landscape/Textures/G36096.jpg'); //, null, loaded);  // load two other textures we'll use to make the map look more real
 
     terrainShader = THREE.ShaderTerrain[ "terrain" ];
     uniformsTerrain = THREE.UniformsUtils.clone(terrainShader.uniforms);
@@ -819,100 +801,88 @@ function scene3DInitializeGround()
     //geometryTerrain.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
     geometryTerrain.computeFaceNormals();
     geometryTerrain.computeVertexNormals();
-    //geometryTerrain.computeTangents();
-
-    /*
-    for (var i = 0, len = geometry.faces.length; i < len; i++) {
-        var face = geometry.faces[i].clone();
-        face.materialIndex = 1;
-        geometry.faces.push(face);
-        geometry.faceVertexUvs[0].push(geometry.faceVertexUvs[0][i].slice(0));
-    }
-    */
-
+ 
     terrain3D = new THREE.Mesh(geometryTerrain, terrain3DMaterial);
     terrain3D.rotation.x = -Math.PI / 2;
+    */
 
-    /*
     $.ajax({
         url: "shaders/ground.vertex.fx",
-        //async: false,
         beforeSend: function (req) {
             req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
         },
-        success: function(vertex_data){
+        success: function(ground_vertex_data){
             $.ajax({
                 url: "shaders/ground.fragment.fx",
-                //async: false,
                 beforeSend: function (req) {
                     req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
                 },
-                success: function(fragment_data){
+                success: function(ground_fragment_data){
 
                     terrain3DMaterial = new THREE.ShaderMaterial({
                         uniforms: {
                             texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G36096.jpg' )},
                             texture_bare: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/F46734.jpg' )},
+                            texture_snow: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/F46734.jpg' ) },
                             show_ring: { type: 'i', value: true },
                             ring_width: { type: 'f', value: 0.15 },
                             ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
                             ring_center: { type: 'v3', value: new THREE.Vector3() },
                             ring_radius: { type: 'f', value: 1.6 }
-                            //repeatX : {type:"i", value: 1},
-                            //repeatY : {type:"i", value: 1}
                         },
-                        attributes: new Array({ type: 'f', value: [] }), //v72
-                        //attributes: { displacement: { type: 'f', value: [] }}, //v71
-                        vertexShader: vertex_data,
-                        fragmentShader: fragment_data,
+                        vertexShader: ground_vertex_data,
+                        fragmentShader: ground_fragment_data,
                         //fog: false,
                         //lights: true
                     });
-                    var geometry = new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices);
-                    //geometry = scene3DHouseGroundContainer.children[0].children[0].geometry.clone();
-                    //geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
-                    //geometry = new THREE.CircleGeometry( 15, 64 );
-                    //repeat_x = mesh.material.map.repeat.x;
-                    //repeat_y = mesh.material.map.repeat.y;
+                    var geometry = new THREE.PlaneBufferGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices);
+                    
+                    var numVertices = geometry.attributes.position.count;
+                    var displacement = new THREE.Float32Attribute(numVertices * 1, 1);
+                    geometry.addAttribute( 'displacement', displacement);
 
                     terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);
-                    terrain3D.materials = [ terrain3DMaterial ]; //For Future - Multiple Materials
-                    terrain3D.dynamic = true;
-                    terrain3D.displacement = terrain3D.materials[0].attributes.displacement;
-                    for (var i = 0; i < terrain3D.geometry.vertices.length; i++) {
-                        terrain3D.materials[0].attributes[0].value.push(0); //v72
-                        //terrain3D.materials[0].attributes.displacement.value.push(0); //v71
-                    }
-                    terrain3D.rotation.x = Degrees2Radians(-90);
-                    /
-                    terrain3D.water = new THREE.Mesh(
-                        new THREE.PlaneGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices ),
-                        new THREE.ShaderMaterial({
-                            uniforms: {
-                                water_level: { type: 'f', value: -1 },
-                                time: { type: 'f', value: 0 }
-                            },
-                            attributes: new Array({ type: 'f', value: [] }), //v72
-                            //attributes: { displacement: { type: 'f', value: [] }}, //v71
-                            vertexShader: loadShader("shaders/water.vertex.fx", 'vertex'),
-                            fragmentShader: loadShader("shaders/water.fragment.fx", 'fragment'),
-                            transparent: true
-                        })
-                    );
-                    terrain3D.water.dynamic = true;
-                    terrain3D.water.displacement =  terrain3D.water.material.attributes.displacement;
-                    for (var i = 0; i <  terrain3D.water.geometry.vertices.length; i++) {
-                        terrain3D.water.material.attributes[0].value.push(0); //v72
-                        //terrain3D.water.material.attributes.displacement.value.push(0); //v71
-                    }
-                    terrain3D.water.position.z = -1;
-                    terrain3D.add(terrain3D.water);
-                    /
+                    terrain3D.displacement = geometry.attributes.displacement;
+                    terrain3D.displacement.dynamic = true;
+                    terrain3D.rotation.x = -Math.PI / 2;
+                    //console.log(geometry.attributes.displacement);
+
+                    $.ajax({
+                        url: "shaders/water.vertex.fx",
+                        beforeSend: function (req) {
+                            req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
+                        },
+                        success: function(water_vertex_data){
+                            $.ajax({
+                                url: "shaders/water.fragment.fx",
+                                beforeSend: function (req) {
+                                    req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
+                                },
+                                success: function(water_fragment_data){
+                                    terrain3D.water = new THREE.Mesh(
+                                        geometry,
+                                        new THREE.ShaderMaterial({
+                                            uniforms: {
+                                                water_level: { type: 'f', value: -1 },
+                                                time: { type: 'f', value: 0 }
+                                            },
+                                            vertexShader: water_vertex_data,
+                                            fragmentShader: water_fragment_data,
+                                            transparent: true
+                                        })
+                                    );
+                                    terrain3D.water.displacement = geometry.attributes.displacement;
+                                    terrain3D.water.displacement.dynamic = true;
+                                    terrain3D.water.position.z = -1;
+                                    terrain3D.add(terrain3D.water);
+                                }
+                            }); 
+                        }
+                    }); 
                 }
             }); 
         }
     });
-    */
 }
 
 function scene3DInitializeClouds()
@@ -3518,9 +3488,8 @@ function show3DHouse() {
     animate();
 }
 
-//========================================
-/*
-//CONFIG
+//============= LANDSCAPING ===================
+
 var plots_x = 20;
 var plots_y = 20;
 var plot_vertices = 2;
@@ -3528,42 +3497,12 @@ var plot_vertices = 2;
 var map_left = plots_x /  -2;
 var map_top = plots_y / -2;
 
-//MOUSE
 var terrain3DMouse = {
     x: 0,
     y: 0,
     //state: 0, // 0 - up, 1 - down, 2 - dragging,
     //plot: {x: null, y: null},
     vertex: {x: null, y: null}
-};
-
-var updateMouse = function updateMouse(e) {
-    e.preventDefault();
-    //e.stopPropagation();
-    //e.cancelBubble = true;
-    
-    terrain3DMouse.x = e.clientX; //layerX;
-    terrain3DMouse.y = e.clientY; //layerY;
-};
-
-var updateMouseCoordinates = function() {
-
-    var vector = new THREE.Vector3((terrain3DMouse.x / window.innerWidth) * 2 - 1, - (terrain3DMouse.y / window.innerHeight) * 2 + 1, 0.5);
-    vector.unproject(camera3D);
-    var ray = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
-    var intersection = ray.intersectObjects(terrain3D.children);
-
-    if (intersection.length > 0) {
-        
-        //terrain3DMouse.plot.x = Math.floor(intersection[0].point.x - map_left);
-        //terrain3DMouse.plot.y = Math.floor(intersection[0].point.z - map_top);
-        
-        terrain3DMouse.vertex.x = Math.floor((intersection[0].point.x * plot_vertices) - (map_left * plot_vertices));
-        terrain3DMouse.vertex.y = Math.floor((intersection[0].point.z * plot_vertices) - (map_top * plot_vertices));
-
-        terrain3D.materials[0].uniforms.ring_center.value.x = intersection[0].point.x;
-        terrain3D.materials[0].uniforms.ring_center.value.y = -intersection[0].point.z;
-    }
 };
 
 //VERTEX POINTS
@@ -3634,8 +3573,7 @@ var findLattices = (function() {
     };
 })();
 
-//LANDSCAPING
-function lanscape() {
+var landscape = new function() {
     var landscape_tool = null;
     
     this.select = function(tool) {
@@ -3655,22 +3593,21 @@ function lanscape() {
             var vertice_index;
             var vertice_data = [];
             //console.log("# of vertices " + vertices.length);
+
             for (var i = 0; i < vertices.length; i++) {
 
                 vertice_index = verticeIndex(vertices[i]);
 
-                if (terrain3D.displacement.value[vertice_index] > 6) {
-                    terrain3D.displacement.value[vertice_index] = 6;
+                if (terrain3D.displacement.array[vertice_index] > 6) {
+                    terrain3D.displacement.array[vertice_index] = 6;
                 }
                 
-                if (terrain3D.displacement.value[vertice_index] < -5) {
-                    terrain3D.displacement.value[vertice_index] = -5;
+                if (terrain3D.displacement.array[vertice_index] < -5) {
+                    terrain3D.displacement.array[vertice_index] = -5;
                 }
                 
-                terrain3D.water.displacement.value[vertice_index] = terrain3D.displacement.value[vertice_index];
+                terrain3D.water.displacement.array[vertice_index] = terrain3D.displacement.array[vertice_index];
             }
-
-            //terrain3DRawData.push(terrain3DMouse);
 
             terrain3D.water.displacement.needsUpdate = true;
         }
@@ -3695,10 +3632,9 @@ function lanscape() {
                 vertice_index = verticeIndex(vertice);
                 distance = Math.sqrt(Math.pow(terrain3DMouse.vertex.x - vertice.x, 2) + Math.pow(terrain3DMouse.vertex.y - vertice.y, 2));
                 
-                terrain3D.displacement.value[vertice_index] += Math.pow(radius - distance, 0.5) * 0.03;
+                terrain3D.displacement.array[vertice_index] += Math.pow(radius - distance, 0.5) * 0.03;
                 terrain3D.displacement.needsUpdate = true;
             }
-            terrain3DRawHillData.push(terrain3DMouse);
         },
         
         valley: function(radius, vertices) {
@@ -3719,17 +3655,14 @@ function lanscape() {
                 vertice_index = verticeIndex(vertice);
                 distance = Math.sqrt(Math.pow(terrain3DMouse.vertex.x - vertice.x, 2) + Math.pow(terrain3DMouse.vertex.y - vertice.y, 2));
                 
-                terrain3D.displacement.value[vertice_index] -= Math.pow(radius - distance, 0.5) * 0.03;
+                terrain3D.displacement.array[vertice_index] -= Math.pow(radius - distance, 0.5) * 0.03;
                 terrain3D.displacement.needsUpdate = true;
             }
-            terrain3DRawValleyData.push(terrain3DMouse);
         }
     };
 }
 
-
-
-function getHeightData(img,scale) //return array with height data from img
+function scene3DLandscapeGetHeightData(img,scale) //return array with height data from img
 {
     if (scale === undefined) 
         scale=1;
@@ -3759,7 +3692,7 @@ function getHeightData(img,scale) //return array with height data from img
      
     return data;
 }
-*/
+
 //========================================
 
 function Degrees2Radians(degrees) {
@@ -4852,7 +4785,7 @@ function hideElements() {
 
     $(renderer.domElement).unbind('mousedown', on3DLandscapeMouseDown);
     $(renderer.domElement).unbind('mouseup', on3DLandscapeMouseUp);
-    $(renderer.domElement).bind('mousemove', on3DLandscapeMouseMove);
+    $(renderer.domElement).unbind('mousemove', on3DLandscapeMouseMove);
 
     //$(renderer.domElement).unbind('mouseout', on3DLandscapeMouseUp);
 
@@ -5852,10 +5785,9 @@ function on3DLandscapeMouseMove(event) {
 
     //controls3D.enabled = false;
     
-
     if (TOOL3DLANDSCAPE == "angle") 
     {
-       if (!leftButtonDown)
+        if (!leftButtonDown)
         return;
 
         if (event.clientX > window.innerWidth / 2) {
@@ -5871,12 +5803,29 @@ function on3DLandscapeMouseMove(event) {
         //if (terrain3DMouse.state == 1) {
         //    terrain3DMouse.state = 2;
         //}
-        /*
-        updateMouse(event);
-        updateMouseCoordinates();
-        */
-        //if (leftButtonDown)
-            //landscape.onmousemove();
+
+        var x = (event.clientX / window.innerWidth) * 2 - 1;
+        var y = -(event.clientY / window.innerHeight) * 2 + 1;
+        //console.log("mouse move" + x + ":" + x);
+
+        var vector = new THREE.Vector3(x, y, 0.5);
+        vector.unproject(camera3D);
+        var ray = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
+        var intersection = ray.intersectObjects(terrain3D.children);
+
+        if (intersection.length > 0) {
+            
+            //terrain3DMouse.plot.x = Math.floor(intersection[0].point.x - map_left);
+            //terrain3DMouse.plot.y = Math.floor(intersection[0].point.z - map_top);
+            
+            terrain3DMouse.vertex.x = Math.floor((intersection[0].point.x * plot_vertices) - (map_left * plot_vertices));
+            terrain3DMouse.vertex.y = Math.floor((intersection[0].point.z * plot_vertices) - (map_top * plot_vertices));
+
+            terrain3D.material.uniforms.ring_center.value.x = intersection[0].point.x;
+            terrain3D.material.uniforms.ring_center.value.y = -intersection[0].point.z;
+        }
+        if (leftButtonDown)
+            landscape.onmousemove();
     }
 }
 
@@ -5897,8 +5846,10 @@ function on3DLandscapeMouseDown(event) {
     }
     else if (TOOL3DLANDSCAPE == "hill" || TOOL3DLANDSCAPE == "valley")
     {
-        //terrain3DMouse.state = 1;
-        updateMouse(event);
+        //event.stopPropagation();
+        //event.cancelBubble = true;
+        terrain3DMouse.x = event.clientX;
+        terrain3DMouse.y = event.clientY;
     }
 }
 
@@ -5911,8 +5862,8 @@ function on3DLandscapeMouseUp(event) {
 
     if (TOOL3DLANDSCAPE == "hill" || TOOL3DLANDSCAPE == "valley")
     {
-        //terrain3DMouse.state = 0;
-        updateMouse(event);
+        terrain3DMouse.x = event.clientX;
+        terrain3DMouse.y = event.clientY;
     }
 }
 
@@ -6944,8 +6895,8 @@ function saveScene(online) {
         //console.log(JSON.stringify(terrain3DRawData));
 
         zip.file("scene3DTerrain.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DHouseGroundContainer)));
-        zip.file("scene3DTerrainHill.json", JSON.stringify(terrain3DRawHillData));
-        zip.file("scene3DTerrainValley.json", JSON.stringify(terrain3DRawValleyData));
+        //zip.file("scene3DTerrainHill.json", JSON.stringify(terrain3DRawHillData));
+        //zip.file("scene3DTerrainValley.json", JSON.stringify(terrain3DRawValleyData));
 
         var o= {};
         o.settings = settings;
@@ -7047,7 +6998,7 @@ function openScene(zipData) {
 
     var zip = new JSZip(zipData);
     //zip.folder("Textures").load(data);
-    
+    /*
     try{
         terrain3DRawHillData = JSON.parse(zip.file("scene3DTerrainHill.json").asText());
         landscape.select('hill');
@@ -7069,7 +7020,7 @@ function openScene(zipData) {
             //console.log(this);
         });
     }catch(ex){}
-    
+    */
     var i = 0;
     $.each(JSON.parse(zip.file("scene2DFloorContainer.json").asText()), function(index)
     {
@@ -8594,7 +8545,7 @@ function animateLandscape()
     //renderer.clear();
     //terrain3D.update(delta);
 
-    //terrain3D.water.material.uniforms.time.value = new Date().getTime() % 10000;
+    terrain3D.water.material.uniforms.time.value = new Date().getTime() % 10000;
 
     renderer.render(scene3D, camera3D);
     //TWEEN.update();
