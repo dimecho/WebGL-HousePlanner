@@ -13,6 +13,8 @@
   <script type="text/javascript" src="js/preloader.js?v=2.06"></script>
   <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
   <script>
+    console.log = function(){};
+    console.warn = function(){};
     $.ajax("js/houseplanner.jsz",{
         contentType: "application/zip",
         beforeSend: function (req) {
@@ -24,6 +26,7 @@
             //zip.load(binary.read('string'));
             $(document).ready(function() {
               $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
+              L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
               init('local','designer');
             });
           } catch (exception) {
@@ -33,7 +36,6 @@
               init('local','designer');
             });
           }
-          L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
         }
     });
   </script>

@@ -61,7 +61,7 @@ var scene3DCutawayPlaneMesh; //Virtual mesh used to detect collisions "cut-aways
 var scene3DLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DLevelWallContainer; //Floor Level arrengment Ground - 1 object
 var scene3DFloorFurnitureContainer = []; //Three.js contains all Floor 3D objects by floor (sofas,tables)
-var scene3DAxisHelper;
+//var scene3DAxisHelper;
 //var scene3DFloorOtherContainer = []; //Three.js contains all other objects, cameras, notes
 var scene3DFloorMeasurementsContainer = []; //Three.js contains floor measurements: angles, wall size - lines & text (note: objects have their own measurement meshes)
 var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by floor (Reason for multidymentional array -> unique wall coloring) - extracted from scene2DWallGeometry & scene2DWallDimentions
@@ -306,7 +306,7 @@ function init(runmode,viewmode) {
 
     scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DPivotPoint = new THREE.Object3D();
-    scene3DAxisHelper = new THREE.AxisHelper(2);
+    //scene3DAxisHelper = new THREE.AxisHelper(2);
 
     var geometry = new THREE.BoxGeometry( 15, 15, 3 ); //new THREE.PlaneGeometry(15, 15,3);
     geometry.computeBoundingBox();
@@ -6602,9 +6602,10 @@ function scene3DObjectSelect(x, y, camera, object) {
                     SelectedWall = intersects[0].object;
                     scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLWallPaintMenu');
 
-                }
-                else // if (SelectedObject.name.indexOf("house") == -1)
-                {
+                } else {
+                    
+                    if (SelectedObject.name.indexOf("house") != -1) //Avoid selecting house TODO: Dynamic logic
+                        return true;
 
                     //clearTimeout(clickMenuTime);
                     //SelectedObject = intersects[0].object;
@@ -6667,7 +6668,7 @@ function scene3DObjectSelect(x, y, camera, object) {
                         //scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
                     }
 
-                    SelectedObject.add(scene3DAxisHelper);
+                    //SelectedObject.add(scene3DAxisHelper);
                     
                     toggleSideMenus(false);
                 }
@@ -6701,8 +6702,7 @@ function scene3DObjectUnselect() {
     {
         if(SelectedObject != null)
         {
-
-            SelectedObject.remove(scene3DAxisHelper);
+            //SelectedObject.remove(scene3DAxisHelper);
             //console.log(SelectedObject);
 
             var highlighteMesh = SelectedObject.children[SelectedObject.children.length-1];
