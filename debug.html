@@ -9,67 +9,76 @@
   <script type="text/javascript" src="js/jquery.js?v=2.1.4"></script>
   <script type="text/javascript" src="js/preloader.js?v=2.06"></script>
   <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
-  <script type="text/javascript" src="js/three.js?v=72"></script>
 
-  <script src="js/src/Detector.js"></script>
-  <script src="js/src/OrbitControls.js"></script>
-  <script src="js/src/FirstPersonControls.js"></script>
-  <script src="js/src/TransformControls.js"></script>
-  <script src="js/src/ThreeCSG.js"></script>
-  <script src="js/src/exporters/OBJExporter.js"></script>
-  <script src="js/src/exporters/ObjectExporter.js"></script>
-  <script src="js/src/exporters/GeometryExporter.js"></script>
-  <script src="js/src/exporters/MaterialExporter.js"></script>
-  <script src="js/src/MTLLoader.js"></script>
-  <script src="js/src/OBJMTLLoader.js"></script>
-  <script src="js/src/OBJLoader.js"></script>
-  <script src="js/src/Projector.js"></script>
-  <script src="js/src/helvetiker.typeface.js"></script>
-  <script src="js/src/jquery.easing.js"></script>
+  <script src="js/three/three.js"></script>
+  <script src="js/three/extras/Detector.js"></script>
+  <script src="js/three/extras/controls/OrbitControls.js"></script>
+  <script src="js/three/extras/controls/FirstPersonControls.js"></script>
+  <script src="js/three/extras/controls/TransformControls.js"></script>
+  <script src="js/three/extras/exporters/OBJExporter.js"></script>
+  <script src="js/three/extras/exporters/ObjectExporter.js"></script>
+  <script src="js/three/extras/exporters/GeometryExporter.js"></script>
+  <script src="js/three/extras/exporters/MaterialExporter.js"></script>
+  <script src="js/three/extras/loaders/MTLLoader.js"></script>
+  <script src="js/three/extras/loaders/OBJMTLLoader.js"></script>
+  <script src="js/three/extras/loaders/OBJLoader.js"></script>
+  <script src="js/three/extras/Projector.js"></script>
+  <script src="js/three/extras/shaders/FXAAShader.js"></script>
+  <script src="js/three/extras/shaders/SSAOShader.js"></script>
+  <script src="js/three/extras/shaders/EffectComposer.js"></script>
+  <script src="js/three/extras/shaders/CopyShader.js"></script>
+  <script src="js/three/extras/shaders/RenderPass.js"></script>
+  <script src="js/three/extras/shaders/MaskPass.js"></script>
+  <script src="js/three/extras/shaders/ShaderPass.js"></script>
+  <script src="js/three/extras/shaders/ShaderParticles.js"></script>
+  <script src="js/three/extras/shaders/ShaderGodRays.js"></script>
+  <script src="js/three/extras/shaders/ShaderTerrain.js"></script>
+
+  <script src="js/fabric/fabric.js"></script>
+
+  <script src="js/library/ThreeCSG.js"></script>
+  <script src="js/library/helvetiker.typeface.js"></script>
+  <script src="js/library/jquery.easing.js"></script>
+  <script src="js/library/wurfl.js"></script>
+  <script src="js/library/stroll.js"></script>
+  <script src="js/library/jquery.unveil.js"></script>
+  <script src="js/library/spin.js"></script>
+  <script src="js/library/modernizr.js?v=custom"></script>
+  <script src="js/library/FileSaver.js"></script>
+  <script src="js/library/tooltipster.js"></script>
+  <script src="js/library/screenfull.js"></script>
+  <script src="js/library/alertify.js"></script>
+  <script src="js/library/tween.js"></script>
+  <script src="js/library/dxfnode.js"></script>
+  <script src="js/library/dxfparser.js"></script>
+  <script src="js/library/split-pane.js"></script>
+  <script src="js/library/mapbox.js"></script>
+
+  <script src="js/src/variables.js"></script>
+  <script src="js/src/cookies.js"></script>
+  <script src="js/src/memory.js"></script>
+  <script src="js/src/history.js"></script>
+  <script src="js/src/load.js"></script>
+  <script src="js/src/3d/3d.js"></script>
+  <script src="js/src/3d/init.js"></script>
+  <script src="js/src/3d/panorama.js"></script>
+  <script src="js/src/2d/2d.js"></script>
+  <script src="js/src/2d/init.js"></script>
+  <script src="js/src/2d/events.js"></script>
+  <script src="js/src/2d/math.js"></script>
+  <script src="js/src/menu.js"></script>
+  <script src="js/src/search.js"></script>
+  <script src="js/src/colorwheel.js"></script>
   <script src="js/src/parallaxslider.js"></script>
-  <script src="js/src/wurfl.js"></script>
-  <script src="js/src/stroll.js"></script>
-  <script src="js/src/jquery.unveil.js"></script>
-
-  <script src="js/src/shaders/FXAAShader.js"></script>
-  <script src="js/src/shaders/SSAOShader.js"></script>
-  <script src="js/src/shaders/EffectComposer.js"></script>
-  <script src="js/src/shaders/CopyShader.js"></script>
-  <script src="js/src/shaders/RenderPass.js"></script>
-  <script src="js/src/shaders/MaskPass.js"></script>
-  <script src="js/src/shaders/ShaderPass.js"></script>
-  <script src="js/src/shaders/ShaderParticles.js"></script>
-  <script src="js/src/shaders/ShaderGodRays.js"></script>
-  <script src="js/src/shaders/ShaderTerrain.js"></script>
-  <!--
-  <script src="js/3d/extras/physics/Collisions.js"></script>
-  <script src="js/3d/extras/physics/CollisionUtils.js"></script>
-  -->
-  <script type="text/javascript" src="js/src/spin.js"></script>
-  <script type="text/javascript" src="js/src/menu.js"></script>
-  <script type="text/javascript" src="js/src/modernizr.js?v=custom"></script>
-  <script type="text/javascript" src="js/src/colorwheel.js"></script>
-  <script type="text/javascript" src="js/src/FileSaver.js"></script>
-  <script type="text/javascript" src="js/src/draggable.js"></script>
-  <script type="text/javascript" src="js/src/tooltipster.js"></script>
-  <script type="text/javascript" src="js/src/fabric.js"></script>
-  <script type="text/javascript" src="js/src/screenfull.js"></script>
-  <script type="text/javascript" src="js/src/alertify.js"></script>
-  <script type="text/javascript" src="js/src/tween.js"></script>
-  <script type="text/javascript" src="js/src/dxfnode.js"></script>
-  <script type="text/javascript" src="js/src/dxfparser.js"></script>
-  <script type="text/javascript" src="js/src/main.js"></script>
-  <script type="text/javascript" src="js/src/search.js"></script>
-  <script type="text/javascript" src="js/src/split-pane.js"></script>
-  <script type="text/javascript" src="js/src/mapbox.js"></script>
 
   <script type="text/javascript">
-  $(document).ready(function() {
-      init('local','designer');
+    var RUNMODE = 'local';
+    var VIEWMODE = 'designer';
+    $(document).ready(function() {
       L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
-  });
+      initHousePlanner();
+    });
   </script>
-
   <!-- 
   https://github.com/codrops/IconHoverEffects
   http://fontello.com 

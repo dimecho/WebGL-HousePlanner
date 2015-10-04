@@ -10,15 +10,26 @@ do
 	echo "\n" >> ./css/houseplanner.css
 done
 
-#java -jar js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/_houseplanner.js --js=js/hp.js
-java -jar ./js/compiler.jar --language_in=ECMASCRIPT5 --js_output_file=js/_houseplanner.js 'js/src/**.js'
+python ./js/three/build/build.py --include common --include extras --minify --output ../three.js
+
+java -jar ./js/compiler.jar --language_in ECMASCRIPT5 --js_output_file=js/library.js 'js/library/**.js'
+java -jar ./js/compiler.jar --language_in ECMASCRIPT5 --js_output_file=js/three/three-extra.js 'js/three/extras/**.js'
+java -jar ./js/compiler.jar  --language_in ECMASCRIPT5 --js_output_file=js/src.js 'js/src/**.js' 
 
 cd js/
-cat three.js >> houseplanner.js
-cat _houseplanner.js >> houseplanner.js
-zip houseplanner.jsz houseplanner.js
-#zip three.jsz three.js
-rm _houseplanner.js
 rm houseplanner.js
-#rm hp.js
+cat fabric/fabric.js >> houseplanner.js
+cat src.js >> houseplanner.js
+cat three/three.js >> houseplanner.js
+cat three/three-extra.js >> houseplanner.js
+cat library.js >> houseplanner.js
+zip houseplanner.jsz houseplanner.js
+rm houseplanner.js
+rm library.js
+rm three/three-extra.js
+rm src.js
+
+#cd "$(dirname "$0")"
+#java -jar ./js/compiler.jar  --language_in ECMASCRIPT6 --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file=js/h.js 'js/houseplanner.js' 
+
 

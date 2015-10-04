@@ -9,12 +9,14 @@
   <script type="text/javascript" src="js/jquery.js?v=2.1.4"></script>
   <script type="text/javascript" src="js/preloader.js?v=2.06"></script>
   <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
-  <script type="text/javascript" src="js/jquery.js?v=2.1.4"></script>
-  <script type="text/javascript" src="js/preloader.js?v=2.06"></script>
-  <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
+
   <script>
     console.log = function(){};
     console.warn = function(){};
+
+    var RUNMODE = 'local';
+    var VIEWMODE = 'designer';
+    
     $.ajax("js/houseplanner.jsz",{
         contentType: "application/zip",
         beforeSend: function (req) {
@@ -27,18 +29,34 @@
             $(document).ready(function() {
               $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
               L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
-              init('local','designer');
+              initHousePlanner();
             });
           } catch (exception) {
             console.log(exception);
-            $(document).ready(function() {
-              $.getScript("js/houseplanner.js");
-              init('local','designer');
-            });
           }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          $.getScript( "js/houseplanner.js" )
+              .done(function( script, textStatus ) {
+                L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
+                initHousePlanner();
+              })
+              .fail(function( jqxhr, settings, exception ) {
+                alert('Failed to load script');
+          });
         }
     });
+    
+    /*
+    $(document).ready(function() {
+      L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
+      initHousePlanner();
+    });
+    */
   </script>
+  <!-- 
+  <script type="text/javascript" src="js/houseplanner.js"></script>
+  -->
   <!-- 
   https://github.com/codrops/IconHoverEffects
   http://fontello.com
