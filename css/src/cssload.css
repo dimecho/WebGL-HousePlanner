@@ -1,0 +1,195 @@
+/*
+http://cssload.net/en/spinners/3
+*/
+.cssload-container * {
+    box-sizing: border-box;
+        -o-box-sizing: border-box;
+        -ms-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+}
+.cssload-container {
+    margin: 30px auto 0 auto;
+    max-width: 839px;
+}
+
+.cssload-container ul li{
+    list-style: none;
+}
+
+.cssload-flex-container {
+    display: flex;
+        display: -o-flex;
+        display: -ms-flex;
+        display: -webkit-flex;
+        display: -moz-flex;
+    flex-direction: row;
+        -o-flex-direction: row;
+        -ms-flex-direction: row;
+        -webkit-flex-direction: row;
+        -moz-flex-direction: row;
+    flex-wrap: wrap;
+        -o-flex-wrap: wrap;
+        -ms-flex-wrap: wrap;
+        -webkit-flex-wrap: wrap;
+        -moz-flex-wrap: wrap;
+    justify-content: space-around;
+}
+.cssload-flex-container li {
+    padding: 15px;
+    height: 150px;
+    width: 150px;
+    margin: 45px 30px;
+    position: relative;
+    text-align: center;
+}
+
+.cssload-loading {
+    display: inline-block;
+    position: relative;
+    width: 128px;
+    height: 128px;
+    border-radius: 100%;
+        -o-border-radius: 100%;
+        -ms-border-radius: 100%;
+        -webkit-border-radius: 100%;
+        -moz-border-radius: 100%;
+    border: 8px solid transparent;
+    border-bottom: 8px solid rgb(0,0,0);
+    border-left: 8px solid rgb(0,0,0);
+    animation: cssload-spinR 2.3s linear infinite;
+        -o-animation: cssload-spinR 2.3s linear infinite;
+        -ms-animation: cssload-spinR 2.3s linear infinite;
+        -webkit-animation: cssload-spinR 2.3s linear infinite;
+        -moz-animation: cssload-spinR 2.3s linear infinite;
+}
+.cssload-loading:before, .cssload-loading:after {
+    content: '';
+    display: block;
+    border-radius: 100%;
+        -o-border-radius: 100%;
+        -ms-border-radius: 100%;
+        -webkit-border-radius: 100%;
+        -moz-border-radius: 100%;
+    position: absolute;
+}
+.cssload-loading:before {
+    height: 75px;
+    width: 75px;
+    border: 5px solid transparent;
+    border-top: 5px solid rgb(0,0,0);
+    border-right: 5px solid rgb(0,0,0);
+    animation: cssload-spinL 0.86s linear infinite;
+        -o-animation: cssload-spinL 0.86s linear infinite;
+        -ms-animation: cssload-spinL 0.86s linear infinite;
+        -webkit-animation: cssload-spinL 0.86s linear infinite;
+        -moz-animation: cssload-spinL 0.86s linear infinite;
+    transform-origin: center center;
+        -o-transform-origin: center center;
+        -ms-transform-origin: center center;
+        -webkit-transform-origin: center center;
+        -moz-transform-origin: center center;
+    top: 11%;
+    left: 11%;
+}
+.cssload-loading:after {
+    height: 15px;
+    width: 15px;
+    background: transparent;
+    border: 3px solid rgb(0,0,0);
+    top: 35.5%;
+    left: 35.5%;
+}
+
+
+
+
+@keyframes cssload-spinR {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@-o-keyframes cssload-spinR {
+    from {
+        -o-transform: rotate(0deg);
+    }
+    to {
+        -o-transform: rotate(360deg);
+    }
+}
+
+@-ms-keyframes cssload-spinR {
+    from {
+        -ms-transform: rotate(0deg);
+    }
+    to {
+        -ms-transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes cssload-spinR {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@-moz-keyframes cssload-spinR {
+    from {
+        -moz-transform: rotate(0deg);
+    }
+    to {
+        -moz-transform: rotate(360deg);
+    }
+}
+
+@keyframes cssload-spinL {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+@-o-keyframes cssload-spinL {
+    from {
+        -o-transform: rotate(0deg);
+    }
+    to {
+        -o-transform: rotate(-360deg);
+    }
+}
+
+@-ms-keyframes cssload-spinL {
+    from {
+        -ms-transform: rotate(0deg);
+    }
+    to {
+        -ms-transform: rotate(-360deg);
+    }
+}
+
+@-webkit-keyframes cssload-spinL {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(-360deg);
+    }
+}
+
+@-moz-keyframes cssload-spinL {
+    from {
+        -moz-transform: rotate(0deg);
+    }
+    to {
+        -moz-transform: rotate(-360deg);
+    }
+}

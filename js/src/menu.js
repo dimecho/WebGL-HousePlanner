@@ -144,6 +144,43 @@ function getMenuObjectItem(menu,itemData) {
     //return item;
 }
 
+function correctMenuHeight() {
+
+    var h = window.innerHeight - 250;
+    var a;
+    var b;
+
+    if (SCENE == 'house') {
+        a = $("#menuRight3DHouse .cssmenu").height();
+        //b = $("#menuRight3DHouse .scroll");
+        b = $("#menuRight2D .cssmenu");
+    } else if (SCENE == 'floor') {
+        a = $("#menuRight3DFloor .cssmenu").height();
+        //b = $("#menuRight3DFloor .scroll");
+        b = $("#menuRight2D .cssmenu");
+    } else if (SCENE == 'roof') {
+        a = $("#menuRight3DRoof .cssmenu").height();
+        //b = $("#menuRight3DRoof .scroll");
+        b = $("#menuRight2D .cssmenu");
+    } else if (SCENE == '2d') {
+        a = $("#menuRight2D .cssmenu").height();
+        //b = $("#menuRight2D .scroll");
+        b = $("#menuRight2D .cssmenu");
+    } else {
+        return;
+    }
+
+    $("#menuRightObjects .scroll").css('height', h);
+    //$("#menuRightObjects .flip").css('height', h);
+
+    if (b.height() < h) {
+        //console.log("H:" + a);
+        b.css('height', '100%');
+    } else {
+        b.css('height', h);
+    }
+}
+
 /*
 function getParents(obj) {
     objparent = obj.parentNode;

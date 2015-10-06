@@ -160,3 +160,20 @@ $(document).ready(function() {
     $('#pxs_container').parallaxSlider();
     //init();
 });
+
+/**
+ * Loads a shader using AJAX
+ * 
+ * @param {String} URL
+ * @param {String} The type of shader [vertex|fragment]
+ */
+function loadShader(shader, type, async)
+{
+    return $.ajax({
+        url: shader,
+        async: async,
+        beforeSend: function (req) {
+            req.overrideMimeType('text/plain; charset=x-shader/x-' + type); //important - set for binary!
+        }
+    }).responseText;
+}

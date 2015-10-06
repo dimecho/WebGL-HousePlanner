@@ -50,6 +50,7 @@ var camera3DQuad = [4];
 var camera3DQuadGrid;
 
 var scene3DHistory = [];
+var scene2DHistory = [];
 
 var scene3DRoofContainer; //Contains Roof Design
 var scene3DHouseContainer; //Contains all Exterior 3D objects by floor (trees,fences)
@@ -168,7 +169,7 @@ var particlePivot;
 var particlePivotEmitter;
 var particleWeather;
 */
-
+var spinner = document.createElement('div');
 var settings = { sunlight : false, clouds: true, rainbow: true, panorama_day: "2056", panorama_night: "2057", autorotate: false };
 
 //var particleClouds;

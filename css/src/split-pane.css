@@ -1,13 +1,3 @@
-/*!
-
-Split Pane v0.5.1
-
-Copyright (c) 2014 Simon Hagström
-
-Released under the MIT license
-https://raw.github.com/shagstrom/split-pane/master/LICENSE
-
-*/
 .split-pane {
 	position: relative;
 	height: 100%;

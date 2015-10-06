@@ -1,3 +1,69 @@
+/*
+* Calculates the angle ABC (in radians) 
+*
+* A first point
+* C second point
+* B center point
+*/
+function find2DAngle(A,B,C) {
+    /*
+    http://stackoverflow.com/questions/17763392/how-to-calculate-in-javascript-angle-between-3-points
+    */
+    var AB = Math.sqrt(Math.pow(B.x-A.x,2)+ Math.pow(B.y-A.y,2));    
+    var BC = Math.sqrt(Math.pow(B.x-C.x,2)+ Math.pow(B.y-C.y,2)); 
+    var AC = Math.sqrt(Math.pow(C.x-A.x,2)+ Math.pow(C.y-A.y,2));
+    return Math.acos((BC*BC+AB*AB-AC*AC)/(2*BC*AB));
+}
+
+function scene2DSurfaceArea(p)
+{
+    /*
+    area = 0;
+    for( i = 0; i < N; i += 2 )
+       area += x[i+1]*(y[i+2]-y[i]) + y[i+1]*(x[i]-x[i+2]);
+    area /= 2;
+    */
+
+    //https://www.topcoder.com/community/data-science/data-science-tutorials/geometry-concepts-basic-concepts/#polygon_area
+    var area = 0;
+    var N = p.length;
+
+    for(i = 1; i+1<N; i++){
+        var x1 = p[i][0] - p[0][0];
+        var y1 = p[i][1] - p[0][1];
+        var x2 = p[i+1][0] - p[0][0];
+        var y2 = p[i+1][1] - p[0][1];
+        var cross = x1*y2 - x2*y1;
+        area += cross;
+    }
+    return Math.abs(area/2.0);
+}
+
+/**
+ * Item name is unique
+ */
+fabric.Canvas.prototype.getItemByName = function(name) {
+    var object = null,
+        objects = this.getObjects();
+
+    for (var i = 0, len = this.size(); i < len; i++) {
+        if (objects[i].name && objects[i].name === name) {
+            object = objects[i];
+            break;
+        }
+    }
+
+    return object;
+};
+
+function scene2DWallMeasurementExternal() {
+
+}
+
+function scene2DWallMeasurementInternal() {
+
+}
+
 function scene2DCheckLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
     /*
     http://jsfiddle.net/justin_c_rounds/Gd2S2
@@ -203,4 +269,56 @@ function scene2DCalculateWallLength(v1,v2,v3,line)
     */
     //return new fabric.Group([l0, l1, l2, r, t], {selectable:false});
     return n;
+}
+
+/*
+http://stackoverflow.com/questions/17083580/i-want-to-do-animation-of-an-object-along-a-particular-path
+http://jsfiddle.net/m1erickson/LumMX/
+*/
+
+function scene2DGroupArrayDynamicPosition(v1,v2,n,group)
+{
+    if(!n) //speed things up
+        n = scene2DLineLength(v1.x,v1.y,v2.x,v2.y);
+
+    for (var i = 0; i < group.length; i++)
+    {
+        if(group[i])
+        {
+            var scale = group[i][0].origin.x / n; //TODO: calculate the scale ration dynamically?
+            //============ LERP Formula ==============
+            //start.x + (final.x - start.x) * progress;
+            var L1x = v2.x + (v1.x - v2.x) * scale;
+            var L1y = v2.y + (v1.y - v2.y) * scale;
+            //========================================
+            //var startAngle = Math.atan2(L2y-v2.y, L2x-v2.x);
+            //var endAngle = Math.atan2(L1y-v2.y, L1x-v2.x);
+            var a = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI;
+            //var a = Math.atan2(L1y-v2.y, L1x-v2.x) * 180 / Math.PI;
+
+            group[i][0].left = L1x;
+            group[i][0].top = L1y;
+            group[i][0].angle = a;
+            //console.log(a);
+            //if(group[i][0].name == 'window')
+                //group[i][0].angle =  0; //TODO: Fix this dynamically
+            //group.doors[i][0].adjustcircle.set({opacity:0});
+        }
+    }
+}
+
+function scene2DgetLineXYatPercent(startPt,endPt,percent) {
+    // line: percent is 0-1
+    var dx = endPt.x-startPt.x;
+    var dy = endPt.y-startPt.y;
+    var x = startPt.x + dx*percent;
+    var y = startPt.y + dy*percent;
+    return( {left:x,top:y} );
+}
+
+function scene2DgetQuadraticBezierXYatPercent(startPt,controlPt,endPt,percent) {
+    // quadratic bezier: percent is 0-1
+    var x = Math.pow(1-percent,2) * startPt.x + 2 * (1-percent) * percent * controlPt.left + Math.pow(percent,2) * endPt.x; 
+    var y = Math.pow(1-percent,2) * startPt.y + 2 * (1-percent) * percent * controlPt.top + Math.pow(percent,2) * endPt.y; 
+    return( {left:x,top:y} );
 }

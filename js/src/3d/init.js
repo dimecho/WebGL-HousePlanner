@@ -48,6 +48,10 @@ function initHousePlanner() {
         window.innerHeight = parent.innerHeight;
     }
 
+    spinner.className = "cssload-container";
+    spinner.setAttribute("style","position:absolute;top:32%;left:40%;");
+    spinner.innerHTML = "<ul class='cssload-flex-container'><li><span class='cssload-loading'></span></li></ul>";
+    
     /*
 	http://www.ianww.com/blog/2012/12/16/an-introduction-to-custom-shaders-with-three-dot-js/
 	huge improvement in smoothness of the simulation by writing a custom shader for my particle system.
@@ -847,21 +851,7 @@ function initPanorama(id, files, W,H)
     document.addEventListener( 'touchstart', onPanoramaTouchStart, false );
     document.addEventListener( 'touchmove', onPanoramaTouchMove, false );
 
-    var opts = {
-      lines: 13, // The number of lines to draw
-      length: 20, // The length of each line
-      width: 10, // The line thickness
-      radius: 30, // The radius of the inner circle
-      corners: 1, // Corner roundness (0..1)
-      color: '#000', // #rgb or #rrggbb or array of colors
-      speed: 1, // Rounds per second
-      trail: 60, // Afterglow percentage
-      className: 'spinner', // The CSS class to assign to the spinner
-      top: '50%', // Top position relative to parent
-      left: '50%' // Left position relative to parent
-    };
-    var spinner = new Spinner(opts).spin();
-    document.getElementById(id).appendChild(spinner.el);
+    document.getElementById(id).appendChild(spinner);
 
     //mouse = new THREE.Vector2();
     //touch = new THREE.Vector2();
@@ -871,7 +861,7 @@ function initPanorama(id, files, W,H)
 
     buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_",null);
 
-    document.getElementById(id).removeChild(spinner.el);
+    document.getElementById(id).removeChild(spinner);
 
     $('#' + id).show();
     animatePanorama();
