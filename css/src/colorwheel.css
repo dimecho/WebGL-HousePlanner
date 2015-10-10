@@ -40,7 +40,7 @@
     width: 75px;
 }
 .preview {
-    background: url("../images/select.png") repeat scroll center center transparent;
+    background: url(images/select.png) repeat scroll center center transparent;
     border-radius: 3px;
     box-shadow: 2px 2px 2px #444444;
     cursor: pointer;

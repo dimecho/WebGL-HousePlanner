@@ -2,12 +2,11 @@
 
 cd "$(dirname "$0")"
 
-rm ./css/houseplanner.css
+rm ./js/houseplanner.css
 for f in $(find ./css/src/ -name '*.css')
 do
 	#cat "$f" >> "css/houseplanner.css"
-	java -jar ./css/yuicompressor.jar --type css "$f" >> ./css/houseplanner.css
-	echo "\n" >> ./css/houseplanner.css
+	java -jar ./css/yuicompressor.jar --type css "$f" >> ./js/houseplanner.css
 done
 
 python ./js/three/build/build.py --include common --include extras --minify --output ../three.js
@@ -23,7 +22,8 @@ cat src.js >> houseplanner.js
 cat three/three.js >> houseplanner.js
 cat three/three-extra.js >> houseplanner.js
 cat library.js >> houseplanner.js
-zip houseplanner.jsz houseplanner.js
+zip houseplanner.jsz houseplanner.js houseplanner.css
+rm houseplanner.css
 rm houseplanner.js
 rm library.js
 rm three/three-extra.js

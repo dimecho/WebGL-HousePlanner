@@ -551,7 +551,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		}
 
 		// remove all webgl properties
-		properties.delete( texture );
+		properties.remove( texture );
 
 	}
 
@@ -580,8 +580,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
-		properties.delete( renderTarget.texture );
-		properties.delete( renderTarget );
+		properties.remove( renderTarget.texture );
+		properties.remove( renderTarget );
 
 	}
 
@@ -589,7 +589,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		releaseMaterialProgramReference( material );
 
-		properties.delete( material );
+		properties.remove( material );
 
 	}
 
@@ -813,23 +813,26 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		if ( group === null ) {
 
-			var count;
+			var start = geometry.drawRange.start;
+			var count = geometry.drawRange.count;
 
-			if ( index !== null ) {
+			if ( count === Infinity ) {
 
-				count = index.array.length;
+				if ( index !== null ) {
 
-			} else {
+					count = index.array.length;
 
-				count = position.count;
+				} else {
+
+					count = position.count;
+
+				}
 
 			}
 
-			var drawRange = geometry.drawRange;
-
 			group = {
-				start: drawRange.start,
-				count: Math.min( drawRange.count, count )
+				start: start,
+				count: count
 			};
 
 		}
@@ -1880,7 +1883,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 	function refreshUniformsPhong ( uniforms, material ) {
 
 		uniforms.specular.value = material.specular;
-		uniforms.shininess.value = material.shininess;
+		uniforms.shininess.value = Math.max( material.shininess, 1e-4 ); // to prevent pow( 0.0, 0.0 )
 
 		if ( material.lightMap ) {
 

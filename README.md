@@ -6,15 +6,16 @@
 **version 1.0**
 
 Real-estate showcase 3D home properties online - no software installs, any webGL platform.
-
 The project is currently in experimental stage with great concept ideas:
 
+- Small footprint (around 300Kb)
+- Blender 3D models
 - Exterior view
 - Multi-floor
 - Terrain editor
 - Roof designer
 - 2D floor plans
-- Curved walls!
+- Curved walls
 
 [View Demo](http://houseplanner.iroot.ca/start)
 

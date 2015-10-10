@@ -62,7 +62,7 @@
   margin-left: -120px;
   margin-top: -120px;
   
-  background-image: url(../images/circle-m.png);
+  background-image: url(images/circle-m.png);
 }
 
 #rotateSelector{
@@ -73,7 +73,7 @@
   top: 34px;
   left: 34px;
 
-  background-image: url(../images/central_part_selector.png);
+  background-image: url(images/central_part_selector.png);
   z-index: 2;
 
   transition: all 0.3s ease-in-out;

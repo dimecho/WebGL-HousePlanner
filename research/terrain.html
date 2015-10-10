@@ -149,8 +149,8 @@
     }
 </script>
 
-<script type="text/javascript" src="js/three.js"></script>
-<script src="js/src/Projector.js"></script>
+<script src="../js/three/three.js"></script>
+<script src="../js/three/extras/Projector.js"></script>
 <div id="ThreeJS"></div>
 <script>
 
@@ -197,9 +197,9 @@ function init()
         groundBufferGeometry,
         new THREE.ShaderMaterial({
             uniforms: {
-                texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'images/texture_ground_grass.jpg' ) },
-                texture_bare: { type: "t", value: THREE.ImageUtils.loadTexture( 'images/texture_ground_bare.jpg' ) },
-                texture_snow: { type: "t", value: THREE.ImageUtils.loadTexture( 'images/texture_ground_snow.jpg' ) },
+                texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( '../images/texture_ground_grass.jpg' ) },
+                texture_bare: { type: "t", value: THREE.ImageUtils.loadTexture( '../images/texture_ground_bare.jpg' ) },
+                texture_snow: { type: "t", value: THREE.ImageUtils.loadTexture( '../images/texture_ground_snow.jpg' ) },
                 show_ring: { type: 'i', value: true },
                 ring_width: { type: 'f', value: 0.15 },
                 ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
@@ -436,7 +436,7 @@ var landscape = new function() {
 
         var intersection = ray.intersectObjects(ground.children);
         if (intersection.length > 0) {
-            console.log("move");
+            //console.log("move");
             mouse_info.point = intersection[0].point;
             
             //mouse_info.plot_coordinates.x = Math.floor(mouse_info.point.x - map_left);

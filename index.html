@@ -27,6 +27,7 @@
             var zip = new JSZip(data);
             //zip.load(binary.read('string'));
             $(document).ready(function() {
+              $('head').append("<style>" + zip.file("houseplanner.css").asText() + "<\/style>");
               $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
               L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
               initHousePlanner();
@@ -63,7 +64,6 @@
   http://www.flaticon.com
   -->
   <link rel="stylesheet" type="text/css" href="font/style.css" />
-  <link rel="stylesheet" type="text/css" href="css/houseplanner.css"/>
 
   <!--[if gte IE 9]>
     <style type="text/css">

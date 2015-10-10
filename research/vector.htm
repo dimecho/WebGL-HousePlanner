@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>three.js webgl - vector - text</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+</head>
+<body>
+<script src="../js/three/three.js"></script>
+<script src="../js/three/extras/controls/OrbitControls.js"></script>
+<script src="../js/library/helvetiker.typeface.js"></script>
+<script type="x-shader/x-fragment" id="fs">
+	varying vec2 vUv;
+	varying float flip;
+	uniform vec3 color;
+	
+	float inCurve(vec2 uv) {
+		return uv.x * uv.x - uv.y;
+	}
+
+	float delta = 0.1;
+
+	void main() {
+		float x = inCurve(vUv);
+
+		if (x * flip > 0.) discard;
+		gl_FragColor = vec4(color, 1.);
+	}
+</script>
+<script type="x-shader/x-vertex" id="vs">
+	varying vec2 vUv;
+	attribute float invert;
+	varying float flip;
+
+	void main() {
+
+		vUv = uv;
+		flip = invert;
+		vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+		gl_Position = projectionMatrix * mvPosition;
+
+	}
+</script>
+<script>
+var container, stats;
+var camera, scene, renderer, controls;
+var group, text;
+var targetRotation = 0;
+var targetRotationOnMouseDown = 0;
+var mouseX = 0;
+var mouseXOnMouseDown = 0;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var SPACING = 400;
+var mode = 0;
+init();
+animate();
+
+function addText(theText) {
+    var group = new THREE.Object3D();
+    var options = {
+        size: 180,
+        height: 20,
+        curveSegments: 2,
+        font: "helvetiker",
+        bevelEnabled: false
+    };
+    textShapes = THREE.FontUtils.generateShapes(theText, options);
+    var color = new THREE.Color(Math.random() * 0xffffff);
+    vA = new THREE.Vector2();
+    vB = new THREE.Vector2();
+    vDot = new THREE.Vector2();
+
+    function processShape(path, reverse) {
+        var pts = [];
+        var pts2 = [];
+        var beziers = [];
+        var invert = [];
+        var z;
+        var wind;
+        pts.push(path[0].getPoint(0));
+        pts2.push(path[0].getPoint(0));
+        for (var i = 0; i < path.length; i++) {
+            curve = path[i];
+            if (curve instanceof THREE.LineCurve) {
+                pts.push(curve.v2);
+                pts2.push(curve.v2);
+            } else if (curve instanceof THREE.QuadraticBezierCurve) {
+                vA = vA.subVectors(curve.v1, curve.v0);
+                vB = vB.subVectors(curve.v2, curve.v1);
+                z = vA.x * vB.y - vA.y * vB.x;
+                wind = z < 0;
+                if (wind) {
+                    pts.push(curve.v1);
+                    pts.push(curve.v2);
+                    pts2.push(curve.v2);
+                } else {
+                    pts.push(curve.v2);
+                    pts2.push(curve.v1);
+                    pts2.push(curve.v2);
+                }
+                var flip = wind ? 1 : -1;
+                invert.push(flip, flip, flip);
+                beziers.push(curve.v0, curve.v1, curve.v2);
+            }
+        }
+        return {
+            pts: pts,
+            pts2: pts2,
+            beziers: beziers,
+            invert: invert
+        };
+    }
+    var subshape, s, i;
+    var convexhullShapeGroup = [];
+    var solidShapeGroup = [];
+    var beziers = [],
+        invert = [];
+    for (s = 0; s < textShapes.length; s++) {
+        subshape = textShapes[s];
+        var process = processShape(subshape.curves);
+        pts = process.pts;
+        pts2 = process.pts2;
+        beziers = beziers.concat(process.beziers);
+        invert = invert.concat(process.invert);
+        bezierGeometry = new THREE.Geometry();
+        convexhullShape = new THREE.Shape(pts);
+        solidShape = new THREE.Shape(pts2);
+        convexhullShapeGroup.push(convexhullShape);
+        solidShapeGroup.push(solidShape);
+        for (i = 0; i < subshape.holes.length; i++) {
+            hole = subshape.holes[i];
+            process = processShape(hole.curves, true);
+            pts = process.pts;
+            pts2 = process.pts2;
+            beziers = beziers.concat(process.beziers);
+            invert = invert.concat(process.invert);
+            convexhullShape.holes.push(new THREE.Shape(pts));
+            solidShape.holes.push(new THREE.Shape(pts2));
+        }
+    }
+    for (i = 0; i < beziers.length; i++) {
+        p = beziers[i];
+        bezierGeometry.vertices.push(new THREE.Vector3(p.x, p.y, 0));
+    }
+    for (i = 0; i < beziers.length; i += 3) {
+        bezierGeometry.faces.push(new THREE.Face3(i, i + 1, i + 2));
+        bezierGeometry.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(0.5, 0), new THREE.Vector2(1, 1)]);
+    }
+    text3d = new THREE.ShapeGeometry(solidShapeGroup);
+    text3d.computeBoundingBox();
+    var centerOffset = -0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
+    var centerYOffset = -0.5 * (text3d.boundingBox.max.y - text3d.boundingBox.min.y);
+    var uniforms = {
+        color: {
+            type: 'c',
+            value: color
+        }
+    };
+
+    var vertexShader = document.getElementById('vs').textContent;
+    var fragmentShader = document.getElementById('fs').textContent;
+    newMaterial = new THREE.ShaderMaterial({
+        /*
+        attributes: {
+            invert: {
+                type: 'f',
+                value: invert
+            }
+        },
+        */
+        uniforms: uniforms,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        side: THREE.DoubleSide
+    });
+
+    //newMaterial.depthTest = true
+
+    text = new THREE.Mesh(bezierGeometry, newMaterial);
+    text.position.x = centerOffset;
+    text.position.y = centerYOffset;
+    text.position.z = 0;
+    group.add(text);
+    text3d = new THREE.ShapeGeometry(solidShape);
+    //text3d.addAttribute( 'f', invert);
+
+    text3d.computeBoundingBox();
+    text = new THREE.Mesh(text3d, new THREE.MeshBasicMaterial({
+        color: color,
+        side: THREE.DoubleSide
+    }));
+    text.position.x = centerOffset;
+    text.position.y = centerYOffset;
+    text.position.z = 0;
+    group.add(text);
+    return group;
+}
+
+function init() {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+
+    camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 10000);
+    camera.position.set(0, 0, 500);
+    controls = new THREE.OrbitControls(camera);
+    scene = new THREE.Scene();
+    var tests = '01234';
+    characters = [];
+    for (var l = 0; l < tests.length; l++) {
+        group = addText(tests.charAt(l));
+        characters.push(group);
+        scene.add(group);
+        group.position.z = -l * SPACING;
+        group.rotation.dz = Math.random() - 0.5;
+    }
+    renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(0xf0f0f0);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    renderer.domElement.addEventListener('mousedown', function() {
+        mode++;
+        mode %= 3;
+    })
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize() {
+    windowHalfX = window.innerWidth / 2;
+    windowHalfY = window.innerHeight / 2;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    render();
+}
+
+function render() {
+    var now = Date.now();
+    var r = Math.cos(now * 0.001);
+    var s = Math.sin(now * 0.004);
+    /*
+    for (var l = 0; l < characters.length; l++) {
+        group = characters[l];
+        group.position.z += 25;
+        switch (mode) {
+            case 1:
+                group.rotation.z += group.rotation.dz * 0.5;
+                break;
+            case 2:
+                group.rotation.x = r;
+                group.rotation.y = s;
+                group.rotation.z = s + group.rotation.dz;
+                break;
+        }
+        if (group.position.z > 550) group.position.z -= characters.length * SPACING
+    }
+    */
+    controls.update();
+    renderer.render(scene, camera);
+}</script>
+</body>
+</html>
