@@ -46,11 +46,12 @@ http://davidwalsh.name/css-flip
 /* END: Accommodating for IE */
 
 .flip-container, .front, .back {
-  position: absolute;
-  top:10px;
-  left:80px;
-  width: 80px;
-  height: 80px;
+    position: absolute;
+    top:10px;
+    left:80px;
+    width: 80px;
+    height: 80px;
+    z-index: 10;
 }
 
 .flipper {
@@ -104,7 +105,6 @@ http://davidwalsh.name/css-flip
     /*background: lightgreen;*/
     -webkit-transform: rotateY(0deg);
     -ms-transform: rotateY(0deg);
-    z-index: 2;
 }
 
 .back {

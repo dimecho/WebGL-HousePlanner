@@ -301,9 +301,10 @@ function initHousePlanner() {
 
     scene3DInitializeClouds();
 
-    scene2DInitializeRenderer();
+    engine2D.initialize();
 
-    sceneNew();
+    engine3D.new();
+    engine2D.new();
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
     $(window).bind('resize', onWindowResize);
@@ -917,3 +918,107 @@ function initCube(size) {
 }
 
 
+engine3D.new = function (){
+   
+    animateStop();
+    //scene3DFreeMemory();
+    //hideElements();
+    
+    scene3D = new THREE.Scene();
+
+    scene3DRoofContainer = new THREE.Object3D();
+    scene3DHouseContainer = new THREE.Object3D();
+    scene3DHouseGroundContainer = new THREE.Object3D();
+    scene3DHouseFXContainer = new THREE.Object3D();
+    //scene3DFloorGroundContainer = new THREE.Object3D();
+    scene3DLevelGroundContainer = new THREE.Object3D();
+    scene3DLevelWallContainer = new THREE.Object3D();
+    //scene3DPivotPoint = new THREE.Object3D();
+
+    skyMesh = new THREE.Object3D();
+    skyFloorMesh = new THREE.Object3D();
+
+    //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
+    //==============================================
+    for(var i=0; i<=2; i++)
+    {
+        scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
+        //scene3DFloorOtherContainer[i] = new THREE.Object3D();
+        scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
+        scene3DFloorWallContainer[i] = new THREE.Object3D();
+        scene3DFloorShapeContainer[i] = new THREE.Object3D();
+
+        scene3DWallInteriorTextures[i] = new Array();
+        scene3DWallExteriorTextures[i] = new Array();
+    }
+
+    //==============================================
+    /*
+    manager = new THREE.LoadingManager();
+    manager.onProgress = function ( item, loaded, total ) {
+        console.log( item, loaded, total );
+    };
+    */
+    //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
+
+    scene3DenableOrbitControls(camera3D,renderer.domElement);
+
+    scene3DInitializePostprocessing();
+}
+
+function openScene3D(zip) {
+
+    //zip.folder("Textures").load(data);
+    /*
+    try{
+        terrain3DRawHillData = JSON.parse(zip.file("scene3DTerrainHill.json").asText());
+        landscape.select('hill');
+        $.each(terrain3DRawHillData, function(index)
+        {
+            terrain3DMouse = this;
+            landscape.onmousemove();
+            //console.log(this);
+        });
+    }catch(ex){}
+
+    try{
+        terrain3DRawValleyData = JSON.parse(zip.file("scene3DTerrainValley.json").asText());
+        landscape.select('valley');
+        $.each(terrain3DRawValleyData, function(index)
+        {
+            terrain3DMouse = this;
+            landscape.onmousemove();
+            //console.log(this);
+        });
+    }catch(ex){}
+    */
+
+    var i = 0;
+    $.each(JSON.parse(zip.file("scene3DFloorContainer.json").asText()), function(index)
+    {
+        //var objects3DFurniture = JSON.parse(this);
+        $.each(this, function(index){
+            var note = null;
+            if(this.note !== null)
+                note = this.note;
+            console.log(this.file);
+            open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
+        });
+        i++;
+    });
+    
+    $.each(JSON.parse(zip.file("scene3DTerrain.json").asText()), function(index){
+        open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+    });
+
+    $.each(JSON.parse(zip.file("scene3DHouseContainer.json").asText()), function(index){
+        //setTimeout(function() {
+            open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        //}, 100);
+    });
+    
+    $.each(JSON.parse(zip.file("scene3DRoofContainer.json").asText()), function(index){
+        open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+    });
+
+}

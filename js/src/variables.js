@@ -39,6 +39,7 @@ var scene3D; //Three.js Canvas
 var scene3DCube; //Three.js Canvas
 var scene3DPanorama; //Three.js Canvas
 var scene2D; //Fabric.js Canvas
+var canvas2D;
 var scene2DAdvanced; //Fabric.js Canvas
 var physics3D; //Cannon.js Engine (collisions and other cool stuff)
 

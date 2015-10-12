@@ -13,7 +13,7 @@
   <script>
     console.log = function(){};
     console.warn = function(){};
-
+    
     var RUNMODE = 'local';
     var VIEWMODE = 'designer';
     
@@ -28,6 +28,7 @@
             //zip.load(binary.read('string'));
             $(document).ready(function() {
               $('head').append("<style>" + zip.file("houseplanner.css").asText() + "<\/style>");
+              $('head').append("<script>" + zip.file("three/three.js").asText() + "<\/script>");
               $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
               L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
               initHousePlanner();
@@ -55,14 +56,6 @@
     });
     */
   </script>
-  <!-- 
-  <script type="text/javascript" src="js/houseplanner.js"></script>
-  -->
-  <!-- 
-  https://github.com/codrops/IconHoverEffects
-  http://fontello.com
-  http://www.flaticon.com
-  -->
   <link rel="stylesheet" type="text/css" href="font/style.css" />
 
   <!--[if gte IE 9]>
@@ -72,6 +65,7 @@
       }
     </style>
   <![endif]-->
+
 </head>
 
 <body class="preloader">
@@ -447,7 +441,7 @@
       <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
       <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
 			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
-			<a href="#" onclick="show2D()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
+			<a href="#" onclick="engine2D.show()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
       <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
 			<a href="#" class="hi-icon icon-open tooltip-open-menu" title="Open" id="menuTopItem8"></a>

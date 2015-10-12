@@ -58,22 +58,33 @@
   <script src="js/src/memory.js"></script>
 
   <script src="js/src/load.js"></script>
-  <script src="js/src/3d/3d.js"></script>
+  <script src="js/src/3d/engine3d.js"></script>
   <script src="js/src/3d/init.js"></script>
   <script src="js/src/3d/events.js"></script>
   <script src="js/src/3d/history.js"></script>
   <script src="js/src/3d/terrain.js"></script>
   <script src="js/src/3d/panorama.js"></script>
-  <script src="js/src/2d/2d.js"></script>
+  <script src="js/src/2d/engine2d.js"></script>
   <script src="js/src/2d/init.js"></script>
   <script src="js/src/2d/events.js"></script>
   <script src="js/src/2d/history.js"></script>
   <script src="js/src/2d/math.js"></script>
+  <script src="js/src/2d/wall.js"></script>
+  <script src="js/src/2d/window.js"></script>
+  <script src="js/src/2d/door.js"></script>
   <script src="js/src/menu.js"></script>
   <script src="js/src/search.js"></script>
   <script src="js/src/colorwheel.js"></script>
   <script src="js/src/parallaxslider.js"></script>
-
+  
+  <!--
+  <script src="js/fabric/fabric.js"></script>
+  <script src="js/src.js"></script>
+  <script src="js/three/three.js"></script>
+  <script src="js/three/three-extra.js"></script>
+  <script src="js/library.js"></script>
+  -->
+  
   <script type="text/javascript">
     var RUNMODE = 'local';
     var VIEWMODE = 'designer';
@@ -496,7 +507,7 @@
       <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
       <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
 			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
-			<a href="#" onclick="show2D()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
+			<a href="#" onclick="engine2D.show()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
       <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
 			<a href="#" class="hi-icon icon-open tooltip-open-menu" title="Open" id="menuTopItem8"></a>

@@ -1,4 +1,3 @@
-
 /*
 box.on("dragend", function(){
     snaptogrid(box);

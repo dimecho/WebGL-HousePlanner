@@ -177,3 +177,60 @@ function loadShader(shader, type, async)
         }
     }).responseText;
 }
+
+
+function sceneOpen(file) {
+
+    document.getElementById('engine3D').appendChild(spinner);
+    document.getElementById("start").getElementsByClassName("close")[0].setAttribute('href', "#close");
+
+    //setTimeout(function(){
+        $.ajax("scenes/" + file,{
+            contentType: "application/zip",
+            beforeSend: function (req) {
+                  req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+            },
+            success: function(data){
+                try {
+                    camera3DAnimate(0,20,0,1500);
+                    setTimeout(function() {
+                        sceneProcessZipData(data);
+                        //document.getElementById('engine3D').removeChild(spinner);
+                    }, 2000);
+                } catch (e) {
+                    alertify.alert("Failed to open Scene " + e);
+                }
+            }
+        });
+    //}, 1000);
+}
+
+function sceneProcessZipData(zipData) {
+
+    var zip = new JSZip(zipData);
+
+    engine3D.new();
+    engine2D.new();
+    
+    try{
+        var o = JSON.parse(zip.file("options.json").asText());
+        //console.log(o);
+        settings = o.settings;
+        for (var i = 0; i < o.floor.length; i++){
+            //console.log(o.floor[i].name);
+            scene3DFloorFurnitureContainer[i].name =  o.floor[i].name; 
+        }
+    }catch(ex){}
+    //show2D(); //DEBUG 2D
+
+    openScene3D(zip);
+    engine2D.open(zip);
+
+    setTimeout(function() {
+        document.getElementById('engine3D').removeChild(spinner);
+        show3DHouse();
+        setTimeout(function() {
+            scene3DAnimateRotate = settings.autorotate;
+        }, 4000);
+    }, 1000);
+}
