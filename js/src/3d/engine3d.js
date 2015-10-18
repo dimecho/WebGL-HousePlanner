@@ -159,7 +159,7 @@ function camera3DFloorFlyIn(floor)
 	var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:10, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
     	FLOOR = floor;
-        show3DFloor();
+        engine3D.showFloor();
     }).start();
 }
 
@@ -950,10 +950,12 @@ function scene3DGenerateClampToEdgeTexture(img) {
     return canvas;
 }
 
-function show3DHouse() {
+engine3D.showHouse = function() {
+
+    console.log("showHouse()");
 
     scene3DFreeMemory();
-    hideElements();
+    engine3D.hide();
     SCENE = 'house';
 
     initMenu("menuRight3DHouse","Exterior/index.json");
@@ -998,7 +1000,7 @@ function show3DHouse() {
     
     scene3DSetLight();
 
-    scene3DFloorWallGenerate();
+    //scene3DFloorWallGenerate();
 
     //initObjectCollisions(scene3DHouseContainer);
 
@@ -1034,11 +1036,11 @@ function Degrees2Radians(degrees) {
     return degrees * (Math.PI / 180);
 }
 
-function show3DLandscape() {
+engine3D.showLandscape = function() {
 
     scene3DAnimateRotate = false;
     scene3DFreeMemory();
-    hideElements();
+    engine3D.hide();
     //scene3D = new THREE.Scene();
     SCENE = 'landscape';
 
@@ -1102,11 +1104,13 @@ function show3DLandscape() {
     animate();
 }
 
-function show3DFloor() {
+engine3D.showFloor = function () {
+
+     console.log("showFloor()");
 
     scene3DAnimateRotate = false;
     scene3DFreeMemory();
-    hideElements();
+    engine3D.hide();
     SCENE = 'floor';
 
     initMenu("menuRight3DFloor","Interior/index.json");
@@ -1127,7 +1131,7 @@ function show3DFloor() {
 
     scene3DSetLight();
 
-    scene3DFloorWallGenerate();
+    //scene3DFloorWallGenerate();
     
     /*
     scene3D.add(camera3DMirrorReflection);
@@ -1198,11 +1202,11 @@ function show3DFloor() {
     animate();
 }
 
-function show3DFloorLevel() {
+engine3D.showFloorLevel = function() {
  
     scene3DAnimateRotate = false;
     scene3DFreeMemory();
-    hideElements();
+    engine3D.hide();
     //scene3D = new THREE.Scene();
     SCENE = 'floorlevel';
 
@@ -1233,11 +1237,11 @@ function show3DFloorLevel() {
     animate();
 }
 
-function show3DRoofDesign() {
+engine3D.showRoofDesign = function() {
  
     scene3DAnimateRotate = false;
     scene3DFreeMemory();
-    hideElements();
+    engine3D.hide();
     SCENE = 'roof';
 
     initMenu("menuRight3DRoof","Roof/index.json");
@@ -1384,8 +1388,12 @@ function scene3DSunlight() {
     }
 }
 
-function hideElements() {
-    //console.log("hideElements");
+
+
+engine3D.hide = function() {
+
+    $('#engine3D').hide();
+
     if (renderer === undefined)
         return;
 
@@ -1394,32 +1402,6 @@ function hideElements() {
     
     scene3DCube.remove(scene3DCubeMesh);
     
-    //console.log(scene2D._objects.length);
- 
-    /*
-    var objects = scene2D.getObjects();
-    for (var i in objects)
-    {
-        var obj = objects[i];
-
-        if (obj.name == "wall" || obj.name == "pivot" || obj.point_type == "edge") {
-            scene2D.remove(obj);
-        }
-    }
-    */
-
-    //TODO: make this more efficient
-    while(scene2D._objects.length > 0)
-    {
-        for (var i = 0; i < scene2D._objects.length; i++) {
-            scene2D.remove(scene2D.item(i));
-        }
-    }
-    try{
-        $('#menu2DTools').tooltipster('hide');
-    }catch(e){}
-    //console.log(scene2DWallMesh[FLOOR].length);
-
     //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
     //$(renderer.domElement).unbind('mouseup', on3DMouseUp);
     
@@ -1444,20 +1426,17 @@ function hideElements() {
 
     disposePanorama('WebGLPanorama');
 
-    $('#engine2D').hide();
-    $('#engine3D').hide();
     $('#WebGLCanvas').hide();
     $('#WebGLSplitCanvas').hide();
 
     $('#menuLeft3DHouse').hide();
     $('#menuLeft3DLandscape').hide();
     $('#menuLeft3DFloor').hide();
-    $('#menuLeft2D').hide();
+
 
     $('#menuRight3DHouse').hide();
     $('#menuRight3DFloor').hide();
     $('#menuRight3DRoof').hide();
-    $('#menuRight2D').hide();
     $('#menuRightObjects').hide();
     $('#menuRight').hide();
 
@@ -1469,9 +1448,6 @@ function hideElements() {
     }
     $('#menuBottom').hide();
     
-    $('#zoom2DLevel').hide();
-
-
     //scene3D.visible = !b;
     //scene2D.visible = b;
 
@@ -1655,10 +1631,10 @@ function selectFloor(next) {
         //TODO: would be awsome to have some kind of flip transition effect
 
         if (SCENE == 'floor') {
-            show3DFloor();
+            engine3D.showFloor();
 
         } else if (SCENE == '2d') {
-            show2D();
+            engine2D.show();
         }
     }else{
     	
@@ -2080,6 +2056,7 @@ jQuery.loadScript = function (url, callback) {
     });
 }
 */
+
 function exportPDF() {
 	
     if (!fabric.Canvas.supports('toDataURL')) {
@@ -2327,6 +2304,8 @@ function scene3DLevelWallGenerate() {
 
 function scene3DFloorWallGenerate() {
 
+    return;
+
     //scene3D.remove(scene3DFloorShapeContainer[FLOOR]);
 
     //PERFORMANCE: May not need array for this
@@ -2336,8 +2315,8 @@ function scene3DFloorWallGenerate() {
     scene3DFloorDoorContainer = new THREE.Object3D();
     scene3DFloorWindowContainer = new THREE.Object3D();
 
-    if(scene2DWallMesh[FLOOR].length == 0)
-        return;
+    //if(scene2DWallMesh[FLOOR].length == 0)
+        //return;
     
     var floorShape = null //new THREE.Shape(); //new THREE.Geometry();
     var corner = {x:0,y:0};
@@ -3846,8 +3825,8 @@ function handleFile3DObjectSelect(event) {
 
             fileReader.onload = function(e) {
                 console.log("Load File: " + $('#fileInput').value + ":" + event.target.files[0].name)
-                openScene3D(e.target.result);
-                openScene2D(e.target.result);
+                engine3D.open(e.target.result);
+                engine2D.open(e.target.result);
             }
 
             //fileReader.readAsDataURL(event.target.files[0]);

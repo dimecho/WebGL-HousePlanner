@@ -29,8 +29,9 @@
             $(document).ready(function() {
               $('head').append("<style>" + zip.file("houseplanner.css").asText() + "<\/style>");
               $('head').append("<script>" + zip.file("three/three.js").asText() + "<\/script>");
+              $('head').append("<script>" + zip.file("paper/paper.js").asText() + "<\/script>");
               $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
-              L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
+              console.log("HousePlanner v1.0");
               initHousePlanner();
             });
           } catch (exception) {
@@ -40,7 +41,6 @@
         error: function(jqXHR, textStatus, errorThrown) {
           $.getScript( "js/houseplanner.js" )
               .done(function( script, textStatus ) {
-                L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
                 initHousePlanner();
               })
               .fail(function( jqxhr, settings, exception ) {
@@ -176,9 +176,9 @@
         <div class="pxs_loading">Loading scenes...</div>
         <div class="pxs_slider_wrapper">
             <ul class="pxs_slider">
-                <li><a href="#" onclick="sceneOpen('scene1.zip')"><img src="scenes/scene1.jpg" alt="" /></a></li>
-                <li><a href="#" onclick="sceneOpen('scene2.zip')"><img src="scenes/scene2.jpg" alt="" /></a></li>
-                <li><a href="#" onclick="sceneOpen('scene3.zip')"><img src="scenes/scene3.jpg" alt="" /></a></li>
+                <li><a href="#" onclick="sceneOpen(1)"><img src="scenes/1.jpg" alt="" /></a></li>
+                <li><a href="#" onclick="sceneOpen(2)"><img src="scenes/2.jpg" alt="" /></a></li>
+                <li><a href="#" onclick="sceneOpen(3)"><img src="scenes/3.jpg" alt="" /></a></li>
             </ul>
             
             <div class="pxs_navigation">
@@ -187,9 +187,9 @@
             </div>
             
             <ul class="pxs_thumbnails">
-                <li><img src="scenes/_scene1.jpg" alt="" /></li>
-                <li><img src="scenes/_scene2.jpg" alt="" /></li>
-                <li><img src="scenes/_scene3.jpg" alt="" /></li>
+                <li><img src="scenes/_1.jpg" alt="" /></li>
+                <li><img src="scenes/_2.jpg" alt="" /></li>
+                <li><img src="scenes/_3.jpg" alt="" /></li>
             </ul>
         </div>
     </div>
@@ -338,7 +338,7 @@
       <a href="#start" id="image-circular-src"><img src="images/agent.jpg" alt="" /></a>
     </div>
     <div class="back image-circular">
-      <a href="#map" id="image-circular-src" onclick="var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);animateStop()"><img src="images/map.jpg" alt="" /></a>
+      <a href="#map" id="image-circular-src" onclick="sceneMapBox()"><img src="images/map.jpg" alt="" /></a>
     </div>
   </div>
 </div>
@@ -436,11 +436,11 @@
 	<!-- Thumbnail class="ui-widget-content" -->
 	<div id="menuTop">
 		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-			<a href="#" onclick="show3DHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
-      <a href="#" onclick="show3DLandscape()" class="hi-icon icon-terrain tooltip" title="Landscape Editor" id="menuTopItem2"></a>
-      <a href="#" onclick="show3DFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
-      <a href="#" onclick="show3DRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
-			<a href="#" onclick="show3DFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
+			<a href="#" onclick="engine3D.showHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
+      <a href="#" onclick="engine3D.showLandscape()" class="hi-icon icon-terrain tooltip" title="Landscape Editor" id="menuTopItem2"></a>
+      <a href="#" onclick="engine3D.showFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
+      <a href="#" onclick="engine3D.showRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
+			<a href="#" onclick="engine3D.showFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
 			<a href="#" onclick="engine2D.show()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
       <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
@@ -582,7 +582,7 @@
     <div id="WebGLTextureSelect" style="display:none;width:60%;height:120px;"></div>
 </div>
 
-<div id="engine2D" style="display:none">
+<canvas id="engine2D" style="display:none">
   <div id="zoom2DLevel" style="position:absolute;left:10px;bottom:0;z-index:2">
     <form id="drawForm">
       <input id="zoom2DSlider" type="range" min="10" max="50" value="10" onchange="drawImage();" onkeyup="drawImage();" style="width:240px" />
@@ -590,8 +590,7 @@
     <canvas id="zoom2DProgress" width="270" height="80"></canvas>
   </div>
   <div id="menu2DTools" style="position:absolute"></div>
-  <canvas id="fabricjs"></canvas>
-</div>
+</canvas>
 
 <!--http://www.jquerybyexample.net/2013/05/jquery-scroll-page-automatically-by-few-pixels-after-every-few-seconds.html-->
 <!--<script type="text/javascript" src="js/iscroll.js"></script>-->

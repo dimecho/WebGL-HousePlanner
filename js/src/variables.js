@@ -108,6 +108,7 @@ var SESSION = '';
 //var VIEWMODE = 'designer'; //public
 var RADIAN = (Math.PI / 180);
 var SCENE = 'house';
+var SCENEFILE = 'scene1.zip';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
 var TOOL3DLANDSCAPE = 'rotate';
@@ -142,6 +143,12 @@ var scene2DDrawLineGeometry = []; //Temporary holder for mouse click and drag dr
 var scene2DDrawLine; //2D Line form with color/border/points
 //var scene2DDrawLineContainer = []; //Container of line geometries - need it as a collection for "quick hide"
 var scene2DWallMesh = []; //Fabric.js line data
+
+var scene2DWallGroup = [];
+var scene2DWallPointGroup = [];
+var scene2DWindowGroup = [];
+var scene2DDoorGroup = [];
+
 var scene2DFloorMesh = []; //Fabric.js line data - floor shape subdevide lines
 var scene2DDoorMesh = []; //Fabric.js group line data (doors)
 var scene2DWindowMesh = []; //Fabric.js group line data (windows)

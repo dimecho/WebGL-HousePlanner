@@ -1,236 +1,304 @@
+var engine2D = window.engine2D || {};
 
-function scene2DMakeDoor(v1,v2,c,z,open,direction,id) {
-
-    if(id === null)
-        id = Math.random().toString(36).substring(7);
-
-    //Debug adjust
-    //v1 = {x:v1.x+40,y:v1.y};
-    //v2 = {x:v1.x+100,y:v1.y};
-
-    //v2.x = v2.x - v1.x;
-    //v2.y = v2.y - v1.y;
+engine2D.makeDoor = function(l,c,z,open,direction) {
 
     //TODO: lock/hide wall curve if door is present
     //var angle = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI;
 
-    var swing = scene2DLineLength(0,0,v2.x,v2.y);
-    
-    var array = [];
 
-    //var line1 = new fabric.Line([v1.x, v1.y, v2.x, v2.y], {
-    var line1 = new fabric.Line([0, 2, v2.x, 2], {
-        stroke: '#f5f5f5',
-        strokeWidth: 20
-    });
+    with (paper) {
 
-    var line2 = new fabric.Line([0, 4, v2.x, 4], {
-        stroke: '#000000',
-        strokeWidth: 4,
-        name: "door-frame"
-    });
+        //direction = 'out';
 
-    array.push(line1); //item(0)
-    array.push(line2); //item(1)
-    
-    var hinge = [0,0,0,0];
-    var startAngle = Math.PI/2;
-    var endAngle = Math.PI;
+        var group = new Group();
+        var path = new Path();
+        var guide = new Path();
+        var A = new Group();
+        var B = new Group();
+        var lineA = new Path();
+        var lineB = new Path();
 
-    if(open == "double")
-    {
+        path.moveTo(new Point(0,0));
+        path.lineTo(new Point(l,0));
 
-    }
-    else if(open == "right")
-    {
-        if(direction == "in")
-        {
-            hinge = [v2.x, v2.y, v2.x, v2.y+swing];
-        }else{
-            hinge = [v2.x, v2.y, v2.x, v2.y-swing];
-            startAngle = 0-Math.PI;
-            endAngle = 0-Math.PI/2;
+        //guide.moveTo(new Point(-20,0));
+        //guide.lineTo(new Point(path.length + 20,0));
+        guide.moveTo(new Point(0,0));
+        guide.lineTo(new Point(l,0));
+        guide.strokeColor = '#ffff';
+        guide.strokeWidth = 20;
+        //guide.opacity = 0;
+
+        path.strokeColor = '#000000';
+        path.strokeWidth = 10;
+
+        lineA.moveTo(new Point(10,-12));
+        lineA.lineTo(new Point(10,12));
+
+        lineB.moveTo(new Point(path.length-10,-12));
+        lineB.lineTo(new Point(path.length-10, 12));
+
+        lineA.strokeColor = lineB.strokeColor = '#00CC33';
+        lineA.strokeWidth = lineB.strokeWidth = 3;
+        A.opacity = B.opacity = 0;
+
+        var triA = new Path.RegularPolygon(new Point(0, 0), 3, 12);
+        var triB = new Path.RegularPolygon(new Point(path.length, 0), 3, 12);
+        triA.rotate(30);
+        triB.rotate(-30);
+        triA.fillColor = triB.fillColor = '#00CC33';
+
+        var pivot = new Path();
+        pivot.strokeColor = '#000000';
+        pivot.strokeWidth = 4;
+
+        var circle = new Path.Circle(new Point(0, 0), 10);
+        circle.fillColor = '#FFCC00';
+        circle.opacity = 0;
+
+        var p1;
+        var p2;
+        var pv;
+        var x;
+        var y;
+        var angle = 45 * (Math.PI / 180);
+        var sin = Math.sin(angle);
+        var cos = Math.cos(angle);
+
+        if(open === "right"){
+            p1 = new Point(0,0);
+            pv = new Point(path.length,0);
+
+        }else if(open === "left"){
+
+            p1 = new Point(path.length,0);
+            pv = new Point(0,0);
         }
-    }
-    else if(open == "left")
-    {
-        if(direction == "in")
+        pivot.moveTo(pv);
+
+        if(direction === "in")
         {
-            startAngle = 0;
-            endAngle = Math.PI/2;
+            pivot.lineTo(new Point(pv.x, pv.y + path.length));
+            p2 = new Point(pv.x, pv.y + path.length);
+            x = pv.x+(path.length*sin);
+            y = pv.y+(path.length*cos);
         }else{
-            startAngle = 0-Math.PI/2;
-            endAngle = 0;
+            pivot.lineTo(new Point(pv.x, pv.y - path.length));
+            p2 = new Point(pv.x, pv.y - path.length);
+            x = pv.x-(path.length*sin);
+            y = pv.y-(path.length*cos);
         }
-    }
 
-    var line3 = new fabric.Line(hinge, {
-        stroke: '#000000',
-        strokeWidth: 2
-    });
-    array.push(line3); //item(2)
+        var arc = new Path.Arc(p1, new Point(x,y), p2);
+        arc.strokeColor = '#000000';
+        arc.strokeWidth = 1;
 
-    var arc1 = new fabric.Circle({
-        radius: swing-1,
-        left: hinge[0],
-        top: hinge[1],
-        //angle: offsetAngle,
-        hasBorders: false,
-        startAngle: startAngle,
-        endAngle: endAngle,
-        stroke: '#000000',
-        strokeDashArray: [5, 5],
-        strokeWidth: 2,
-        fill: '',
-        name: "door-swing"
-    });
-    array.push(arc1); //item(3)
+        //Calculate guides
+        //=========================
+        p1 = new Point(path.length, 0 - path.length);
+        p2 = new Point(path.length, 0 + path.length);
+        mp = new Point(0, 0);
+        var guide1 = new Path.Arc(p1, mp, p2);
+        var round1 = new Path.Arc(p1, mp, p2);
 
-    //Interactive Adjusting lines TODO: add mobileFix
-    var line4 = new fabric.Line([0, -6, 0, 15], {
-        //stroke: '#00CC00', //green
-        stroke: '#000000', //black
-        strokeWidth: 6,
-        //name: "door-adjust-left"
-    });
-    var line5 = new fabric.Line([v2.x, -6, v2.x, 15], {
-        //stroke: '#00CC00', //green
-        stroke: '#000000', //black
-        strokeWidth: 6,
-        //name: "door-adjust-right"
-    });
-    array.push(line4); //item(4)
-    array.push(line5); //item(5)
-    
-    var c = new fabric.Circle({
-        opacity: 0,
-        left: hinge[2],
-        top: hinge[3],
-        strokeWidth: 2,
-        radius: 8,
-        fill: '#ADFF2F',
-        stroke: '#6B8E23',
-    });
-    array.push(c); //item(6)
-    
-    var group = new fabric.Group(array, { selectable: true, hasBorders: false, hasControls: false, name:'door', z:z, open:open, direction:direction, id:id});
-    group.origin = v1;
-    group.moving = false;
-    group.on("moving", function () {
+        p1 = new Point(0, 0 - path.length);
+        p2 = new Point(0, 0 + path.length);
+        mp = new Point(0, path.length);
+        var guide2 = new Path.Arc(p1, mp, p2);
+        var round2 = new Path.Arc(p1, mp, p2);
+       
+        guide1.strokeColor = guide2.strokeColor = '#000000';
+        guide1.strokeWidth = guide2.strokeWidth = 1;
+        guide1.dashArray = guide2.dashArray = [10, 10];
+        guide1.opacity = guide2.opacity = 0;
 
-        if(group.lockMovementX) //precaution
-            return;
+        round1.strokeColor = round2.strokeColor = '#000000';
+        round1.strokeWidth = round2.strokeWidth = 20;
+        round1.opacity = round2.opacity = 0;
 
-        if(!group.moving){
-            group.moving = true;
-            clearTimeout(clickTime);
-            //console.log(group);
-        }else{
-            //TODO: Find closest line
-            for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++)
+        //=========================
+
+        A.addChild(lineA);
+        A.addChild(triA);
+        B.addChild(lineB);
+        B.addChild(triB);
+
+        group.addChild(pivot);
+        group.addChild(arc);
+        group.addChild(round1);
+        group.addChild(guide1);
+        group.addChild(round2);
+        group.addChild(guide2);
+        group.addChild(circle);
+        group.addChild(guide);
+        group.addChild(path);
+        group.addChild(A);
+        group.addChild(B);
+        path.group = group;
+
+        //group.position = new Point(v1.x,v1.y);
+        group.position = new Point(c.x,c.y); //TODO: Fix this
+
+        project.layers.push(group);
+
+        //====================================
+        var enter = false;
+        var tick;
+
+        path.attach('mouseenter', function() {
+            A.opacity = 1;
+            B.opacity = 1;
+            A.drag = false;
+            B.drag = false;
+            circle.opacity = 0;
+            guide1.opacity = 0;
+            guide2.opacity = 0;
+        });
+
+        path.attach('mousemove', function() {
+            clearTimeout(tick);
+            tick = setTimeout(function() {
+                A.opacity = 0;
+                B.opacity = 0;
+            }, 400);
+        });
+
+        A.attach('mousedrag', function(event) {
+            dragAB(this,event,0);
+        });
+
+        B.attach('mousedrag', function(event) {
+            dragAB(this,event,1);
+        });
+
+        function dragAB(obj,event,i)
+        {
+            obj.drag = true;
+            obj.position.x = event.point.x;
+            obj.opacity = 1;
+            B.opacity = 1;
+            path.segments[i].point.x = event.point.x;
+            guide.segments[i].point.x = event.point.x;
+
+            if(direction === "in")
             {
-                if(!scene2D.isTargetTransparent(scene2DWallMesh[FLOOR][i].selector, group.left, group.top)){ //|| !scene2D.isTargetTransparent(scene2DWallMesh[FLOOR][i].selector, group.left-group.width/2, group.top)){
-                    //console.log(scene2DWallMesh[FLOOR][i].id);
-                    var v1 = {x:scene2DWallMesh[FLOOR][i].item(0).path[0][1],y:scene2DWallMesh[FLOOR][i].item(0).path[0][2]};
-                    var v2 = {x:scene2DWallMesh[FLOOR][i].item(0).path[1][3],y:scene2DWallMesh[FLOOR][i].item(0).path[1][4]};
-                    var a = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI; //TODO: ifficiency rememmber angle on 'edge' move
-                    var percent = (group.left - v1.x) / (v2.x - v1.x); //0.20; //flip based on window height
-                    //console.log(percent);
-                    group.set(scene2DgetLineXYatPercent(v1,v2,percent));
-                    group.set({angle:a});
-                    break;
-                }else{
-                    group.set({angle:0});
-                }
+                pivot.segments[1].point.y = pivot.segments[0].point.y + path.length;
+            }else{
+                pivot.segments[1].point.y = pivot.segments[0].point.y - path.length;
             }
+            
+            
+            arc.clear();
+            guide1.clear();
+            guide2.clear();
+            round1.clear();
+            round2.clear();
+            
+            //group.clear();
+            //group = engine2D.makeDoor({x:event.point.x,y:event.point.y},{x:path.segments[1].point.x,y:path.segments[1].point.y},c,z,open,direction);
+        
+            if(open === "right")
+            {
+
+                if(i == 0) //A
+                {
+                    arc = new Path.Arc(event.point, new Point(pivot.segments[0].point.x-(path.length*sin),pivot.segments[0].point.y-(path.length*cos)), new Point(pivot.segments[1].point.x, pivot.segments[1].point.y));
+                
+                }else{ //B
+
+                    pivot.segments[0].point.x = event.point.x;
+                    pivot.segments[1].point.x = event.point.x;
+                    x = pivot.segments[0].point.x-(path.length*sin);
+                    y = pivot.segments[0].point.y-(path.length*cos);
+                    arc = new Path.Arc(new Point(path.segments[0].point.x, path.segments[0].point.y), new Point(x,y), new Point(pivot.segments[1].point.x, pivot.segments[1].point.y));
+                }
+                arc.strokeColor = '#000000';
+                arc.strokeWidth = 1;
+
+                guide1 = new Path.Arc(new Point(path.segments[1].point.x, path.segments[1].point.y - path.length), new Point(path.segments[0].point.x, path.segments[0].point.y), new Point(path.segments[1].point.x, path.segments[1].point.y + path.length));
+                guide2 = new Path.Arc(new Point(path.segments[0].point.x, path.segments[0].point.y - path.length), new Point(path.segments[1].point.x, path.segments[1].point.y), new Point(path.segments[0].point.x, path.segments[0].point.y + path.length));
+                round1 = guide1.clone();
+                round2 = guide2.clone();
+
+                guide1.strokeColor = guide2.strokeColor = '#000000';
+                guide1.strokeWidth = guide2.strokeWidth = 1;
+                guide1.dashArray = guide2.dashArray = [10, 10];
+                guide1.opacity = guide2.opacity = 0;
+
+                round1.strokeColor = round2.strokeColor = '#000000';
+                round1.strokeWidth = round2.strokeWidth = 20;
+                round1.opacity = round2.opacity = 0;
+
+                group.appendBottom(arc);
+                group.appendBottom(round1);
+                group.appendBottom(guide1);
+                group.appendBottom(round2);
+                group.appendBottom(guide2);
+
+                //round1.attach('mouseenter', function() {
+                //    console.log("round1");
+                //});
+
+               
+           }else{
+
+           }
         }
-    });
 
-    group.on("selected", function () {
-        //group.adjustcircle.set({opacity:0});
-        c.set({opacity:0});
-        //console.log("");
-        group.moving = false; //TODO: do this on mouseup
+        group.attach('mousedrag', function(event) {
+            if(A.drag == true || B.drag == true)
+                return;
+            group.position = event.point;
+            A.opacity = 0;
+            B.opacity = 0;
+            circle.opacity = 0;
+            guide1.opacity = 0;
+            guide2.opacity = 0;
+        });
 
-        //console.log(scene2D.activeObject);
-        //console.log(scene2D.activeGroup);
-        //var g = scene2D.getActiveGroup()
-        //var obj = g.getObjects()
-        //var pointer = canvas.getPointer(e.e);
-        //var activeObj = scene2D.getActiveObject();
-        //console.log(mouse.x + ":" + mouse.y + " " + activeObj.left + ":" + activeObj.top)
-        //if (Math.abs(mouse.y - activeObj.top) > 80)
-        //{
-        //    console.log("green circle");
-        //}else{
-
-            clickTime = setTimeout(function() {
-                window.location = "#open2DDoorWindowAdjust";
-                //============================
-                scene2DAdvanced = new fabric.Canvas('fabricjs2', {
-                    isDrawingMode: false,
-                    isTouchSupported: true,
-                    width: window.innerWidth*0.8-40, //80%
-                    height: window.innerHeight*0.75-20 //75%
-                });
-                scene2DMakeGrid(scene2DAdvanced, 20,'#6dcff6');
-                //scene2DMakeGrid(scene2DAdvanced, 20,'#E0E0E0');
-                //============================
-
-                //...Sample front facing wall
-                //============================
-                scene2DDrawLine = new fabric.Line([200, 80, 850, 80], {
-                    fill: 'blue',
-                    stroke: 'black',
-                    strokeWidth: 10,
-                    strokeLineCap: 'round',
-                    hasControls: false,
-                    selectable: false
-                });
-                scene2DAdvanced.add(scene2DDrawLine);
-                scene2DDrawLine = new fabric.Line([200, 80, 200, 500], {
-                    fill: 'blue',
-                    stroke: 'black',
-                    strokeWidth: 10,
-                    strokeLineCap: 'round',
-                    hasControls: false,
-                    selectable: false
-                });
-                scene2DAdvanced.add(scene2DDrawLine);
-                scene2DDrawLine = new fabric.Line([850, 80, 850, 500], {
-                    fill: 'blue',
-                    stroke: 'black',
-                    strokeWidth: 10,
-                    strokeLineCap: 'round',
-                    hasControls: false,
-                    selectable: false
-                });
-                scene2DAdvanced.add(scene2DDrawLine);
-                scene2DDrawLine = new fabric.Line([200, 500, 850, 500], {
-                    fill: 'blue',
-                    stroke: 'black',
-                    strokeWidth: 10,
-                    strokeLineCap: 'round',
-                    hasControls: false,
-                    selectable: false
-                });
-                scene2DAdvanced.add(scene2DDrawLine);
-
-                scene2DDrawLine = new fabric.Rect({
-                  left: 450,
-                  top: 345,
-                  fill: '#ffffff',
-                  stroke: 'black',
-                  width: 180,
-                  height: 300,
-                });
-                scene2DAdvanced.add(scene2DDrawLine);
-                //============================
-            }, 500);
-        //}
-        scene2D.bringToFront(group);
-        scene2D.setActiveObject(arc1); //fabric.js event fix - allow multiple clicks
-    });
+        round1.on('mouseenter', function() {
+            A.opacity = 0;
+            B.opacity = 0;
+            circle.opacity = 1;
+            guide1.opacity = 1;
+            guide2.opacity = 0;
+            arc.opacity = 0.1;
+            pivot.opacity = 0.1;
+        });
+        round1.attach('mousemove', function(event) {
+            clearTimeout(tick);
+            //circle.position = this.getNearestPoint(event.point);
+            circle.position = event.point;
+            tick = setTimeout(function() {
+                circle.opacity = 0;
+                guide1.opacity = 0;
+                arc.opacity = 1;
+                pivot.opacity = 1;
+                enter = false;
+            }, 400);
+        });
+        round2.attach('mouseenter', function() {
+            A.opacity = 0;
+            B.opacity = 0;
+            circle.opacity = 1;
+            guide1.opacity = 0;
+            guide2.opacity = 1;
+            arc.opacity = 0.1;
+            pivot.opacity = 0.1;
+        });
+        round2.attach('mousemove', function(event) {
+            clearTimeout(tick);
+            //circle.position = this.getNearestPoint(event.point);
+            circle.position = event.point;
+            tick = setTimeout(function() {
+                circle.opacity = 0;
+                guide2.opacity = 0;
+                arc.opacity = 1;
+                pivot.opacity = 1;
+                enter = false;
+            }, 400);
+        });
+    }
     
     return group;
 }

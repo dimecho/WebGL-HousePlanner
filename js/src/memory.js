@@ -48,14 +48,5 @@ function scene3DFreeMemory()
 
 function scene2DFreeMemory()
 {
-    for (var i = 0; i < scene2DWallMesh[FLOOR].length; i++) {
-        scene2DWallMesh[FLOOR][i].edgeA = null;
-        scene2DWallMesh[FLOOR][i].edgeB = null;
-    }
 
-    var objects = scene2D.getObjects();
-    for (var object in objects)
-    {
-        scene2D.remove(object);
-    }
 }

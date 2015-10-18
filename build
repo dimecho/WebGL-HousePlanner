@@ -9,40 +9,32 @@ fi
 if [ ! -d /usr/local/Cellar/node/ ]; then
     brew install node
     npm install argparse
-    npm install uglify-js
-    npm install node-minify
 fi
 
 cd js/three/build/
 node ./build.js --include common --include extras --minify --output ../three.js
 rm ../three.js.map
 
-#cd ../../two/build/
-#node ./build.js --minify
-#rm ../two.js
-#rm ../two.clean.js
-#mv ../two.min.js ../two.js
+cd ../../paper/
 
-cd ../../../
-for f in $(find ./css/src/ -name '*.css')
+cd ../../css/
+for f in $(find ./src/ -name '*.css')
 do
 	#cat "$f" >> "css/houseplanner.css"
-	java -jar ./css/yuicompressor.jar --type css "$f" >> ./js/houseplanner.css
+	java -jar yuicompressor.jar --type css "$f" >> ../js/houseplanner.css
 done
 
-java -jar ./js/compiler.jar --language_in ECMASCRIPT5 --js_output_file=js/library.js 'js/library/**.js'
-java -jar ./js/compiler.jar --language_in ECMASCRIPT5 --js_output_file=js/three/three-extra.js 'js/three/extras/**.js'
-java -jar ./js/compiler.jar  --language_in ECMASCRIPT5 --js_output_file=js/src.js 'js/src/**.js' 
+cd ../js/
 
-cd js/
+java -jar compiler.jar  --language_in ECMASCRIPT5 --js_output_file=src.js 'src/**.js'
+java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=library.js 'library/**.js'
+java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=three/three-extra.js 'three/extras/**.js'
+
 rm houseplanner.js
-#cat two/two.js >> houseplanner.js
-cat fabric/fabric.js >> houseplanner.js
 cat src.js >> houseplanner.js
-#cat three/three.js >> houseplanner.js
 cat three/three-extra.js >> houseplanner.js
 cat library.js >> houseplanner.js
-zip houseplanner.jsz houseplanner.js houseplanner.css three/three.js
+zip houseplanner.jsz houseplanner.js houseplanner.css three/three.js paper/paper.js
 rm houseplanner.js
 rm houseplanner.css
 rm library.js

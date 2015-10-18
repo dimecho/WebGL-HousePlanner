@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Paper</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+
+  <script type="text/javascript" src="../js/jquery.js?v=2.1.4"></script>
+  <script type="text/javascript" src="../js/jszip.js?v=2.4.0"></script>
+
+  <script src="../js/paper/paper.js"></script>
+
+  <script src="../js/library/jquery.mousewheel.js"></script>
+  <script src="../js/src/variables.js"></script>
+  <script src="../js/src/cookies.js"></script>
+
+  <script src="../js/src/2d/engine2d.js"></script>
+  <script src="../js/src/2d/init.js"></script>
+  <script src="../js/src/2d/events.js"></script>
+  <script src="../js/src/2d/zoom.js"></script>
+  <script src="../js/src/2d/history.js"></script>
+  <script src="../js/src/2d/wall.js"></script>
+  <script src="../js/src/2d/window.js"></script>
+  <script src="../js/src/2d/door.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+
+      engine2D.initialize();
+
+      $.ajax("../scenes/scene1.zip",{
+        contentType: "application/zip",
+        beforeSend: function (req) {
+          req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+        },
+        success: function(data){
+          var zip = new JSZip(data);
+          engine2D.new();
+          engine2D.open(zip);
+          engine2D.show();
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) { 
+          alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+        }
+      });
+    });
+
+    function animateStop()
+    {}
+    function scene3DFreeMemory()
+    {}
+    function scene2DFreeMemory()
+    {}
+    function toggleRight()
+    {}
+    function toggleLeft()
+    {}
+    function menuSelect()
+    {}
+    function correctMenuHeight()
+    {}
+    var engine3D = window.engine3D || {};
+    engine3D.hide = function() {
+    }
+  </script>
+</head>
+<body>
+<style type="text/css">
+html,
+body {
+    margin: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+/* Scale canvas with resize attribute to full size */
+canvas[resize] {
+    width: 100%;
+    height: 100%;
+}
+</style>
+  <canvas id="engine2D" resize></canvas>
+</body>
+</html>

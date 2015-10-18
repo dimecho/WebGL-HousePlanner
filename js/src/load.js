@@ -178,23 +178,96 @@ function loadShader(shader, type, async)
     }).responseText;
 }
 
+function sceneMapBox() {
 
-function sceneOpen(file) {
+    if (typeof mapbox == undefined) 
+    {
+        $.getScript( "js/dynamic/mapbpx.js" )
+              .done(function( script, textStatus ) {
+                L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
+                var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);animateStop()
+              })
+              .fail(function( jqxhr, settings, exception ) {
+                console.log('Failed to load mapbox.js');
+          });
+    //}else{
+        //var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);animateStop();
+    }
+}
 
-    document.getElementById('engine3D').appendChild(spinner);
+function sceneOpen(s) {
+
+    document.body.appendChild(spinner);
     document.getElementById("start").getElementsByClassName("close")[0].setAttribute('href', "#close");
 
     //setTimeout(function(){
-        $.ajax("scenes/" + file,{
+        $.ajax("scenes/" + SCENEFILE,{
             contentType: "application/zip",
             beforeSend: function (req) {
                   req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
             },
             success: function(data){
                 try {
-                    camera3DAnimate(0,20,0,1500);
+
+                    if (s == 2)
+                    {
+                        //quick response
+                        buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
+
+                        scene3D.remove(skyMesh);
+                        scene3D.remove(weatherSkyCloudsMesh);
+                        scene3D.remove(weatherSkyRainbowMesh);
+                        scene3D.remove(scene3DHouseGroundContainer);
+
+                        scene3D.add(skyFloorMesh);
+                        scene3DSetLight();
+                        scene3D.add(scene3DFloorGroundContainer);
+                    }else if(s == 3){
+                        engine2D.show();
+                    }
+
                     setTimeout(function() {
-                        sceneProcessZipData(data);
+                        camera3DAnimate(0,20,0,1500);
+                    }, 500);
+
+                    setTimeout(function() {
+                        var zip = new JSZip(data);
+
+                        engine3D.new();
+                        engine2D.new();
+
+                        try{
+                            var o = JSON.parse(zip.file("options.json").asText());
+                            //console.log(o);
+                            settings = o.settings;
+                            for (var i = 0; i < o.floor.length; i++){
+                                //console.log(o.floor[i].name);
+                                scene3DFloorFurnitureContainer[i].name =  o.floor[i].name; 
+                            }
+                        }catch(ex){}
+                        //show2D(); //DEBUG 2D
+
+                        engine3D.open(zip);
+                        engine2D.open(zip);
+
+                        setTimeout(function() {
+                            document.body.removeChild(spinner);
+
+                            if(s == 1){
+                                engine3D.showHouse();
+                            }else if (s == 2)
+                            {
+                                engine3D.showFloor();
+                            }
+                            else if (s == 3)
+                            {
+                                engine2D.show();
+                            }
+
+                            setTimeout(function() {
+                                scene3DAnimateRotate = settings.autorotate;
+                            }, 4000);
+                        }, 1000);
                         //document.getElementById('engine3D').removeChild(spinner);
                     }, 2000);
                 } catch (e) {
@@ -203,34 +276,4 @@ function sceneOpen(file) {
             }
         });
     //}, 1000);
-}
-
-function sceneProcessZipData(zipData) {
-
-    var zip = new JSZip(zipData);
-
-    engine3D.new();
-    engine2D.new();
-    
-    try{
-        var o = JSON.parse(zip.file("options.json").asText());
-        //console.log(o);
-        settings = o.settings;
-        for (var i = 0; i < o.floor.length; i++){
-            //console.log(o.floor[i].name);
-            scene3DFloorFurnitureContainer[i].name =  o.floor[i].name; 
-        }
-    }catch(ex){}
-    //show2D(); //DEBUG 2D
-
-    openScene3D(zip);
-    engine2D.open(zip);
-
-    setTimeout(function() {
-        document.getElementById('engine3D').removeChild(spinner);
-        show3DHouse();
-        setTimeout(function() {
-            scene3DAnimateRotate = settings.autorotate;
-        }, 4000);
-    }, 1000);
 }

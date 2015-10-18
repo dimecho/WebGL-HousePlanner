@@ -276,20 +276,9 @@ function initHousePlanner() {
         dashSize: 3,
         gapSize: 1,
         linewidth: 2
-    }), THREE.LineSegments); //v72
-    //}), THREE.LinePieces); //v71
+    }), THREE.LineSegments);
 
-    //scene3DCubeMesh = new THREE.Mesh(cubeG, material);
     scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
-
-   
-    //THREE.GeometryUtils.merge(geometry, mesh);
-
-    //scene2D.add(new THREE.GridHelper(100, 10));
-
-    //A 1x1 Rectangle for Scale - Should Map to a 1x1 square of Three.js space
-    //scene2D.fillStyle = "#FF0000";
-    //scene2D.fillRect(0, 0, 1, 1);
 
     scene3DInitializeRenderer();
 
@@ -302,45 +291,11 @@ function initHousePlanner() {
     scene3DInitializeClouds();
 
     engine2D.initialize();
-
+   
     engine3D.new();
+
     engine2D.new();
 
-    //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
-    $(window).bind('resize', onWindowResize);
-    $(window).bind('beforeunload', function() {
-        return 'Are you sure you want to leave?';
-    });
-
-    //$("#HTMLCanvas").bind('mousedown', on2DMouseDown);
-    //$("#HTMLCanvas").bind('mouseup', on2DMouseUp);
-
-    /*
-    document.addEventListener('dragover', function(event) {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'copy';
-    }, false);
-
-    document.addEventListener('drop', function(event) {
-        event.preventDefault();
-        editor.loader.loadFile(event.dataTransfer.files[0]);
-    }, false);
-    */
-
-    /*
-    $(window).bind('mousedown', function(event) {
-         switch (event.keyCode) {
-            case 8: // prevent browser back 
-                event.preventDefault();
-                break;
-            case 46: // delete
-                //editor.removeObject(editor.selected);
-                //editor.deselect();
-                break;
-        }
-    });
-    */
-    
    	scene3DenableOrbitControls(camera3D,renderer.domElement);
 
     /*
@@ -362,14 +317,20 @@ function initHousePlanner() {
     open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
     open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
 
-
     //scene3DInitializePostprocessing();
 
-    show3DHouse();
+    //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+    $(window).bind('resize', onWindowResize);
+    $(window).bind('beforeunload', function() {
+        return 'Are you sure you want to leave?';
+    });
+
+
+    engine3D.showHouse();
 
     //For debugging purposes
     //========================
-    //sceneOpen('scene2.zip');
+    //sceneOpen(2);
     //========================
 
 }
@@ -829,7 +790,6 @@ function scene3DInitializePhysics()
     */
 }
 
-
 function initPanorama(id, files, W,H)
 {
     scene3DPanorama = new THREE.Scene();
@@ -966,7 +926,7 @@ engine3D.new = function (){
     scene3DInitializePostprocessing();
 }
 
-function openScene3D(zip) {
+engine3D.open = function(zip) {
 
     //zip.folder("Textures").load(data);
     /*
