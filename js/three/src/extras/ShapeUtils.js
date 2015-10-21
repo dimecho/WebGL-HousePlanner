@@ -1,130 +1,193 @@
 /**
  * @author zz85 / http://www.lab4games.net/zz85/blog
- * Defines a 2d shape plane using paths.
- **/
+ */
 
-// STEP 1 Create a path.
-// STEP 2 Turn path into shape.
-// STEP 3 ExtrudeGeometry takes in Shape/Shapes
-// STEP 3a - Extract points from each shape, turn to vertices
-// STEP 3b - Triangulate each shape, add faces.
+THREE.ShapeUtils = {
 
-THREE.Shape = function () {
+	// calculate area of the contour polygon
 
-	THREE.Path.apply( this, arguments );
-	this.holes = [];
+	area: function ( contour ) {
 
-};
+		var n = contour.length;
+		var a = 0.0;
 
-THREE.Shape.prototype = Object.create( THREE.Path.prototype );
-THREE.Shape.prototype.constructor = THREE.Shape;
+		for ( var p = n - 1, q = 0; q < n; p = q ++ ) {
 
-// Convenience method to return ExtrudeGeometry
+			a += contour[ p ].x * contour[ q ].y - contour[ q ].x * contour[ p ].y;
 
-THREE.Shape.prototype.extrude = function ( options ) {
+		}
 
-	var extruded = new THREE.ExtrudeGeometry( this, options );
-	return extruded;
+		return a * 0.5;
 
-};
+	},
 
-// Convenience method to return ShapeGeometry
+	triangulate: ( function () {
 
-THREE.Shape.prototype.makeGeometry = function ( options ) {
+		/**
+		 * This code is a quick port of code written in C++ which was submitted to
+		 * flipcode.com by John W. Ratcliff  // July 22, 2000
+		 * See original code and more information here:
+		 * http://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
+		 *
+		 * ported to actionscript by Zevan Rosser
+		 * www.actionsnippet.com
+		 *
+		 * ported to javascript by Joshua Koo
+		 * http://www.lab4games.net/zz85/blog
+		 *
+		 */
 
-	var geometry = new THREE.ShapeGeometry( this, options );
-	return geometry;
+		function snip( contour, u, v, w, n, verts ) {
 
-};
+			var p;
+			var ax, ay, bx, by;
+			var cx, cy, px, py;
 
-// Get points of holes
+			ax = contour[ verts[ u ] ].x;
+			ay = contour[ verts[ u ] ].y;
 
-THREE.Shape.prototype.getPointsHoles = function ( divisions ) {
+			bx = contour[ verts[ v ] ].x;
+			by = contour[ verts[ v ] ].y;
 
-	var i, il = this.holes.length, holesPts = [];
+			cx = contour[ verts[ w ] ].x;
+			cy = contour[ verts[ w ] ].y;
 
-	for ( i = 0; i < il; i ++ ) {
+			if ( Number.EPSILON > ( ( ( bx - ax ) * ( cy - ay ) ) - ( ( by - ay ) * ( cx - ax ) ) ) ) return false;
 
-		holesPts[ i ] = this.holes[ i ].getTransformedPoints( divisions, this.bends );
+			var aX, aY, bX, bY, cX, cY;
+			var apx, apy, bpx, bpy, cpx, cpy;
+			var cCROSSap, bCROSScp, aCROSSbp;
 
-	}
+			aX = cx - bx;  aY = cy - by;
+			bX = ax - cx;  bY = ay - cy;
+			cX = bx - ax;  cY = by - ay;
 
-	return holesPts;
+			for ( p = 0; p < n; p ++ ) {
 
-};
+				px = contour[ verts[ p ] ].x;
+				py = contour[ verts[ p ] ].y;
 
-// Get points of holes (spaced by regular distance)
+				if ( ( ( px === ax ) && ( py === ay ) ) ||
+					 ( ( px === bx ) && ( py === by ) ) ||
+					 ( ( px === cx ) && ( py === cy ) ) )	continue;
 
-THREE.Shape.prototype.getSpacedPointsHoles = function ( divisions ) {
+				apx = px - ax;  apy = py - ay;
+				bpx = px - bx;  bpy = py - by;
+				cpx = px - cx;  cpy = py - cy;
 
-	var i, il = this.holes.length, holesPts = [];
+				// see if p is inside triangle abc
 
-	for ( i = 0; i < il; i ++ ) {
+				aCROSSbp = aX * bpy - aY * bpx;
+				cCROSSap = cX * apy - cY * apx;
+				bCROSScp = bX * cpy - bY * cpx;
 
-		holesPts[ i ] = this.holes[ i ].getTransformedSpacedPoints( divisions, this.bends );
+				if ( ( aCROSSbp >= - Number.EPSILON ) && ( bCROSScp >= - Number.EPSILON ) && ( cCROSSap >= - Number.EPSILON ) ) return false;
 
-	}
+			}
 
-	return holesPts;
+			return true;
 
-};
+		}
+
+		// takes in an contour array and returns
+
+		return function ( contour, indices ) {
+
+			var n = contour.length;
+
+			if ( n < 3 ) return null;
+
+			var result = [],
+				verts = [],
+				vertIndices = [];
+
+			/* we want a counter-clockwise polygon in verts */
+
+			var u, v, w;
+
+			if ( THREE.ShapeUtils.area( contour ) > 0.0 ) {
+
+				for ( v = 0; v < n; v ++ ) verts[ v ] = v;
+
+			} else {
+
+				for ( v = 0; v < n; v ++ ) verts[ v ] = ( n - 1 ) - v;
+
+			}
+
+			var nv = n;
+
+			/*  remove nv - 2 vertices, creating 1 triangle every time */
+
+			var count = 2 * nv;   /* error detection */
+
+			for ( v = nv - 1; nv > 2; ) {
+
+				/* if we loop, it is probably a non-simple polygon */
+
+				if ( ( count -- ) <= 0 ) {
+
+					//** Triangulate: ERROR - probable bad polygon!
+
+					//throw ( "Warning, unable to triangulate polygon!" );
+					//return null;
+					// Sometimes warning is fine, especially polygons are triangulated in reverse.
+					console.warn( 'THREE.ShapeUtils: Unable to triangulate polygon! in triangulate()' );
+
+					if ( indices ) return vertIndices;
+					return result;
+
+				}
+
+				/* three consecutive vertices in current polygon, <u,v,w> */
+
+				u = v; 	 	if ( nv <= u ) u = 0;     /* previous */
+				v = u + 1;  if ( nv <= v ) v = 0;     /* new v    */
+				w = v + 1;  if ( nv <= w ) w = 0;     /* next     */
+
+				if ( snip( contour, u, v, w, nv, verts ) ) {
+
+					var a, b, c, s, t;
+
+					/* true names of the vertices */
+
+					a = verts[ u ];
+					b = verts[ v ];
+					c = verts[ w ];
+
+					/* output Triangle */
+
+					result.push( [ contour[ a ],
+						contour[ b ],
+						contour[ c ] ] );
 
 
-// Get points of shape and holes (keypoints based on segments parameter)
+					vertIndices.push( [ verts[ u ], verts[ v ], verts[ w ] ] );
 
-THREE.Shape.prototype.extractAllPoints = function ( divisions ) {
+					/* remove v from the remaining polygon */
 
-	return {
+					for ( s = v, t = v + 1; t < nv; s ++, t ++ ) {
 
-		shape: this.getTransformedPoints( divisions ),
-		holes: this.getPointsHoles( divisions )
+						verts[ s ] = verts[ t ];
 
-	};
+					}
 
-};
+					nv --;
 
-THREE.Shape.prototype.extractPoints = function ( divisions ) {
+					/* reset error detection counter */
 
-	if ( this.useSpacedPoints ) {
+					count = 2 * nv;
 
-		return this.extractAllSpacedPoints( divisions );
+				}
 
-	}
+			}
 
-	return this.extractAllPoints( divisions );
+			if ( indices ) return vertIndices;
+			return result;
 
-};
+		}
 
-//
-// THREE.Shape.prototype.extractAllPointsWithBend = function ( divisions, bend ) {
-//
-// 	return {
-//
-// 		shape: this.transform( bend, divisions ),
-// 		holes: this.getPointsHoles( divisions, bend )
-//
-// 	};
-//
-// };
-
-// Get points of shape and holes (spaced by regular distance)
-
-THREE.Shape.prototype.extractAllSpacedPoints = function ( divisions ) {
-
-	return {
-
-		shape: this.getTransformedSpacedPoints( divisions ),
-		holes: this.getSpacedPointsHoles( divisions )
-
-	};
-
-};
-
-/**************************************************************
- *	Utils
- **************************************************************/
-
-THREE.Shape.Utils = {
+	} )(),
 
 	triangulateShape: function ( contour, holes ) {
 
@@ -161,8 +224,6 @@ THREE.Shape.Utils = {
 
 		function intersect_segments_2D( inSeg1Pt1, inSeg1Pt2, inSeg2Pt1, inSeg2Pt2, inExcludeAdjacentSegs ) {
 
-			var EPSILON = 0.0000000001;
-
 			var seg1dx = inSeg1Pt2.x - inSeg1Pt1.x,   seg1dy = inSeg1Pt2.y - inSeg1Pt1.y;
 			var seg2dx = inSeg2Pt2.x - inSeg2Pt1.x,   seg2dy = inSeg2Pt2.y - inSeg2Pt1.y;
 
@@ -172,7 +233,7 @@ THREE.Shape.Utils = {
 			var limit		= seg1dy * seg2dx - seg1dx * seg2dy;
 			var perpSeg1	= seg1dy * seg1seg2dx - seg1dx * seg1seg2dy;
 
-			if ( Math.abs( limit ) > EPSILON ) {
+			if ( Math.abs( limit ) > Number.EPSILON ) {
 
 				// not parallel
 
@@ -338,8 +399,6 @@ THREE.Shape.Utils = {
 
 			// The order of legs is important
 
-			var EPSILON = 0.0000000001;
-
 			// translation of all points, so that Vertex is at (0,0)
 			var legFromPtX	= inLegFromPt.x - inVertex.x,  legFromPtY	= inLegFromPt.y - inVertex.y;
 			var legToPtX	= inLegToPt.x	- inVertex.x,  legToPtY		= inLegToPt.y	- inVertex.y;
@@ -349,7 +408,7 @@ THREE.Shape.Utils = {
 			var from2toAngle	= legFromPtX * legToPtY - legFromPtY * legToPtX;
 			var from2otherAngle	= legFromPtX * otherPtY - legFromPtY * otherPtX;
 
-			if ( Math.abs( from2toAngle ) > EPSILON ) {
+			if ( Math.abs( from2toAngle ) > Number.EPSILON ) {
 
 				// angle != 180 deg.
 
@@ -580,7 +639,7 @@ THREE.Shape.Utils = {
 		// remove holes by cutting paths to holes and adding them to the shape
 		var shapeWithoutHoles = removeHoles( contour, holes );
 
-		var triangles = THREE.FontUtils.Triangulate( shapeWithoutHoles, false ); // True returns indices for points of spooled shape
+		var triangles = THREE.ShapeUtils.triangulate( shapeWithoutHoles, false ); // True returns indices for points of spooled shape
 		//console.log( "triangles",triangles, triangles.length );
 
 		// check all face vertices against all points map
@@ -611,7 +670,7 @@ THREE.Shape.Utils = {
 
 	isClockWise: function ( pts ) {
 
-		return THREE.FontUtils.Triangulate.area( pts ) < 0;
+		return THREE.ShapeUtils.area( pts ) < 0;
 
 	},
 
@@ -620,64 +679,72 @@ THREE.Shape.Utils = {
 
 	// Quad Bezier Functions
 
-	b2p0: function ( t, p ) {
+	b2: ( function () {
 
-		var k = 1 - t;
-		return k * k * p;
+		function b2p0( t, p ) {
 
-	},
+			var k = 1 - t;
+			return k * k * p;
 
-	b2p1: function ( t, p ) {
+		}
 
-		return 2 * ( 1 - t ) * t * p;
+		function b2p1( t, p ) {
 
-	},
+			return 2 * ( 1 - t ) * t * p;
 
-	b2p2: function ( t, p ) {
+		}
 
-		return t * t * p;
+		function b2p2( t, p ) {
 
-	},
+			return t * t * p;
 
-	b2: function ( t, p0, p1, p2 ) {
+		}
 
-		return this.b2p0( t, p0 ) + this.b2p1( t, p1 ) + this.b2p2( t, p2 );
+		return function ( t, p0, p1, p2 ) {
 
-	},
+			return b2p0( t, p0 ) + b2p1( t, p1 ) + b2p2( t, p2 );
+
+		};
+
+	} )(),
 
 	// Cubic Bezier Functions
 
-	b3p0: function ( t, p ) {
+	b3: ( function () {
 
-		var k = 1 - t;
-		return k * k * k * p;
+		function b3p0( t, p ) {
 
-	},
+			var k = 1 - t;
+			return k * k * k * p;
 
-	b3p1: function ( t, p ) {
+		}
 
-		var k = 1 - t;
-		return 3 * k * k * t * p;
+		function b3p1( t, p ) {
 
-	},
+			var k = 1 - t;
+			return 3 * k * k * t * p;
 
-	b3p2: function ( t, p ) {
+		}
 
-		var k = 1 - t;
-		return 3 * k * t * t * p;
+		function b3p2( t, p ) {
 
-	},
+			var k = 1 - t;
+			return 3 * k * t * t * p;
 
-	b3p3: function ( t, p ) {
+		}
 
-		return t * t * t * p;
+		function b3p3( t, p ) {
 
-	},
+			return t * t * t * p;
 
-	b3: function ( t, p0, p1, p2, p3 ) {
+		}
 
-		return this.b3p0( t, p0 ) + this.b3p1( t, p1 ) + this.b3p2( t, p2 ) +  this.b3p3( t, p3 );
+		return function ( t, p0, p1, p2, p3 ) {
 
-	}
+			return b3p0( t, p0 ) + b3p1( t, p1 ) + b3p2( t, p2 ) + b3p3( t, p3 );
+
+		};
+
+	} )()
 
 };

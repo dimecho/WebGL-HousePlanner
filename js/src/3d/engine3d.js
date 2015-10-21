@@ -1000,6 +1000,8 @@ engine3D.showHouse = function() {
     
     scene3DSetLight();
 
+    engine3D.makeFloor();
+
     //scene3DFloorWallGenerate();
 
     //initObjectCollisions(scene3DHouseContainer);

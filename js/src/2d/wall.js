@@ -2,7 +2,148 @@ var engine2D = window.engine2D || {};
 
 engine2D.makeWall = function (v1,v2,c) {
 
-/*
+    var values = {
+        fixLength: false,
+        fixAngle: false,
+        showCircle: false,
+        showAngleLength: true,
+        showCoordinates: false
+    };
+    var vectorStart, vector, vectorPrevious;
+    var vectorItem, items, dashedItems;
+
+    function processVector(event, drag) {
+        vector = event.point - vectorStart;
+        if (vectorPrevious) {
+            if (values.fixLength && values.fixAngle) {
+                vector = vectorPrevious;
+            } else if (values.fixLength) {
+                vector.length = vectorPrevious.length;
+            } else if (values.fixAngle) {
+                vector = vector.project(vectorPrevious);
+            }
+        }
+        drawVector(drag);
+    }
+
+    function drawVector(drag) {
+        if (items) {
+            for (var i = 0, l = items.length; i < l; i++) {
+                items[i].remove();
+            }
+        }
+        if (vectorItem)
+            vectorItem.remove();
+        items = [];
+        var arrowVector = vector.normalize(10);
+        var end = vectorStart + vector;
+        vectorItem = new Group(
+            new Path(vectorStart, end),
+            new Path(
+                end + arrowVector.rotate(135),
+                end,
+                end + arrowVector.rotate(-135)
+            )
+        );
+        vectorItem.strokeWidth = 0.75;
+        vectorItem.strokeColor = '#e4141b';
+        // Display:
+        dashedItems = [];
+        // Draw Circle
+        if (values.showCircle) {
+            dashedItems.push(new Path.Circle(vectorStart, vector.length));
+        }
+        // Draw Labels
+        if (values.showAngleLength) {
+            drawAngle(vectorStart, vector, !drag);
+            if (!drag)
+                drawLength(vectorStart, end, vector.angle < 0 ? -1 : 1, true);
+        }
+        var quadrant = vector.quadrant;
+        if (values.showCoordinates && !drag) {
+            drawLength(vectorStart, vectorStart + [vector.x, 0],
+                    [1, 3].indexOf(quadrant) != -1 ? -1 : 1, true, vector.x, 'x: ');
+            drawLength(vectorStart, vectorStart + [0, vector.y],
+                    [1, 3].indexOf(quadrant) != -1 ? 1 : -1, true, vector.y, 'y: ');
+        }
+        for (var i = 0, l = dashedItems.length; i < l; i++) {
+            var item = dashedItems[i];
+            item.strokeColor = 'black';
+            item.dashArray = [1, 2];
+            items.push(item);
+        }
+        // Update palette
+        values.x = vector.x;
+        values.y = vector.y;
+        values.length = vector.length;
+        values.angle = vector.angle;
+    }
+
+    function drawAngle(center, vector, label) {
+        var radius = 25, threshold = 10;
+        if (vector.length < radius + threshold || Math.abs(vector.angle) < 15)
+            return;
+        var from = new Point(radius, 0);
+        var through = from.rotate(vector.angle / 2);
+        var to = from.rotate(vector.angle);
+        var end = center + to;
+        dashedItems.push(new Path.Line(center,
+                center + new Point(radius + threshold, 0)));
+        dashedItems.push(new Path.Arc(center + from, center + through, end));
+        var arrowVector = to.normalize(7.5).rotate(vector.angle < 0 ? -90 : 90);
+        dashedItems.push(new Path([
+                end + arrowVector.rotate(135),
+                end,
+                end + arrowVector.rotate(-135)
+        ]));
+        if (label) {
+            // Angle Label
+            var text = new PointText(center
+                    + through.normalize(radius + 10) + new Point(0, 3));
+            text.content = Math.floor(vector.angle * 100) / 100 + '\xb0';
+            items.push(text);
+        }
+    }
+
+    function drawLength(from, to, sign, label, value, prefix) {
+        var lengthSize = 5;
+        if ((to - from).length < lengthSize * 4)
+            return;
+        var vector = to - from;
+        var awayVector = vector.normalize(lengthSize).rotate(90 * sign);
+        var upVector = vector.normalize(lengthSize).rotate(45 * sign);
+        var downVector = upVector.rotate(-90 * sign);
+        var lengthVector = vector.normalize(
+                vector.length / 2 - lengthSize * Math.sqrt(2));
+        var line = new Path();
+        line.add(from + awayVector);
+        line.lineBy(upVector);
+        line.lineBy(lengthVector);
+        line.lineBy(upVector);
+        var middle = line.lastSegment.point;
+        line.lineBy(downVector);
+        line.lineBy(lengthVector);
+        line.lineBy(downVector);
+        dashedItems.push(line);
+        if (label) {
+            // Length Label
+            var textAngle = Math.abs(vector.angle) > 90
+                    ? textAngle = 180 + vector.angle : vector.angle;
+            // Label needs to move away by different amounts based on the
+            // vector's quadrant:
+            var away = (sign >= 0 ? [1, 4] : [2, 3]).indexOf(vector.quadrant) != -1
+                    ? 8 : 0;
+            var text = new PointText(middle + awayVector.normalize(away + lengthSize));
+            text.rotate(textAngle);
+            text.justification = 'center';
+            value = value || vector.length;
+            text.content = (prefix || '') + Math.floor(value * 1000) / 1000;
+            items.push(text);
+        }
+    }
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /*
     if((v2.x-v1.x) < 0 || (v2.y-v1.y) < 0) //top to bottom or left to right
     {
         //revese coordinate polarity
@@ -13,20 +154,25 @@ engine2D.makeWall = function (v1,v2,c) {
     }else{
         console.log("Normal " + v1.x + ":" + v1.y + "-" + v2.x + ":" + v2.y);
     }
-*/
+    */
+
     //Find center point
+    /*
     if(c.x === 0 && c.y === 0)
     {
         var p = scene2DGetWallParallelCoordinates({x: v1.x, y: v1.y},{x: v2.x, y: v2.y},0);
         c.x = p.x1 + (p.x2 - p.x1) / 2; //center
         c.y = p.y1 + (p.y2 - p.y1) / 2; //center
+        //var p = o.getLocationAt(o.length/2)
     }
-
+    */
     with (paper) {
 
         var group = new Group();
         var path = new Path(); //http://paperjs.org/reference/pathitem/#quadraticcurveto-handle-to
-        
+        path.doors = []; //Array holder for Doors
+        path.windows = []; //Array holder for Windows
+
         var pivot = new Path.Circle(new Point(c.x, c.y), 10);
         pivot.fillColor = '#33CCFF';
         pivot.opacity = 0.5;
@@ -61,7 +207,7 @@ engine2D.makeWall = function (v1,v2,c) {
         //path.fillColor = 'black';
         path.strokeColor = 'black';
         path.strokeWidth = 20;
-        path.name = "wall";
+        //path.name = "wall";
 
         if(path.length < 50)
         {
@@ -117,9 +263,8 @@ engine2D.makeWall = function (v1,v2,c) {
 
         pivot.attach('doubleclick', function(event) {
             var o = new Path();
-            o.moveTo(new Point(v1.x,v1.y));
-            o.quadraticCurveTo(path.segments[0].point, path.segments[1].point);
-
+            o.moveTo(path.segments[0].point);
+            o.lineTo(path.segments[1].point);
             onPathDrag(this.parent,o.getLocationAt(o.length/2));
         });
 
@@ -129,16 +274,13 @@ engine2D.makeWall = function (v1,v2,c) {
         //====================================
         var tick;
         path.attach('mouseenter', function() {
-            //this.line.opacity = 1;
-            //this.circle.opacity = 1;
-            //setTimeout(function() {
-                //line.opacity = 1;
-                if(!this.dragging)
-                {
-                    line.visible = true;
-                    circle.visible = true;
-                }
-            //}, 100);
+            //circle.opacity = 1;
+            //line.opacity = 1;
+            if(!this.dragging)
+            {
+                line.visible = true;
+                circle.visible = true;
+            }
         });
 
         path.attach('mousemove', function(event) {
@@ -162,7 +304,7 @@ engine2D.makeWall = function (v1,v2,c) {
         //path.on('mouseleave', shiftPath)''
 
         onPathDrag = function(parent, event) {
-
+            //parent.dragging = true;
             parent.children[3].position = event.point;
             
             var path = parent.children[0].children[0];
@@ -218,42 +360,44 @@ engine2D.calculateWallCorners = function () {
 
         for (var i = 0; i < scene2DWallGroup[FLOOR].children.length; i++) {
 
-            var s = scene2DWallGroup[FLOOR].children[i].children[0].children[0].segments; //inside a Group()
+            var wall = scene2DWallGroup[FLOOR].children[i].children[0].children[0].segments; //inside a Group()
             //console.log(s);
 
-            var b = s.length;
+            var b = wall.length;
             for (var h = 0; h < b; h++) {
 
-                var hitEdgeResult = scene2DWallPointGroup[FLOOR].hitTest(s[h].point);
+                var hitEdgeResult = scene2DWallPointGroup[FLOOR].hitTest(wall[h].point);
 
                 if (!hitEdgeResult) {
 
-                    var circleOuterMask = new Path.Circle(s[h].point, 15);
-                    var circleOuterEdge = new Path.Circle(s[h].point, 17);
-                    var circleInner = new Path.Circle(s[h].point, 8);
+                    var circleOuterMask = new Path.Circle(wall[h].point, 15);
+                    var circleOuterEdge = new Path.Circle(wall[h].point, 17);
+                    var circleInner = new Path.Circle(wall[h].point, 8);
                     var circleOuter = new CompoundPath(circleOuterMask,circleOuterEdge);
                     circleOuter.fillColor = circleInner.fillColor = '#00CC33';
 
                     var edge = new Group([circleInner,circleOuter]);
                     edge.attachments = [];
 
-                    var tick;
-                    edge.attach('mouseleave', function(event) {
-                        //clearTimeout(tick);
-                        //tick = setTimeout(function() {
-                            var l = this.attachments.length;
-                            for (i = 0; i < l; i++) {
-                                this.attachments[i].dragging = false;
-                            }
-                        //}, 300);
+
+                    edge.attach('mouseup', function(event) {
+                        for (i = 0; i < this.attachments.length; i++) {
+                            this.attachments[i].dragging = false;
+                            
+                            var line = this.attachments[i].parent.parent.children[1];
+                            var p = this.attachments[i].getLocationAt(this.attachments[i].length/2).point; //calculate quadratic curve center
+                            line.clear();
+                            line.moveTo(this.attachments[i].segments[0].point);
+                            line.quadraticCurveTo(p, this.attachments[i].segments[1].point);
+                        }
                     });
 
                     edge.attach('mousedrag', function(event) {
-                        
+
                         //console.log(this.attachments);
 
                         var l = this.attachments.length;
-
+                        
                         for (i = 0; i < l; i++) {
 
                             //console.log(this.attachments[i].parent.parent);
@@ -263,31 +407,45 @@ engine2D.calculateWallCorners = function () {
                             wall.dragging = true;
                             //wall.visible = false; //DEBUG
 
-                            var a = event.point;
+                            var a =event.point;
                             var b = wall.segments[1].point;
+                            var cx = wall.segments[0].point.x+wall.segments[1].point.x;
+                            var cy = wall.segments[0].point.y+wall.segments[1].point.y;
 
-                            if(this.hitTest(b)) //Fix: left to right / right to left
-                            {
-                                a = wall.segments[0].point;
-                                b = event.point;
+                            //Fix: left to right / right to left
+                            //==================================
+                            if(this.hitTest(b)){
+                            //if(this.position.x == b.x ){ //quicker than hitTest?
+                                //if(this.position.y == b.y){
+                                    a = wall.segments[0].point;
+                                    b = event.point;
+                                //}
                             }
+                            //==================================
 
-                            var line = wall.parent.parent.children[1];
-                            var circle = wall.parent.parent.children[2];
-                            var p = wall.getLocationAt(wall.length/2).point; //calculate quaadratic curve center
-                            
-                            circle.visible = false;
+                            //var line = wall.parent.parent.children[1];
+                            //var circle = wall.parent.parent.children[2];
+                            //circle.visible = false;
+
+                            var p = new Point(cx/2, cy/2); //calculate quadratic curve center
+                            //var p = wall.getLocationAt(wall.length/2).point; //calculate quadratic curve center
 
                             wall.clear();
                             wall.moveTo(a);
                             wall.quadraticCurveTo(p, b);
 
-                            line.clear();
-                            line.moveTo(a);
-                            line.quadraticCurveTo(p, b);
+                            //line.clear();
+                            //line.moveTo(a);
+                            //line.quadraticCurveTo(p, b);
 
                             wall.parent.parent.children[3].position = p; //pivot point
+
+                            //console.log(wall.doors);
                         }
+
+                        //var vector = point2 - point1;
+                        //console.log(vector.length);
+                        //console.log(vector.angle);
 
                         this.position = event.point; //must be last - otherwise will interfere with above logic
                         
@@ -389,18 +547,4 @@ engine2D.drawWalls = function () {
     }
 }
 
-engine2D.generateFloor = function () {
 
-    if (scene2DFloorShape === undefined) // || scene2DFloorShape.count != scene2DWallMesh[FLOOR].length)
-    {
-        console.log("Floor Generate " + scene2DWallGroup[FLOOR].children.length);
-
-        for(i = 0; i < scene2DWallGroup[FLOOR].children.length; i++)
-        {
-            var path = scene2DWallGroup[FLOOR].children[i].children[0].children[0];
-
-        
-        }
-        
-    }
-}

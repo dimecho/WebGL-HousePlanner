@@ -73,6 +73,7 @@ THREE.Object3D = function () {
 	this.matrixAutoUpdate = THREE.Object3D.DefaultMatrixAutoUpdate;
 	this.matrixWorldNeedsUpdate = false;
 
+	this.layers = new THREE.Layers();
 	this.visible = true;
 
 	this.castShadow = false;
@@ -629,7 +630,9 @@ THREE.Object3D.prototype = {
 
 		if ( this.name !== '' ) object.name = this.name;
 		if ( JSON.stringify( this.userData ) !== '{}' ) object.userData = this.userData;
-		if ( this.visible !== true ) object.visible = this.visible;
+		if ( this.castShadow === true ) object.castShadow = true;
+		if ( this.receiveShadow === true ) object.receiveShadow = true;
+		if ( this.visible === false ) object.visible = false;
 
 		object.matrix = this.matrix.toArray();
 

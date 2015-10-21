@@ -95,7 +95,7 @@ function zoom2DdrawProgress(ctx) {
     zoom2DCTX.font = "12pt Arial";
     zoom2DCTX.fillText(scale, x4, y1);
 
-    scene2DZoom(scale);
+    //scene2DZoom(scale);
 }
 
 function drawImage() {

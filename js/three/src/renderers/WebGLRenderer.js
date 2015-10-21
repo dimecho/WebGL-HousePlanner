@@ -551,7 +551,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		}
 
 		// remove all webgl properties
-		properties.remove( texture );
+		properties.delete( texture );
 
 	}
 
@@ -580,8 +580,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
-		properties.remove( renderTarget.texture );
-		properties.remove( renderTarget );
+		properties.delete( renderTarget.texture );
+		properties.delete( renderTarget );
 
 	}
 
@@ -589,7 +589,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		releaseMaterialProgramReference( material );
 
-		properties.remove( material );
+		properties.delete( material );
 
 	}
 
@@ -637,7 +637,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.normal );
 
-			if ( material.type !== 'MeshPhongMaterial' && material.shading === THREE.FlatShading ) {
+			if ( material.type !== 'MeshPhongMaterial' && material.type !== 'MeshPhysicalMaterial' && material.shading === THREE.FlatShading ) {
 
 				for ( var i = 0, l = object.count * 3; i < l; i += 9 ) {
 
@@ -811,31 +811,33 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
-		if ( group === null ) {
+		//
 
-			var start = geometry.drawRange.start;
-			var count = geometry.drawRange.count;
+		var dataStart = 0;
+		var dataCount = Infinity;
 
-			if ( count === Infinity ) {
+		if ( index !== null ) {
 
-				if ( index !== null ) {
+			dataCount = index.count
 
-					count = index.array.length;
+		} else if ( position !== undefined ) {
 
-				} else {
-
-					count = position.count;
-
-				}
-
-			}
-
-			group = {
-				start: start,
-				count: count
-			};
+			dataCount = position.count;
 
 		}
+
+		var rangeStart = geometry.drawRange.start;
+		var rangeCount = geometry.drawRange.count;
+
+		var groupStart = group !== null ? group.start : 0;
+		var groupCount = group !== null ? group.count : Infinity;
+
+		var drawStart = Math.max( dataStart, rangeStart, groupStart );
+		var drawEnd = Math.min( dataStart + dataCount, rangeStart + rangeCount, groupStart + groupCount ) - 1;
+
+		var drawCount = Math.max( 0, drawEnd - drawStart + 1 );
+
+		//
 
 		if ( object instanceof THREE.Mesh ) {
 
@@ -856,7 +858,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			} else {
 
-				renderer.render( group.start, group.count );
+				renderer.render( drawStart, drawCount );
 
 			}
 
@@ -878,12 +880,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			}
 
-			renderer.render( group.start, group.count );
+			renderer.render( drawStart, drawCount );
 
 		} else if ( object instanceof THREE.Points ) {
 
 			renderer.setMode( _gl.POINTS );
-			renderer.render( group.start, group.count );
+			renderer.render( drawStart, drawCount );
 
 		}
 
@@ -1103,7 +1105,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		sprites.length = 0;
 		lensFlares.length = 0;
 
-		projectObject( scene );
+		projectObject( scene, camera );
 
 		opaqueObjects.length = opaqueObjectsLastIndex + 1;
 		transparentObjects.length = transparentObjectsLastIndex + 1;
@@ -1117,7 +1119,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		//
 
-		shadowMap.render( scene );
+		shadowMap.render( scene, camera );
 
 		//
 
@@ -1166,7 +1168,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		if ( renderTarget ) {
 
 			var texture = renderTarget.texture;
-			var isTargetPowerOfTwo = THREE.Math.isPowerOfTwo( renderTarget.width ) && THREE.Math.isPowerOfTwo( renderTarget.height );
+			var isTargetPowerOfTwo = isPowerOfTwo( renderTarget );
 			if ( texture.generateMipmaps && isTargetPowerOfTwo && texture.minFilter !== THREE.NearestFilter && texture.minFilter !== THREE.LinearFilter ) {
 
 				 updateRenderTargetMipmap( renderTarget );
@@ -1234,77 +1236,85 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	}
 
-	function projectObject( object ) {
+	function projectObject( object, camera ) {
 
 		if ( object.visible === false ) return;
 
-		if ( object instanceof THREE.Light ) {
+		if ( object.layers.test( camera.layers ) ) {
 
-			lights.push( object );
+			if ( object instanceof THREE.Light ) {
 
-		} else if ( object instanceof THREE.Sprite ) {
+				lights.push( object );
 
-			sprites.push( object );
+			} else if ( object instanceof THREE.Sprite ) {
 
-		} else if ( object instanceof THREE.LensFlare ) {
+				if ( object.frustumCulled === false || _frustum.intersectsObject( object ) === true ) {
 
-			lensFlares.push( object );
+					sprites.push( object );
 
-		} else if ( object instanceof THREE.ImmediateRenderObject ) {
+				}
 
-			if ( _this.sortObjects === true ) {
+			} else if ( object instanceof THREE.LensFlare ) {
 
-				_vector3.setFromMatrixPosition( object.matrixWorld );
-				_vector3.applyProjection( _projScreenMatrix );
+				lensFlares.push( object );
 
-			}
+			} else if ( object instanceof THREE.ImmediateRenderObject ) {
 
-			pushRenderItem( object, null, object.material, _vector3.z, null );
+				if ( _this.sortObjects === true ) {
 
-		} else if ( object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points ) {
+					_vector3.setFromMatrixPosition( object.matrixWorld );
+					_vector3.applyProjection( _projScreenMatrix );
 
-			if ( object instanceof THREE.SkinnedMesh ) {
+				}
 
-				object.skeleton.update();
+				pushRenderItem( object, null, object.material, _vector3.z, null );
 
-			}
+			} else if ( object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points ) {
 
-			if ( object.frustumCulled === false || _frustum.intersectsObject( object ) === true ) {
+				if ( object instanceof THREE.SkinnedMesh ) {
 
-				var material = object.material;
+					object.skeleton.update();
 
-				if ( material.visible === true ) {
+				}
 
-					if ( _this.sortObjects === true ) {
+				if ( object.frustumCulled === false || _frustum.intersectsObject( object ) === true ) {
 
-						_vector3.setFromMatrixPosition( object.matrixWorld );
-						_vector3.applyProjection( _projScreenMatrix );
+					var material = object.material;
 
-					}
+					if ( material.visible === true ) {
 
-					var geometry = objects.update( object );
+						if ( _this.sortObjects === true ) {
 
-					if ( material instanceof THREE.MeshFaceMaterial ) {
-
-						var groups = geometry.groups;
-						var materials = material.materials;
-
-						for ( var i = 0, l = groups.length; i < l; i ++ ) {
-
-							var group = groups[ i ];
-							var groupMaterial = materials[ group.materialIndex ];
-
-							if ( groupMaterial.visible === true ) {
-
-								pushRenderItem( object, geometry, groupMaterial, _vector3.z, group );
-
-							}
+							_vector3.setFromMatrixPosition( object.matrixWorld );
+							_vector3.applyProjection( _projScreenMatrix );
 
 						}
 
-					} else {
+						var geometry = objects.update( object );
 
-						pushRenderItem( object, geometry, material, _vector3.z, null );
+						if ( material instanceof THREE.MeshFaceMaterial ) {
+
+							var groups = geometry.groups;
+							var materials = material.materials;
+
+							for ( var i = 0, l = groups.length; i < l; i ++ ) {
+
+								var group = groups[ i ];
+								var groupMaterial = materials[ group.materialIndex ];
+
+								if ( groupMaterial.visible === true ) {
+
+									pushRenderItem( object, geometry, groupMaterial, _vector3.z, group );
+
+								}
+
+							}
+
+						} else {
+
+							pushRenderItem( object, geometry, material, _vector3.z, null );
+
+						}
 
 					}
 
@@ -1318,7 +1328,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		for ( var i = 0, l = children.length; i < l; i ++ ) {
 
-			projectObject( children[ i ] );
+			projectObject( children[ i ], camera );
 
 		}
 
@@ -1567,6 +1577,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( material instanceof THREE.ShaderMaterial ||
 				 material instanceof THREE.MeshPhongMaterial ||
+				 material instanceof THREE.MeshPhysicalMaterial ||
 				 material.envMap ) {
 
 				if ( p_uniforms.cameraPosition !== undefined ) {
@@ -1581,6 +1592,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 			if ( material instanceof THREE.MeshPhongMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
 				 material instanceof THREE.MeshBasicMaterial ||
+				 material instanceof THREE.MeshPhysicalMaterial ||
 				 material instanceof THREE.ShaderMaterial ||
 				 material.skinning ) {
 
@@ -1659,6 +1671,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( material instanceof THREE.MeshPhongMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
+				 material instanceof THREE.MeshPhysicalMaterial ||
 				 material.lights ) {
 
 				if ( _lightsNeedUpdate ) {
@@ -1684,7 +1697,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( material instanceof THREE.MeshBasicMaterial ||
 				 material instanceof THREE.MeshLambertMaterial ||
-				 material instanceof THREE.MeshPhongMaterial ) {
+				 material instanceof THREE.MeshPhongMaterial ||
+				 material instanceof THREE.MeshPhysicalMaterial ) {
 
 				refreshUniformsCommon( m_uniforms, material );
 
@@ -1709,6 +1723,10 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				refreshUniformsPhong( m_uniforms, material );
 
+			} else if ( material instanceof THREE.MeshPhysicalMaterial ) {
+
+				refreshUniformsStandard( m_uniforms, material );
+
 			} else if ( material instanceof THREE.MeshDepthMaterial ) {
 
 				m_uniforms.mNear.value = camera.near;
@@ -1721,9 +1739,13 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			}
 
-			if ( object.receiveShadow && ! material._shadowPass ) {
+			if ( shadowMap.enabled ) {
 
-				refreshUniformsShadow( m_uniforms, lights, camera );
+				if ( object.receiveShadow && ! material._shadowPass ) {
+
+					refreshUniformsShadow( m_uniforms, lights, camera );
+
+				}
 
 			}
 
@@ -1922,6 +1944,74 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	}
 
+	function refreshUniformsStandard ( uniforms, material ) {
+
+		uniforms.roughness.value = material.roughness;
+		//uniforms.reflectivity.value = material.reflectivity; // part of uniforms common
+		uniforms.metalness.value = material.metalness;
+
+		if ( material.roughnessMap ) {
+
+			uniforms.roughnessMap.value = material.roughnessMap;
+
+		}
+
+		if ( material.reflectivityMap ) {
+
+			uniforms.reflectivityMap.value = material.reflectivityMap;
+
+		}
+
+		if ( material.metalnessMap ) {
+
+			uniforms.metalnessMap.value = material.metalnessMap;
+
+		}
+
+		if ( material.lightMap ) {
+
+			uniforms.lightMap.value = material.lightMap;
+			uniforms.lightMapIntensity.value = material.lightMapIntensity;
+
+		}
+
+		if ( material.emissiveMap ) {
+
+			uniforms.emissiveMap.value = material.emissiveMap;
+
+		}
+
+		if ( material.bumpMap ) {
+
+			uniforms.bumpMap.value = material.bumpMap;
+			uniforms.bumpScale.value = material.bumpScale;
+
+		}
+
+		if ( material.normalMap ) {
+
+			uniforms.normalMap.value = material.normalMap;
+			uniforms.normalScale.value.copy( material.normalScale );
+
+		}
+
+		if ( material.displacementMap ) {
+
+			uniforms.displacementMap.value = material.displacementMap;
+			uniforms.displacementScale.value = material.displacementScale;
+			uniforms.displacementBias.value = material.displacementBias;
+
+		}
+
+		if ( material.envMap ) {
+
+			//uniforms.envMap.value = material.envMap; // part of uniforms common
+			uniforms.envMapIntensity.value = material.envMapIntensity;
+
+		}
+
+	}
+
 	function refreshUniformsLights ( uniforms, lights ) {
 
 		uniforms.ambientLightColor.value = lights.ambient;
@@ -1986,32 +2076,36 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				var light = lights[ i ];
 
-				if ( ! light.castShadow ) continue;
+				if ( light.castShadow === true ) {
 
-				if ( light instanceof THREE.PointLight || light instanceof THREE.SpotLight || light instanceof THREE.DirectionalLight ) {
+					if ( light instanceof THREE.PointLight || light instanceof THREE.SpotLight || light instanceof THREE.DirectionalLight ) {
 
-					if ( light instanceof THREE.PointLight ) {
+						var shadow = light.shadow;
 
-						// for point lights we set the shadow matrix to be a translation-only matrix
-						// equal to inverse of the light's position
-						_vector3.setFromMatrixPosition( light.matrixWorld ).negate();
-						light.shadowMatrix.identity().setPosition( _vector3 );
+						if ( light instanceof THREE.PointLight ) {
 
-						// for point lights we set the sign of the shadowDarkness uniform to be negative
-						uniforms.shadowDarkness.value[ j ] = - light.shadowDarkness;
+							// for point lights we set the shadow matrix to be a translation-only matrix
+							// equal to inverse of the light's position
+							_vector3.setFromMatrixPosition( light.matrixWorld ).negate();
+							shadow.matrix.identity().setPosition( _vector3 );
 
-					} else {
+							// for point lights we set the sign of the shadowDarkness uniform to be negative
+							uniforms.shadowDarkness.value[ j ] = - shadow.darkness;
 
-						uniforms.shadowDarkness.value[ j ] = light.shadowDarkness;
+						} else {
+
+							uniforms.shadowDarkness.value[ j ] = shadow.darkness;
+
+						}
+
+						uniforms.shadowMatrix.value[ j ] = shadow.matrix;
+						uniforms.shadowMap.value[ j ] = shadow.map;
+						uniforms.shadowMapSize.value[ j ] = shadow.mapSize;
+						uniforms.shadowBias.value[ j ] = shadow.bias;
+
+						j ++;
 
 					}
-
-					uniforms.shadowMatrix.value[ j ] = light.shadowMatrix;
-					uniforms.shadowMap.value[ j ] = light.shadowMap;
-					uniforms.shadowMapSize.value[ j ] = light.shadowMapSize;
-					uniforms.shadowBias.value[ j ] = light.shadowBias;
-
-					j ++;
 
 				}
 
@@ -2465,8 +2559,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			light = lights[ l ];
 
-			if ( light.onlyShadow ) continue;
-
 			color = light.color;
 			intensity = light.intensity;
 			distance = light.distance;
@@ -2664,7 +2756,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( texture.wrapS !== THREE.ClampToEdgeWrapping || texture.wrapT !== THREE.ClampToEdgeWrapping ) {
 
-				console.warn( 'THREE.WebGLRenderer: Texture is not power of two. Texture.wrapS and Texture.wrapT should be set to THREE.ClampToEdgeWrapping. ( ' + texture.sourceFile + ' )' );
+				console.warn( 'THREE.WebGLRenderer: Texture is not power of two. Texture.wrapS and Texture.wrapT should be set to THREE.ClampToEdgeWrapping.', texture );
 
 			}
 
@@ -2673,7 +2765,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( texture.minFilter !== THREE.NearestFilter && texture.minFilter !== THREE.LinearFilter ) {
 
-				console.warn( 'THREE.WebGLRenderer: Texture is not power of two. Texture.minFilter should be set to THREE.NearestFilter or THREE.LinearFilter. ( ' + texture.sourceFile + ' )' );
+				console.warn( 'THREE.WebGLRenderer: Texture is not power of two. Texture.minFilter should be set to THREE.NearestFilter or THREE.LinearFilter.', texture );
 
 			}
 
@@ -2703,8 +2795,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			textureProperties.__webglInit = true;
 
-			texture.__webglInit = true;
-
 			texture.addEventListener( 'dispose', onTextureDispose );
 
 			textureProperties.__webglTexture = _gl.createTexture();
@@ -2722,8 +2812,14 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		texture.image = clampToMaxSize( texture.image, capabilities.maxTextureSize );
 
+		if ( textureNeedsPowerOfTwo( texture ) && isPowerOfTwo( texture.image ) === false ) {
+
+			texture.image = makePowerOfTwo( texture.image );
+
+		}
+
 		var image = texture.image,
-		isImagePowerOfTwo = THREE.Math.isPowerOfTwo( image.width ) && THREE.Math.isPowerOfTwo( image.height ),
+		isImagePowerOfTwo = isPowerOfTwo( image ),
 		glFormat = paramThreeToGL( texture.format ),
 		glType = paramThreeToGL( texture.type );
 
@@ -2838,6 +2934,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 			}
 
 			uploadTexture( textureProperties, texture, slot );
+
 			return;
 
 		}
@@ -2864,6 +2961,42 @@ THREE.WebGLRenderer = function ( parameters ) {
 			context.drawImage( image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height );
 
 			console.warn( 'THREE.WebGLRenderer: image is too big (' + image.width + 'x' + image.height + '). Resized to ' + canvas.width + 'x' + canvas.height, image );
+
+			return canvas;
+
+		}
+
+		return image;
+
+	}
+
+	function isPowerOfTwo( image ) {
+
+		return THREE.Math.isPowerOfTwo( image.width ) && THREE.Math.isPowerOfTwo( image.height );
+
+	}
+
+	function textureNeedsPowerOfTwo( texture ) {
+
+		if ( texture.wrapS !== THREE.ClampToEdgeWrapping || texture.wrapT !== THREE.ClampToEdgeWrapping ) return true;
+		if ( texture.minFilter !== THREE.NearestFilter && texture.minFilter !== THREE.LinearFilter ) return true;
+
+		return false;
+
+	}
+
+	function makePowerOfTwo( image ) {
+
+		if ( image instanceof HTMLImageElement || image instanceof HTMLCanvasElement ) {
+
+			var canvas = document.createElement( 'canvas' );
+			canvas.width = THREE.Math.nearestPowerOfTwo( image.width );
+			canvas.height = THREE.Math.nearestPowerOfTwo( image.height );
+
+			var context = canvas.getContext( '2d' );
+			context.drawImage( image, 0, 0, canvas.width, canvas.height );
+
+			console.warn( 'THREE.WebGLRenderer: image is not power of two (' + image.width + 'x' + image.height + '). Resized to ' + canvas.width + 'x' + canvas.height, image );
 
 			return canvas;
 
@@ -2916,7 +3049,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 				}
 
 				var image = cubeImage[ 0 ],
-				isImagePowerOfTwo = THREE.Math.isPowerOfTwo( image.width ) && THREE.Math.isPowerOfTwo( image.height ),
+				isImagePowerOfTwo = isPowerOfTwo( image ),
 				glFormat = paramThreeToGL( texture.format ),
 				glType = paramThreeToGL( texture.type );
 
@@ -3054,7 +3187,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			// Setup texture, create render and frame buffers
 
-			var isTargetPowerOfTwo = THREE.Math.isPowerOfTwo( renderTarget.width ) && THREE.Math.isPowerOfTwo( renderTarget.height ),
+			var isTargetPowerOfTwo = isPowerOfTwo( renderTarget ),
 				glFormat = paramThreeToGL( renderTarget.texture.format ),
 				glType = paramThreeToGL( renderTarget.texture.type );
 

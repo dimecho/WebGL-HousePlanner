@@ -139,14 +139,6 @@ THREE.TubeGeometry = function ( path, segments, radius, radialSegments, closed, 
 
 THREE.TubeGeometry.prototype = Object.create( THREE.Geometry.prototype );
 THREE.TubeGeometry.prototype.constructor = THREE.TubeGeometry;
-THREE.TubeGeometry.prototype.clone = function() {
-
-	return new this.constructor( this.parameters.path,
-		this.parameters.segments, this.parameters.radius, this.parameters.radialSegments,
-		this.parameters.closed, this.parameters.taper
-	);
-
-};
 
 THREE.TubeGeometry.NoTaper = function ( u ) {
 
@@ -174,7 +166,6 @@ THREE.TubeGeometry.FrenetFrames = function ( path, segments, closed ) {
 
 		numpoints = segments + 1,
 		theta,
-		epsilon = 0.0001,
 		smallest,
 
 		tx, ty, tz,
@@ -273,7 +264,7 @@ THREE.TubeGeometry.FrenetFrames = function ( path, segments, closed ) {
 
 		vec.crossVectors( tangents[ i - 1 ], tangents[ i ] );
 
-		if ( vec.length() > epsilon ) {
+		if ( vec.length() > Number.EPSILON ) {
 
 			vec.normalize();
 

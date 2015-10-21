@@ -48,6 +48,7 @@ engine2D.open = function (zip){
     });
 }
 
+//*The problem is that bind adds an event listener, and not replace it.*
 engine2D.show = function (){
 
     console.log("engine2d.show()");
@@ -68,26 +69,27 @@ engine2D.show = function (){
     //Create Grid
     //============================
     with (paper) {
-        canvas2D = new Path.Circle(new Point(0, 0), 450);
-        canvas2D.fillColor = '#CCCCCC';
-        canvas2D.opacity = 0.2;
-        canvas2D.position.x = view.center.x + 40;
-        canvas2D.position.y = view.center.y + 80;
 
+        canvas2D = new Group();
+        var circle = new Path.Circle(new Point(0, 0), 450);
+        circle.fillColor = '#CCCCCC';
+        circle.opacity = 0.2;
+        circle.position.x = view.center.x + 40;
+        circle.position.y = view.center.y + 80;
+
+        var rec = new Path.Rectangle(new Point(0, 0), view.viewSize); //TODO: raster image
+        rec.fillColor = '#ffffff';
+
+        canvas2D.addChild(rec);
+        canvas2D.addChild(circle);
         /*
-        canvas2D.attach('mousedrag', function(event) {
-            console.log("drag");
+        canvas2D.attach('mousedrag', function(event, delta) {
+            var deltaX = (view.center.x/2 - event.point.x/2);
+            var deltaY = (view.center.y/2 - event.point.y/2);
 
-            var viewPosition = view.viewToProject(event.point);
- 
-            var a = event.downPoint;
-            var b = event.point;
-            var center = paper.project.view.center;
-            var desX = (a.x - b.x);
-            var desY=  (a.y - b.y);
-            var newCenter = [center.x + desX , center.y + desY];
-           
-            view.center = newCenter;
+            //console.log(1/view.zoom)
+            view.center = panAndZoom.changeCenter(view.center, -deltaX, deltaY, (1/view.zoom)/2.5);
+            return event.preventDefault();
         });
         */
     }
@@ -110,9 +112,11 @@ engine2D.show = function (){
         $('#menuBottom').show();
 
         //=========================
-        engine2D.generateFloor();
+        engine2D.makeFloor();
 
         engine2D.calculateWallCorners();
+
+        engine2D.attachDoorsToWalls();
 
         engine2D.drawWalls();
         //=========================
@@ -137,8 +141,8 @@ engine2D.show = function (){
         correctMenuHeight();
 
         //Auto close right menu
-        document.getElementById('menuRight').setAttribute("class", "hide-right");
-        delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+        //document.getElementById('menuRight').setAttribute("class", "hide-right");
+        //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
     }
 
     //scene2DArrayToLineWalls();

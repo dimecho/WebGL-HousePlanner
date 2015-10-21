@@ -6,6 +6,7 @@ engine2D.initialize = function (){
 
     //http://paperjs.org/tutorials/getting-started/using-javascript-directly/
     with (paper) {
+
         var canvas = document.getElementById("engine2D");
         setup(canvas);
         view.setViewSize(window.innerWidth, window.innerHeight);
@@ -13,17 +14,23 @@ engine2D.initialize = function (){
 
         panAndZoom = new SimplePanAndZoom();
         //panAndZoom = new StableZoom();
-
-        $("#engine2D").bind('mousewheel', function(event) {
+        
+        $("#engine2D").bind("mousewheel", function(event) {
           //var mousePosition, newZoom, offset, ref, viewPosition;
           if (event.shiftKey) {
+            //console.log(view.center + " " + event.deltaX + ":" + event.deltaY + "-" + event.deltaFactor);
             view.center = panAndZoom.changeCenter(view.center, event.deltaX, event.deltaY, event.deltaFactor);
             return event.preventDefault();
-          } else if (event.altKey) {
-            view.zoom = panAndZoom.changeZoom(view.zoom, event.deltaY);
+
+          } else { //if (event.altKey) {
+
+            var zoom = panAndZoom.changeZoom(view.zoom, -event.deltaY);
+            if (zoom <= 5 && zoom >= 1)
+                view.zoom = zoom;
             return event.preventDefault();
+            
             /*
-            mousePosition = new paper.Point(event.offsetX, event.offsetY);
+            mousePosition = new Point(event.offsetX, event.offsetY);
             viewPosition = view.viewToProject(mousePosition);
             ref = panAndZoom.changeZoom(view.zoom, event.deltaY, view.center, viewPosition), newZoom = ref[0], offset = ref[1];
             view.zoom = newZoom;
@@ -33,6 +40,14 @@ engine2D.initialize = function (){
             */
           }
         });
+     
+        //https://github.com/threedubmedia/jquery.threedubmedia
+        /*
+        $('#engine2D').bind('drag',function(event, delta){
+            view.center = panAndZoom.changeCenter(view.center, delta.deltaX, -delta.deltaY, 0.1);
+            return event.preventDefault();
+        });
+        */
     }
 }
 

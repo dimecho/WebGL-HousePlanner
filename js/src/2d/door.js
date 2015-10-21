@@ -1,5 +1,20 @@
 var engine2D = window.engine2D || {};
 
+
+engine2D.attachDoorsToWalls = function() {
+
+    for (var d = 0; d < scene2DDoorGroup[FLOOR].children.length; d++) {
+
+        var doorPoint = scene2DDoorGroup[FLOOR].children[d].children[8].segments; //inside a Group()
+        var hitWallResult = scene2DWallGroup[FLOOR].hitTest(doorPoint[0].point); //TODO: make this midpoint check
+
+        if (hitWallResult ) {
+            hitWallResult.item.doors.push(scene2DDoorGroup[FLOOR].children[d]);
+            //console.log(hitWallResult.item);
+        }
+    }
+}
+
 engine2D.makeDoor = function(l,c,z,open,direction) {
 
     //TODO: lock/hide wall curve if door is present

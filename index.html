@@ -27,7 +27,7 @@
             var zip = new JSZip(data);
             //zip.load(binary.read('string'));
             $(document).ready(function() {
-              $('head').append("<style>" + zip.file("houseplanner.css").asText() + "<\/style>");
+              //$('head').append("<style>" + zip.file("houseplanner.css").asText() + "<\/style>");
               $('head').append("<script>" + zip.file("three/three.js").asText() + "<\/script>");
               $('head').append("<script>" + zip.file("paper/paper.js").asText() + "<\/script>");
               $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
@@ -48,6 +48,21 @@
           });
         }
     });
+
+    Royal_Preloader.config({
+      mode: 'number',
+      show_percentage: true,
+      background: "#000000",
+      text_colour: "#FFFFFF",
+      images: [
+        'panoramas/2056/front.jpg',
+        'panoramas/2056/left.jpg',
+        'panoramas/2056/right.jpg',
+        'panoramas/2056/bottom.jpg',
+        'panoramas/2056/top.jpg',
+        'panoramas/2056/back.jpg'
+      ]
+    });
     
     /*
     $(document).ready(function() {
@@ -56,6 +71,7 @@
     });
     */
   </script>
+  <link rel="stylesheet" type="text/css" href="css/houseplanner.css" />
   <link rel="stylesheet" type="text/css" href="font/style.css" />
 
   <!--[if gte IE 9]>

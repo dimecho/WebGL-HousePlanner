@@ -33,6 +33,8 @@
   <script src="js/three/extras/shaders/ShaderParticles.js"></script>
   <script src="js/three/extras/shaders/ShaderGodRays.js"></script>
   <script src="js/three/extras/shaders/ShaderTerrain.js"></script>
+  <script src="js/three/extras/FontUtils.js"></script>
+  <script src="js/three/extras/geometries/TextGeometry.js"></script>
   <script src="js/three/extras/ThreeCSG.js"></script>
 
   <script src="js/paper/paper.js"></script>
@@ -62,6 +64,7 @@
   <script src="js/src/3d/init.js"></script>
   <script src="js/src/3d/events.js"></script>
   <script src="js/src/3d/history.js"></script>
+  <script src="js/src/3d/floor.js"></script>
   <script src="js/src/3d/terrain.js"></script>
   <script src="js/src/3d/panorama.js"></script>
   <script src="js/src/2d/engine2d.js"></script>
@@ -71,6 +74,7 @@
   <script src="js/src/2d/history.js"></script>
   <script src="js/src/2d/math.js"></script>
   <script src="js/src/2d/wall.js"></script>
+  <script src="js/src/2d/floor.js"></script>
   <script src="js/src/2d/window.js"></script>
   <script src="js/src/2d/door.js"></script>
   <script src="js/src/2d/stairs.js"></script>
@@ -92,6 +96,21 @@
     var VIEWMODE = 'designer';
     $(document).ready(function() {
       initHousePlanner();
+    });
+
+    Royal_Preloader.config({
+      mode: 'number',
+      show_percentage: true,
+      background: "#000000",
+      text_colour: "#FFFFFF",
+      images: [
+        'panoramas/2056/front.jpg',
+        'panoramas/2056/left.jpg',
+        'panoramas/2056/right.jpg',
+        'panoramas/2056/bottom.jpg',
+        'panoramas/2056/top.jpg',
+        'panoramas/2056/back.jpg'
+      ]
     });
   </script>
   <!-- 

@@ -18,10 +18,11 @@ rm ../three.js.map
 cd ../../paper/
 
 cd ../../css/
+rm houseplanner.css
 for f in $(find ./src/ -name '*.css')
 do
 	#cat "$f" >> "css/houseplanner.css"
-	java -jar yuicompressor.jar --type css "$f" >> ../js/houseplanner.css
+	java -jar yuicompressor.jar --type css "$f" >> ../css/houseplanner.css
 done
 
 cd ../js/
@@ -30,13 +31,12 @@ java -jar compiler.jar  --language_in ECMASCRIPT5 --js_output_file=src.js 'src/*
 java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=library.js 'library/**.js'
 java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=three/three-extra.js 'three/extras/**.js'
 
-rm houseplanner.js
+rm houseplanner.jsz
 cat src.js >> houseplanner.js
 cat three/three-extra.js >> houseplanner.js
 cat library.js >> houseplanner.js
-zip houseplanner.jsz houseplanner.js houseplanner.css three/three.js paper/paper.js
+zip houseplanner.jsz houseplanner.js three/three.js paper/paper.js
 rm houseplanner.js
-rm houseplanner.css
 rm library.js
 rm three/three-extra.js
 rm src.js
