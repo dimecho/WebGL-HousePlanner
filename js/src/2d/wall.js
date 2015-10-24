@@ -406,11 +406,14 @@ engine2D.calculateWallCorners = function () {
                             var wall = this.attachments[i];
                             wall.dragging = true;
                             //wall.visible = false; //DEBUG
+                          
 
-                            var a =event.point;
+                            var a = event.point;
                             var b = wall.segments[1].point;
                             var cx = wall.segments[0].point.x+wall.segments[1].point.x;
                             var cy = wall.segments[0].point.y+wall.segments[1].point.y;
+                            var angle = wall.segments[0].point.subtract(wall.segments[1].point).angle;
+                            var dl = wall.doors.length;
 
                             //Fix: left to right / right to left
                             //==================================
@@ -430,15 +433,35 @@ engine2D.calculateWallCorners = function () {
                             var p = new Point(cx/2, cy/2); //calculate quadratic curve center
                             //var p = wall.getLocationAt(wall.length/2).point; //calculate quadratic curve center
 
-                            wall.clear();
-                            wall.moveTo(a);
-                            wall.quadraticCurveTo(p, b);
 
                             //line.clear();
                             //line.moveTo(a);
                             //line.quadraticCurveTo(p, b);
+                            if(dl > 0)
+                            {
+                                //==================================
+                                //Move all Doors
+                                var an = a.subtract(b).angle;
 
-                            wall.parent.parent.children[3].position = p; //pivot point
+                                for (d = 0; d < dl; d++) {
+
+                                    //console.log(wall.doors[d]);
+                                    //wall.doors[d].applyMatrix = true;
+                                    
+                                    wall.doors[d].rotate(an-angle);
+                                    wall.doors[d].position = p;
+                                    //console.log("[" + i + "][" + d + "] " + angle + ">" + an);
+                                }
+                            }else{
+                                //==================================
+                                //Move Pivot point
+                                wall.parent.parent.children[3].position = p; 
+                            }
+
+                            wall.clear();
+                            wall.moveTo(a);
+                            wall.quadraticCurveTo(p, b);
+                            //wall.transformContent = false;
 
                             //console.log(wall.doors);
                         }

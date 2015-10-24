@@ -24,7 +24,7 @@ engine2D.open = function (zip){
             {
                 if(this.door !== undefined)
                 {
-                    scene2DDoorGroup[i].addChild(engine2D.makeDoor(this['length'],{x:this['center.x'],y:this['center.y']},this['position.z'],this['open'],this['direction']));
+                    scene2DDoorGroup[i].addChild(engine2D.makeDoor(this['length'],{x:this['x'],y:this['y']},this['z'],this['type'],this['open'],this['direction']));
                     //scene2DDoorMesh[i][d].file = this.door;
                     d++;
                 }

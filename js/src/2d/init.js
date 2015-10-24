@@ -10,6 +10,7 @@ engine2D.initialize = function (){
         var canvas = document.getElementById("engine2D");
         setup(canvas);
         view.setViewSize(window.innerWidth, window.innerHeight);
+        //settings.applyMatrix = false; 
         //window.dispatchEvent(new Event('resize'));
 
         panAndZoom = new SimplePanAndZoom();

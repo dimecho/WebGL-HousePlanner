@@ -5,25 +5,32 @@ engine2D.attachDoorsToWalls = function() {
 
     for (var d = 0; d < scene2DDoorGroup[FLOOR].children.length; d++) {
 
-        var doorPoint = scene2DDoorGroup[FLOOR].children[d].children[8].segments; //inside a Group()
-        var hitWallResult = scene2DWallGroup[FLOOR].hitTest(doorPoint[0].point); //TODO: make this midpoint check
+        var point = scene2DDoorGroup[FLOOR].children[d].children[1].segments; //inside a Group()
+        var hitWallResult = scene2DWallGroup[FLOOR].hitTest(point[0].point); //TODO: make this midpoint check
 
         if (hitWallResult ) {
             hitWallResult.item.doors.push(scene2DDoorGroup[FLOOR].children[d]);
+            hitWallResult.item.parent.parent.children[3].visible = false; //pivot point
             //console.log(hitWallResult.item);
+
+            //TODO: rotate according to wall angle
+            engine2D.snapDoor(hitWallResult.item,scene2DDoorGroup[FLOOR].children[d]);
         }
     }
 }
 
-engine2D.makeDoor = function(l,c,z,open,direction) {
+engine2D.snapDoor = function(wall,door) {
 
-    //TODO: lock/hide wall curve if door is present
-    //var angle = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI;
+}
 
+engine2D.makeDoor = function(l,c,z,type,open,direction) {
+
+    type = "hinge.single"; //DEBUG
+    //type = "fold.single"; //DEBUG
 
     with (paper) {
 
-        //direction = 'out';
+        //direction = 'out'; //DEBUG
 
         var group = new Group();
         var path = new Path();
@@ -36,12 +43,10 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
         path.moveTo(new Point(0,0));
         path.lineTo(new Point(l,0));
 
-        //guide.moveTo(new Point(-20,0));
-        //guide.lineTo(new Point(path.length + 20,0));
         guide.moveTo(new Point(0,0));
         guide.lineTo(new Point(l,0));
         guide.strokeColor = '#ffff';
-        guide.strokeWidth = 20;
+        guide.strokeWidth = 22;
         //guide.opacity = 0;
 
         path.strokeColor = '#000000';
@@ -63,14 +68,147 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
         triB.rotate(-30);
         triA.fillColor = triB.fillColor = '#00CC33';
 
-        var pivot = new Path();
-        pivot.strokeColor = '#000000';
-        pivot.strokeWidth = 4;
+        A.addChild(lineA);
+        A.addChild(triA);
+        B.addChild(lineB);
+        B.addChild(triB);
 
-        var circle = new Path.Circle(new Point(0, 0), 10);
-        circle.fillColor = '#FFCC00';
-        circle.opacity = 0;
+        group.addChild(guide);
+        group.addChild(path);
+        group.addChild(A);
+        group.addChild(B);
 
+        path.group = group;
+
+        if(type === "fold.single"){
+            engine2D.makeFoldSingleDoor(group,path,A,B,open,direction);
+
+        }else if(type === "fold.double"){
+            engine2D.makeFoldDoubleDoor(group,path,A,B,open,direction);
+
+        }else if(type === "hinge.single"){
+            engine2D.makeHingeSingleDoor(group,path,A,B,open,direction);
+
+        }else if(type === "hinge.double"){
+            engine2D.makeHingeDoubleDoor(group,path,A,B,open,direction);
+        }
+
+        group.position = new Point(c.x,c.y); //TODO: Fix this
+        project.layers.push(group);
+    }
+
+    return group;
+}
+
+engine2D.makeFoldSingleDoor = function(group,path,A,B,open,direction) {
+
+    with (paper) {
+
+        var tick;
+        var p1;
+        var p2;
+        var pv;
+        var x;
+        var y;
+        var angle;
+
+        var pivot1 = new Path();
+        var pivot2 = new Path();
+
+
+
+        pivot1.strokeColor = '#000000';
+        pivot1.strokeWidth = 4;
+
+        if(open === "right"){
+
+            p1 = new Point(0,0);
+            pv = new Point(path.length,0);
+
+        }else if(open === "left"){
+
+            p1 = new Point(path.length,0);
+            pv = new Point(0,0);
+        }
+        pivot1.moveTo(pv);
+
+        if(direction === "in")
+        {
+            pivot1.lineTo(new Point(pv.x, pv.y + path.length/2));
+            angle = -45;
+
+        }else{
+            pivot1.lineTo(new Point(pv.x, pv.y - path.length/2));
+            angle = 45;
+        }
+
+        pivot2 = pivot1.clone();
+        pivot2.rotate(angle,pivot2.segments[1].point);
+
+        var guide1 = new Path.Line(p1, p2);
+        //var guide2 = new Path.Arc(p1, p2);
+
+        group.addChild(guide1);
+        group.addChild(pivot1);
+        group.addChild(pivot2);
+        //=========================
+
+        A.attach('mousedrag', function(event) {
+            dragAB(this,event,0);
+        });
+
+        B.attach('mousedrag', function(event) {
+            dragAB(this,event,1);
+        });
+
+        function dragAB(obj,event,i)
+        {
+
+        }
+
+        path.attach('mouseenter', function() {
+            A.opacity = 1;
+            B.opacity = 1;
+            A.drag = false;
+            B.drag = false;
+        });
+
+        path.attach('mousemove', function() {
+            clearTimeout(tick);
+            tick = setTimeout(function() {
+                A.opacity = 0;
+                B.opacity = 0;
+            }, 400);
+        });
+
+        group.attach('mousedrag', function(event) {
+            if(A.drag == true || B.drag == true)
+                return;
+            group.position = event.point;
+            A.opacity = 0;
+            B.opacity = 0;
+            //circle.opacity = 0;
+            //guide1.opacity = 0;
+            //guide2.opacity = 0;
+        });
+    }
+}
+
+engine2D.makeFoldDoubleDoor = function(group,path,A,B,open,direction) {
+
+}
+
+engine2D.makeHingeDoubleDoor  = function(group,path,A,B,open,direction) {
+
+}
+
+engine2D.makeHingeSingleDoor = function(group,path,A,B,open,direction) {
+
+    //var angle = Math.atan2(v2.y - v1.y, v2.x - v1.x) * 180 / Math.PI;
+
+    with (paper) {
+
+        var tick;
         var p1;
         var p2;
         var pv;
@@ -80,7 +218,16 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
         var sin = Math.sin(angle);
         var cos = Math.cos(angle);
 
+        var pivot = new Path();
+        pivot.strokeColor = '#000000';
+        pivot.strokeWidth = 4;
+
+        var circle = new Path.Circle(new Point(0, 0), 10);
+        circle.fillColor = '#FFCC00';
+        circle.opacity = 0;
+
         if(open === "right"){
+
             p1 = new Point(0,0);
             pv = new Point(path.length,0);
 
@@ -132,12 +279,6 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
         round1.opacity = round2.opacity = 0;
 
         //=========================
-
-        A.addChild(lineA);
-        A.addChild(triA);
-        B.addChild(lineB);
-        B.addChild(triB);
-
         group.addChild(pivot);
         group.addChild(arc);
         group.addChild(round1);
@@ -145,20 +286,7 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
         group.addChild(round2);
         group.addChild(guide2);
         group.addChild(circle);
-        group.addChild(guide);
-        group.addChild(path);
-        group.addChild(A);
-        group.addChild(B);
-        path.group = group;
-
-        //group.position = new Point(v1.x,v1.y);
-        group.position = new Point(c.x,c.y); //TODO: Fix this
-
-        project.layers.push(group);
-
-        //====================================
-        var enter = false;
-        var tick;
+        //=========================
 
         path.attach('mouseenter', function() {
             A.opacity = 1;
@@ -201,7 +329,6 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
             }else{
                 pivot.segments[1].point.y = pivot.segments[0].point.y - path.length;
             }
-            
             
             arc.clear();
             guide1.clear();
@@ -254,22 +381,10 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
                 //    console.log("round1");
                 //});
 
-               
            }else{
 
            }
         }
-
-        group.attach('mousedrag', function(event) {
-            if(A.drag == true || B.drag == true)
-                return;
-            group.position = event.point;
-            A.opacity = 0;
-            B.opacity = 0;
-            circle.opacity = 0;
-            guide1.opacity = 0;
-            guide2.opacity = 0;
-        });
 
         round1.on('mouseenter', function() {
             A.opacity = 0;
@@ -289,7 +404,6 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
                 guide1.opacity = 0;
                 arc.opacity = 1;
                 pivot.opacity = 1;
-                enter = false;
             }, 400);
         });
         round2.attach('mouseenter', function() {
@@ -310,10 +424,18 @@ engine2D.makeDoor = function(l,c,z,open,direction) {
                 guide2.opacity = 0;
                 arc.opacity = 1;
                 pivot.opacity = 1;
-                enter = false;
             }, 400);
         });
+
+        group.attach('mousedrag', function(event) {
+            if(A.drag == true || B.drag == true)
+                return;
+            group.position = event.point;
+            A.opacity = 0;
+            B.opacity = 0;
+            circle.opacity = 0;
+            guide1.opacity = 0;
+            guide2.opacity = 0;
+        });
     }
-    
-    return group;
 }
