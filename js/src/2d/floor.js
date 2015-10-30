@@ -29,7 +29,7 @@ engine2D.makeFloor = function () {
                 canvas.height = shape.bounds.height;
                 var context = canvas.getContext('2d');
                 var img = new Image();
-                img.src = 'objects/FloorPlan/Default/4.png';
+                img.src = '../objects/FloorPlan/Default/4.png';
                 img.onload = function() {
                     context.fillStyle = context.createPattern(this,"repeat");
                     context.fillRect(0, 0, shape.bounds.width, shape.bounds.height);
@@ -37,9 +37,9 @@ engine2D.makeFloor = function () {
                 };
                 var raster = new Raster(canvas,new Point(shape.bounds.x,shape.bounds.y));
                 raster.fitBounds(shape.bounds, true);
-                var floor = new Group([shape,raster]);
-                floor.clipped = true;
-                canvas2D.addChild(floor);
+                scene2DFloorShape = new Group([shape,raster]);
+                scene2DFloorShape.clipped = true;
+                canvas2D.addChild(scene2DFloorShape);
             //}
         }
     }

@@ -47,27 +47,27 @@ function buildPanorama(container,files,X,Y,Z,preloader,mesh)
     //Low Resolution
     var sides = [
         new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_right.jpg'),
+            map: textureLoader.load('panoramas/' + files + '/_right.jpg'),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_left.jpg'),
+            map: textureLoader.load('panoramas/' + files + '/_left.jpg'),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-            map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_top.jpg'),
+            map: textureLoader.load('panoramas/' + files + '/_top.jpg'),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-          map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_bottom.jpg'),
+          map: textureLoader.load('panoramas/' + files + '/_bottom.jpg'),
           side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_front.jpg'),
+           map: textureLoader.load('panoramas/' + files + '/_front.jpg'),
            side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-           map: new THREE.ImageUtils.loadTexture('panoramas/' + files + '/_back.jpg'),
+           map: textureLoader.load('panoramas/' + files + '/_back.jpg'),
            side: THREE.BackSide
         }),
     ];
@@ -78,13 +78,12 @@ function buildPanorama(container,files,X,Y,Z,preloader,mesh)
     container.add(mesh);
 
     //High Resolution
-    var textureloader = new THREE.TextureLoader();
-    textureloader.load('panoramas/' + files + '/right.jpg', function (texture) { sides[0].map=texture; });
-    textureloader.load('panoramas/' + files + '/left.jpg', function (texture) { sides[1].map=texture; });
-    textureloader.load('panoramas/' + files + '/top.jpg', function (texture) { sides[2].map=texture; });
-    textureloader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture; });
-    textureloader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture; });
-    textureloader.load('panoramas/' + files + '/back.jpg', function (texture) {sides[5].map = texture;});
+    textureLoader.load('panoramas/' + files + '/right.jpg', function (texture) { sides[0].map=texture; });
+    textureLoader.load('panoramas/' + files + '/left.jpg', function (texture) { sides[1].map=texture; });
+    textureLoader.load('panoramas/' + files + '/top.jpg', function (texture) { sides[2].map=texture; });
+    textureLoader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture; });
+    textureLoader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture; });
+    textureLoader.load('panoramas/' + files + '/back.jpg', function (texture) {sides[5].map = texture;});
     
     /*
     var geometry = new THREE.SphereGeometry( 500, 60, 40 );

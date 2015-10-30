@@ -6,7 +6,7 @@
 **version 1.0**
 
 Real-estate showcase 3D home properties online - no software installs, any webGL platform.
-The project is currently in experimental stage with great concept ideas:
+Advanced geometry project in experimental stage with great concept ideas:
 
 - Small footprint (around 300Kb)
 - Blender 3D models

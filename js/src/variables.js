@@ -187,6 +187,7 @@ var target; //THREE.Vector3();
 var clock;
 //var engine;
 //var manager;
+var textureLoader;
 var projector;
 var vector;
 var geometry;

@@ -12,6 +12,7 @@ if [ ! -d /usr/local/Cellar/node/ ]; then
 fi
 
 cd js/three/build/
+rm -rf ../src/extras/audio
 node ./build.js --include common --include extras --minify --output ../three.js
 rm ../three.js.map
 

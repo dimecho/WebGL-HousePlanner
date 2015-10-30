@@ -33,7 +33,7 @@
   <script src="js/three/extras/shaders/ShaderParticles.js"></script>
   <script src="js/three/extras/shaders/ShaderGodRays.js"></script>
   <script src="js/three/extras/shaders/ShaderTerrain.js"></script>
-  <script src="js/three/extras/FontUtils.js"></script>
+  <script src="js/three/extras/utils/FontUtils.js"></script>
   <script src="js/three/extras/geometries/TextGeometry.js"></script>
   <script src="js/three/extras/ThreeCSG.js"></script>
 
@@ -65,14 +65,13 @@
   <script src="js/src/3d/events.js"></script>
   <script src="js/src/3d/history.js"></script>
   <script src="js/src/3d/floor.js"></script>
+  <script src="js/src/3d/wall.js"></script>
   <script src="js/src/3d/terrain.js"></script>
   <script src="js/src/3d/panorama.js"></script>
   <script src="js/src/2d/engine2d.js"></script>
   <script src="js/src/2d/init.js"></script>
-  <script src="js/src/2d/events.js"></script>
   <script src="js/src/2d/zoom.js"></script>
   <script src="js/src/2d/history.js"></script>
-  <script src="js/src/2d/math.js"></script>
   <script src="js/src/2d/wall.js"></script>
   <script src="js/src/2d/floor.js"></script>
   <script src="js/src/2d/window.js"></script>
@@ -84,7 +83,6 @@
   <script src="js/src/parallaxslider.js"></script>
   
   <!--
-  <script src="js/fabric/fabric.js"></script>
   <script src="js/src.js"></script>
   <script src="js/three/three.js"></script>
   <script src="js/three/three-extra.js"></script>
@@ -98,7 +96,7 @@
       initHousePlanner();
     });
 
-    Royal_Preloader.config({
+    preloader.config({
       mode: 'number',
       show_percentage: true,
       background: "#000000",

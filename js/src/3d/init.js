@@ -66,6 +66,7 @@ function initHousePlanner() {
     mouse = new THREE.Vector2();
     touch = new THREE.Vector2();
     target = new THREE.Vector3();
+    textureLoader = new THREE.TextureLoader();
 
     scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DPivotPoint = new THREE.Object3D();
@@ -629,9 +630,9 @@ function scene3DInitializeGround()
 
                     terrain3DMaterial = new THREE.ShaderMaterial({
                         uniforms: {
-                            texture_grass: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G36096.jpg' )},
-                            texture_bare: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/F46734.jpg' )},
-                            texture_snow: { type: "t", value: THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/F46734.jpg' ) },
+                            texture_grass: { type: "t", value: textureLoader.load('objects/Landscape/Textures/G36096.jpg')},
+                            texture_bare: { type: "t", value: textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
+                            texture_snow: { type: "t", value: textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
                             show_ring: { type: 'i', value: true },
                             ring_width: { type: 'f', value: 0.15 },
                             ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
