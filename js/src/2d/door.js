@@ -10,7 +10,7 @@ engine2D.attachDoorsToWalls = function() {
 
         if (hitWallResult ) {
             hitWallResult.item.doors.push(scene2DDoorGroup[FLOOR].children[d]);
-            hitWallResult.item.parent.parent.children[3].visible = false; //pivot point
+            hitWallResult.item.parent.parent.children[7].visible = false; //pivot point
             //console.log(hitWallResult.item);
 
             //TODO: rotate according to wall angle

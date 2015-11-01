@@ -18,8 +18,9 @@ engine2D.makeFloor = function () {
                 if(i == 0)
                     shape.moveTo(path.segments[0].point);
 
-                shape.quadraticCurveTo(new Point(path.segments[1].point.x,path.segments[1].point.y), path.segments[1].point.x,path.segments[1].point.y);
+                shape.quadraticCurveTo(path.segments[1].point, path.segments[1].point.x,path.segments[1].point.y);
             }
+            //shape.closed = true;
             //shape.opacity = 0.5;
 
             //if(canvas2D != undefined) {
@@ -41,6 +42,8 @@ engine2D.makeFloor = function () {
                 scene2DFloorShape.clipped = true;
                 canvas2D.addChild(scene2DFloorShape);
             //}
+
+            engine2D.calculateWallMeasureColor();
         }
     }
 }

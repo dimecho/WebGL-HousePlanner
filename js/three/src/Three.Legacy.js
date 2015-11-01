@@ -2,6 +2,244 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
+Object.defineProperties( THREE.Box2.prototype, {
+	isIntersectionBox: {
+		value: function ( box ) {
+			console.warn( 'THREE.Box2: .isIntersectionBox() has been renamed to .intersectsBox().' );
+			return this.intersectsBox( box );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.Box3.prototype, {
+	isIntersectionBox: {
+		value: function ( box ) {
+			console.warn( 'THREE.Box3: .isIntersectionBox() has been renamed to .intersectsBox().' );
+			return this.intersectsBox( box );
+		}
+	},
+	isIntersectionSphere: {
+		value: function ( sphere ) {
+			console.warn( 'THREE.Box3: .isIntersectionSphere() has been renamed to .intersectsSphere().' );
+			return this.intersectsSphere( sphere );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.Matrix3.prototype, {
+	multiplyVector3: {
+		value: function ( vector ) {
+			console.warn( 'THREE.Matrix3: .multiplyVector3() has been removed. Use vector.applyMatrix3( matrix ) instead.' );
+			return vector.applyMatrix3( this );
+		}
+	},
+	multiplyVector3Array: {
+		value: function ( a ) {
+			console.warn( 'THREE.Matrix3: .multiplyVector3Array() has been renamed. Use matrix.applyToVector3Array( array ) instead.' );
+			return this.applyToVector3Array( a );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.Matrix4.prototype, {
+	extractPosition: {
+		value: function ( m ) {
+			console.warn( 'THREE.Matrix4: .extractPosition() has been renamed to .copyPosition().' );
+			return this.copyPosition( m );
+		}
+	},
+	setRotationFromQuaternion: {
+		value: function ( q ) {
+			console.warn( 'THREE.Matrix4: .setRotationFromQuaternion() has been renamed to .makeRotationFromQuaternion().' );
+			return this.makeRotationFromQuaternion( q );
+		}
+	},
+	multiplyVector3: {
+		value: function ( vector ) {
+			console.warn( 'THREE.Matrix4: .multiplyVector3() has been removed. Use vector.applyMatrix4( matrix ) or vector.applyProjection( matrix ) instead.' );
+			return vector.applyProjection( this );
+		}
+	},
+	multiplyVector4: {
+		value: function ( vector ) {
+			console.warn( 'THREE.Matrix4: .multiplyVector4() has been removed. Use vector.applyMatrix4( matrix ) instead.' );
+			return vector.applyMatrix4( this );
+		}
+	},
+	multiplyVector3Array: {
+		value: function ( a ) {
+			console.warn( 'THREE.Matrix4: .multiplyVector3Array() has been renamed. Use matrix.applyToVector3Array( array ) instead.' );
+			return this.applyToVector3Array( a );
+		}
+	},
+	rotateAxis: {
+		value: function ( v ) {
+			console.warn( 'THREE.Matrix4: .rotateAxis() has been removed. Use Vector3.transformDirection( matrix ) instead.' );
+			v.transformDirection( this );
+		}
+	},
+	crossVector: {
+		value: function ( vector ) {
+			console.warn( 'THREE.Matrix4: .crossVector() has been removed. Use vector.applyMatrix4( matrix ) instead.' );
+			return vector.applyMatrix4( this );
+		}
+	},
+	translate: {
+		value: function ( v ) {
+			console.error( 'THREE.Matrix4: .translate() has been removed.' );
+		}
+	},
+	rotateX: {
+		value: function ( angle ) {
+			console.error( 'THREE.Matrix4: .rotateX() has been removed.' );
+		}
+	},
+	rotateY: {
+		value: function ( angle ) {
+			console.error( 'THREE.Matrix4: .rotateY() has been removed.' );
+		}
+	},
+	rotateZ: {
+		value: function ( angle ) {
+			console.error( 'THREE.Matrix4: .rotateZ() has been removed.' );
+		}
+	},
+	rotateByAxis: {
+		value: function ( axis, angle ) {
+			console.error( 'THREE.Matrix4: .rotateByAxis() has been removed.' );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.Plane.prototype, {
+	isIntersectionLine: {
+		value: function ( line ) {
+			console.warn( 'THREE.Plane: .isIntersectionLine() has been renamed to .intersectsLine().' );
+			return this.intersectsLine( line );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.Quaternion.prototype, {
+	multiplyVector3: {
+		value: function ( vector ) {
+			console.warn( 'THREE.Quaternion: .multiplyVector3() has been removed. Use is now vector.applyQuaternion( quaternion ) instead.' );
+			return vector.applyQuaternion( this );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.Ray.prototype, {
+	isIntersectionBox: {
+		value: function ( box ) {
+			console.warn( 'THREE.Ray: .isIntersectionBox() has been renamed to .intersectsBox().' );
+			return this.intersectsBox( box );
+		}
+	},
+	isIntersectionPlane: {
+		value: function ( plane ) {
+			console.warn( 'THREE.Ray: .isIntersectionPlane() has been renamed to .intersectsPlane().' );
+			return this.intersectsPlane( plane );
+		}
+	},
+	isIntersectionSphere: {
+		value: function ( sphere ) {
+			console.warn( 'THREE.Ray: .isIntersectionSphere() has been renamed to .intersectsSphere().' );
+			return this.intersectsSphere( sphere );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.Vector3.prototype, {
+	setEulerFromRotationMatrix: {
+		value: function () {
+			console.error( 'THREE.Vector3: .setEulerFromRotationMatrix() has been removed. Use Euler.setFromRotationMatrix() instead.' );
+		}
+	},
+	setEulerFromQuaternion: {
+		value: function () {
+			console.error( 'THREE.Vector3: .setEulerFromQuaternion() has been removed. Use Euler.setFromQuaternion() instead.' );
+		}
+	},
+	getPositionFromMatrix: {
+		value: function ( m ) {
+			console.warn( 'THREE.Vector3: .getPositionFromMatrix() has been renamed to .setFromMatrixPosition().' );
+			return this.setFromMatrixPosition( m );
+		}
+	},
+	getScaleFromMatrix: {
+		value: function ( m ) {
+			console.warn( 'THREE.Vector3: .getScaleFromMatrix() has been renamed to .setFromMatrixScale().' );
+			return this.setFromMatrixScale( m );
+		}
+	},
+	getColumnFromMatrix: {
+		value: function ( index, matrix ) {
+			console.warn( 'THREE.Vector3: .getColumnFromMatrix() has been renamed to .setFromMatrixColumn().' );
+			return this.setFromMatrixColumn( index, matrix );
+		}
+	}
+} );
+
+//
+
+Object.defineProperties( THREE.Object3D.prototype, {
+	eulerOrder: {
+		get: function () {
+			console.warn( 'THREE.Object3D: .eulerOrder is now .rotation.order.' );
+			return this.rotation.order;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.Object3D: .eulerOrder is now .rotation.order.' );
+			this.rotation.order = value;
+		}
+	},
+	getChildByName: {
+		value: function ( name ) {
+			console.warn( 'THREE.Object3D: .getChildByName() has been renamed to .getObjectByName().' );
+			return this.getObjectByName( name );
+		}
+	},
+	renderDepth: {
+		set: function ( value ) {
+			console.warn( 'THREE.Object3D: .renderDepth has been removed. Use .renderOrder, instead.' );
+		}
+	},
+	translate: {
+		value: function ( distance, axis ) {
+			console.warn( 'THREE.Object3D: .translate() has been removed. Use .translateOnAxis( axis, distance ) instead.' );
+			return this.translateOnAxis( axis, distance );
+		}
+	},
+	useQuaternion: {
+		get: function () {
+			console.warn( 'THREE.Object3D: .useQuaternion has been removed. The library now uses quaternions by default.' );
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.Object3D: .useQuaternion has been removed. The library now uses quaternions by default.' );
+		}
+	}
+} );
+
+//
+
+Object.defineProperties( THREE, {
+	PointCloud: {
+		value: function ( geometry, material ) {
+			console.warn( 'THREE.PointCloud has been renamed to THREE.Points.' );
+			return new THREE.Points( geometry, material );
+		}
+	},
+	ParticleSystem: {
+		value: function ( geometry, material ) {
+			console.warn( 'THREE.ParticleSystem has been renamed to THREE.Points.' );
+			return new THREE.Points( geometry, material );
+		}
+	}
+} );
+
+//
+
 Object.defineProperties( THREE.Light.prototype, {
 	onlyShadow: {
 		set: function ( value ) {
@@ -66,6 +304,71 @@ Object.defineProperties( THREE.Light.prototype, {
 	shadowMapHeight: {
 		set: function ( value ) {
 			this.shadow.mapSize.height = value;
+		}
+	}
+} );
+
+//
+
+Object.defineProperties( THREE.Material.prototype, {
+	wrapAround: {
+		get: function () {
+			console.warn( 'THREE.' + this.type + ': .wrapAround has been removed.' );
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.' + this.type + ': .wrapAround has been removed.' );
+		}
+	},
+	wrapRGB: {
+		get: function () {
+			console.warn( 'THREE.' + this.type + ': .wrapRGB has been removed.' );
+			return new THREE.Color();
+		}
+	}
+} );
+
+Object.defineProperties( THREE, {
+	PointCloudMaterial: {
+		value: function ( parameters ) {
+			console.warn( 'THREE.PointCloudMaterial has been renamed to THREE.PointsMaterial.' );
+			return new THREE.PointsMaterial( parameters );
+		}
+	},
+	ParticleBasicMaterial: {
+		value: function ( parameters ) {
+			console.warn( 'THREE.ParticleBasicMaterial has been renamed to THREE.PointsMaterial.' );
+			return new THREE.PointsMaterial( parameters );
+		}
+	},
+	ParticleSystemMaterial:{
+		value: function ( parameters ) {
+			console.warn( 'THREE.ParticleSystemMaterial has been renamed to THREE.PointsMaterial.' );
+			return new THREE.PointsMaterial( parameters );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.MeshPhongMaterial.prototype, {
+	metal: {
+		get: function () {
+			console.warn( 'THREE.MeshPhongMaterial: .metal has been removed. Use THREE.MeshPhysicalMaterial instead.' );
+			return false;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.MeshPhongMaterial: .metal has been removed. Use THREE.MeshPhysicalMaterial instead' );
+		}
+	}
+} );
+
+Object.defineProperties( THREE.ShaderMaterial.prototype, {
+	derivatives: {
+		get: function () {
+			console.warn( 'THREE.ShaderMaterial: .derivatives has been moved to .extensions.derivatives.' );
+			return this.extensions.derivatives;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE. ShaderMaterial: .derivatives has been moved to .extensions.derivatives.' );
+			this.extensions.derivatives = value;
 		}
 	}
 } );
@@ -174,6 +477,111 @@ Object.defineProperties( THREE.WebGLRenderer.prototype, {
 		set: function ( value ) {
 			console.warn( 'THREE.WebGLRenderer: .shadowMapDebug is now .shadowMap.debug.' );
 			this.shadowMap.debug = value;
+		}
+	}
+} );
+
+//
+
+Object.defineProperties( THREE.WebGLRenderTarget.prototype, {
+	wrapS: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .wrapS is now .texture.wrapS.' );
+			return this.texture.wrapS;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .wrapS is now .texture.wrapS.' );
+			this.texture.wrapS = value;
+		}
+	},
+	wrapT: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .wrapT is now .texture.wrapT.' );
+			return this.texture.wrapT;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .wrapT is now .texture.wrapT.' );
+			this.texture.wrapT = value;
+		}
+	},
+	magFilter: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .magFilter is now .texture.magFilter.' );
+			return this.texture.magFilter;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .magFilter is now .texture.magFilter.' );
+			this.texture.magFilter = value;
+		}
+	},
+	minFilter: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .minFilter is now .texture.minFilter.' );
+			return this.texture.minFilter;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .minFilter is now .texture.minFilter.' );
+			this.texture.minFilter = value;
+		}
+	},
+	anisotropy: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .anisotropy is now .texture.anisotropy.' );
+			return this.texture.anisotropy;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .anisotropy is now .texture.anisotropy.' );
+			this.texture.anisotropy = value;
+		}
+	},
+	offset: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .offset is now .texture.offset.' );
+			return this.texture.offset;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .offset is now .texture.offset.' );
+			this.texture.offset = value;
+		}
+	},
+	repeat: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .repeat is now .texture.repeat.' );
+			return this.texture.repeat;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .repeat is now .texture.repeat.' );
+			this.texture.repeat = value;
+		}
+	},
+	format: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .format is now .texture.format.' );
+			return this.texture.format;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .format is now .texture.format.' );
+			this.texture.format = value;
+		}
+	},
+	type: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .type is now .texture.type.' );
+			return this.texture.type;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .type is now .texture.type.' );
+			this.texture.type = value;
+		}
+	},
+	generateMipmaps: {
+		get: function () {
+			console.warn( 'THREE.WebGLRenderTarget: .generateMipmaps is now .texture.generateMipmaps.' );
+			return this.texture.generateMipmaps;
+		},
+		set: function ( value ) {
+			console.warn( 'THREE.WebGLRenderTarget: .generateMipmaps is now .texture.generateMipmaps.' );
+			this.texture.generateMipmaps = value;
 		}
 	}
 } );
