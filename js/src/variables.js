@@ -148,6 +148,7 @@ var scene2DWallGroup = [];
 var scene2DWallPointGroup = [];
 var scene2DWindowGroup = [];
 var scene2DDoorGroup = [];
+var scene2DLabelGroup = [];
 
 var scene2DFloorMesh = []; //Fabric.js line data - floor shape subdevide lines
 var scene2DDoorMesh = []; //Fabric.js group line data (doors)

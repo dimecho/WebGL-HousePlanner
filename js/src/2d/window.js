@@ -15,7 +15,7 @@ engine2D.attachWindowsToWalls = function() {
     }
 }
 
-engine2D.makeWindow = function(l,c,z) {
+engine2D.makeWindow = function(l,c,z,open,direction,file) {
 
     with (paper) {
 

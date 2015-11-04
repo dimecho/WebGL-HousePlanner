@@ -46,7 +46,7 @@ GeometricContext geometry = GeometricContext( -vViewPosition, normalize( normal 
 		IncidentLight directLight = getDirectionalDirectLight( directionalLights[ i ], geometry );
 
 		Material_RE_DirectLight( directLight, geometry, material, reflectedLight );
-		
+
 	}
 
 #endif
@@ -54,12 +54,12 @@ GeometricContext geometry = GeometricContext( -vViewPosition, normalize( normal 
 #if defined( Material_RE_IndirectDiffuseLight )
 
 	{
-	
-		vec3 indirectDiffuseColor = ambientLightColor;
+
+		vec3 indirectDiffuseIrradiance = getAmbientLightIrradiance( ambientLightColor );
 
 #ifdef USE_LIGHTMAP
 
-		indirectDiffuseColor += texture2D( lightMap, vUv2 ).xyz * lightMapIntensity;
+		indirectDiffuseIrradiance += PI * texture2D( lightMap, vUv2 ).xyz * lightMapIntensity; // factor of PI should not be present; included here to prevent breakage
 
 #endif
 
@@ -67,13 +67,20 @@ GeometricContext geometry = GeometricContext( -vViewPosition, normalize( normal 
 
 		for ( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {
 
-			indirectDiffuseColor += getHemisphereIndirectLightColor( hemisphereLights[ i ], geometry );
+			indirectDiffuseIrradiance += getHemisphereLightIrradiance( hemisphereLights[ i ], geometry );
 
 		}
 
 #endif
 
-		Material_RE_IndirectDiffuseLight( indirectDiffuseColor, geometry, material, reflectedLight );
+#if defined( USE_ENVMAP ) && defined( STANDARD )
+
+		// TODO, replace 8 with the real maxMIPLevel
+		indirectDiffuseIrradiance += getLightProbeIndirectIrradiance( /*lightProbe,*/ geometry, 8 );
+
+#endif
+
+		Material_RE_IndirectDiffuseLight( indirectDiffuseIrradiance, geometry, material, reflectedLight );
 
 	}
 
@@ -84,9 +91,9 @@ GeometricContext geometry = GeometricContext( -vViewPosition, normalize( normal 
 	{
 
 		// TODO, replace 8 with the real maxMIPLevel
-		vec3 indirectSpecularColor = getSpecularLightProbeIndirectLightColor( /*specularLightProbe,*/ geometry, Material_BlinnShininessExponent( material ), 8 );
+		vec3 indirectSpecularRadiance = getLightProbeIndirectRadiance( /*specularLightProbe,*/ geometry, Material_BlinnShininessExponent( material ), 8 );
 
-		Material_RE_IndirectSpecularLight( indirectSpecularColor, geometry, material, reflectedLight );
+		Material_RE_IndirectSpecularLight( indirectSpecularRadiance, geometry, material, reflectedLight );
 
     }
 

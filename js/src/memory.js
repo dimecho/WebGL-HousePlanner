@@ -48,5 +48,13 @@ function scene3DFreeMemory()
 
 function scene2DFreeMemory()
 {
+    with (paper) {
+        
+        var children = project.activeLayer.children;
 
+        for (var i = 0; i < children.length; i++) {
+            children[i].remove();
+
+        }
+    }
 }

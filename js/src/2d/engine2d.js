@@ -7,37 +7,27 @@ engine2D.open = function (zip){
 
     $.each(JSON.parse(zip.file("scene2DFloorContainer.json").asText()), function(index)
     {
-        var w = 0;
-        var l = 0;
-        var d = 0;
         //var objects2DWalls = JSON.parse(this);
         //console.log(this);
         with (paper) {
-
-            //scene2DWallMesh[i] = new Layer();
-            scene2DWallGroup[i] = new Group();
-            scene2DDoorGroup[i] = new Group();
-            //scene2DEdgePointsGroup[i] = new Group();
-            scene2DDoorMesh[i] = [];
 
             $.each(this, function(index)
             {
                 if(this.door !== undefined)
                 {
-                    scene2DDoorGroup[i].addChild(engine2D.makeDoor(this['length'],{x:this['x'],y:this['y']},this['z'],this['type'],this['open'],this['direction']));
-                    //scene2DDoorMesh[i][d].file = this.door;
-                    d++;
+                    scene2DDoorGroup[i].addChild(engine2D.makeDoor(this['length'],{x:this['x'],y:this['y']},this['z'],this['type'],this['open'],this['direction'],this.door));
                 }
                 else if(this.window !== undefined)
                 {
-                    //scene2DWindowMesh[i][w] = scene2DMakeWindow({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']},this['position.z'],this['open'],this['direction'],this['id']);
-                    //scene2DWindowMesh[i][w].file = this.window;
-                    w++;
+                    //scene2DWindowGroup[i] = engine2D.makeWindow(this['x'],this['y'],this['z'],this['open'],this['direction'],this.window);
                 }
                 else if(this.wall !== undefined)
                 {
-                    scene2DWallGroup[i].addChild(engine2D.makeWall({x:this['position.x1'],y:this['position.y1']},{x:this['position.x2'],y:this['position.y2']},{x:this['curve.x'],y:this['curve.y']}));
-                    l++;
+                    scene2DWallGroup[i].addChild(engine2D.makeWall({x:this['x1'],y:this['y1']},{x:this['x2'],y:this['y2']},{x:this['cx'],y:this['cy']}));
+                }
+                else if(this.label !== undefined)
+                {
+                    scene2DLabelGroup[i].addChild(engine2D.makeLabel(this['label'],this['size'],this['x'],this['y']));
                 }
             });
             //scene2DWallGroup[i].activate();

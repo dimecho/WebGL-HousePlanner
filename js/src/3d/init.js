@@ -326,7 +326,6 @@ function initHousePlanner() {
         return 'Are you sure you want to leave?';
     });
 
-
     engine3D.showHouse();
 
     //For debugging purposes

@@ -23,7 +23,7 @@ engine2D.snapDoor = function(wall,door) {
 
 }
 
-engine2D.makeDoor = function(l,c,z,type,open,direction) {
+engine2D.makeDoor = function(l,c,z,type,open,direction,file) {
 
     type = "hinge.single"; //DEBUG
     //type = "fold.single"; //DEBUG

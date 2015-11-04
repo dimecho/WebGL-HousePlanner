@@ -47,3 +47,10 @@ engine2D.makeFloor = function () {
         }
     }
 }
+
+engine2D.makeLabel = function (label,size,x,y) {
+
+    with (paper) {
+
+    }
+}

@@ -216,7 +216,6 @@ THREE.ShaderLib = {
 
 			"	vec3 outgoingLight = vec3( 0.0 );",	// outgoing light does not have an alpha, the surface does
 			"	vec4 diffuseColor = vec4( diffuse, opacity );",
-			"	vec3 totalAmbientLight = ambientLightColor;",
 			"	vec3 shadowMask = vec3( 1.0 );",
 
 				THREE.ShaderChunk[ "logdepthbuf_fragment" ],
@@ -230,13 +229,13 @@ THREE.ShaderLib = {
 			"	#ifdef DOUBLE_SIDED",
 
 			"		if ( gl_FrontFacing )",
-			"			outgoingLight += diffuseColor.rgb * ( vLightFront * shadowMask ) + emissive;",
+			"			outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightFront * shadowMask ) + emissive;",
 			"		else",
-			"			outgoingLight += diffuseColor.rgb * ( vLightBack * shadowMask ) + emissive;",
+			"			outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightBack * shadowMask ) + emissive;",
 
 			"	#else",
 
-			"		outgoingLight += diffuseColor.rgb * ( vLightFront * shadowMask ) + emissive;",
+			"		outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightFront * shadowMask ) + emissive;",
 
 			"	#endif",
 
@@ -410,7 +409,7 @@ THREE.ShaderLib = {
 
 	},
 
-	'physical': {
+	'standard': {
 
 		uniforms: THREE.UniformsUtils.merge( [
 
@@ -439,7 +438,7 @@ THREE.ShaderLib = {
 
 		vertexShader: [
 
-			"#define PHYSICAL",
+			"#define STANDARD",
 
 			"varying vec3 vViewPosition;",
 
@@ -462,7 +461,7 @@ THREE.ShaderLib = {
 			THREE.ShaderChunk[ "specularmap_pars_fragment" ],
 			THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
 
-			"void main() {", // PHYSICAL
+			"void main() {", // STANDARD
 
 				THREE.ShaderChunk[ "uv_vertex" ],
 				THREE.ShaderChunk[ "uv2_vertex" ],
@@ -500,7 +499,7 @@ THREE.ShaderLib = {
 
 		fragmentShader: [
 
-			"#define PHYSICAL",
+			"#define STANDARD",
 
 			"uniform vec3 diffuse;",
 			"uniform vec3 emissive;",
@@ -531,7 +530,7 @@ THREE.ShaderLib = {
 			THREE.ShaderChunk[ "fog_pars_fragment" ],
 			THREE.ShaderChunk[ "bsdfs" ],
 			THREE.ShaderChunk[ "lights_pars" ],
-			THREE.ShaderChunk[ "lights_physical_pars_fragment" ],
+			THREE.ShaderChunk[ "lights_standard_pars_fragment" ],
 			THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
 			THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
 			THREE.ShaderChunk[ "normalmap_pars_fragment" ],
@@ -559,7 +558,7 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "emissivemap_fragment" ],
 
 				// accumulation
-				THREE.ShaderChunk[ "lights_physical_fragment" ],
+				THREE.ShaderChunk[ "lights_standard_fragment" ],
 				THREE.ShaderChunk[ "lights_template" ],
 				THREE.ShaderChunk[ "lightmap_fragment" ],
 

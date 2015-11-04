@@ -54,14 +54,18 @@ engine2D.initialize = function (){
 
 engine2D.new = function (){
 
-    for(var i=0; i<=2; i++) //TODO: make this dynamic increase
-    {
-        scene2DWallMesh[i] = new Array();
-        scene2DWallDimentions[i] = new Array();
-        scene2DDoorGroup[i] = new Array();
-        scene2DWallGroup = new Array()
-        scene2DWallPointGroup = new Array()
-        scene2DInteriorMesh[i] = new Array();
-        scene2DExteriorMesh[i] = new Array();
+    with (paper) {
+        
+        for(var i=0; i<=2; i++) //TODO: make this dynamic increase
+        {
+            scene2DWallMesh[i] = new Array();
+            scene2DWallDimentions[i] = new Array();
+            scene2DDoorGroup[i] = new Group();
+            scene2DWallGroup[i] = new Group();
+            scene2DWallPointGroup[i] = new Group();
+            scene2DLabelGroup[i] = new Group();
+            scene2DInteriorMesh[i] = new Array();
+            scene2DExteriorMesh[i] = new Array();
+        }
     }
 }

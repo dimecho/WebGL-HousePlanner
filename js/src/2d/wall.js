@@ -184,7 +184,7 @@ engine2D.makeWall = function (v1,v2,c) {
         var measureInside = new Path();
 
         var label = new PointText();
-        var rect = new Path.Rectangle(new Rectangle(0, 0, 50, 20));
+        var rect = new Path.Rectangle(new Rectangle(0, 0, 50, 18));
         var labelOutside = new Group();
         var labelInside = new Group();
         //labelOutside.strokeColor = '#ffffff';
@@ -558,8 +558,7 @@ engine2D.calculateWallCorners = function () {
             var wall = scene2DWallGroup[FLOOR].children[i].children[4].children[0].segments; //inside a Group()
             //console.log(s);
 
-            var b = wall.length;
-            for (var h = 0; h < b; h++) {
+            for (var h = 0; h < wall.length; h++) {
 
                 var hitEdgeResult = scene2DWallPointGroup[FLOOR].hitTest(wall[h].point);
 
@@ -575,11 +574,9 @@ engine2D.calculateWallCorners = function () {
                     circleOuter.fillColor = circleInner.fillColor = '#00CC33';
 
                     var angleSharpFix = new Path();
-                    var edge = new Group([size,angleSharpFix,circleInner,circleOuter]);
+                    var edge = new Group([size, angleSharpFix, circleInner, circleOuter]); //0
                     edge.attachments = [];
-                    edge.children[2].opacity = 0;
-                    edge.children[3].opacity = 0;
-
+                    
                     var tick;
                     edge.attach('mouseenter', function(event) {
                         //clearTimeout(tick);
@@ -644,16 +641,17 @@ engine2D.calculateWallCorners = function () {
                             var b = wall.segments[1].point;
                             var cx = wall.segments[0].point.x + wall.segments[1].point.x;
                             var cy = wall.segments[0].point.y + wall.segments[1].point.y;
-                            var angle = wall.segments[0].point.subtract(wall.segments[1].point).angle;
-                            var dl = wall.doors.length;
-
+                            
                             //Fix: left to right / right to left
                             //==================================
-                            if(this.children[2].hitTest(b)){
+                            if(this.children[2].hitTest(b)){ //innerCircle
                                 a = wall.segments[0].point;
                                 b = event.point;
                             }
                             //==================================
+
+                            var angle1 = wall.segments[0].point.subtract(wall.segments[1].point).angle;
+                            var angle2 = a.subtract(b).angle;
 
                             //var line = wall.parent.parent.children[1];
                             //var circle = wall.parent.parent.children[2];
@@ -662,18 +660,17 @@ engine2D.calculateWallCorners = function () {
                             var p = new Point(cx/2, cy/2); //calculate quadratic curve center
                             //var p = wall.getLocationAt(wall.length/2).point; //calculate quadratic curve center
                             
+                            var dl = wall.doors.length;
                             if(dl > 0)
                             {
                                 //==================================
                                 //Move all Doors
-                                var an = a.subtract(b).angle;
-
                                 for (d = 0; d < dl; d++) {
 
                                     //console.log(wall.doors[d]);
                                     //wall.doors[d].applyMatrix = true;
                                     
-                                    wall.doors[d].rotate(an-angle);
+                                    wall.doors[d].rotate(angle2-angle1);
                                     wall.doors[d].position = p;
                                     //console.log("[" + i + "][" + d + "] " + angle + ">" + an);
                                 }
@@ -698,8 +695,12 @@ engine2D.calculateWallCorners = function () {
                             //Measuring Labels
                             wall.parent.parent.children[2].position = wall.parent.parent.children[0].children[0].getLocationAt(wall.parent.parent.children[0].children[0].length/2).point;
                             wall.parent.parent.children[3].position = wall.parent.parent.children[1].children[0].getLocationAt(wall.parent.parent.children[1].children[0].length/2).point;
-                            wall.parent.parent.children[2].children[1].rotation = angle;
-                            wall.parent.parent.children[3].children[1].rotation = angle;
+                            
+                            wall.parent.parent.children[2].children[0].rotation = (angle2-angle1);
+                            wall.parent.parent.children[3].children[0].rotation = (angle2-angle1);
+
+                            wall.parent.parent.children[2].children[1].rotation = angle1;
+                            wall.parent.parent.children[3].children[1].rotation = angle1;
                             wall.parent.parent.children[2].children[1].content = (wall.parent.parent.children[0].children[0].length/100).toFixed(2) + 'm';
                             wall.parent.parent.children[3].children[1].content = (wall.parent.parent.children[1].children[0].length/100).toFixed(2) + 'm';
                             //==================================
@@ -717,15 +718,30 @@ engine2D.calculateWallCorners = function () {
                             //console.log(angle);
                         }
 
+                    
+                        //engine2D.calculateWallEdge(this);
+
                         this.position = event.point; //must be last - otherwise will interfere with above logic
-                       
+
+                        
                         for (i = 0; i < l; i+=2) {
                             if(this.attachments[i+1] == undefined)
                                 break;
                             var angle = engine2D.calculateWallAngle(this.attachments[i],this.attachments[i+1]);
                             angle = Math.abs(angle) + 180;
                             angle = Math.abs(angle - 360);
-                            this.children[7].content = Math.round(angle) + '\xb0';
+                            
+                            this.children[4].children[3].content = Math.round(angle) + '\xb0';
+                            //==================================
+                            //Angle lines
+                            this.children[4].children[0].clear();
+
+                            this.children[4].children[1].clear();
+                            
+                            //Arc
+                            //this.children[4].children[2].clear();
+                            //==================================
+
                         }
                         
                     });
@@ -759,114 +775,130 @@ engine2D.calculateWallCorners = function () {
             //var intersections = path1.getIntersections(path2);
         }
 
-        
         for (var i = 0; i < scene2DWallPointGroup[FLOOR].children.length; i++) {
-
             var edge = scene2DWallPointGroup[FLOOR].children[i];
-
-            for (a = 0; a < edge.attachments.length; a+=2) {
-
-                if(edge.attachments[a+1] == undefined)
-                    break;
-
-                //console.log(edge.position);
-
-                //Fix the cutoff corners
-                //======================
-                edge.children[1].add(new Point(edge.position.x - 10,edge.position.y-10));
-                edge.children[1].add(new Point(edge.position.x - 10,edge.position.y+10));
-                edge.children[1].add(new Point(edge.position.x + 10,edge.position.y+10));
-                edge.children[1].closed = true;
-                //edge.children[1].fillColor = 'red'; //DEBUG
-                //======================
-                /*
-                var hitEdgeResult = scene2DWallPointGroup[FLOOR].hitTest(edge.position);
-                if (!hitEdgeResult) {
-
-                }else{
-
-                }
-                */
-
-                var box = edge.bounds.width/2;
-                var l1 = new Path()
-                var l2 = new Path();
-                var l3 = new Path(); //DEBUG
-                var arc = new Path.Arc();
-                var text = new PointText();
-
-                if(edge.attachments[a].length > box && edge.attachments[a+1].length > box)
-                {
-                    //console.log(edge.bounds.topLeft);
-                    
-                    var p1 = new Point(edge.bounds.center.x,edge.bounds.center.y);
-                    var p2 = edge.attachments[a].getLocationAt(box).point;
-                    var p3 = edge.attachments[a+1].getLocationAt(box).point;
-                    
-                    //console.log(Math.round(p1.subtract(p2).length));
-
-                    if(Math.round(p1.subtract(p2).length) > box) //deal with reversed lines
-                        p2 = edge.attachments[a].getLocationAt(edge.attachments[a].length-box).point;
-
-                    if(Math.round(p1.subtract(p3).length) > box) //deal with reversed lines
-                        p3 = edge.attachments[a+1].getLocationAt(edge.attachments[a+1].length-box).point;
-                    
-                    l1 = new Path.Line(p1, p2);
-                    l2 = new Path.Line(p1, p3); 
-                    l1.strokeColor = '#ffffff';
-                    l1.strokeWidth = 1;
-                    l2.style = l1.style;
-
-                    var angle = engine2D.calculateWallAngle(edge.attachments[a],edge.attachments[a+1]);
-                    //l2.rotation = angle;
-                    //l2.rotate(angle,l2.segments[0].point);
-
-                    //TODO: do a hitTest to floor suface (internal angles only)
-                    //if(angle > 180)
-                    //    angle = 360 - angle;
-
-                    //console.log(angle);
-                    //console.log(edge.position);
-                    /*
-                    var radius = 25, threshold = 10;
-                    var from = new Point(radius, 0);
-                    var through = from.rotate(angle / 2);
-                    var text = new PointText(new Point(x,y) + through.normalize(radius + 10) + new Point(0, 3));
-                    */
-
-                    //======================
-                    l3.add(l1.segments[1].point);
-                    l3.add(l2.segments[1].point);
-                    //l3.strokeColor  = 'red'; //DEBUG
-                    var mp = l3.getLocationAt(l3.length/2).point;
-                    text.position = mp;
-                    l3.clear();
-                    l3.add(mp);
-                    l3.add(p1);
-                    l3.scale(2);
-                    mp = l3.segments[0].point;
-                    l3.remove();
-                    //l3.removeSegment(0);
-                    //======================
-
-                    arc = new Path.Arc(l1.segments[1].point, mp, l2.segments[1].point);
-                    arc.strokeColor = '#000000';
-                    arc.strokeWidth = 1;
-
-                    text.content = Math.abs(angle) + '\xb0';
-                    text.justification = 'center';
-                    text.fontSize = 14;
-                }
-
-                edge.addChild(l1);
-                edge.addChild(l2);
-                edge.addChild(arc);
-                edge.addChild(text);
-            }
+            edge.children[2].opacity = 0;
+            edge.children[3].opacity = 0;
+            engine2D.calculateWallEdge(edge);
         }
+
+        //edge.addChild(angleSharpFix); //2
+        //edge.addChild(circleInner); //3
+        //edge.addChild(circleOuter); //4
+
+        //console.log(edge);
 
         project.layers.push(scene2DWallPointGroup[FLOOR]);
         //scene2DWallPointGroup[FLOOR].bringToFront();
+    }
+}
+
+engine2D.calculateWallEdge = function (edge) {
+
+    with (paper) {
+
+        for (a = 0; a < edge.attachments.length; a+=2) {
+
+            if(edge.attachments[a+1] == undefined)
+                break;
+
+            //console.log(edge.position);
+
+            //Fix the cutoff corners
+            //======================
+            /*
+            edge.children[1].add(new Point(edge.position.x - 10,edge.position.y-10));
+            edge.children[1].add(new Point(edge.position.x - 10,edge.position.y+10));
+            edge.children[1].add(new Point(edge.position.x + 10,edge.position.y+10));
+            edge.children[1].closed = true;
+            */
+            //edge.children[1].fillColor = 'red'; //DEBUG
+            //======================
+            /*
+            var hitEdgeResult = scene2DWallPointGroup[FLOOR].hitTest(edge.position);
+            if (!hitEdgeResult) {
+
+            }else{
+
+            }
+            */
+
+            var box = edge.bounds.width/2;
+            var l1 = new Path()
+            var l2 = new Path();
+            var l3 = new Path(); //DEBUG
+            var arc = new Path.Arc();
+            var text = new PointText();
+
+            if(edge.attachments[a].length > box && edge.attachments[a+1].length > box)
+            {
+                //console.log(edge.bounds.topLeft);
+                
+                var p1 = new Point(edge.bounds.center.x,edge.bounds.center.y);
+                var p2 = edge.attachments[a].getLocationAt(box).point;
+                var p3 = edge.attachments[a+1].getLocationAt(box).point;
+                
+                //console.log(Math.round(p1.subtract(p2).length));
+
+                if(Math.round(p1.subtract(p2).length) > box) //deal with reversed lines
+                    p2 = edge.attachments[a].getLocationAt(edge.attachments[a].length-box).point;
+
+                if(Math.round(p1.subtract(p3).length) > box) //deal with reversed lines
+                    p3 = edge.attachments[a+1].getLocationAt(edge.attachments[a+1].length-box).point;
+                
+                l1 = new Path.Line(p1, p2);
+                l2 = new Path.Line(p1, p3); 
+                l1.strokeColor = '#ffffff';
+                l1.strokeWidth = 1;
+                l2.style = l1.style;
+
+                var angle = engine2D.calculateWallAngle(edge.attachments[a],edge.attachments[a+1]);
+                //l2.rotation = angle;
+                //l2.rotate(angle,l2.segments[0].point);
+
+                //TODO: do a hitTest to floor suface (internal angles only)
+                //if(angle > 180)
+                //    angle = 360 - angle;
+
+                //console.log(angle);
+                //console.log(edge.position);
+                /*
+                var radius = 25, threshold = 10;
+                var from = new Point(radius, 0);
+                var through = from.rotate(angle / 2);
+                var text = new PointText(new Point(x,y) + through.normalize(radius + 10) + new Point(0, 3));
+                */
+
+                //======================
+                l3.add(l1.segments[1].point);
+                l3.add(l2.segments[1].point);
+                //l3.strokeColor  = 'red'; //DEBUG
+                var mp = l3.getLocationAt(l3.length/2).point;
+                text.position = mp;
+                l3.clear();
+                l3.add(mp);
+                l3.add(p1);
+                l3.scale(2);
+                mp = l3.segments[0].point;
+                l3.remove();
+                //l3.removeSegment(0);
+                //======================
+
+                arc = new Path.Arc(l1.segments[1].point, mp, l2.segments[1].point);
+                arc.strokeColor = '#000000';
+                arc.strokeWidth = 1;
+
+                text.content = Math.abs(angle) + '\xb0';
+                text.justification = 'center';
+                text.fontSize = 14;
+            }
+            var group = new Group([l1,l2,arc,text]);
+
+            if(edge.children[4])
+                edge.children[4].remove();
+            
+            edge.addChild(group);
+        }
     }
 }
 

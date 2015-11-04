@@ -283,7 +283,7 @@ Object.defineProperties( THREE.Light.prototype, {
 	},
 	shadowCameraVisible: {
 		set: function ( value ) {
-			console.warn( 'THREE.Light: .shadowCameraVisible has been removed. Use new THREE.CameraHelper( light.shadow ) instead.' );
+			console.warn( 'THREE.Light: .shadowCameraVisible has been removed. Use new THREE.CameraHelper( light.shadow.camera ) instead.' );
 		}
 	},
 	shadowBias: {
@@ -351,11 +351,11 @@ Object.defineProperties( THREE, {
 Object.defineProperties( THREE.MeshPhongMaterial.prototype, {
 	metal: {
 		get: function () {
-			console.warn( 'THREE.MeshPhongMaterial: .metal has been removed. Use THREE.MeshPhysicalMaterial instead.' );
+			console.warn( 'THREE.MeshPhongMaterial: .metal has been removed. Use THREE.MeshStandardMaterial instead.' );
 			return false;
 		},
 		set: function ( value ) {
-			console.warn( 'THREE.MeshPhongMaterial: .metal has been removed. Use THREE.MeshPhysicalMaterial instead' );
+			console.warn( 'THREE.MeshPhongMaterial: .metal has been removed. Use THREE.MeshStandardMaterial instead' );
 		}
 	}
 } );
@@ -705,5 +705,14 @@ THREE.CanvasRenderer = function () {
 	this.render = function () {};
 	this.setClearColor = function () {};
 	this.setSize = function () {};
+
+};
+
+//
+
+THREE.TextGeometry = function () {
+
+	console.error( 'THREE.TextGeometry has been moved to /examples/js/geometries/TextGeometry.js' );
+	console.error( 'THREE.FontUtils has been moved to /examples/js/utils/FontUtils.js' );
 
 };

@@ -962,7 +962,7 @@ engine3D.showHouse = function() {
 
     scene3DenableOrbitControls(camera3D,renderer.domElement);
 
-    //SSAOProcessing.enabled = false;
+    SSAOProcessing.enabled = false;
 
     $(renderer.domElement).bind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).bind('mouseup', on3DHouseMouseUp);
