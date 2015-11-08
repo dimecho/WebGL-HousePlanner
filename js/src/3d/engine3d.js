@@ -956,6 +956,8 @@ engine3D.showHouse = function() {
 
     scene3DFreeMemory();
     engine3D.hide();
+    engine2D.hide();
+    
     SCENE = 'house';
 
     initMenu("menuRight3DHouse","Exterior/index.json");

@@ -116,7 +116,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 		spot: [],
 		hemi: [],
 
-		shadows: 0,
+		shadows: [],
 		shadowsPointLight: 0
 
 	},
@@ -259,7 +259,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	// shadow map
 
-	var shadowMap = new THREE.WebGLShadowMap( this, lights, objects );
+	var shadowMap = new THREE.WebGLShadowMap( this, _lights, objects );
 
 	this.shadowMap = shadowMap;
 
@@ -700,11 +700,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	};
 
-	this.renderBufferDirect = function ( camera, lights, fog, geometry, material, object, group ) {
+	this.renderBufferDirect = function ( camera, fog, geometry, material, object, group ) {
 
 		setMaterial( material );
 
-		var program = setProgram( camera, lights, fog, material, object );
+		var program = setProgram( camera, fog, material, object );
 
 		var updateBuffers = false;
 		var geometryProgram = geometry.id + '_' + program.id + '_' + material.wireframe;
@@ -867,7 +867,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( geometry instanceof THREE.InstancedBufferGeometry && geometry.maxInstancedCount > 0 ) {
 
-				renderer.renderInstances( geometry );
+				renderer.renderInstances( geometry, drawStart, drawCount );
 
 			} else {
 
@@ -1156,19 +1156,19 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			var overrideMaterial = scene.overrideMaterial;
 
-			renderObjects( opaqueObjects, camera, lights, fog, overrideMaterial );
-			renderObjects( transparentObjects, camera, lights, fog, overrideMaterial );
+			renderObjects( opaqueObjects, camera, fog, overrideMaterial );
+			renderObjects( transparentObjects, camera, fog, overrideMaterial );
 
 		} else {
 
 			// opaque pass (front-to-back order)
 
 			state.setBlending( THREE.NoBlending );
-			renderObjects( opaqueObjects, camera, lights, fog );
+			renderObjects( opaqueObjects, camera, fog );
 
 			// transparent pass (back-to-front order)
 
-			renderObjects( transparentObjects, camera, lights, fog );
+			renderObjects( transparentObjects, camera, fog );
 
 		}
 
@@ -1350,7 +1350,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	}
 
-	function renderObjects( renderList, camera, lights, fog, overrideMaterial ) {
+	function renderObjects( renderList, camera, fog, overrideMaterial ) {
 
 		for ( var i = 0, l = renderList.length; i < l; i ++ ) {
 
@@ -1368,7 +1368,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				setMaterial( material );
 
-				var program = setProgram( camera, lights, fog, material, object );
+				var program = setProgram( camera, fog, material, object );
 
 				_currentGeometryProgram = '';
 
@@ -1380,7 +1380,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			} else {
 
-				_this.renderBufferDirect( camera, lights, fog, geometry, material, object, group );
+				_this.renderBufferDirect( camera, fog, geometry, material, object, group );
 
 			}
 
@@ -1388,7 +1388,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	}
 
-	function initMaterial( material, lights, fog, object ) {
+	function initMaterial( material, fog, object ) {
 
 		var materialProperties = properties.get( material );
 
@@ -1523,6 +1523,23 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
+		// detect dynamic uniforms
+
+		materialProperties.hasDynamicUniforms = false;
+
+		for ( var j = 0, jl = materialProperties.uniformsList.length; j < jl; j ++ ) {
+
+			var uniform = materialProperties.uniformsList[ j ][ 0 ];
+
+			if ( uniform.dynamic === true ) {
+
+				materialProperties.hasDynamicUniforms = true;
+				break;
+
+			}
+
+		}
+
 	}
 
 	function setMaterial( material ) {
@@ -1554,7 +1571,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	}
 
-	function setProgram( camera, lights, fog, material, object ) {
+	function setProgram( camera, fog, material, object ) {
 
 		_usedTextureUnits = 0;
 
@@ -1575,7 +1592,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		if ( material.needsUpdate ) {
 
-			initMaterial( material, lights, fog, object );
+			initMaterial( material, fog, object );
 			material.needsUpdate = false;
 
 		}
@@ -1794,7 +1811,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 				if ( object.receiveShadow && ! material._shadowPass ) {
 
-					refreshUniformsShadow( m_uniforms, lights, camera );
+					refreshUniformsShadow( m_uniforms, camera );
 
 				}
 
@@ -1814,7 +1831,35 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 		}
 
+		if ( materialProperties.hasDynamicUniforms === true ) {
+
+			updateDynamicUniforms( materialProperties.uniformsList, object, camera );
+
+		}
+
 		return program;
+
+	}
+
+	function updateDynamicUniforms ( uniforms, object, camera ) {
+
+		var dynamicUniforms = [];
+
+		for ( var j = 0, jl = uniforms.length; j < jl; j ++ ) {
+
+			var uniform = uniforms[ j ][ 0 ];
+			var onUpdateCallback = uniform.onUpdateCallback;
+
+			if ( onUpdateCallback !== undefined ) {
+
+				onUpdateCallback.bind( uniform )( object, camera );
+				dynamicUniforms.push( uniforms[ j ] );
+
+			}
+
+		}
+
+		loadUniformsGeneric( dynamicUniforms );
 
 	}
 
@@ -2076,46 +2121,43 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	}
 
-	function refreshUniformsShadow ( uniforms, lights, camera ) {
+	function refreshUniformsShadow ( uniforms, camera ) {
 
 		if ( uniforms.shadowMatrix ) {
 
 			var j = 0;
+			var shadows = _lights.shadows;
 
-			for ( var i = 0, il = lights.length; i < il; i ++ ) {
+			for ( var i = 0, il = shadows.length; i < il; i ++ ) {
 
-				var light = lights[ i ];
+				var light = shadows[ i ];
 
-				if ( light.castShadow === true ) {
+				if ( light instanceof THREE.PointLight || light instanceof THREE.SpotLight || light instanceof THREE.DirectionalLight ) {
 
-					if ( light instanceof THREE.PointLight || light instanceof THREE.SpotLight || light instanceof THREE.DirectionalLight ) {
+					var shadow = light.shadow;
 
-						var shadow = light.shadow;
+					if ( light instanceof THREE.PointLight ) {
 
-						if ( light instanceof THREE.PointLight ) {
+						// for point lights we set the shadow matrix to be a translation-only matrix
+						// equal to inverse of the light's position
+						_vector3.setFromMatrixPosition( light.matrixWorld ).negate();
+						shadow.matrix.identity().setPosition( _vector3 );
 
-							// for point lights we set the shadow matrix to be a translation-only matrix
-							// equal to inverse of the light's position
-							_vector3.setFromMatrixPosition( light.matrixWorld ).negate();
-							shadow.matrix.identity().setPosition( _vector3 );
+						// for point lights we set the sign of the shadowDarkness uniform to be negative
+						uniforms.shadowDarkness.value[ j ] = - shadow.darkness;
 
-							// for point lights we set the sign of the shadowDarkness uniform to be negative
-							uniforms.shadowDarkness.value[ j ] = - shadow.darkness;
+					} else {
 
-						} else {
-
-							uniforms.shadowDarkness.value[ j ] = shadow.darkness;
-
-						}
-
-						uniforms.shadowMatrix.value[ j ] = shadow.matrix;
-						uniforms.shadowMap.value[ j ] = shadow.map;
-						uniforms.shadowMapSize.value[ j ] = shadow.mapSize;
-						uniforms.shadowBias.value[ j ] = shadow.bias;
-
-						j ++;
+						uniforms.shadowDarkness.value[ j ] = shadow.darkness;
 
 					}
+
+					uniforms.shadowMatrix.value[ j ] = shadow.matrix;
+					uniforms.shadowMap.value[ j ] = shadow.map;
+					uniforms.shadowMapSize.value[ j ] = shadow.mapSize;
+					uniforms.shadowBias.value[ j ] = shadow.bias;
+
+					j ++;
 
 				}
 
@@ -2282,6 +2324,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 						var valueProperty = value[ propertyName ];
 
 						switch( property.type ) {
+							case 'i':
+								_gl.uniform1i( locationProperty, valueProperty );
+								break;
 							case 'f':
 								_gl.uniform1f( locationProperty, valueProperty );
 								break;
@@ -2315,6 +2360,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 							var valueProperty = value[i][ propertyName ];
 
 							switch( property.type ) {
+								case 'i':
+									_gl.uniform1i( locationProperty, valueProperty );
+									break;
 								case 'f':
 									_gl.uniform1f( locationProperty, valueProperty );
 									break;
@@ -2600,9 +2648,10 @@ THREE.WebGLRenderer = function ( parameters ) {
 		directionalLength = 0,
 		pointLength = 0,
 		spotLength = 0,
-		hemiLength = 0;
+		hemiLength = 0,
 
-		_lights.shadows = 0;
+		shadowsLength = 0;
+
 		_lights.shadowsPointLight = 0;
 
 		for ( l = 0, ll = lights.length; l < ll; l ++ ) {
@@ -2624,7 +2673,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 				if( ! light.__webglUniforms ) {
 					light.__webglUniforms = {
 						direction: new THREE.Vector3(),
-						color: new THREE.Color()
+						color: new THREE.Color(),
+						shadow: -1
 					}
 				}
 
@@ -2636,9 +2686,19 @@ THREE.WebGLRenderer = function ( parameters ) {
 				uniforms.direction.transformDirection( viewMatrix );
 				uniforms.color.copy( light.color ).multiplyScalar( light.intensity );
 
-				_lights.directional[ directionalLength ++ ] = uniforms;
+				if ( light.castShadow ) {
 
-				if ( light.castShadow ) _lights.shadows ++;
+					uniforms.shadow = shadowsLength;
+
+					_lights.shadows[ shadowsLength ++ ] = light;
+
+				} else {
+
+					uniforms.shadow = -1;
+
+				}
+
+				_lights.directional[ directionalLength ++ ] = uniforms;
 
 			} else if ( light instanceof THREE.PointLight ) {
 
@@ -2647,7 +2707,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 						position: new THREE.Vector3(),
 						color: new THREE.Color(),
 						distance: 0,
-						decay: 0
+						decay: 0,
+						shadow: -1
 					}
 				}
 
@@ -2660,14 +2721,20 @@ THREE.WebGLRenderer = function ( parameters ) {
 				uniforms.distance = light.distance;
 				uniforms.decay = ( light.distance === 0 ) ? 0.0 : light.decay;
 
-				_lights.point[ pointLength ++ ] = uniforms;
-
 				if ( light.castShadow ) {
 
-					_lights.shadows ++;
+					uniforms.shadow = shadowsLength;
+
+					_lights.shadows[ shadowsLength ++ ] = light;
 					_lights.shadowsPointLight ++;
 
+				} else {
+
+					uniforms.shadow = -1;
+
 				}
+
+				_lights.point[ pointLength ++ ] = uniforms;
 
 			} else if ( light instanceof THREE.SpotLight ) {
 
@@ -2699,9 +2766,19 @@ THREE.WebGLRenderer = function ( parameters ) {
 				uniforms.exponent = light.exponent;
 				uniforms.decay = ( light.distance === 0 ) ? 0.0 : light.decay;
 
-				_lights.spot[ spotLength ++ ] = uniforms;
+				if ( light.castShadow ) {
 
-				if ( light.castShadow ) _lights.shadows ++;
+					uniforms.shadow = shadowsLength;
+
+					_lights.shadows[ shadowsLength ++ ] = light;
+
+				} else {
+
+					uniforms.shadow = -1;
+
+				}
+
+				_lights.spot[ spotLength ++ ] = uniforms;
 
 			} else if ( light instanceof THREE.HemisphereLight ) {
 
@@ -2737,7 +2814,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 		_lights.spot.length = spotLength;
 		_lights.hemi.length = hemiLength;
 
-		_lights.hash = directionalLength + ',' + pointLength + ',' + spotLength + ',' + hemiLength;
+		_lights.shadows.length = shadowsLength;
+
+		_lights.hash = directionalLength + ',' + pointLength + ',' + spotLength + ',' + hemiLength + ',' + shadowsLength;
 
 	}
 

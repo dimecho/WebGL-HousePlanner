@@ -21,8 +21,8 @@ THREE.WebGLPrograms = function ( renderer, capabilities ) {
 		"alphaMap", "combine", "vertexColors", "fog", "useFog", "fogExp",
 		"flatShading", "sizeAttenuation", "logarithmicDepthBuffer", "skinning",
 		"maxBones", "useVertexTexture", "morphTargets", "morphNormals",
-		"maxMorphTargets", "maxMorphNormals", "maxDirLights", "maxPointLights",
-		"maxSpotLights", "maxHemiLights", "maxShadows", "shadowMapEnabled", "pointLightShadows",
+		"maxMorphTargets", "maxMorphNormals", "numDirLights", "numPointLights",
+		"numSpotLights", "numHemiLights", "numShadows", "shadowMapEnabled", "pointLightShadows",
 		"shadowMapType", "shadowMapDebug", "alphaTest", "doubleSided",
 		"flipSided"
 	];
@@ -81,7 +81,7 @@ THREE.WebGLPrograms = function ( renderer, capabilities ) {
 
 			if ( precision !== material.precision ) {
 
-				console.warn( 'THREE.WebGLRenderer.initMaterial:', material.precision, 'not supported, using', precision, 'instead.' );
+				console.warn( 'THREE.WebGLProgram.getParameters:', material.precision, 'not supported, using', precision, 'instead.' );
 
 			}
 
@@ -131,15 +131,15 @@ THREE.WebGLPrograms = function ( renderer, capabilities ) {
 			maxMorphTargets: renderer.maxMorphTargets,
 			maxMorphNormals: renderer.maxMorphNormals,
 
-			maxDirLights: lights.directional.length,
-			maxPointLights: lights.point.length,
-			maxSpotLights: lights.spot.length,
-			maxHemiLights: lights.hemi.length,
+			numDirLights: lights.directional.length,
+			numPointLights: lights.point.length,
+			numSpotLights: lights.spot.length,
+			numHemiLights: lights.hemi.length,
 
-			maxShadows: lights.shadows,
+			numShadows: lights.shadows.length,
 			pointLightShadows: lights.shadowsPointLight,
 
-			shadowMapEnabled: renderer.shadowMap.enabled && object.receiveShadow && lights.shadows > 0,
+			shadowMapEnabled: renderer.shadowMap.enabled && object.receiveShadow && lights.shadows.length > 0,
 			shadowMapType: renderer.shadowMap.type,
 			shadowMapDebug: renderer.shadowMap.debug,
 

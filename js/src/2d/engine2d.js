@@ -32,6 +32,7 @@ engine2D.open = function (zip){
             });
             //scene2DWallGroup[i].activate();
             scene2DWallGroup[i].bringToFront()
+            //scene2DLabelGroup[i].bringToFront()
         }
         
         i++;

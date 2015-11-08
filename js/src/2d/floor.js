@@ -52,5 +52,14 @@ engine2D.makeLabel = function (label,size,x,y) {
 
     with (paper) {
 
+        var text = new PointText();
+        text.content = label + '\n' + size;
+        text.justification = 'center';
+        text.fontSize = 28;
+        text.position = new Point(x,y);
+
+        project.layers.push(text);
     }
+
+    return text;
 }

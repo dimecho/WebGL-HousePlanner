@@ -1,14 +1,16 @@
-function scene2DHistoryForward()
+var engine2D = window.engine2D || {};
+
+engine2D.HistoryForward = function()
 {
-   
+
 }
 
-function scene2DHistoryBack()
+engine2D.HistoryBack = function()
 {
-   
+
 }
 
-function scene2DHistoryAdd()
+engine2D.HistoryAdd = function()
 {
-   
+
 }

@@ -245,12 +245,12 @@ THREE.WebGLProgram = ( function () {
 				renderer.gammaOutput ? '#define GAMMA_OUTPUT' : '',
 				'#define GAMMA_FACTOR ' + gammaFactorDefine,
 
-				'#define MAX_DIR_LIGHTS ' + parameters.maxDirLights,
-				'#define MAX_POINT_LIGHTS ' + parameters.maxPointLights,
-				'#define MAX_SPOT_LIGHTS ' + parameters.maxSpotLights,
-				'#define MAX_HEMI_LIGHTS ' + parameters.maxHemiLights,
+				'#define NUM_DIR_LIGHTS ' + parameters.numDirLights,
+				'#define NUM_POINT_LIGHTS ' + parameters.numPointLights,
+				'#define NUM_SPOT_LIGHTS ' + parameters.numSpotLights,
+				'#define NUM_HEMI_LIGHTS ' + parameters.numHemiLights,
 
-				'#define MAX_SHADOWS ' + parameters.maxShadows,
+				'#define NUM_SHADOWS ' + parameters.numShadows,
 
 				'#define MAX_BONES ' + parameters.maxBones,
 
@@ -356,12 +356,12 @@ THREE.WebGLProgram = ( function () {
 
 				customDefines,
 
-				'#define MAX_DIR_LIGHTS ' + parameters.maxDirLights,
-				'#define MAX_POINT_LIGHTS ' + parameters.maxPointLights,
-				'#define MAX_SPOT_LIGHTS ' + parameters.maxSpotLights,
-				'#define MAX_HEMI_LIGHTS ' + parameters.maxHemiLights,
+				'#define NUM_DIR_LIGHTS ' + parameters.numDirLights,
+				'#define NUM_POINT_LIGHTS ' + parameters.numPointLights,
+				'#define NUM_SPOT_LIGHTS ' + parameters.numSpotLights,
+				'#define NUM_HEMI_LIGHTS ' + parameters.numHemiLights,
 
-				'#define MAX_SHADOWS ' + parameters.maxShadows,
+				'#define NUM_SHADOWS ' + parameters.numShadows,
 
 				parameters.alphaTest ? '#define ALPHATEST ' + parameters.alphaTest : '',
 

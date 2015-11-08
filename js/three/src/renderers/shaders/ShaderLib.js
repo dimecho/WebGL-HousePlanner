@@ -89,7 +89,6 @@ THREE.ShaderLib = {
 			"void main() {",
 
 			"	vec4 diffuseColor = vec4( diffuse, opacity );",
-			"	vec3 shadowMask = vec3( 1.0 );",
 
 				THREE.ShaderChunk[ "logdepthbuf_fragment" ],
 				THREE.ShaderChunk[ "map_fragment" ],
@@ -214,9 +213,9 @@ THREE.ShaderLib = {
 
 			"void main() {",
 
-			"	vec3 outgoingLight = vec3( 0.0 );",	// outgoing light does not have an alpha, the surface does
+			"	vec3 outgoingLight = vec3( 0.0 );",
 			"	vec4 diffuseColor = vec4( diffuse, opacity );",
-			"	vec3 shadowMask = vec3( 1.0 );",
+			"	vec3 totalAmbientLight = PI * ambientLightColor;",
 
 				THREE.ShaderChunk[ "logdepthbuf_fragment" ],
 				THREE.ShaderChunk[ "map_fragment" ],
@@ -229,13 +228,13 @@ THREE.ShaderLib = {
 			"	#ifdef DOUBLE_SIDED",
 
 			"		if ( gl_FrontFacing )",
-			"			outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightFront * shadowMask ) + emissive;",
+			"			outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightFront * shadowMask + totalAmbientLight ) + emissive;",
 			"		else",
-			"			outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightBack * shadowMask ) + emissive;",
+			"			outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightBack * shadowMask + totalAmbientLight ) + emissive;",
 
 			"	#else",
 
-			"		outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightFront * shadowMask ) + emissive;",
+			"		outgoingLight += RECIPROCAL_PI * diffuseColor.rgb * ( vLightFront * shadowMask + totalAmbientLight ) + emissive;",
 
 			"	#endif",
 
@@ -371,7 +370,6 @@ THREE.ShaderLib = {
 			"	vec4 diffuseColor = vec4( diffuse, opacity );",
 			"	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );",
 			"	vec3 totalEmissiveLight = emissive;",
-			"	vec3 shadowMask = vec3( 1.0 );",
 
 				THREE.ShaderChunk[ "logdepthbuf_fragment" ],
 				THREE.ShaderChunk[ "map_fragment" ],
@@ -382,6 +380,8 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "normal_phong_fragment" ],
 				THREE.ShaderChunk[ "emissivemap_fragment" ],
 
+				THREE.ShaderChunk[ "shadowmap_fragment" ],
+
 				// accumulation
 				THREE.ShaderChunk[ "lights_phong_fragment" ],
 				THREE.ShaderChunk[ "lights_template" ],
@@ -389,10 +389,6 @@ THREE.ShaderLib = {
 
 				// modulation
 				THREE.ShaderChunk[ "aomap_fragment" ],
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
-
-				"reflectedLight.directDiffuse *= shadowMask;",
-				"reflectedLight.directSpecular *= shadowMask;",
 
 				"vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveLight;",
 
@@ -557,6 +553,8 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "normal_phong_fragment" ], // use phong chunk for now
 				THREE.ShaderChunk[ "emissivemap_fragment" ],
 
+				THREE.ShaderChunk[ "shadowmap_fragment" ],
+
 				// accumulation
 				THREE.ShaderChunk[ "lights_standard_fragment" ],
 				THREE.ShaderChunk[ "lights_template" ],
@@ -564,12 +562,6 @@ THREE.ShaderLib = {
 
 				// modulation
 				THREE.ShaderChunk[ "aomap_fragment" ],
-
-				"vec3 shadowMask = vec3( 1.0 );",
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
-
-				"reflectedLight.directDiffuse *= shadowMask;",
-				"reflectedLight.directSpecular *= shadowMask;",
 
 				"vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveLight;",
 
@@ -642,7 +634,6 @@ THREE.ShaderLib = {
 
 			"	vec3 outgoingLight = vec3( 0.0 );",
 			"	vec4 diffuseColor = vec4( psColor, opacity );",
-			"	vec3 shadowMask = vec3( 1.0 );",
 
 				THREE.ShaderChunk[ "logdepthbuf_fragment" ],
 				THREE.ShaderChunk[ "map_particle_fragment" ],

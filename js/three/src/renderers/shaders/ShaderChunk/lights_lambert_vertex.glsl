@@ -9,9 +9,9 @@ vLightFront = vec3( 0.0 );
 	vLightBack = vec3( 0.0 );
 #endif
 
-#if MAX_POINT_LIGHTS > 0
+#if NUM_POINT_LIGHTS > 0
 
-	for ( int i = 0; i < MAX_POINT_LIGHTS; i ++ ) {
+	for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ ) {
 
 		IncidentLight directLight = getPointDirectLight( pointLights[ i ], geometry );
 
@@ -30,9 +30,9 @@ vLightFront = vec3( 0.0 );
 
 #endif
 
-#if MAX_SPOT_LIGHTS > 0
+#if NUM_SPOT_LIGHTS > 0
 
-	for ( int i = 0; i < MAX_SPOT_LIGHTS; i ++ ) {
+	for ( int i = 0; i < NUM_SPOT_LIGHTS; i ++ ) {
 
 		IncidentLight directLight = getSpotDirectLight( spotLights[ i ], geometry );
 
@@ -50,9 +50,9 @@ vLightFront = vec3( 0.0 );
 
 #endif
 
-#if MAX_DIR_LIGHTS > 0
+#if NUM_DIR_LIGHTS > 0
 
-	for ( int i = 0; i < MAX_DIR_LIGHTS; i ++ ) {
+	for ( int i = 0; i < NUM_DIR_LIGHTS; i ++ ) {
 
 		IncidentLight directLight = getDirectionalDirectLight( directionalLights[ i ], geometry );
 
@@ -73,17 +73,10 @@ vLightFront = vec3( 0.0 );
 
 	{
 
-		vLightFront += PI * ambientLightColor;
 
-		#ifdef DOUBLE_SIDED
+		#if NUM_HEMI_LIGHTS > 0
 
-			vLightBack += PI * ambientLightColor;
-
-		#endif
-
-		#if MAX_HEMI_LIGHTS > 0
-
-			for ( int i = 0; i < MAX_HEMI_LIGHTS; i ++ ) {
+			for ( int i = 0; i < NUM_HEMI_LIGHTS; i ++ ) {
 
 				vLightFront += getHemisphereLightIrradiance( hemisphereLights[ i ], geometry );
 
