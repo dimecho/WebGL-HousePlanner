@@ -70,19 +70,13 @@ THREE.UniformsLib = {
 
 	},
 
-	reflectivitymap: {
-
-		"reflectivityMap" : { type: "t", value: null }
-
-	},
-
 	metalnessmap: {
 
 		"metalnessMap" : { type: "t", value: null }
 
 	},
 
-	fog : {
+	fog: {
 
 		"fogDensity" : { type: "f", value: 0.00025 },
 		"fogNear" : { type: "f", value: 1 },

@@ -1,3 +1,5 @@
+var engine3D = window.engine3D || {};
+
 /*
 WebGL HousePlanner v1.0
 Preview: http://houseplanner.iroot.ca
@@ -213,3 +215,5 @@ var depthMaterial, depthRenderTarget;
 var depthScale = 1.0;
 var FXAAProcessing = { enabled : true}; // renderMode: 0('framebuffer'), 1('onlyAO')
 var SSAOProcessing = { enabled : false, renderMode: 0 }; // renderMode: 0('framebuffer'), 1('onlyAO')
+
+engine3D.showCube = false;

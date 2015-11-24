@@ -1,5 +1,48 @@
 var engine3D = window.engine3D || {};
 
+engine3D.triangulateUsingP2T = function (pts, holes) {
+    
+    var allpts = pts.slice(0);
+    var shape = [];
+    var geom = new THREE.Geometry();
+    var lastPoint = pts[pts.length - 1];
+    var threshold = 1e-3;
+    for (var p = 0, pl = pts.length; p < pl; p++) {
+        if (lastPoint.distanceTo(pts[p]) > threshold) shape.push(new poly2tri.Point(pts[p].x, pts[p].y));
+        lastPoint = pts[p];
+    }
+    if (shape.length < 3) return;
+    var swctx = new poly2tri.SweepContext(shape);
+    for (var h in holes) {
+        var aHole = holes[h];
+        var newHole = [];
+        for (i in aHole) {
+            newHole.push(new poly2tri.Point(aHole[i].x, aHole[i].y));
+            allpts.push(aHole[i]);
+        }
+        swctx.AddHole(newHole);
+    }
+    var find;
+    var findIndexForPt = function (pt) {
+        find = new THREE.Vector2(pt.x, pt.y);
+        var p;
+        for (p = 0, pl = allpts.length; p < pl; p++)
+            if (find.distanceToSquared(allpts[p]) == 0) return p;
+        return -1;
+    };
+    poly2tri.sweep.Triangulate(swctx);
+    var triangles = swctx.GetTriangles();
+    var tr;
+    var facesPts = [];
+    for (var t in triangles) {
+        tr = triangles[t];
+        geom.faces.push(new THREE.Face3(findIndexForPt(tr.GetPoint(2)), findIndexForPt(tr.GetPoint(1)), findIndexForPt(tr.GetPoint(0))));
+        geom.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)]);
+    }
+    geom.vertices = allpts;
+    return geom;
+};
+
 function selectMeasurement() {
 
     if (REALSIZERATIO == 1.8311874) {
@@ -352,7 +395,7 @@ function camera3DAnimateResetView()
     }
 }
 
-function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, note) {
+engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, note) {
 
     //http://www.smashingmagazine.com/2013/09/17/introduction-to-polygonal-modeling-and-three-js/
 
@@ -604,7 +647,7 @@ function open3DModel(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, 
                 textMesh.rotation.y = 1.5;
                 textMesh.name = note;
 
-                open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
+                engine3D.open3DModel("objects/Platform/note.jsz", object, 1.25, 0.1, -0.3, 0, 1.5, 1, false, null);
                 object.add(textMesh);
                 
                 console.log( js + " Add Note: '" + note + "'");
@@ -991,8 +1034,8 @@ engine3D.showHouse = function() {
     menuSelect(1, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
-    scene3DSetSky(DAY);
-    //scene3DSetSky('0000');
+    engine3D.SetSky(DAY);
+    //engine3D.SetSky('0000');
     scene3D.add(skyMesh);
 
     if(settings.clouds)
@@ -1000,7 +1043,7 @@ engine3D.showHouse = function() {
     if(settings.rainbow)
         scene3D.add(weatherSkyRainbowMesh);
     
-    scene3DSetLight();
+    engine3D.SetLights();
 
     engine3D.makeFloor();
 
@@ -1022,7 +1065,11 @@ engine3D.showHouse = function() {
     for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
         scene3D.add(scene3DFloorFurnitureContainer[i]);
     }
-    scene3DCube.add(scene3DCubeMesh);
+
+    if(scene3DCube)
+    {
+        scene3DCube.add(scene3DCubeMesh);
+    }
 
     //console.trace();
     $('#engine3D').show();
@@ -1048,8 +1095,8 @@ engine3D.showLandscape = function() {
     //scene3D = new THREE.Scene();
     SCENE = 'landscape';
 
-    scene3DSetSky('day');
-    scene3DSetLight();
+    engine3D.SetSky('day');
+    engine3D.SetLights();
 
     scene3DenableOrbitControls(camera3D,renderer.domElement);
 
@@ -1133,7 +1180,7 @@ engine3D.showFloor = function () {
     buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
     scene3D.add(skyFloorMesh);
 
-    scene3DSetLight();
+    engine3D.SetLights();
 
     engine3D.makeWalls();
     
@@ -1194,7 +1241,10 @@ engine3D.showFloor = function () {
     menuSelect(0,'menuLeft3DFloorItem','#ff3700');
     correctMenuHeight();
 
-    scene3DCube.add(scene3DCubeMesh);
+    if(scene3DCube)
+    {
+        scene3DCube.add(scene3DCubeMesh);
+    }
 
     $('#engine3D').show();
     $('#WebGLCanvas').show();
@@ -1214,9 +1264,9 @@ engine3D.showFloorLevel = function() {
     //scene3D = new THREE.Scene();
     SCENE = 'floorlevel';
 
-    //scene3DSetBackground('blue');
-    scene3DSetSky('day');
-    scene3DSetLight();
+    //engine3D.SetBackground('blue');
+    engine3D.SetSky('day');
+    engine3D.SetLights();
 
     scene3DenableOrbitControls(camera3D,renderer.domElement);
 
@@ -1250,8 +1300,8 @@ engine3D.showRoofDesign = function() {
 
     initMenu("menuRight3DRoof","Roof/index.json");
 
-    //scene3DSetBackground('split');
-    scene3DSetLight();
+    //engine3D.SetBackground('split');
+    engine3D.SetLights();
 
     //camera3D.position.set(0, 4, 12);
     //var ambientLight = new THREE.AmbientLight( Math.random() * 0x10 );
@@ -1404,7 +1454,10 @@ engine3D.hide = function() {
     //renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
     //renderer.clear();
     
-    scene3DCube.remove(scene3DCubeMesh);
+    if(scene3DCube)
+    {
+        scene3DCube.remove(scene3DCubeMesh);
+    }
     
     //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
     //$(renderer.domElement).unbind('mouseup', on3DMouseUp);
@@ -1686,8 +1739,8 @@ function selectDayNight() {
     }
     scene3D.remove(skyMesh);
 
-    scene3DSetSky(DAY);
-    scene3DSetLight();
+    engine3D.SetSky(DAY);
+    engine3D.SetLights();
     scene3DSetWeather();
 
     scene3D.add(skyMesh);
@@ -2349,7 +2402,7 @@ function scene3DGround(_texture, _grid) {
 
 // reproduction of a demo of @mrdoob by http://mrdoob.com/lab/javascript/webgl/clouds/
 
-function scene3DSetBackground(set) {
+engine3D.SetBackground = function(set) {
 
     //var canvas = document.getElementById('WebGLCanvas');
     var canvas = document.createElement('canvas');
@@ -2391,7 +2444,7 @@ function scene3DSetBackground(set) {
     }
 }
 
-function scene3DSetLight() {
+engine3D.SetLights = function() {
 
     scene3D.remove(sceneAmbientLight);
     scene3D.remove(sceneDirectionalLight);
@@ -2404,9 +2457,9 @@ function scene3DSetLight() {
             if (settings.sunlight) 
             {
                 //SUNLIGHT RAYS
-                sceneAmbientLight = new THREE.AmbientLight(0x555555, 0.1); //SUNLIGHT RAYS
+                sceneAmbientLight = new THREE.AmbientLight(); //SUNLIGHT RAYS
                 scene3D.add(sceneAmbientLight);
-                sceneDirectionalLight.intensity = 0.5; //SUNLIGHT RAYS
+                //sceneDirectionalLight.intensity = 1; //SUNLIGHT RAYS
                 scene3D.add(sceneDirectionalLight);
                 sceneSpotLight.intensity = 1;
                 sceneSpotLight.castShadow = false;
@@ -2456,8 +2509,9 @@ function scene3DSetLight() {
         //scene3D.add(sceneHemisphereLight);
     } else if (SCENE == 'floor') {
 
-        sceneAmbientLight = new THREE.AmbientLight(0xffffff, 0.1);
+        sceneAmbientLight = new THREE.AmbientLight();
         scene3D.add(sceneAmbientLight);
+        sceneDirectionalLight.intensity = 0.6;
         //sceneSpotLight.intensity = 0.8;
         //sceneSpotLight.castShadow = false;
         //scene3D.add(sceneSpotLight);
@@ -2465,7 +2519,7 @@ function scene3DSetLight() {
     }
 }
 
-function scene3DSetSky(set) {
+engine3D.SetSky = function(set) {
 
     if(skyMesh.name != set)
     {
@@ -2510,11 +2564,11 @@ function scene3DSetSky(set) {
     }
 }
 
-function scene3DSky() {
+engine3D.SkyEffects = function() {
 
     //http://mrdoob.com/lab/javascript/webgl/clouds/
     //http://gonchar.me/panorama/
-    //scene3DSetSky("day");
+    //engine3D.SetSky("day");
 
     //=====================
     /*
@@ -2539,8 +2593,6 @@ function scene3DSky() {
     scene3D.add(skyNightMesh);
     */
     //=============
-
-
 
     /*
     weatherRainMesh = {
@@ -2576,183 +2628,6 @@ function scene3DFloorSky() {
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function scene3DInitializeLights() {
-
-    //scene3D.add(new THREE.AmbientLight(0xFFFFFF));
-
-    /*
-    var light = new THREE.PointLight(0xffffff);
-    light.position.set(0, 100, 0);
-    scene3D.add(light);
-    */
-
-    //sky color ground color intensity
-    /*
-    var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
-    hemiLight.color.setHSL(0.6, 1, 0.6);
-    hemiLight.groundColor.setHSL(0.095, 1, 0.75);
-    hemiLight.position.set(0, 100, 0);
-    scene3D.add(hemiLight);
-    */
-
-    //add sunlight
-    /*
-    var light = new THREE.SpotLight();
-    light.position.set(0, 100, 0);
-    scene3D.add(light);
-    */
-
-    //scene3D.fog = new THREE.Fog(0xffffff, 0.015, 40); //white fog (0xffffff). The last two properties can be used to tune how the mist will appear. The 0.015 value sets the near property and the 100 value sets the far property 
-
-    /*
-    sceneHemisphereLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
-    sceneHemisphereLight.color.setHSL(0.6, 0.75, 0.5);
-    sceneHemisphereLight.groundColor.setHSL(0.095, 0.5, 0.5);
-    sceneHemisphereLight.position.set(0, 20, 0);
-    //sceneHemisphereLight.shadowCameraVisible = true;
-    */
-    //scene3D.add(hemiLight);
-
-    // sky color ground color intensity 
-    //sceneHemisphereLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 ); 
-
-    //var ambientLight = new THREE.AmbientLight(0x444444); // 0xcccccc
-    //scene.add(ambientLight);
-
-    /*
-    sceneParticleLight = new THREE.Mesh(new THREE.SphereGeometry(0, 10, 0), new THREE.MeshBasicMaterial({
-        color: 0xffffff
-    }));
-    scene3D.add(sceneParticleLight);
-    */
-
-    /*
-    light1 = new THREE.PointLight( 0xFFFFFF );
-    light1.position.set( 100, 70, 40 );
-    scene.add( light1 );
-    light1 = new THREE.PointLight( 0xFFFFAA );
-    light1.position.set( -100, -70, -40 );
-    scene.add( light1 );
-    */
-
-
-    /*
-    var light = new THREE.SpotLight(0xffffff, 0.5);
-    light.position.set(0, 20, 20);
-    light.castShadow = true;
-    light.shadowCameraNear = 20;
-    light.shadowCameraFar = camera3D.far;
-    light.shadowCameraFov = 10;
-    light.shadowBias = -0.00022;
-    light.shadowDarkness = 0.5;
-    light.shadowMapWidth = 2048;
-    light.shadowMapHeight = 2048;
-    scene3D.add(light);
-    */
-    /*
-    sceneDirectionalLight = new THREE.DirectionalLight(0xFFBBBB, 0.5);
-    sceneDirectionalLight.position.set(2, 10, 6);
-    sceneDirectionalLight.target.position.set(0, 0, 0);
-    sceneDirectionalLight.castShadow = true;
-    sceneDirectionalLight.shadowCameraNear = 0;
-    sceneDirectionalLight.shadowCameraFar = 27;
-    sceneDirectionalLight.shadowCameraRight = 15;
-    sceneDirectionalLight.shadowCameraLeft = -15;
-    sceneDirectionalLight.shadowCameraTop = 15;
-    sceneDirectionalLight.shadowCameraBottom = -15;
-    sceneDirectionalLight.shadowCameraVisible = true;
-    sceneDirectionalLight.shadowBias = 0.005;
-    sceneDirectionalLight.shadowDarkness = 0.4;
-    sceneDirectionalLight.shadowMapWidth = 1024;
-    sceneDirectionalLight.shadowMapHeight = 1024;
-    */
-
-    
-    sceneDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    sceneDirectionalLight.color.setHSL(0.1, 1, 0.95);
-    sceneDirectionalLight.position.set(1, 1.8, 0.8); //.normalize();
-    sceneDirectionalLight.target.position.set(0, 0, 0);
-    sceneDirectionalLight.position.multiplyScalar(50);
-    //sceneDirectionalLight.position.set(-1, 0, 0).normalize();
-    sceneDirectionalLight.castShadow = true;
-    sceneDirectionalLight.shadowMapWidth = 2048;
-    sceneDirectionalLight.shadowMapHeight = 2048;
-    var d = 15;
-    sceneDirectionalLight.shadowCameraLeft = -d;
-    sceneDirectionalLight.shadowCameraRight = d;
-    sceneDirectionalLight.shadowCameraTop = d;
-    sceneDirectionalLight.shadowCameraBottom = -d;
-    sceneDirectionalLight.shadowCameraFar = 2000;
-    sceneDirectionalLight.shadowBias = -0.0001;
-    sceneDirectionalLight.shadowDarkness = 0.4;
-    
-    //sceneDirectionalLight.shadowCameraVisible = true;
-    
-    //scene3D.add(sceneDirectionalLight);
-    
-
-    sceneSpotLight = new THREE.SpotLight();
-    sceneSpotLight.shadowCameraNear = 1; // keep near and far planes as tight as possible
-    sceneSpotLight.shadowCameraFar = 38; // shadows not cast past the far plane
-    //sceneSpotLight.shadowCameraVisible = true;
-    sceneSpotLight.castShadow = true;
-    sceneSpotLight.intensity = 1;
-    sceneSpotLight.position.set(-4, 35, 4)
-    //scene3D.add(sceneSpotLight);
-
-    /*
-    var frontLight  = new THREE.DirectionalLight('white', 1)
-    frontLight.position.set(0.5, 0.5, 2).multiplyScalar(2)
-    scene.add( frontLight )
-
-    var backLight   = new THREE.DirectionalLight('white', 0.75)
-    backLight.position.set(-0.5, -0.5, -2)
-    scene.add( backLight )
-    */
-
-}
-
-function initMenu(id,item) {
-
-    if(RUNMODE == "database")
-    {
-        item = "php/objects.php?menu=" + item.split('/').shift();
-    }else{
-        item = "objects/" + item;
-    }
-
-    $.ajax(item,{
-        //contentType: "json",
-        //async: false,
-        dataType: 'json',
-        success: function(json){
-            //var json = JSON.parse(data);
-            var menu = $("#" + id + " .scroll");
-            //var menu = $("#" + id + " .cssmenu > ul");
-            menu.empty();
-            $.each(json.menu, function() {
-                menu.append(getMenuItem(this));
-            });
-            /*
-            $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
-                menuItemClick(this);
-            });
-            */
-            $("#" + id + " .cssmenu > ul > li > a").click(function(event) {
-                menuItemClick(this);
-            });
-        },
-        error: function(xhr, textStatus, errorThrown){
-			alertify.alert("Menu (" + item + ") Loading Error");
-		}
-    });
-    
-    correctMenuHeight();
-
-    $("#" + id).show();
-    //toggleRight('menuRight', true);
 }
 
 function insertSceneObject(path) {
@@ -2800,14 +2675,14 @@ function insertSceneObject(path) {
             z = scene3DHouseContainer.children[o].position.z + scene3DHouseContainer.children[o].geometry.boundingBox.max.z;
         }catch(e){}
         //console.log(path + " x:" + x + " z:" + z);
-        open3DModel(path, scene3DHouseContainer, x, 0, z, 0, 0, 1, true, null);
+        engine3D.open3DModel(path, scene3DHouseContainer, x, 0, z, 0, 0, 1, true, null);
     }
     else  if(SCENE == 'floor')
     {
     	o = scene3DFloorFurnitureContainer[FLOOR].children.length-1;
     	x = scene3DFloorFurnitureContainer[FLOOR].children[o].position.x + scene3DFloorFurnitureContainer[FLOOR].children[o].geometry.boundingBox.max.x;
         z = scene3DFloorFurnitureContainer[FLOOR].children[o].position.z + scene3DFloorFurnitureContainer[FLOOR].children[o].geometry.boundingBox.max.z;
-        open3DModel(path, scene3DFloorFurnitureContainer[FLOOR], x, 0, z, 0, 0, 1, true, null);
+        engine3D.open3DModel(path, scene3DFloorFurnitureContainer[FLOOR], x, 0, z, 0, 0, 1, true, null);
     }
 }
 
@@ -3248,7 +3123,10 @@ function animateHouse()
     {
         controls3D.update();
 
-        rendererCube.render(scene3DCube, camera3DCube);
+        if(rendererCube)
+        {
+           rendererCube.render(scene3DCube, camera3DCube);
+        }
     }
 
     /*

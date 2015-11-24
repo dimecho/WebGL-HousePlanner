@@ -372,14 +372,19 @@ function on3DFloorMouseUp(event) {
 
 function on3DCubeMove()
 {
+    if(engine3D.showCube == false)
+    {
+        return;
+    }
     /*
     if (controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
         return;
     }
     */
-    console.log("cube move");
+    //console.log("cube move");
     //clearTimeout(clickMenuTime);
     //console.log("cube move");
+
     camera3DCube.position.copy(camera3D.position);
     camera3DCube.position.sub(controls3D.center);
     camera3DCube.position.setLength(18);

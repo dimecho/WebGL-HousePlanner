@@ -314,9 +314,9 @@ function initHousePlanner() {
 
     //animateHouse();
 
-    open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
-    open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
-    open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
+    engine3D.open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
+    engine3D.open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
+    engine3D.open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
 
     //scene3DInitializePostprocessing();
 
@@ -343,15 +343,6 @@ function scene3DInitializeRenderer()
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
     camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 80);
 
-    scene3DCube = new THREE.Scene();
-    camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
-    camera3DCube.up = camera3D.up;
-
-    //scene3DCube.add(camera3DCube);
-    scene3DCube.add(scene3DCubeMesh);
-
-    //$(rendererCube.domElement).bind('mousemove', onCubeMouseMove);
-
     dpr = 1;
     if (window.devicePixelRatio !== undefined) {
       dpr = window.devicePixelRatio;
@@ -365,7 +356,6 @@ function scene3DInitializeRenderer()
         //preserveDrawingBuffer: false
         //autoUpdateObjects: true
     });
-
     //renderer.autoClear = false; //REQUIRED: for split screen
     
     renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
@@ -394,17 +384,26 @@ function scene3DInitializeRenderer()
     //renderer.sortObjects = true; //when scene is opening this make sure clouds stay on top
     //renderer.setClearColor(0xffffff, 1);
 
-    rendererCube = new THREE.WebGLRenderer({
-        devicePixelRatio: dpr,
-        antialias: false,
-        alpha: true,
-        //transparent: true,
-        //preserveDrawingBuffer: false
-    });
-    rendererCube.setSize(100, 100);
-    
     document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
-    document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
+
+    if(engine3D.showCube == true)
+    {
+        scene3DCube = new THREE.Scene();
+        camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
+        camera3DCube.up = camera3D.up;
+        scene3DCube.add(scene3DCubeMesh);
+
+        rendererCube = new THREE.WebGLRenderer({
+            devicePixelRatio: dpr,
+            antialias: false,
+            alpha: true,
+            //transparent: true,
+            //preserveDrawingBuffer: false
+        });
+        rendererCube.setSize(100, 100);
+        //$(rendererCube.domElement).bind('mousemove', onCubeMouseMove);
+        document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
+    }
 }
 
 function scene3DInitializeRendererQuad()
@@ -770,6 +769,142 @@ function scene3DInitializeClouds()
     });
 }
 
+function scene3DInitializeLights() {
+
+    //scene3D.add(new THREE.AmbientLight(0xFFFFFF));
+
+    /*
+    var light = new THREE.PointLight(0xffffff);
+    light.position.set(0, 100, 0);
+    scene3D.add(light);
+    */
+
+    //sky color ground color intensity
+    /*
+    var hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+    hemiLight.color.setHSL(0.6, 1, 0.6);
+    hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+    hemiLight.position.set(0, 100, 0);
+    scene3D.add(hemiLight);
+    */
+
+    //add sunlight
+    /*
+    var light = new THREE.SpotLight();
+    light.position.set(0, 100, 0);
+    scene3D.add(light);
+    */
+
+    //scene3D.fog = new THREE.Fog(0xffffff, 0.015, 40); //white fog (0xffffff). The last two properties can be used to tune how the mist will appear. The 0.015 value sets the near property and the 100 value sets the far property 
+
+    /*
+    sceneHemisphereLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
+    sceneHemisphereLight.color.setHSL(0.6, 0.75, 0.5);
+    sceneHemisphereLight.groundColor.setHSL(0.095, 0.5, 0.5);
+    sceneHemisphereLight.position.set(0, 20, 0);
+    //sceneHemisphereLight.shadowCameraVisible = true;
+    */
+    //scene3D.add(hemiLight);
+
+    // sky color ground color intensity 
+    //sceneHemisphereLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 ); 
+
+    //var ambientLight = new THREE.AmbientLight(0x444444); // 0xcccccc
+    //scene.add(ambientLight);
+
+    /*
+    sceneParticleLight = new THREE.Mesh(new THREE.SphereGeometry(0, 10, 0), new THREE.MeshBasicMaterial({
+        color: 0xffffff
+    }));
+    scene3D.add(sceneParticleLight);
+    */
+
+    /*
+    light1 = new THREE.PointLight( 0xFFFFFF );
+    light1.position.set( 100, 70, 40 );
+    scene.add( light1 );
+    light1 = new THREE.PointLight( 0xFFFFAA );
+    light1.position.set( -100, -70, -40 );
+    scene.add( light1 );
+    */
+
+
+    /*
+    var light = new THREE.SpotLight(0xffffff, 0.5);
+    light.position.set(0, 20, 20);
+    light.castShadow = true;
+    light.shadowCameraNear = 20;
+    light.shadowCameraFar = camera3D.far;
+    light.shadowCameraFov = 10;
+    light.shadowBias = -0.00022;
+    light.shadowDarkness = 0.5;
+    light.shadowMapWidth = 2048;
+    light.shadowMapHeight = 2048;
+    scene3D.add(light);
+    */
+    /*
+    sceneDirectionalLight = new THREE.DirectionalLight(0xFFBBBB, 0.5);
+    sceneDirectionalLight.position.set(2, 10, 6);
+    sceneDirectionalLight.target.position.set(0, 0, 0);
+    sceneDirectionalLight.castShadow = true;
+    sceneDirectionalLight.shadowCameraNear = 0;
+    sceneDirectionalLight.shadowCameraFar = 27;
+    sceneDirectionalLight.shadowCameraRight = 15;
+    sceneDirectionalLight.shadowCameraLeft = -15;
+    sceneDirectionalLight.shadowCameraTop = 15;
+    sceneDirectionalLight.shadowCameraBottom = -15;
+    sceneDirectionalLight.shadowCameraVisible = true;
+    sceneDirectionalLight.shadowBias = 0.005;
+    sceneDirectionalLight.shadowDarkness = 0.4;
+    sceneDirectionalLight.shadowMapWidth = 1024;
+    sceneDirectionalLight.shadowMapHeight = 1024;
+    */
+
+    
+    sceneDirectionalLight = new THREE.DirectionalLight();
+    sceneDirectionalLight.color.setHSL(0.1, 1, 0.95);
+    sceneDirectionalLight.position.set(1, 1.8, 0.8); //.normalize();
+    sceneDirectionalLight.target.position.set(0, 0, 0);
+    sceneDirectionalLight.position.multiplyScalar(50);
+    //sceneDirectionalLight.position.set(-1, 0, 0).normalize();
+    sceneDirectionalLight.castShadow = true;
+    sceneDirectionalLight.shadowMapWidth = 2048;
+    sceneDirectionalLight.shadowMapHeight = 2048;
+    var d = 15;
+    sceneDirectionalLight.shadowCameraLeft = -d;
+    sceneDirectionalLight.shadowCameraRight = d;
+    sceneDirectionalLight.shadowCameraTop = d;
+    sceneDirectionalLight.shadowCameraBottom = -d;
+    sceneDirectionalLight.shadowCameraFar = 2000;
+    sceneDirectionalLight.shadowBias = -0.0001;
+    sceneDirectionalLight.shadowDarkness = 1;
+    
+    //sceneDirectionalLight.shadowCameraVisible = true;
+    
+    //scene3D.add(sceneDirectionalLight);
+    
+
+    sceneSpotLight = new THREE.SpotLight();
+    sceneSpotLight.shadowCameraNear = 1; // keep near and far planes as tight as possible
+    sceneSpotLight.shadowCameraFar = 38; // shadows not cast past the far plane
+    //sceneSpotLight.shadowCameraVisible = true;
+    sceneSpotLight.castShadow = true;
+    sceneSpotLight.intensity = 0.8;
+    sceneSpotLight.position.set(-4, 35, 4)
+    //scene3D.add(sceneSpotLight);
+
+    /*
+    var frontLight  = new THREE.DirectionalLight('white', 1)
+    frontLight.position.set(0.5, 0.5, 2).multiplyScalar(2)
+    scene.add( frontLight )
+
+    var backLight   = new THREE.DirectionalLight('white', 0.75)
+    backLight.position.set(-0.5, -0.5, -2)
+    scene.add( backLight )
+    */
+
+}
+
 function scene3DInitializePhysics()
 {
     //http://javascriptjamie.weebly.com/blog/part-1-the-physics
@@ -962,23 +1097,62 @@ engine3D.open = function(zip) {
             if(this.note !== null)
                 note = this.note;
             console.log(this.file);
-            open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
+            engine3D.open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
         });
         i++;
     });
     
     $.each(JSON.parse(zip.file("scene3DTerrain.json").asText()), function(index){
-        open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        engine3D.open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
     $.each(JSON.parse(zip.file("scene3DHouseContainer.json").asText()), function(index){
-        //setTimeout(function() {
-            open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
-        //}, 100);
+        engine3D.open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
     
     $.each(JSON.parse(zip.file("scene3DRoofContainer.json").asText()), function(index){
-        open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
+}
+
+function initMenu(id,item) {
+
+    if(RUNMODE == "database")
+    {
+        item = "php/objects.php?menu=" + item.split('/').shift();
+    }else{
+        item = "objects/" + item;
+    }
+
+    $.ajax(item,{
+        //contentType: "json",
+        //async: false,
+        dataType: 'json',
+        success: function(json){
+            //var json = JSON.parse(data);
+            var menu = $("#" + id + " .scroll");
+            //var menu = $("#" + id + " .cssmenu > ul");
+            menu.empty();
+            $.each(json.menu, function() {
+                menu.append(getMenuItem(this));
+            });
+            /*
+            $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
+                menuItemClick(this);
+            });
+            */
+            $("#" + id + " .cssmenu > ul > li > a").click(function(event) {
+                menuItemClick(this);
+            });
+        },
+        error: function(xhr, textStatus, errorThrown){
+            alertify.alert("Menu (" + item + ") Loading Error");
+        }
+    });
+    
+    correctMenuHeight();
+
+    $("#" + id).show();
+    //toggleRight('menuRight', true);
 }
