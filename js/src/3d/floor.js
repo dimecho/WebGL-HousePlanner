@@ -42,3 +42,46 @@ engine3D.makeFloor = function () {
         }
     }
 }
+
+engine3D.triangulateUsingP2T = function (pts, holes) {
+    
+    var allpts = pts.slice(0);
+    var shape = [];
+    var geom = new THREE.Geometry();
+    var lastPoint = pts[pts.length - 1];
+    var threshold = 1e-3;
+    for (var p = 0, pl = pts.length; p < pl; p++) {
+        if (lastPoint.distanceTo(pts[p]) > threshold) shape.push(new poly2tri.Point(pts[p].x, pts[p].y));
+        lastPoint = pts[p];
+    }
+    if (shape.length < 3) return;
+    var swctx = new poly2tri.SweepContext(shape);
+    for (var h in holes) {
+        var aHole = holes[h];
+        var newHole = [];
+        for (i in aHole) {
+            newHole.push(new poly2tri.Point(aHole[i].x, aHole[i].y));
+            allpts.push(aHole[i]);
+        }
+        swctx.AddHole(newHole);
+    }
+    var find;
+    var findIndexForPt = function (pt) {
+        find = new THREE.Vector2(pt.x, pt.y);
+        var p;
+        for (p = 0, pl = allpts.length; p < pl; p++)
+            if (find.distanceToSquared(allpts[p]) == 0) return p;
+        return -1;
+    };
+    poly2tri.sweep.Triangulate(swctx);
+    var triangles = swctx.GetTriangles();
+    var tr;
+    var facesPts = [];
+    for (var t in triangles) {
+        tr = triangles[t];
+        geom.faces.push(new THREE.Face3(findIndexForPt(tr.GetPoint(2)), findIndexForPt(tr.GetPoint(1)), findIndexForPt(tr.GetPoint(0))));
+        geom.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)]);
+    }
+    geom.vertices = allpts;
+    return geom;
+};

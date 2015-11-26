@@ -14,7 +14,7 @@ function onWindowResize() {
 
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    scene3DInitializeRendererQuadSize();
+    engine3D.initRendererQuadSize();
 
     correctMenuHeight();
 }

@@ -1,73 +1,5 @@
 var engine3D = window.engine3D || {};
 
-engine3D.triangulateUsingP2T = function (pts, holes) {
-    
-    var allpts = pts.slice(0);
-    var shape = [];
-    var geom = new THREE.Geometry();
-    var lastPoint = pts[pts.length - 1];
-    var threshold = 1e-3;
-    for (var p = 0, pl = pts.length; p < pl; p++) {
-        if (lastPoint.distanceTo(pts[p]) > threshold) shape.push(new poly2tri.Point(pts[p].x, pts[p].y));
-        lastPoint = pts[p];
-    }
-    if (shape.length < 3) return;
-    var swctx = new poly2tri.SweepContext(shape);
-    for (var h in holes) {
-        var aHole = holes[h];
-        var newHole = [];
-        for (i in aHole) {
-            newHole.push(new poly2tri.Point(aHole[i].x, aHole[i].y));
-            allpts.push(aHole[i]);
-        }
-        swctx.AddHole(newHole);
-    }
-    var find;
-    var findIndexForPt = function (pt) {
-        find = new THREE.Vector2(pt.x, pt.y);
-        var p;
-        for (p = 0, pl = allpts.length; p < pl; p++)
-            if (find.distanceToSquared(allpts[p]) == 0) return p;
-        return -1;
-    };
-    poly2tri.sweep.Triangulate(swctx);
-    var triangles = swctx.GetTriangles();
-    var tr;
-    var facesPts = [];
-    for (var t in triangles) {
-        tr = triangles[t];
-        geom.faces.push(new THREE.Face3(findIndexForPt(tr.GetPoint(2)), findIndexForPt(tr.GetPoint(1)), findIndexForPt(tr.GetPoint(0))));
-        geom.faceVertexUvs[0].push([new THREE.Vector2(0, 0), new THREE.Vector2(1, 0), new THREE.Vector2(0, 1)]);
-    }
-    geom.vertices = allpts;
-    return geom;
-};
-
-function selectMeasurement() {
-
-    if (REALSIZERATIO == 1.8311874) {
-        //$('#menuMeasureText').html("Imperial");
-        REALSIZERATIO = 1; //Imperial Ratio TODO: Get the right ratio
-    } else {
-        //$('#menuMeasureText').html("Metric");
-        REALSIZERATIO = 1.8311874; //Metric Ratio
-    }
-}
-
-function makeScreenshot()
-{
-    getScreenshotData = true;
-    
-    /*
-    renderer.preserveDrawingBuffer = true;
-    window.open(renderer.domElement.toDataURL('image/png'), 'Final');
-
-    setTimeout(function() {
-        renderer.preserveDrawingBuffer = false;
-    }, 1400);
-    */
-}
-
 function scene3DSplitViewTop()
 {
     var w = window.innerWidth/1.4;
@@ -81,7 +13,7 @@ function scene3DSplitViewTop()
     $("#top-component").css({ bottom: h });
     $("#horizontal-divider").css({ bottom: h });
 
-    scene3DInitializeRendererQuadSize();
+    engine3D.initRendererQuadSize();
 }
 
 function scene3DSplitViewFront()
@@ -98,7 +30,7 @@ function scene3DSplitViewFront()
     $("#top-component").css({ bottom: h });
     $("#horizontal-divider").css({ bottom: h });
 
-    scene3DInitializeRendererQuadSize();
+    engine3D.initRendererQuadSize();
 }
 
 function scene3DSplitViewSide()
@@ -114,7 +46,7 @@ function scene3DSplitViewSide()
     $("#top-component").css({ bottom: h });
     $("#horizontal-divider").css({ bottom: h });
 
-    scene3DInitializeRendererQuadSize();
+    engine3D.initRendererQuadSize();
 }
 
 function scene3DSplitView3D()
@@ -242,7 +174,7 @@ function camera3DPictureEnter()
     var target = pLocal.applyMatrix4(camera3D.matrixWorld);
 
     var tween = new TWEEN.Tween(SelectedPicture.position).to(target,2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-            initPanorama('WebGLPanorama','3428',0.70,0.64);
+            engine3D.initPanorama('WebGLPanorama','3428',0.70,0.64);
         }).start();
 
     tween = new TWEEN.Tween(SelectedPicture.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
@@ -300,7 +232,7 @@ function camera3DWalkViewToggle()
         camera3DPositionCache = new THREE.Vector3(0, 6, 20);
         camera3DPivotCache = new THREE.Vector3(0, 0, 0);
         camera3DAnimateResetView();
-        scene3DenableOrbitControls(camera3D,renderer.domElement);
+        engine3D.enableOrbitControls(camera3D,renderer.domElement);
     }
     else if (controls3D instanceof THREE.OrbitControls)
     {
@@ -313,7 +245,7 @@ function camera3DWalkViewToggle()
             //TODO: anmate left and right menu hide
             var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:1.5, z:18},2000).easing(TWEEN.Easing.Quadratic.InOut).start();  
             tween = new TWEEN.Tween(controls3D.target).to({x:0, y:1.5, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-                enableFirstPersonControls();
+                engine3D.enableFirstPersonControls();
             }).start();
         }});
         $('.alertify-message').append($.parseHTML("<img src='images/help/wasd-keyboard.jpg' /><br/><br/>Use (W,A,S,D) or arrow keys to move."));
@@ -324,7 +256,19 @@ function camera3DWalkViewToggle()
     }
 }
 
-function enableTransformControls(mode)
+function camera3DAnimateResetView()
+{
+    if (camera3DPositionCache !== null && controls3D instanceof THREE.OrbitControls)
+    {
+        /*
+        var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+        }).start();
+        tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).start();
+        */
+    }
+}
+
+engine3D.enableTransformControls = function (mode)
 {
     //https://github.com/mrdoob/three.js/issues/4286
 
@@ -344,7 +288,7 @@ function enableTransformControls(mode)
     //scene3D.add(controls3D);
 }
 
-function scene3DenableOrbitControls(camera, element)
+engine3D.enableOrbitControls = function (camera, element)
 {
     
     if (controls3D instanceof THREE.OrbitControls){
@@ -366,7 +310,7 @@ function scene3DenableOrbitControls(camera, element)
     }
 }
 
-function enableFirstPersonControls()
+engine3D.enableFirstPersonControls = function()
 {
     controls3D.enabled = false;
     controls3D = new THREE.FirstPersonControls(camera3D,renderer.domElement);
@@ -381,18 +325,6 @@ function enableFirstPersonControls()
 
     //controls3D.target = new THREE.Vector3(0, 0, 0);
     //camera3D.lookAt(new THREE.Vector3(0, 0, 0));
-}
-
-function camera3DAnimateResetView()
-{
-	if (camera3DPositionCache !== null && controls3D instanceof THREE.OrbitControls)
-	{
-        /*
-		var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-        }).start();
-		tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).start();
-        */
-    }
 }
 
 engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, note) {
@@ -1003,9 +935,9 @@ engine3D.showHouse = function() {
     
     SCENE = 'house';
 
-    initMenu("menuRight3DHouse","Exterior/index.json");
+    engine3D.initMenu("menuRight3DHouse","Exterior/index.json");
 
-    scene3DenableOrbitControls(camera3D,renderer.domElement);
+    engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
     SSAOProcessing.enabled = false;
 
@@ -1034,8 +966,8 @@ engine3D.showHouse = function() {
     menuSelect(1, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
-    engine3D.SetSky(DAY);
-    //engine3D.SetSky('0000');
+    engine3D.setSky(DAY);
+    //engine3D.setSky('0000');
     scene3D.add(skyMesh);
 
     if(settings.clouds)
@@ -1043,7 +975,7 @@ engine3D.showHouse = function() {
     if(settings.rainbow)
         scene3D.add(weatherSkyRainbowMesh);
     
-    engine3D.SetLights();
+    engine3D.setLights();
 
     engine3D.makeFloor();
 
@@ -1082,11 +1014,6 @@ engine3D.showHouse = function() {
     animate();
 }
 
-
-function Degrees2Radians(degrees) {
-    return degrees * (Math.PI / 180);
-}
-
 engine3D.showLandscape = function() {
 
     scene3DAnimateRotate = false;
@@ -1095,10 +1022,10 @@ engine3D.showLandscape = function() {
     //scene3D = new THREE.Scene();
     SCENE = 'landscape';
 
-    engine3D.SetSky('day');
-    engine3D.SetLights();
+    engine3D.setSky('day');
+    engine3D.setLights();
 
-    scene3DenableOrbitControls(camera3D,renderer.domElement);
+    engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
     camera3D.position.set(10, 10, 15);
     camera3D.lookAt(scene3D.position);
@@ -1157,30 +1084,30 @@ engine3D.showLandscape = function() {
 
 engine3D.showFloor = function () {
 
-     console.log("showFloor()");
+    console.log("showFloor()");
 
     scene3DAnimateRotate = false;
     scene3DFreeMemory();
     engine3D.hide();
     SCENE = 'floor';
 
-    initMenu("menuRight3DFloor","Interior/index.json");
+    engine3D.initMenu("menuRight3DFloor","Interior/index.json");
 
-    scene3DenableOrbitControls(camera3D,renderer.domElement);
+    engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
     //SSAOProcessing.enabled = true;
     //FXAAProcessing.enabled = false;
-    //scene3DInitializePostprocessing();
+    //engine3D.initPostprocessing();
 
     //camera3D.position.set(0, 10, 12);
     
     //TODO: Loop and show based in ID name / floor
     //scene3D.add(scene3DContainer);
 
-    buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
+    engine3D.buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
     scene3D.add(skyFloorMesh);
 
-    engine3D.SetLights();
+    engine3D.setLights();
 
     engine3D.makeWalls();
     
@@ -1265,10 +1192,10 @@ engine3D.showFloorLevel = function() {
     SCENE = 'floorlevel';
 
     //engine3D.SetBackground('blue');
-    engine3D.SetSky('day');
-    engine3D.SetLights();
+    engine3D.setSky('day');
+    engine3D.setLights();
 
-    scene3DenableOrbitControls(camera3D,renderer.domElement);
+    engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
     camera3D.position.set(10, 10, 15);
     camera3D.lookAt(scene3D.position);
@@ -1298,15 +1225,15 @@ engine3D.showRoofDesign = function() {
     engine3D.hide();
     SCENE = 'roof';
 
-    initMenu("menuRight3DRoof","Roof/index.json");
+    engine3D.initMenu("menuRight3DRoof","Roof/index.json");
 
     //engine3D.SetBackground('split');
-    engine3D.SetLights();
+    engine3D.setLights();
 
     //camera3D.position.set(0, 4, 12);
     //var ambientLight = new THREE.AmbientLight( Math.random() * 0x10 );
         
-    scene3DInitializeRendererQuad();
+    engine3D.initRendererQuad();
 
     scene3D.add(camera3DQuadGrid);
     scene3D.add(scene3DRoofContainer);
@@ -1360,89 +1287,6 @@ function initObjectCollisions(container) {
     }
 }
 */
-
-function scene3DSunlight() {
-
-    /*
-    God Rays (Sunlight Effect)
-    http://threejs.org/examples/webgl_sunlight_godrays.html
-    */
-    if(settings.sunlight)
-    {
-        var sunPosition = new THREE.Vector3( 0, 10, -10 );
-        var materialDepth = new THREE.MeshDepthMaterial();
-        var screenSpacePosition = new THREE.Vector3();
-
-        sunlight.scene = new THREE.Scene();
-
-        sunlight.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,  window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
-        sunlight.camera.position.z = 50;
-
-        sunlight.scene.add( sunlight.camera );
-
-        var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
-        sunlight.rtTextureColors = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, pars );
-
-        // Switching the depth formats to luminance from rgb doesn't seem to work. I didn't
-        // investigate further for now.
-        //pars.format = THREE.LuminanceFormat;
-
-        // I would have this quarter size and use it as one of the ping-pong render
-        // targets but the aliasing causes some temporal flickering
-
-        sunlight.rtTextureDepth = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, pars );
-
-        // Aggressive downsize god-ray ping-pong render targets to minimize cost
-
-        var w = window.innerWidth / 4.0;
-        var h = window.innerHeight / 4.0;
-        sunlight.rtTextureGodRays1 = new THREE.WebGLRenderTarget( w, h, pars );
-        sunlight.rtTextureGodRays2 = new THREE.WebGLRenderTarget( w, h, pars );
-
-        // god-ray shaders
-
-        var godraysGenShader = THREE.ShaderGodRays.godrays_generate;
-        sunlight.godrayGenUniforms = THREE.UniformsUtils.clone( godraysGenShader.uniforms );
-        sunlight.materialGodraysGenerate = new THREE.ShaderMaterial({
-            uniforms: sunlight.godrayGenUniforms,
-            vertexShader: godraysGenShader.vertexShader,
-            fragmentShader: godraysGenShader.fragmentShader
-        });
-        
-        var godraysCombineShader = THREE.ShaderGodRays.godrays_combine;
-        sunlight.godrayCombineUniforms = THREE.UniformsUtils.clone( godraysCombineShader.uniforms );
-        sunlight.materialGodraysCombine = new THREE.ShaderMaterial( {
-
-            uniforms: sunlight.godrayCombineUniforms,
-            vertexShader: godraysCombineShader.vertexShader,
-            fragmentShader: godraysCombineShader.fragmentShader
-
-        } );
-        
-        var godraysFakeSunShader = THREE.ShaderGodRays.godrays_fake_sun;
-        sunlight.godraysFakeSunUniforms = THREE.UniformsUtils.clone( godraysFakeSunShader.uniforms );
-        sunlight.materialGodraysFakeSun = new THREE.ShaderMaterial( {
-
-            uniforms: sunlight.godraysFakeSunUniforms,
-            vertexShader: godraysFakeSunShader.vertexShader,
-            fragmentShader: godraysFakeSunShader.fragmentShader
-        });
-
-        sunlight.godraysFakeSunUniforms.bgColor.value.setHex( 0x000511);
-        sunlight.godraysFakeSunUniforms.sunColor.value.setHex( 0xffee00 );
-
-        sunlight.godrayCombineUniforms.fGodRayIntensity.value = 0.4; //0.75;
-
-        sunlight.quad = new THREE.Mesh(
-            new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight ),
-            sunlight.materialGodraysGenerate
-        );
-        sunlight.quad.position.z = -9900;
-        sunlight.scene.add( sunlight.quad );
-    }
-}
-
-
 
 engine3D.hide = function() {
 
@@ -1511,159 +1355,6 @@ engine3D.hide = function() {
     //scene2DFloorContainer[0].traverse;
 }
 
-function scene3DSetWeather()
-{
-    //particleWeather = new SPE.Group({});
-    //scene3D.remove(particleWeather.mesh);
-
-    if (WEATHER == "sunny") {
-
-        //TODO: maybe add sun glare effect shader?
-
-    } else if (WEATHER == "snowy") {
-
-        //engine = new ParticleEngine();
-        //engine.setValues(weatherSnowMesh);
-        //engine.initialize();
-
-        /*
-        weatherSnowMesh = {
-            positionStyle: Type.CUBE,
-            positionBase: new THREE.Vector3(0, 20, 0),
-            positionSpread: new THREE.Vector3(30, 0, 30),
-
-            velocityStyle: Type.CUBE,
-            velocityBase: new THREE.Vector3(0, 5, 0),
-            velocitySpread: new THREE.Vector3(20, 20, 20),
-            accelerationBase: new THREE.Vector3(0, -10, 0),
-
-            angleBase: 0,
-            angleSpread: 50,
-            angleVelocityBase: 0,
-            angleVelocitySpread: 5,
-
-            particleTexture: THREE.ImageUtils.loadTexture('./images/snowflake.png'),
-
-            sizeTween: new ParticleTween([0.5, 1], [1, 0.6]),
-            colorBase: new THREE.Vector3(0.66, 1.0, 0.9), // H,S,L
-            opacityTween: new ParticleTween([2, 3], [0.8, 0]),
-
-            particlesPerSecond: 50,
-            particleDeathAge: 3.0,
-            emitterDeathAge: 180
-        };
-        */
-
-        /*
-        particleWeather = new SPE.Group({
-            texture: THREE.ImageUtils.loadTexture("./images/snowflake.png"),
-            maxAge: 180,
-            hasPerspective: 1,
-            colorize: 1,
-            transparent: 1,
-            alphaTest: 0.5,
-            depthWrite: false,
-            depthTest: true,
-            blending: THREE.AdditiveBlending
-        });
-
-        var particleEmitter = new SPE.Emitter( {
-            type: 'cube',
-            particleCount: 50, //particlesPerSecond
-            position: new THREE.Vector3(0, 20, 0),
-            positionSpread: new THREE.Vector3(30, 0, 30),
-            acceleration: new THREE.Vector3(0, -10, 0),
-            accelerationSpread: new THREE.Vector3( 0, -10, 0 ),
-            velocity: new THREE.Vector3( 0, 5, 0 ),
-            velocitySpread: new THREE.Vector3(20, 20, 20),
-            sizeStart: 0.5,
-            sizeStartSpread: 1,
-            sizeMiddle: 1,
-            sizeMiddleSpread: 0.6,
-            sizeEnd: 1,
-            sizeEndSpread: 0.6,
-            angleStart: 0,
-            angleStartSpread: 50,
-            angleMiddle: 0,
-            angleMiddleSpread: 0,
-            angleEnd: 0,
-            angleEndSpread: 5,
-            angleAlignVelocity: false,
-            colorStart: new THREE.Color( 0xffffff ),
-            colorStartSpread: new THREE.Vector3(0, 0, 0),
-            colorMiddle: new THREE.Color( 0xffffff ),
-            colorMiddleSpread: new THREE.Vector3( 0, 0, 0 ),
-            colorEnd: new THREE.Color( 0xffffff ),
-            colorEndSpread: new THREE.Vector3(0, 0, 0),
-            opacityStart: 1,
-            opacityStartSpread: 0,
-            opacityMiddle: 1,
-            opacityMiddleSpread: 0,
-            opacityEnd: 1,
-            opacityEndSpread: 0,
-            duration: null,
-            alive: 3.0,
-            isStatic: 0
-        });
-        particleWeather.addEmitter(particleEmitter);
-        scene3D.add(particleWeather.mesh);
-        */
-
-    } else if (WEATHER == "rainy") {
-
-        //engine = new ParticleEngine();
-        //engine.setValues(weatherRainMesh);
-        //engine.initialize();
-    }
-
-    scene3D.remove(weatherSkyCloudsMesh);
-    scene3D.remove(weatherSkyRainbowMesh);
-
-    if (DAY == 'day') {
-
-        //scene3D.add(weatherSkyDayMesh);
-        if(settings.clouds)
-        {
-            texture = textureLoader.load('images/cloud.png');
-            texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-            texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-            weatherSkyMaterial.uniforms.map.value = texture;
-            weatherSkyCloudsMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
-            scene3D.add(weatherSkyCloudsMesh);
-        }
-
-        if(settings.rainbow)
-        {
-            texture = textureLoader.load('images/rainbow.png');
-            texture.minFilter = THREE.LinearFilter;
-            var materialRainbow = weatherSkyMaterial.clone();
-            materialRainbow.uniforms.map.value = texture;
-
-            geometry = new THREE.Geometry();
-            var plane = new THREE.Mesh(new THREE.PlaneGeometry(18, 18));
-            plane.position.x = getRandomInt(1, 15);
-            plane.position.y = getRandomInt(5, 8);
-            plane.position.z = -2;
-            plane.updateMatrix();
-            geometry.merge(plane.geometry, plane.matrix);
-            weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialRainbow);
-
-            scene3D.add(weatherSkyRainbowMesh);
-        }
-    }
-    else if (DAY == 'night')
-    {
-        if(settings.clouds)
-        {
-            texture = textureLoader.load('images/cloud2.png');
-            texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-            texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-            weatherSkyMaterial.uniforms.map.value = texture;
-            weatherSkyCloudsMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
-            scene3D.add(weatherSkyCloudsMesh);
-        }
-    }
-}
 
 function menuSelect(item, id, color) {
     if (item === null) //clear all
@@ -1739,9 +1430,9 @@ function selectDayNight() {
     }
     scene3D.remove(skyMesh);
 
-    engine3D.SetSky(DAY);
-    engine3D.SetLights();
-    scene3DSetWeather();
+    engine3D.setSky(DAY);
+    engine3D.setLights();
+    engine.setWeather();
 
     scene3D.add(skyMesh);
     //scene3D.add(weatherSkyCloudsMesh);
@@ -1765,24 +1456,7 @@ function selectWeather() {
         WEATHER = "sunny";
         //$('#menuWeatherText').html("Sunny");
     }
-    scene3DSetWeather();
-}
-
-function toggleSideMenus(open) {
-
-    //Auto close right menu
-    toggleRight('menuRight', open);
-
-    //document.getElementById('menuRight').setAttribute("class", "hide-right");
-    //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
-
-    //Auto close left menu
-    if (SCENE == 'house') {
-        toggleLeft('menuLeft3DHouse', open);
-
-    } else if (SCENE == 'floor') {
-        toggleLeft('menuLeft3DFloor', open);
-    }
+    engine.setWeather();
 }
 
 function scene3DObjectSelectRemove() {
@@ -2027,7 +1701,6 @@ function scene3DObjectSelect(x, y, camera, object) {
     }
     return false;
 }
-
 
 function scene3DObjectSelectedRoot(object,uuid)
 {
@@ -2444,7 +2117,7 @@ engine3D.SetBackground = function(set) {
     }
 }
 
-engine3D.SetLights = function() {
+engine3D.setLights = function() {
 
     scene3D.remove(sceneAmbientLight);
     scene3D.remove(sceneDirectionalLight);
@@ -2519,106 +2192,6 @@ engine3D.SetLights = function() {
     }
 }
 
-engine3D.SetSky = function(set) {
-
-    if(skyMesh.name != set)
-    {
-        var files = '0000';
-
-        if(set == 'day'){
-            files = settings.panorama_day;
-        }else if(set == 'night'){
-            files =  settings.panorama_night;
-        }
-
-        skyMesh = new THREE.Object3D();
-        buildPanorama(skyMesh, files, 75, 75, 75,"",null);
-        skyMesh.position.y = 5;
-        //console.log("build Panorama: " + files);
-        
-        /*
-        var files = 'panoramas/';
-        if(set == 'day')
-        {
-            files = files + "2056/";
-        }else if(set == 'night'){
-            files = files + "2057/";
-        }else{
-            files = files + "0000/";
-        }
-
-        if (set != 'day') {
-            
-            skyMesh = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), material);
-            skyMesh.position.y = 5;
-        }else{
-            skyMesh = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), material);
-            skyMesh.position.y = 25;
-        }
-        */
-
-        //skyMaterial.needsUpdate = true;
-        //scene3D.add(skyMesh);
-
-        skyMesh.name = set;
-    }
-}
-
-engine3D.SkyEffects = function() {
-
-    //http://mrdoob.com/lab/javascript/webgl/clouds/
-    //http://gonchar.me/panorama/
-    //engine3D.SetSky("day");
-
-    //=====================
-    /*
-    geometry = new THREE.SphereGeometry(40, 0, 0);
-    var uniforms = {
-        texture: {
-            type: 't',
-            value: THREE.ImageUtils.loadTexture('./images/sky/night/milkiway.jpg')
-        }
-    };
-    material = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: document.getElementById('sky-vertex').textContent,
-        fragmentShader: document.getElementById('sky-fragment').textContent
-    });
-
-    skyNightMesh = new THREE.Mesh(geometry, material);
-    skyNightMesh.scale.set(-1, 1, 1);
-
-    //skyNightMesh.eulerOrder = 'XZY';
-    //skyNightMesh.renderDepth = 50.0;
-    scene3D.add(skyNightMesh);
-    */
-    //=============
-
-    /*
-    weatherRainMesh = {
-        positionStyle: Type.CUBE,
-        positionBase: new THREE.Vector3(0, 20, 0),
-        positionSpread: new THREE.Vector3(30, 0, 30),
-
-        velocityStyle: Type.CUBE,
-        velocityBase: new THREE.Vector3(0, 5, 0),
-        velocitySpread: new THREE.Vector3(10, 20, 10),
-        accelerationBase: new THREE.Vector3(0, -10, 0),
-
-        particleTexture: THREE.ImageUtils.loadTexture('./images/raindrop2flip.png'),
-
-        sizeBase: 1.0,
-        sizeSpread: 2.0,
-        colorBase: new THREE.Vector3(0.66, 1.0, 0.7), // H,S,L
-        colorSpread: new THREE.Vector3(0.00, 0.0, 0.2),
-        opacityBase: 0.6,
-
-        particlesPerSecond: 80,
-        particleDeathAge: 2.5,
-        emitterDeathAge: 60
-    };
-    */
-}
 
 /*
 function scene3DFloorSky() {

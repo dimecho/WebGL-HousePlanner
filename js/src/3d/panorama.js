@@ -1,4 +1,46 @@
-function buildPanorama(container,files,X,Y,Z,preloader,mesh)
+var engine3D = window.engine3D || {};
+
+engine3D.initPanorama = function(id, files, W,H)
+{
+    scene3DPanorama = new THREE.Scene();
+    camera3DPanorama = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+
+    rendererPanorama = new THREE.WebGLRenderer({
+        devicePixelRatio: window.devicePixelRatio || 1,
+        antialias: false
+    });
+
+    rendererPanorama.setSize(window.innerWidth*W, window.innerHeight*H);
+    document.getElementById(id).appendChild(rendererPanorama.domElement);
+
+    //controls3DPanorama = new THREE.OrbitControls(camera3DPanorama, rendererPanorama.domElement);
+    //controls3DPanorama.target = new THREE.Vector3(0, 0, 0);
+    //controls3DPanorama.enabled = true;
+    
+    document.addEventListener( 'mousedown', onPanoramaMouseDown, false );
+    document.addEventListener( 'mousewheel', onPanoramaMouseWheel, false );
+    document.addEventListener( 'touchstart', onPanoramaTouchStart, false );
+    document.addEventListener( 'touchmove', onPanoramaTouchMove, false );
+
+    document.getElementById(id).appendChild(spinner);
+
+    //mouse = new THREE.Vector2();
+    //touch = new THREE.Vector2();
+    //var scene = new THREE.Object3D();
+    //engine3D.buildPanorama(scene,files, 512, 512);
+    //scene3DPanorama.add(scene);
+
+    engine3D.buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_",null);
+
+    document.getElementById(id).removeChild(spinner);
+
+    $('#' + id).show();
+    animatePanorama();
+
+    //TODO: update onWindowResize();
+}
+
+engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
 {
     if(container.children.length > 0)
         return;
@@ -41,7 +83,7 @@ function buildPanorama(container,files,X,Y,Z,preloader,mesh)
     container.add(skybox);
 
     if(preloader === "_") //High Resolution
-        buildPanorama(container,files,X,Y,Z,"",skybox);
+        engine3D.buildPanorama(container,files,X,Y,Z,"",skybox);
     */
     
     //Low Resolution

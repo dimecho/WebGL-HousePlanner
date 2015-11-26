@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
 
   <script type="text/javascript" src="js/jquery.js?v=2.1.4"></script>
-  <script type="text/javascript" src="js/preloader.js?v=2.06"></script>
   <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
 
   <script src="js/three/three.js"></script>
@@ -66,6 +65,7 @@
   <script src="js/src/3d/floor.js"></script>
   <script src="js/src/3d/wall.js"></script>
   <script src="js/src/3d/terrain.js"></script>
+  <script src="js/src/3d/weather.js"></script>
   <script src="js/src/3d/panorama.js"></script>
   <script src="js/src/2d/engine2d.js"></script>
   <script src="js/src/2d/init.js"></script>
@@ -93,24 +93,7 @@
     var RUNMODE = 'local';
     var VIEWMODE = 'designer';
     $(document).ready(function() {
-      initHousePlanner();
-    });
-
-    preloader.config({
-      mode: 'number',
-      show_percentage: true,
-      background: "#000000",
-      text_colour: "#FFFFFF",
-      images: [
-        'panoramas/2056/front.jpg',
-        'panoramas/2056/left.jpg',
-        'panoramas/2056/right.jpg',
-        'panoramas/2056/bottom.jpg',
-        'panoramas/2056/top.jpg',
-        'panoramas/2056/back.jpg',
-        'objects/Landscape/Textures/G36096.jpg',
-        'objects/Landscape/Textures/F56734.jpg'
-      ]
+      engine3D.initHousePlanner();
     });
   </script>
   <!-- 
@@ -154,7 +137,10 @@
 
 </head>
 
+<!--
 <body class="preloader">
+-->
+<body>
 
 <!-- Tutorial -->
 <div id="start" class="modalDialog" style="background:rgba(0,0,0,0.4);">
@@ -437,7 +423,7 @@
         </li>
     </ul>
     <div id="links-left" style="width:180px;height:100px;">
-          <a href="#panorama" onclick="initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
+          <a href="#panorama" onclick="engine3D.initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
             <img class="tooltip-top" title="MLS#: 123456" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;border:5px solid #FFFFFF;border-radius:2px;"/>
           </a>
     </div>

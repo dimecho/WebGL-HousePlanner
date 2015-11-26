@@ -1,4 +1,4 @@
-function initHousePlanner() {
+engine3D.initHousePlanner = function () {
 
     if (!Detector.webgl)
     {
@@ -269,7 +269,7 @@ function initHousePlanner() {
     material = new THREE.MeshFaceMaterial(cubeMaterials);
     material.vertexColors = THREE.FaceColors;
 
-    geometry = initCube(8); //new THREE.BoxGeometry(10, 10, 10, 1, 1, 1)
+    geometry = engine3D.initCube(8); //new THREE.BoxGeometry(10, 10, 10, 1, 1, 1)
     geometry.computeLineDistances();
 
     scene3DCubeMesh = new THREE.Line(geometry, new THREE.LineDashedMaterial({
@@ -281,15 +281,15 @@ function initHousePlanner() {
 
     scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
 
-    scene3DInitializeRenderer();
+    engine3D.initRenderer();
 
-    scene3DInitializePhysics();
+    //engine3D.initPhysics();
 
-    scene3DInitializeGround();
+    engine3D.initTerrainGround();
 
-    scene3DInitializeWater();
+    engine3D.initTerrainWater();
 
-    scene3DInitializeClouds();
+    engine3D.initTerrainClouds();
 
     engine2D.initialize();
    
@@ -297,7 +297,7 @@ function initHousePlanner() {
 
     engine2D.new();
 
-   	scene3DenableOrbitControls(camera3D,renderer.domElement);
+   	engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
     /*
     manager = new THREE.LoadingManager();
@@ -307,7 +307,8 @@ function initHousePlanner() {
     };
     */
     //scene3DSky();
-    scene3DInitializeLights();
+
+    engine3D.initLights();
 
     $('#menuWeatherText').html("Sunny");
     $('#menuDayNightText').html("Day");
@@ -318,7 +319,7 @@ function initHousePlanner() {
     engine3D.open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
     engine3D.open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
 
-    //scene3DInitializePostprocessing();
+    //engine3D.initPostprocessing();
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
     $(window).bind('resize', onWindowResize);
@@ -335,7 +336,7 @@ function initHousePlanner() {
 
 }
 
-function scene3DInitializeRenderer()
+engine3D.initRenderer = function()
 {
     /*
     https://www.udacity.com/course/viewer#!/c-cs291/l-158750187/m-169414761
@@ -406,7 +407,7 @@ function scene3DInitializeRenderer()
     }
 }
 
-function scene3DInitializeRendererQuad()
+engine3D.initRendererQuad = function()
 {
     $('div.split-pane').splitPane();
 
@@ -451,7 +452,7 @@ function scene3DInitializeRendererQuad()
     camera3DQuadGrid = new THREE.GridHelper(15, 1);
     camera3DQuadGrid.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
 
-    scene3DInitializeRendererQuadSize();
+    engine3D.initRendererQuadSize();
 
     //controls3DDebug = new THREE.OrbitControls(camera3DQuad[0], rendererQuad[0].domElement);
     //controls3DDebug.enabled = true;
@@ -479,7 +480,7 @@ function scene3DInitializeRendererQuad()
     */
 }
 
-function scene3DInitializeRendererQuadSize()
+engine3D.initRendererQuadSize = function()
 {
     if(camera3DQuad[0] instanceof THREE.OrthographicCamera)
     {
@@ -496,7 +497,7 @@ function scene3DInitializeRendererQuadSize()
     }
 }
 
-function scene3DInitializePostprocessing()
+engine3D.initPostprocessing = function ()
 {
     //if(!(effectComposer instanceof THREE.EffectComposer)){
         console.log("init EffectComposer");
@@ -553,223 +554,7 @@ function scene3DInitializePostprocessing()
     }
 }
 
-
-function scene3DInitializeWater()
-{
-
-}
-
-function scene3DInitializeGround()
-{
-    /*
-    //var texture = THREE.ImageUtils.loadTexture('assets/combined.png', null, loaded); // load the heightmap we created as a texture
-    var detailTexture = THREE.ImageUtils.loadTexture('objects/Landscape/Textures/G36096.jpg'); //, null, loaded);  // load two other textures we'll use to make the map look more real
-
-    terrainShader = THREE.ShaderTerrain[ "terrain" ];
-    uniformsTerrain = THREE.UniformsUtils.clone(terrainShader.uniforms);
-
-    // how to treat abd scale the normal texture
-    uniformsTerrain[ "tNormal" ].texture = detailTexture;
-    uniformsTerrain[ "uNormalScale" ].value = 0.5;
-
-    // displacement is heightmap (greyscale image)
-    //uniformsTerrain[ "tDisplacement" ].value = texture;
-    //uniformsTerrain[ "uDisplacementScale" ].value = 15;
-
-    // the following textures can be use to finetune how the map is shown. These are good defaults for simple rendering
-    uniformsTerrain[ "tDiffuse1" ].value = detailTexture;
-    uniformsTerrain[ "tDetail" ].texture = detailTexture;
-    uniformsTerrain[ "enableDiffuse1" ].value = true;
-    //uniformsTerrain[ "enableDiffuse2" ].value = true;
-    //uniformsTerrain[ "enableSpecular" ].value = true;
-
-    // diffuse is based on the light reflection
-    //uniformsTerrain[ "uDiffuseColor" ].value.setHex(0xcccccc);
-    //uniformsTerrain[ "uSpecularColor" ].value.setHex(0xff0000);
-
-    // is the base color of the terrain
-    //uniformsTerrain[ "uAmbientColor" ].value.setHex(0x0000cc);
- 
-    // how shiny is the terrain
-    //uniformsTerrain[ "uShininess" ].value = 3;
-
-    // handles light reflection
-    //uniformsTerrain[ "uRepeatOverlay" ].value.set(3, 3);
-
-    terrain3DMaterial = new THREE.ShaderMaterial({
-        uniforms:       uniformsTerrain,
-        vertexShader:   terrainShader.vertexShader,
-        fragmentShader: terrainShader.fragmentShader,
-        lights:         true,
-        fog:            false
-    });
-
-    var geometryTerrain = new THREE.PlaneGeometry( 40, 40);
-    //geometryTerrain.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-    geometryTerrain.computeFaceNormals();
-    geometryTerrain.computeVertexNormals();
- 
-    terrain3D = new THREE.Mesh(geometryTerrain, terrain3DMaterial);
-    terrain3D.rotation.x = -Math.PI / 2;
-    */
-
-    $.ajax({
-        url: "shaders/ground.vertex.fx",
-        beforeSend: function (req) {
-            req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
-        },
-        success: function(ground_vertex_data){
-            $.ajax({
-                url: "shaders/ground.fragment.fx",
-                beforeSend: function (req) {
-                    req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
-                },
-                success: function(ground_fragment_data){
-
-                    terrain3DMaterial = new THREE.ShaderMaterial({
-                        uniforms: {
-                            texture_grass: { type: "t", value: textureLoader.load('objects/Landscape/Textures/G36096.jpg')},
-                            texture_bare: { type: "t", value: textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
-                            texture_snow: { type: "t", value: textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
-                            show_ring: { type: 'i', value: true },
-                            ring_width: { type: 'f', value: 0.15 },
-                            ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
-                            ring_center: { type: 'v3', value: new THREE.Vector3() },
-                            ring_radius: { type: 'f', value: 1.6 }
-                        },
-                        vertexShader: ground_vertex_data,
-                        fragmentShader: ground_fragment_data,
-                        //fog: false,
-                        //lights: true
-                    });
-                    var geometry = new THREE.PlaneBufferGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices);
-                    
-                    var numVertices = geometry.attributes.position.count;
-                    var displacement = new THREE.Float32Attribute(numVertices * 1, 1);
-                    geometry.addAttribute( 'displacement', displacement);
-
-                    terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);
-                    terrain3D.displacement = geometry.attributes.displacement;
-                    terrain3D.displacement.dynamic = true;
-                    terrain3D.rotation.x = -Math.PI / 2;
-                    //console.log(geometry.attributes.displacement);
-
-                    $.ajax({
-                        url: "shaders/water.vertex.fx",
-                        beforeSend: function (req) {
-                            req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
-                        },
-                        success: function(water_vertex_data){
-                            $.ajax({
-                                url: "shaders/water.fragment.fx",
-                                beforeSend: function (req) {
-                                    req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
-                                },
-                                success: function(water_fragment_data){
-                                    terrain3D.water = new THREE.Mesh(
-                                        geometry,
-                                        new THREE.ShaderMaterial({
-                                            uniforms: {
-                                                water_level: { type: 'f', value: -1 },
-                                                time: { type: 'f', value: 0 }
-                                            },
-                                            vertexShader: water_vertex_data,
-                                            fragmentShader: water_fragment_data,
-                                            transparent: true
-                                        })
-                                    );
-                                    terrain3D.water.displacement = geometry.attributes.displacement;
-                                    terrain3D.water.displacement.dynamic = true;
-                                    terrain3D.water.position.z = -1;
-                                    terrain3D.add(terrain3D.water);
-                                }
-                            }); 
-                        }
-                    }); 
-                }
-            }); 
-        }
-    });
-}
-
-function scene3DInitializeClouds()
-{
-    /* 
-    =======================
-    Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
-    =======================
-    */
-    /*
-    $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
-        options.async = false;
-    });
-    */
-    //=====================
-
-    weatherSkyCloudsMesh =  new THREE.Mesh();
-    weatherSkyRainbowMesh = new THREE.Mesh();
-
-    $.ajax({
-        url: "shaders/clouds.vertex.fx",
-        //async: false,
-        beforeSend: function (req) {
-            req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
-        },
-        success: function(vertex_data){
-            $.ajax({
-                url: "shaders/clouds.fragment.fx",
-                //async: false,
-                beforeSend: function (req) {
-                    req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
-                },
-                success: function(fragment_data){
-                    var fog = new THREE.Fog(0x4584b4, -100, 1000);
-                    weatherSkyMaterial = new THREE.ShaderMaterial({
-                        uniforms: {
-                            "map": {
-                                type: "t",
-                                //value: texture
-                            },
-                            "fogColor": {
-                                type: "c",
-                                value: fog.color
-                            },
-                            "fogNear": {
-                                type: "f",
-                                value: fog.near
-                            },
-                            "fogFar": {
-                                type: "f",
-                                value: fog.far
-                            },
-                        },
-                        vertexShader: vertex_data,
-                        fragmentShader: fragment_data,
-                        depthWrite: false,
-                        depthTest: false,
-                        transparent: true
-                    });
-                    weatherSkyGeometry = new THREE.Geometry();
-                    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
-                    for (var i = 0; i < 20; i++) 
-                    {
-                        plane.position.x = getRandomInt(-20, 20);
-                        plane.position.y = getRandomInt(5.5, 10);
-                        plane.position.z = i;
-                        plane.rotation.z = getRandomInt(5, 10);
-                        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
-                        plane.updateMatrix();
-                        weatherSkyGeometry.merge(plane.geometry, plane.matrix);
-                    }
-                    scene3DSetWeather();
-                    scene3DSunlight(); //SUNLIGHT RAYS
-                }
-            }); 
-        }
-    });
-}
-
-function scene3DInitializeLights() {
+engine3D.initLights = function() {
 
     //scene3D.add(new THREE.AmbientLight(0xFFFFFF));
 
@@ -905,7 +690,7 @@ function scene3DInitializeLights() {
 
 }
 
-function scene3DInitializePhysics()
+engine3D.initPhysics = function ()
 {
     //http://javascriptjamie.weebly.com/blog/part-1-the-physics
     /*
@@ -925,47 +710,7 @@ function scene3DInitializePhysics()
     */
 }
 
-function initPanorama(id, files, W,H)
-{
-    scene3DPanorama = new THREE.Scene();
-    camera3DPanorama = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-
-    rendererPanorama = new THREE.WebGLRenderer({
-        devicePixelRatio: window.devicePixelRatio || 1,
-        antialias: false
-    });
-
-    rendererPanorama.setSize(window.innerWidth*W, window.innerHeight*H);
-    document.getElementById(id).appendChild(rendererPanorama.domElement);
-
-    //controls3DPanorama = new THREE.OrbitControls(camera3DPanorama, rendererPanorama.domElement);
-    //controls3DPanorama.target = new THREE.Vector3(0, 0, 0);
-    //controls3DPanorama.enabled = true;
-    
-    document.addEventListener( 'mousedown', onPanoramaMouseDown, false );
-    document.addEventListener( 'mousewheel', onPanoramaMouseWheel, false );
-    document.addEventListener( 'touchstart', onPanoramaTouchStart, false );
-    document.addEventListener( 'touchmove', onPanoramaTouchMove, false );
-
-    document.getElementById(id).appendChild(spinner);
-
-    //mouse = new THREE.Vector2();
-    //touch = new THREE.Vector2();
-    //var scene = new THREE.Object3D();
-    //buildPanorama(scene,files, 512, 512);
-    //scene3DPanorama.add(scene);
-
-    buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_",null);
-
-    document.getElementById(id).removeChild(spinner);
-
-    $('#' + id).show();
-    animatePanorama();
-
-    //TODO: update onWindowResize();
-}
-
-function initCube(size) {
+engine3D.initCube = function (size) {
 
     var h = size * 0.5;
 
@@ -1056,9 +801,9 @@ engine3D.new = function (){
     */
     //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
 
-    scene3DenableOrbitControls(camera3D,renderer.domElement);
+    engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
-    scene3DInitializePostprocessing();
+    engine3D.initPostprocessing();
 }
 
 engine3D.open = function(zip) {
@@ -1114,45 +859,4 @@ engine3D.open = function(zip) {
         engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
-}
-
-function initMenu(id,item) {
-
-    if(RUNMODE == "database")
-    {
-        item = "php/objects.php?menu=" + item.split('/').shift();
-    }else{
-        item = "objects/" + item;
-    }
-
-    $.ajax(item,{
-        //contentType: "json",
-        //async: false,
-        dataType: 'json',
-        success: function(json){
-            //var json = JSON.parse(data);
-            var menu = $("#" + id + " .scroll");
-            //var menu = $("#" + id + " .cssmenu > ul");
-            menu.empty();
-            $.each(json.menu, function() {
-                menu.append(getMenuItem(this));
-            });
-            /*
-            $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
-                menuItemClick(this);
-            });
-            */
-            $("#" + id + " .cssmenu > ul > li > a").click(function(event) {
-                menuItemClick(this);
-            });
-        },
-        error: function(xhr, textStatus, errorThrown){
-            alertify.alert("Menu (" + item + ") Loading Error");
-        }
-    });
-    
-    correctMenuHeight();
-
-    $("#" + id).show();
-    //toggleRight('menuRight', true);
 }

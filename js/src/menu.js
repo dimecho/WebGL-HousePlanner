@@ -1,3 +1,62 @@
+
+engine3D.initMenu = function(id,item) {
+
+    if(RUNMODE == "database")
+    {
+        item = "php/objects.php?menu=" + item.split('/').shift();
+    }else{
+        item = "objects/" + item;
+    }
+
+    $.ajax(item,{
+        //contentType: "json",
+        //async: false,
+        dataType: 'json',
+        success: function(json){
+            //var json = JSON.parse(data);
+            var menu = $("#" + id + " .scroll");
+            //var menu = $("#" + id + " .cssmenu > ul");
+            menu.empty();
+            $.each(json.menu, function() {
+                menu.append(getMenuItem(this));
+            });
+            /*
+            $("#" + id + " .scroll .cssmenu > ul > li > a").click(function(event) {
+                menuItemClick(this);
+            });
+            */
+            $("#" + id + " .cssmenu > ul > li > a").click(function(event) {
+                menuItemClick(this);
+            });
+        },
+        error: function(xhr, textStatus, errorThrown){
+            alertify.alert("Menu (" + item + ") Loading Error");
+        }
+    });
+    
+    correctMenuHeight();
+
+    $("#" + id).show();
+    //toggleRight('menuRight', true);
+}
+
+function toggleSideMenus(open) {
+
+    //Auto close right menu
+    toggleRight('menuRight', open);
+
+    //document.getElementById('menuRight').setAttribute("class", "hide-right");
+    //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+
+    //Auto close left menu
+    if (SCENE == 'house') {
+        toggleLeft('menuLeft3DHouse', open);
+
+    } else if (SCENE == 'floor') {
+        toggleLeft('menuLeft3DFloor', open);
+    }
+}
+
 function toggleRight(id, open) {
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-right");
@@ -179,6 +238,31 @@ function correctMenuHeight() {
     } else {
         b.css('height', h);
     }
+}
+
+function selectMeasurement() {
+
+    if (REALSIZERATIO == 1.8311874) {
+        //$('#menuMeasureText').html("Imperial");
+        REALSIZERATIO = 1; //Imperial Ratio TODO: Get the right ratio
+    } else {
+        //$('#menuMeasureText').html("Metric");
+        REALSIZERATIO = 1.8311874; //Metric Ratio
+    }
+}
+
+function makeScreenshot()
+{
+    getScreenshotData = true;
+    
+    /*
+    renderer.preserveDrawingBuffer = true;
+    window.open(renderer.domElement.toDataURL('image/png'), 'Final');
+
+    setTimeout(function() {
+        renderer.preserveDrawingBuffer = false;
+    }, 1400);
+    */
 }
 
 /*

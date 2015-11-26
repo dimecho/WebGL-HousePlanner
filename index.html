@@ -32,7 +32,7 @@
               $('head').append("<script>" + zip.file("paper/paper.js").asText() + "<\/script>");
               $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
               console.log("HousePlanner v1.0");
-              initHousePlanner();
+              engine3D.initHousePlanner();
             });
           } catch (exception) {
             console.log(exception);
@@ -41,7 +41,7 @@
         error: function(jqXHR, textStatus, errorThrown) {
           $.getScript( "js/houseplanner.js" )
               .done(function( script, textStatus ) {
-                initHousePlanner();
+                engine3D.initHousePlanner();
               })
               .fail(function( jqxhr, settings, exception ) {
                 alert('Failed to load script');
@@ -369,7 +369,7 @@
         </li>
     </ul>
     <div id="links-left" style="width:180px;height:100px;">
-          <a href="#panorama" onclick="initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
+          <a href="#panorama" onclick="engine3D.initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
             <img class="tooltip-top" title="MLS#: 123456" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;border:5px solid #FFFFFF;border-radius:2px;"/>
           </a>
     </div>

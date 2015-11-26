@@ -1,14 +1,16 @@
-function scene3DHistoryForward()
+var engine3D = window.engine3D || {};
+
+engine3D.historyForward = function()
 {
    
 }
 
-function scene3DHistoryBack()
+engine3D.historyBack = function()
 {
    
 }
 
-function scene3DHistoryAdd()
+engine3D.historyAdd = function()
 {
    
 }
