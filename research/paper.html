@@ -13,7 +13,6 @@
 
   <script src="../js/library/jquery.mousewheel.js"></script>
   <script src="../js/src/variables.js"></script>
-  <script src="../js/src/cookies.js"></script>
 
   <script src="../js/src/2d/engine2d.js"></script>
   <script src="../js/src/2d/init.js"></script>
@@ -49,9 +48,9 @@
 
     function animateStop()
     {}
-    function scene3DFreeMemory()
+    engine3D.freeMemory = function()
     {}
-    function scene2DFreeMemory()
+    engine2D.freeMemory = function()
     {}
     function toggleRight()
     {}

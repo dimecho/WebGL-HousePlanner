@@ -10,4 +10,4 @@
 #
 # All rights reserved.
 
-../node_modules/.bin/uglifyjs ../bower_components/acorn/acorn.js -o ../bower_components/acorn/acorn.min.js -c -m -b ascii_only=true,beautify=falsefy=false
+../node_modules/.bin/uglifyjs ../bower_components/acorn/dist/acorn.js -o ../bower_components/acorn/acorn.min.js -c -m -b ascii_only=true,beautify=falsefy=false

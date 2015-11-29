@@ -9,6 +9,14 @@ fi
 if [ ! -d /usr/local/Cellar/node/ ]; then
     brew install node
     npm install argparse
+
+    npm install -g bower
+    npm install uglify-js
+    npm install prepro
+    npm install acorn
+    npm install straps
+    npm install stats.js
+    ./js/paper/build/minify-components.sh
 fi
 
 cd js/three/build/
@@ -16,9 +24,18 @@ rm -rf ../src/audio
 node ./build.js --include common --include extras --minify --output ../three.js
 rm ../three.js.map
 
-cd ../../paper/
+cd ../../paper/build/
+rm -rf jsdoc-toolkit
+./build.sh
+./minify.sh
+rm ../paper.js
+rm ../dist/paper-core.js
+rm ../dist/paper-full.js
+rm ../dist/paper-node.js
+rm ../dist/paper-core.min.js
+mv ../dist/paper-full.min.js ../paper.js
 
-cd ../../css/
+cd ../../../css/
 rm houseplanner.css
 for f in $(find ./src/ -name '*.css')
 do

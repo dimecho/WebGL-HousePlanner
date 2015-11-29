@@ -1,4 +1,3 @@
-
 var engine2D = window.engine2D || {};
 
 engine2D.open = function (zip){
@@ -45,8 +44,8 @@ engine2D.show = function (){
     console.log("engine2d.show()");
 
     animateStop();
-    scene3DFreeMemory();
-    scene2DFreeMemory();
+    engine3D.freeMemory();
+    engine2D.freeMemory();
 
     engine3D.hide();
     $('#engine2D').show();

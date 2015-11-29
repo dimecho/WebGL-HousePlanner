@@ -1,4 +1,7 @@
-function scene3DFreeMemory()
+var engine3D = window.engine3D || {};
+var engine2D = window.engine2D || {};
+
+engine3D.freeMemory = function()
 {
     if (scene3D instanceof THREE.Scene) 
     {
@@ -46,7 +49,7 @@ function scene3DFreeMemory()
     //scene3D = new THREE.Scene();
 }
 
-function scene2DFreeMemory()
+engine2D.freeMemory = function ()
 {
     with (paper) {
         
