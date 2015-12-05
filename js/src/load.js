@@ -276,14 +276,14 @@ function sceneOpen(s) {
             }
         });
     //}, 1000);
-}
+};
 
 function getCookie(name) {
   var value = "; " + document.cookie;
   var parts = value.split("; " + name + "=");
   if (parts.length == 2) 
     return parts.pop().split(";").shift();
-}
+};
 
 function createCookie(name,value,days) {
     if (days) {
@@ -293,4 +293,4 @@ function createCookie(name,value,days) {
     }
     else var expires = "";
     document.cookie = name+"="+value+expires+"; path=/";
-}
+};

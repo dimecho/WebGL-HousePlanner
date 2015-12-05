@@ -148,8 +148,8 @@ function onPanoramaMouseDown( event ) {
 
 function onPanoramaMouseMove( event ) {
 
-    var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-    var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+    var movementX = event.movementX || event.mozMovementX || 0;
+    var movementY = event.movementY || event.mozMovementY || 0;
 
     mouse.x -= movementX * 0.1;
     mouse.y += movementY * 0.1;

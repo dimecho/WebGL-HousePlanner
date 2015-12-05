@@ -1,3 +1,5 @@
+var engine3D = window.engine3D || {};
+
 function onWindowResize() {
 
     camera3D.aspect = window.innerWidth / window.innerHeight;

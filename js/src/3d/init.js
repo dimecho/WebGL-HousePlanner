@@ -333,8 +333,7 @@ engine3D.initHousePlanner = function () {
     //========================
     //sceneOpen(2);
     //========================
-
-}
+};
 
 engine3D.initRenderer = function()
 {
@@ -387,7 +386,7 @@ engine3D.initRenderer = function()
 
     document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
 
-    if(engine3D.showCube == true)
+    if(engine3D.showCube === true)
     {
         scene3DCube = new THREE.Scene();
         camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
@@ -405,7 +404,7 @@ engine3D.initRenderer = function()
         //$(rendererCube.domElement).bind('mousemove', onCubeMouseMove);
         document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
     }
-}
+};
 
 engine3D.initRendererQuad = function()
 {
@@ -478,7 +477,7 @@ engine3D.initRendererQuad = function()
         pane.trigger(muEvent);
     }
     */
-}
+};
 
 engine3D.initRendererQuadSize = function()
 {
@@ -495,7 +494,7 @@ engine3D.initRendererQuadSize = function()
             rendererQuad[i].setSize(w, h);
         }
     }
-}
+};
 
 engine3D.initPostprocessing = function ()
 {
@@ -512,7 +511,7 @@ engine3D.initPostprocessing = function ()
     {
         console.log("init SSAOShader");
         // Setup depth pass
-        var depthShader = THREE.ShaderLib[ "depthRGBA" ];
+        var depthShader = THREE.ShaderLib.depthRGBA;
         var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
         depthMaterial = new THREE.ShaderMaterial( { fragmentShader: depthShader.fragmentShader, vertexShader: depthShader.vertexShader, uniforms: depthUniforms, blending: THREE.NoBlending } );
         depthRenderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
@@ -552,7 +551,7 @@ engine3D.initPostprocessing = function ()
 
         effectComposer.addPass(FXAAPass); // Add pass to effect composer
     }
-}
+};
 
 engine3D.initLights = function() {
 
@@ -687,8 +686,7 @@ engine3D.initLights = function() {
     backLight.position.set(-0.5, -0.5, -2)
     scene.add( backLight )
     */
-
-}
+};
 
 engine3D.initPhysics = function ()
 {
@@ -708,7 +706,7 @@ engine3D.initPhysics = function ()
     physics3D.addContactMaterial(physicsContactMaterial);
     //var boxShape = new CANNON.Box(new CANNON.Vec3(1,1,1));
     */
-}
+};
 
 engine3D.initCube = function (size) {
 
@@ -755,8 +753,7 @@ engine3D.initCube = function (size) {
         new THREE.Vector3(h, -h, h)
     );
     return geometry;
-}
-
+};
 
 engine3D.new = function (){
    
@@ -804,7 +801,7 @@ engine3D.new = function (){
     engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
     engine3D.initPostprocessing();
-}
+};
 
 engine3D.open = function(zip) {
 
@@ -858,5 +855,4 @@ engine3D.open = function(zip) {
     $.each(JSON.parse(zip.file("scene3DRoofContainer.json").asText()), function(index){
         engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
-
-}
+};

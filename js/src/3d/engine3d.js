@@ -14,7 +14,7 @@ function scene3DSplitViewTop()
     $("#horizontal-divider").css({ bottom: h });
 
     engine3D.initRendererQuadSize();
-}
+};
 
 function scene3DSplitViewFront()
 {
@@ -31,7 +31,7 @@ function scene3DSplitViewFront()
     $("#horizontal-divider").css({ bottom: h });
 
     engine3D.initRendererQuadSize();
-}
+};
 
 function scene3DSplitViewSide()
 {
@@ -47,12 +47,12 @@ function scene3DSplitViewSide()
     $("#horizontal-divider").css({ bottom: h });
 
     engine3D.initRendererQuadSize();
-}
+};
 
 function scene3DSplitView3D()
 {
     
-}
+};
 
 /*
 function rotateAroundWorldAxis(object,axis, radians) {
@@ -62,20 +62,20 @@ function rotateAroundWorldAxis(object,axis, radians) {
     rotWorldMatrix.extractRotation(object.matrix);
     object.rotation.setEulerFromRotationMatrix(rotWorldMatrix, object.eulerOrder ); 
     object.position.getPositionFromMatrix( object.matrix );
-}
+};
 
 function rotateAroundWorldAxisX(radians) { 
     this._vector.set(1,0,0);
     rotateAroundWorldAxis(this._vector,radians);
-}
+};
 function rotateAroundWorldAxisY(radians) { 
     this._vector.set(0,1,0);
     rotateAroundWorldAxis(this._vector,radians);
-}
+};
 function rotateAroundWorldAxisZ(degrees){ 
     this._vector.set(0,0,1);
     rotateAroundWorldAxis(this._vector,degrees);
-}
+};
 
 // Rotate an object around an arbitrary axis in world space       
 function rotateAroundWorldAxis(object, axis, radians) {
@@ -84,7 +84,7 @@ function rotateAroundWorldAxis(object, axis, radians) {
     //rotWorldMatrix.multiplySelf(object.matrix);        // pre-multiply
     object.matrix = rotWorldMatrix;
     object.rotation.getRotationFromMatrix(object.matrix, object.scale);
-}
+};
 */
 
 /*
@@ -110,7 +110,7 @@ function loadOBJ(obj,mtl,object,x,y,z) {
     object.add(model);
   });
     loader.load('./models/obj/' + obj, 'models/obj/' + mtl);
-}
+};
 */
 
 /*
@@ -136,19 +136,19 @@ function camera3DFloorFlyIn(floor)
     	FLOOR = floor;
         engine3D.showFloor();
     }).start();
-}
+};
 
 function camera3DNoteAdd()
 {
   //TODO: bring up 3d note up close and html form
-}
+};
 
 function scene3DFloorInsertAR()
 {
     if (typeof NyARRgbRaster_Canvas2D == 'undefined') $.getScript("js/dynamic/JSARToolKit.js", function(data, textStatus, jqxhr) {
         
     });
-}
+};
 
 function scene3DFloorInsertPicture()
 {
@@ -156,17 +156,17 @@ function scene3DFloorInsertPicture()
     camera3DPivotCache = controls3D.target.clone();
 
     camera3DInsertPictureEnter();
-}
+};
 
 function camera3DInsertPictureEnter()
 {
     var tween = new TWEEN.Tween(camera3D.position).to({x:0, y:10, z:0},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-}
+};
 
 function camera3DInsertPictureExit()
 {
     var tween = new TWEEN.Tween(camera3D.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-}
+};
 
 function camera3DPictureEnter()
 {
@@ -178,7 +178,7 @@ function camera3DPictureEnter()
         }).start();
 
     tween = new TWEEN.Tween(SelectedPicture.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-}
+};
 
 function camera3DPictureExit()
 {
@@ -186,7 +186,7 @@ function camera3DPictureExit()
 
     var tween = new TWEEN.Tween(SelectedPicture.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     tween = new TWEEN.Tween(SelectedPicture.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-}
+};
 
 function camera3DNoteEnter()
 {
@@ -202,7 +202,7 @@ function camera3DNoteEnter()
         }).start();
         tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3D.rotation.x, y:camera3D.rotation.y, z:camera3D.rotation.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     }
-}
+};
 
 function camera3DNoteExit()
 {
@@ -211,7 +211,7 @@ function camera3DNoteExit()
     //camera3D.remove(SelectedNote);
     var tween = new TWEEN.Tween(SelectedNote.position).to({x:camera3DPositionCache.x, y:camera3DPositionCache.y, z:camera3DPositionCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
     tween = new TWEEN.Tween(SelectedNote.rotation).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},2000).easing(TWEEN.Easing.Quadratic.InOut).start();
-}
+};
 
 function camera3DAnimate(x,y,z,speed)
 {
@@ -223,7 +223,7 @@ function camera3DAnimate(x,y,z,speed)
 	    var tween = new TWEEN.Tween(camera3D.position).to({x:x, y:y, z:z},speed).easing(TWEEN.Easing.Quadratic.InOut).start();
         tween = new TWEEN.Tween(controls3D.target).to({x:0, y:0, z:0},speed).easing(TWEEN.Easing.Quadratic.InOut).start();
     }
-}
+};
 
 function camera3DWalkViewToggle()
 {
@@ -254,7 +254,7 @@ function camera3DWalkViewToggle()
     {
         alertify.alert("Not Available in Edit Mode");
     }
-}
+};
 
 function camera3DAnimateResetView()
 {
@@ -266,7 +266,7 @@ function camera3DAnimateResetView()
         tween = new TWEEN.Tween(controls3D.target).to({x:camera3DPivotCache.x, y:camera3DPivotCache.y, z:camera3DPivotCache.z},1800).easing(TWEEN.Easing.Quadratic.InOut).start();
         */
     }
-}
+};
 
 engine3D.enableTransformControls = function (mode)
 {
@@ -286,7 +286,7 @@ engine3D.enableTransformControls = function (mode)
     $('#WebGLTextureSelect').hide();
 
     //scene3D.add(controls3D);
-}
+};
 
 engine3D.enableOrbitControls = function (camera, element)
 {
@@ -308,7 +308,7 @@ engine3D.enableOrbitControls = function (camera, element)
 
         //camera3DAnimate(0,20,0, 500);
     }
-}
+};
 
 engine3D.enableFirstPersonControls = function()
 {
@@ -325,7 +325,7 @@ engine3D.enableFirstPersonControls = function()
 
     //controls3D.target = new THREE.Vector3(0, 0, 0);
     //camera3D.lookAt(new THREE.Vector3(0, 0, 0));
-}
+};
 
 engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, ratio, shadow, note) {
 
@@ -461,7 +461,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                         if((child.material.shininess - 10) > 1)
                         {
                             child.material.shininess = child.material.shininess - 10; //Looks like Blender uses different # - offset to equalize same look
-                        }else if(child.material.shininess == 0 ){
+                        }else if(child.material.shininess === 0 ){
                             child.material.shininess = 0.1;
                         }
 
@@ -561,10 +561,12 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
             After automatic translation to BufferedGeometry
             ===============================================
             */
+			var material;
+			var geometry;
             if(note)
             {
-                var material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
-                var geometry = new THREE.TextGeometry(note, {
+                material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+                geometry = new THREE.TextGeometry(note, {
                     font: 'helvetiker', // Must be lowercase!
                     weight: 'normal',
                     size: 0.05,
@@ -587,11 +589,11 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
             
             if(objectContainer == scene3DFloorFurnitureContainer[FLOOR])
             {
-                var material = new THREE.LineBasicMaterial({
+                material = new THREE.LineBasicMaterial({
                     color: 0x000000,
                     linewidth: 2
                 });
-                var geometry = new THREE.Geometry();
+                geometry = new THREE.Geometry();
 
                 var x1 = x - object.boundingBox.max.x*3;
                 var z1 = z - object.boundingBox.max.z*3;
@@ -823,7 +825,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                                         break;
                                     }
                                 }
-                                if(geometry_opacity == 0)
+                                if(geometry_opacity === 0)
                                     geometry_opacity = 0.99;
                                 //====================================
                                 for (var m = 0; m < data.materials.length; m++) {
@@ -893,7 +895,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
     }catch(e){
         console.log("open3DModel Error " + e);
     }
-}
+};
 
 function scene3DGenerateClampToEdgeTexture(img) {
     // var texture = new THREE.Texture( scene3DGenerateClampToEdgeTexture( ) );
@@ -923,7 +925,7 @@ function scene3DGenerateClampToEdgeTexture(img) {
     //},100);
 
     return canvas;
-}
+};
 
 engine3D.showHouse = function() {
 
@@ -935,7 +937,7 @@ engine3D.showHouse = function() {
     
     SCENE = 'house';
 
-    engine3D.initMenu("menuRight3DHouse","Exterior/index.json");
+    engineGUI.initMenu("menuRight3DHouse","Exterior/index.json");
 
     engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
@@ -947,11 +949,11 @@ engine3D.showHouse = function() {
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
     if (TOOL3DINTERACTIVE == 'moveXY') {
-        menuSelect(0, 'menuInteractiveItem', '#ff3700');
+        engineGUI.menuSelect(0, 'menuInteractiveItem', '#ff3700');
     } else if (TOOL3DINTERACTIVE == 'moveZ') {
-        menuSelect(1, 'menuInteractiveItem', '#ff3700');
+        engineGUI.menuSelect(1, 'menuInteractiveItem', '#ff3700');
     } else if (TOOL3DINTERACTIVE == 'rotate') {
-        menuSelect(2, 'menuInteractiveItem', '#ff3700');
+        engineGUI.menuSelect(2, 'menuInteractiveItem', '#ff3700');
     }
 
     var menuBottom = [2,3,4,5,6,7,8,9,10];
@@ -963,7 +965,7 @@ engine3D.showHouse = function() {
     toggleRight('menuRight', true);
     toggleLeft('menuLeft3DHouse', true);
 
-    menuSelect(1, 'menuTopItem', '#ff3700');
+    engineGUI.menuSelect(1, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
     engine3D.setSky(DAY);
@@ -1011,8 +1013,8 @@ engine3D.showHouse = function() {
         camera3DAnimate(0,6,18, 1000);
     }, 1000);
     
-    animate();
-}
+    engine3D.animate();
+};
 
 engine3D.showLandscape = function() {
 
@@ -1041,10 +1043,10 @@ engine3D.showLandscape = function() {
     $(renderer.domElement).bind('mousemove', on3DLandscapeMouseMove);
     //$(renderer.domElement).bind('mouseout', on3DLandscapeMouseUp);
 
-    menuSelect(0, 'menuLeft3DLandscapeItem', '#ff3700');
+    engineGUI.menuSelect(0, 'menuLeft3DLandscapeItem', '#ff3700');
     toggleLeft('menuLeft3DLandscape', true);
 
-    menuSelect(2, 'menuTopItem', '#ff3700');
+    engineGUI.menuSelect(2, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
     $('#engine3D').show();
@@ -1079,8 +1081,8 @@ engine3D.showLandscape = function() {
     img.src = "images/heightmap2.png";
     */
 
-    animate();
-}
+    engine3D.animate();
+};
 
 engine3D.showFloor = function () {
 
@@ -1091,7 +1093,7 @@ engine3D.showFloor = function () {
     engine3D.hide();
     SCENE = 'floor';
 
-    engine3D.initMenu("menuRight3DFloor","Interior/index.json");
+    engineGUI.initMenu("menuRight3DFloor","Interior/index.json");
 
     engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
@@ -1164,8 +1166,8 @@ engine3D.showFloor = function () {
     toggleRight('menuRight', true);
     toggleLeft('menuLeft3DFloor', true);
 
-    menuSelect(5, 'menuTopItem', '#ff3700');
-    menuSelect(0,'menuLeft3DFloorItem','#ff3700');
+    engineGUI.menuSelect(5, 'menuTopItem', '#ff3700');
+    engineGUI.menuSelect(0,'menuLeft3DFloorItem','#ff3700');
     correctMenuHeight();
 
     if(scene3DCube)
@@ -1180,8 +1182,8 @@ engine3D.showFloor = function () {
         camera3DAnimate(0,10,12, 1000);
     }, 500);
 
-    animate();
-}
+    engine3D.animate();
+};
 
 engine3D.showFloorLevel = function() {
  
@@ -1208,15 +1210,15 @@ engine3D.showFloorLevel = function() {
 
     //scene3DCube.add(scene3DCubeMesh);
 
-    menuSelect(3, 'menuTopItem', '#ff3700');
+    engineGUI.menuSelect(3, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
     //$('#HTMLCanvas').hide();
     $('#engine3D').show();
     $('#WebGLCanvas').show();
 
-    animate();
-}
+    engine3D.animate();
+};
 
 engine3D.showRoofDesign = function() {
  
@@ -1225,7 +1227,7 @@ engine3D.showRoofDesign = function() {
     engine3D.hide();
     SCENE = 'roof';
 
-    engine3D.initMenu("menuRight3DRoof","Roof/index.json");
+    engineGUI.initMenu("menuRight3DRoof","Roof/index.json");
 
     //engine3D.SetBackground('split');
     engine3D.setLights();
@@ -1251,7 +1253,7 @@ engine3D.showRoofDesign = function() {
 
     toggleRight('menuRight', true);
 
-    menuSelect(4, 'menuTopItem', '#ff3700');
+    engineGUI.menuSelect(4, 'menuTopItem', '#ff3700');
     correctMenuHeight();
 
     //$('div.split-pane').splitPane();
@@ -1260,8 +1262,8 @@ engine3D.showRoofDesign = function() {
     $('#engine3D').show();
     $('#WebGLSplitCanvas').show();
 
-    animate();
-}
+    engine3D.animate();
+};
 
 /*
 function initObjectCollisions(container) {
@@ -1353,20 +1355,7 @@ engine3D.hide = function() {
     //scene2D.visible = b;
 
     //scene2DFloorContainer[0].traverse;
-}
-
-
-function menuSelect(item, id, color) {
-    if (item === null) //clear all
-    {
-        for (var i = 0; i <= 6; i++) {
-            $("#" + id + i).css('color', 'black');
-        }
-    } else {
-        menuSelect(null, id, color);
-        $("#" + id + item).css('color', color); //#53C100
-    }
-}
+};
 
 function selectFloor(next) {
 
@@ -1388,14 +1377,14 @@ function selectFloor(next) {
     	
 		alertify.confirm("Add New Floor?", function (e) {
 		    if (e) {
-                scene3DNewFloor();
+                engine3D.newFloor();
 		    //} else { // user clicked "cancel"
 		    }
 		});
     }
 }
 
-function scene3DNewFloor(name)
+engine3D.newFloor = function(name)
 {
     var i = scene3DFloorFurnitureContainer.length;
 
@@ -1412,7 +1401,7 @@ function scene3DNewFloor(name)
     //scene3DFloorOtherContainer[i] = new THREE.Object3D();
     scene2DWallMesh[i] = [];
     scene2DWallDimentions[i] = [];
-}
+};
 
 function selectDayNight() {
 
@@ -1439,7 +1428,7 @@ function selectDayNight() {
     //scene3D.add(weatherSkyRainbowMesh);
 }
 
-function selectWeather() {
+engine3D.selectWeather = function() {
 
     if (WEATHER == "sunny") {
 
@@ -1457,7 +1446,7 @@ function selectWeather() {
         //$('#menuWeatherText').html("Sunny");
     }
     engine.setWeather();
-}
+};
 
 function scene3DObjectSelectRemove() {
 
@@ -1713,12 +1702,13 @@ function scene3DObjectSelectedRoot(object,uuid)
         }
     }
     return object;
-}
+};
+
 function scene3DObjectUnselect() {
 
     if (controls3D instanceof THREE.OrbitControls)
     {
-        if(SelectedObject != null)
+        if(SelectedObject !== null)
         {
             //SelectedObject.remove(scene3DAxisHelper);
             //console.log(SelectedObject);
@@ -1826,9 +1816,9 @@ function exportPDF() {
             //saveAs(doc.output('blob'), scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
         });
     }
-}
+};
 
-function scene3DCollectArrayFromContainer(container) {
+engine3D.collectArrayFromContainer = function(container) {
 
 	var json = [];
 
@@ -1848,7 +1838,7 @@ function scene3DCollectArrayFromContainer(container) {
         json.push(JSONString);
     }
     return json;
-}
+};
 
 function saveScene(online) {
 
@@ -1858,7 +1848,7 @@ function saveScene(online) {
 
         //console.log(JSON.stringify(terrain3DRawData));
 
-        zip.file("scene3DTerrain.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DHouseGroundContainer)));
+        zip.file("scene3DTerrain.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DHouseGroundContainer)));
         //zip.file("scene3DTerrainHill.json", JSON.stringify(terrain3DRawHillData));
         //zip.file("scene3DTerrainValley.json", JSON.stringify(terrain3DRawValleyData));
 
@@ -1870,16 +1860,16 @@ function saveScene(online) {
         }
         zip.file("options.json", JSON.stringify(o));
 
-        zip.file("scene3DRoofContainer.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DRoofContainer)));
-        zip.file("scene3DHouseContainer.json", JSON.stringify(scene3DCollectArrayFromContainer(scene3DHouseContainer)));
+        zip.file("scene3DRoofContainer.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DRoofContainer)));
+        zip.file("scene3DHouseContainer.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DHouseContainer)));
 
         var json3d = [];
         var json2d = [];
         
         for (var i = 0; i < scene2DWallMesh.length; i++)
         {
-            json3d.push(scene3DCollectArrayFromContainer(scene3DFloorFurnitureContainer[i]));
-            json2d.push(scene2DCollectArrayFromContainer(i));
+            json3d.push(engine3D.collectArrayFromContainer(scene3DFloorFurnitureContainer[i]));
+            json2d.push(engine2D.collectArrayFromContainer(i));
         }
         zip.file("scene3DFloorContainer.json", JSON.stringify(json3d));
         zip.file("scene2DFloorContainer.json", JSON.stringify(json2d));
@@ -1921,7 +1911,7 @@ function saveScene(online) {
 
         if (online)
         {
-        	if(SESSION == '')
+        	if(SESSION === '')
 		    {
                 //saveAs(content, "scene.zip"); //Debug
 		        window.location = "#openLogin";
@@ -1993,10 +1983,10 @@ function scene3DFloorMeasurementShow() {
     }
     if (show)
     {
-        menuSelect(0,'menuLeft3DFloorItem','#ff3700');
+        engineGUI.menuSelect(0,'menuLeft3DFloorItem','#ff3700');
         TOOL3DFLOOR = 'measure';
     }else{
-        menuSelect(0,'menuLeft3DFloorItem','black');
+        engineGUI.menuSelect(0,'menuLeft3DFloorItem','black');
         TOOL3DFLOOR = '';
     }
 }
@@ -2115,7 +2105,7 @@ engine3D.SetBackground = function(set) {
     } else {
         document.body.style.background = "#fff";
     }
-}
+};
 
 engine3D.setLights = function() {
 
@@ -2190,8 +2180,7 @@ engine3D.setLights = function() {
         //scene3D.add(sceneSpotLight);
         scene3D.add(sceneDirectionalLight);
     }
-}
-
+};
 
 /*
 function scene3DFloorSky() {
@@ -2387,7 +2376,7 @@ function animatePanorama() {
     }
     else
     {
-        animate();
+        engine3D.animate();
     }
 }
 
@@ -2397,7 +2386,7 @@ function animateHouseRotate() {
 
     if(!scene3DAnimateRotate)
     {
-        animate();
+        engine3D.animate();
         return;
     }
 
@@ -2523,11 +2512,11 @@ function renderSunlight()
 
         // Give it to the god-ray and sun shaders
 
-        sunlight.godrayGenUniforms[ "vSunPositionScreenSpace" ].value.x = screenSpacePosition.x;
-        sunlight.godrayGenUniforms[ "vSunPositionScreenSpace" ].value.y = screenSpacePosition.y;
+        sunlight.godrayGenUniforms.vSunPositionScreenSpace.value.x = screenSpacePosition.x;
+        sunlight.godrayGenUniforms.vSunPositionScreenSpace.value.y = screenSpacePosition.y;
 
-        sunlight.godraysFakeSunUniforms[ "vSunPositionScreenSpace" ].value.x = screenSpacePosition.x;
-        sunlight.godraysFakeSunUniforms[ "vSunPositionScreenSpace" ].value.y = screenSpacePosition.y;
+        sunlight.godraysFakeSunUniforms.vSunPositionScreenSpace.value.x = screenSpacePosition.x;
+        sunlight.godraysFakeSunUniforms.vSunPositionScreenSpace.value.y = screenSpacePosition.y;
 
         // -- Draw sky and sun --
 
@@ -2548,7 +2537,7 @@ function renderSunlight()
         renderer.setScissor( screenSpacePosition.x - sunsqW / 2, screenSpacePosition.y - sunsqH / 2, sunsqW, sunsqH );
         renderer.enableScissorTest( true );
 
-        sunlight.godraysFakeSunUniforms[ "fAspect" ].value = window.innerWidth / window.innerHeight;
+        sunlight.godraysFakeSunUniforms.fAspect.value = window.innerWidth / window.innerHeight;
 
         sunlight.scene.overrideMaterial = sunlight.materialGodraysFakeSun;
         renderer.render( sunlight.scene, sunlight.camera, sunlight.rtTextureColors );
@@ -2583,8 +2572,8 @@ function renderSunlight()
         var pass = 1.0;
         var stepLen = filterLen * Math.pow( TAPS_PER_PASS, -pass );
 
-        sunlight.godrayGenUniforms[ "fStepSize" ].value = stepLen;
-        sunlight.godrayGenUniforms[ "tInput" ].value = sunlight.rtTextureDepth;
+        sunlight.godrayGenUniforms.fStepSize.value = stepLen;
+        sunlight.godrayGenUniforms.tInput.value = sunlight.rtTextureDepth;
 
         sunlight.scene.overrideMaterial = sunlight.materialGodraysGenerate;
 
@@ -2595,8 +2584,8 @@ function renderSunlight()
         pass = 2.0;
         stepLen = filterLen * Math.pow( TAPS_PER_PASS, -pass );
 
-        sunlight.godrayGenUniforms[ "fStepSize" ].value = stepLen;
-        sunlight.godrayGenUniforms[ "tInput" ].value = sunlight.rtTextureGodRays2;
+        sunlight.godrayGenUniforms.fStepSize.value = stepLen;
+        sunlight.godrayGenUniforms.tInput.value = sunlight.rtTextureGodRays2;
 
         renderer.render( sunlight.scene, sunlight.camera, sunlight.rtTextureGodRays1  );
 
@@ -2605,15 +2594,15 @@ function renderSunlight()
         pass = 3.0;
         stepLen = filterLen * Math.pow( TAPS_PER_PASS, -pass );
 
-        sunlight.godrayGenUniforms[ "fStepSize" ].value = stepLen;
-        sunlight.godrayGenUniforms[ "tInput" ].value = sunlight.rtTextureGodRays1;
+        sunlight.godrayGenUniforms.fStepSize.value = stepLen;
+        sunlight.godrayGenUniforms.tInput.value = sunlight.rtTextureGodRays1;
 
         renderer.render( sunlight.scene, sunlight.camera , sunlight.rtTextureGodRays2  );
 
         // final pass - composite god-rays onto colors
 
-        sunlight.godrayCombineUniforms["tColors"].value = sunlight.rtTextureColors;
-        sunlight.godrayCombineUniforms["tGodRays"].value = sunlight.rtTextureGodRays2;
+        sunlight.godrayCombineUniforms.tColors.value = sunlight.rtTextureColors;
+        sunlight.godrayCombineUniforms.tGodRays.value = sunlight.rtTextureGodRays2;
 
         sunlight.scene.overrideMaterial = sunlight.materialGodraysCombine;
 
@@ -2673,7 +2662,7 @@ function animateHouse()
 
     if (scene3DAnimateRotate)
     {
-        animate();
+        engine3D.animate();
         return;
     }
     
@@ -2783,7 +2772,7 @@ function animateStop()
     //TWEEN.removeAll(); //avoid any tween checks whilre rotating (faster)
 }
 
-function animate()
+engine3D.animate = function()
 {
     //Look into Threading this with WebWorkers > http://www.html5rocks.com/en/tutorials/workers/basics/
     animateStop();
@@ -2810,13 +2799,13 @@ function animate()
     {
         animateRoof();
     }
-}
+};
 
 function webAddNewFloor() {
     
     if($("#webAddNewFloor").val())
     {
-        scene3DNewFloor($("#webAddNewFloor").val());
+        engine3D.newFloor($("#webAddNewFloor").val());
 
         var a = "<a href='#' onclick='camera3DFloorFlyIn(" + scene3DFloorFurnitureContainer.length + ")'><span>" + $("#webAddNewFloor").val() + "</span></a>";
         var item = $("<li>").append(a);
@@ -2831,7 +2820,7 @@ function webItemListGenerate() {
 
     for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
         
-        console.log(scene3DFloorFurnitureContainer[i].name)
+        console.log(scene3DFloorFurnitureContainer[i].name);
 
         for (var c = 0; c < scene3DFloorFurnitureContainer[i].children.length; c++) {
 
@@ -2911,13 +2900,13 @@ function ajaxBeforeSubmit() {
             break;
         default:
             alert(ftype + " is unsupported file type!");
-            return false
+            return false;
     }
 
     //Allowed file size is less than 10 MB (1048576 = 1 mb)
     if (fsize > 10485760) {
         alert("<b>" + fsize + "</b> Too big file! <br />File is too big, it should be less than 5 MB.");
-        return false
+        return false;
     }
 }
 
@@ -2970,10 +2959,10 @@ function handleFile3DObjectSelect(event) {
             };
 
             fileReader.onload = function(e) {
-                console.log("Load File: " + $('#fileInput').value + ":" + event.target.files[0].name)
+                console.log("Load File: " + $('#fileInput').value + ":" + event.target.files[0].name);
                 engine3D.open(e.target.result);
                 engine2D.open(e.target.result);
-            }
+            };
 
             //fileReader.readAsDataURL(event.target.files[0]);
             //fileReader.readAsBinaryString(event.target.files[0]);
@@ -2993,7 +2982,7 @@ function handleFile2DAutoCADConvert(event) {
     fileReader.onload = function(e) {
         var parser = new DXFParser(e.target.result);
         console.log(parser);
-    }
+    };
     fileReader.readAsText(event.target.files[0]);
     //fileReader.readAsDataURL(event.target.files[0]);
 
@@ -3037,7 +3026,7 @@ function handleFile2DImageSelect(event) {
         scene2D.add(scene2DFloorDraftPlanImage[FLOOR]);
         scene2D.sendToBack(scene2DFloorDraftPlanImage[FLOOR]);
         scene2D.renderAll();
-    }
+    };
 
     // Read image file as a binary string.
     fileReader.readAsDataURL(event.target.files[0]);
@@ -3057,7 +3046,7 @@ function toggleTextureSelect() {
     {
     	$('#WebGLTextureSelect').empty();
 
-    	if (SelectedWall != null)
+    	if (SelectedWall !== null)
 	    {
 	    	var scroll =  $("<div>", {class:"scroll","data-ui":"jscroll-default",style:"width:100%;height:80px"});
     		var list =  $("<div>", {class:"objectItem",style:"width:100px;height:64px"});
@@ -3073,7 +3062,7 @@ function toggleTextureSelect() {
 
         $('#WebGLTextureSelect').show();
 
-        if (SelectedWall != null)
+        if (SelectedWall !== null)
         {
             $('#WebGLColorWheelSelect').show();
         }

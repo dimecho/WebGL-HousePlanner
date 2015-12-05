@@ -47,17 +47,14 @@ engine3D.freeMemory = function()
     //scene3D.remove(skyMesh);
     //scene3D = null;
     //scene3D = new THREE.Scene();
-}
+};
 
 engine2D.freeMemory = function ()
 {
-    with (paper) {
-        
-        var children = project.activeLayer.children;
+	var children = paper.project.activeLayer.children;
 
-        for (var i = 0; i < children.length; i++) {
-            children[i].remove();
+	for (var i = 0; i < children.length; i++) {
+		children[i].remove();
 
-        }
-    }
-}
+	}
+};

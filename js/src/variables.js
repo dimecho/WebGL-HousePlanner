@@ -1,41 +1,5 @@
 var engine3D = window.engine3D || {};
-
-/*
-WebGL HousePlanner v1.0
-Preview: http://houseplanner.iroot.ca
-Source Code: https://github.com/poofik/webgl-houseplanner
-
-TODO:
-- [difficulty: 10/10 progress: 15%] 2D floor plan gyometry drafting
-- [difficulty: 3/10  progress: 90%] 2D floor plan select and overlay external draft image
-- [difficulty: 8/10  progress: 10%] Toolbar edit functions for 2D floor plans
-- [difficulty: 9/10  progress: 25%] Make converter function to "extrude" 2D into 3D walls
-- [difficulty: 6/10  progress: 90%] Make front walls 80% transparent in 3D rotation
-- [difficulty: 8/10  progress: 50%] 3D movable objects and collision detection
-- [difficulty: 9/10  progress: 10%] 3D menu objects draggable with "pop-up" or star burst effect
-- [difficulty: 2/10  progress: 80%] 3D objects sub-edit menu (textures/delete/duplicate)
-- [difficulty: 2/10  progress: 60%] Categorize and populate 3D Menu items
-- [difficulty: 8/10  progress: 20%] 3D Menu functions for draggable objects
-- [difficulty: 5/10  progress: 40%] 3D Floor ground base glass reflective
-- [difficulty: 6/10  progress: 80%] 3D Exterior View ability to select floors (+ flying-in animationeffect)
-- [difficulty: 6/10  progress: 0%]  Keep history and implement Undo/Redo
-- [difficulty: 6/10  progress: 80%] Make House Ground editable - angle/terain/square
-    http://cjcliffe.github.io/CubicVR.js/experiment/landscape_editor/landscape_edit_500m.html
-    http://skeelogy.github.io/skarf.js/examples/skarf_trackThreejsScene.html
-    http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
-    http://www.chandlerprall.com/webgl/terrain/
-- [difficulty: 4/10  progress: 60%]  Ability to save scene 3D & 2D
-- [difficulty: 5/10  progress: 50%]  Ability to open scene 3D & 2D
-- [difficulty: 6/10  progress: 0%]   Keep history and implement Undo/Redo
-- [difficulty: 6/10  progress: 98%]  3D Exterior View create night scene atmosphere with proper lights
-- [difficulty: 8/10  progress: 100%] 3D Exterior View auto rotate-snap on ground angle
-- [difficulty: 4/10  progress: 100%] Make a nice rainbow glow for 3D house exterior view - idea came after a 2 second glitch with video card :)
-- [difficulty: 8/10  progress: 2%]   Implement room agmented reality  https://github.com/bhollis/aruco-marker
-- [difficulty: 9/10  progress: 5%]   Implement Physics with collision detection
-- [difficulty: 9/10  progress: 80%]  Replace clouds with Shaders and add sun rays! 
-    http://jabtunes.com/labs/3d/clouds/clouds_godrays_controls.html
-    http://www.lab4games.net/zz85/blog/2014/11/08/exploring-simple-noise-and-clouds-with-three-js/
-*/
+var engine2D = window.engine2D || {};
 
 var scene3D; //Three.js Canvas
 var scene3DCube; //Three.js Canvas
@@ -51,9 +15,6 @@ var renderer, rendererCube, rendererPanorama;
 var rendererQuad = [4];
 var camera3DQuad = [4];
 var camera3DQuadGrid;
-
-var scene3DHistory = [];
-var scene2DHistory = [];
 
 var scene3DRoofContainer; //Contains Roof Design
 var scene3DHouseContainer; //Contains all Exterior 3D objects by floor (trees,fences)

@@ -2,7 +2,7 @@ var engine3D = window.engine3D || {};
 
 engine3D.makeFloor = function () {
     
-    if(scene2DWallGroup[FLOOR] != undefined){
+    if(scene2DWallGroup[FLOOR] !== undefined){
 
         console.log("3D Floor Generate " + scene2DWallGroup[FLOOR].children.length);
 
@@ -41,7 +41,7 @@ engine3D.makeFloor = function () {
             //var curve = new THREE.QuadraticBezierCurve(new THREE.Vector2(x1,y1),new THREE.Vector2(cx,cy),new THREE.Vector2(x2,y2));
         }
     }
-}
+};
 
 engine3D.triangulateUsingP2T = function (pts, holes) {
     
@@ -59,7 +59,7 @@ engine3D.triangulateUsingP2T = function (pts, holes) {
     for (var h in holes) {
         var aHole = holes[h];
         var newHole = [];
-        for (i in aHole) {
+        for (var i in aHole) {
             newHole.push(new poly2tri.Point(aHole[i].x, aHole[i].y));
             allpts.push(aHole[i]);
         }
@@ -70,7 +70,7 @@ engine3D.triangulateUsingP2T = function (pts, holes) {
         find = new THREE.Vector2(pt.x, pt.y);
         var p;
         for (p = 0, pl = allpts.length; p < pl; p++)
-            if (find.distanceToSquared(allpts[p]) == 0) return p;
+            if (find.distanceToSquared(allpts[p]) === 0) return p;
         return -1;
     };
     poly2tri.sweep.Triangulate(swctx);

@@ -1,5 +1,6 @@
+var engineGUI = window.engineGUI || {};
 
-engine3D.initMenu = function(id,item) {
+engineGUI.initMenu = function(id,item) {
 
     if(RUNMODE == "database")
     {
@@ -38,7 +39,19 @@ engine3D.initMenu = function(id,item) {
 
     $("#" + id).show();
     //toggleRight('menuRight', true);
-}
+};
+
+engineGUI.menuSelect = function(item, id, color) {
+    if (item === null) //clear all
+    {
+        for (var i = 0; i <= 6; i++) {
+            $("#" + id + i).css('color', 'black');
+        }
+    } else {
+        engineGUI.menuSelect(null, id, color);
+        $("#" + id + item).css('color', color); //#53C100
+    }
+};
 
 function toggleSideMenus(open) {
 
@@ -46,7 +59,7 @@ function toggleSideMenus(open) {
     toggleRight('menuRight', open);
 
     //document.getElementById('menuRight').setAttribute("class", "hide-right");
-    //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+    //engineGUI.menuDelay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
     //Auto close left menu
     if (SCENE == 'house') {
@@ -55,7 +68,7 @@ function toggleSideMenus(open) {
     } else if (SCENE == 'floor') {
         toggleLeft('menuLeft3DFloor', open);
     }
-}
+};
 
 function toggleRight(id, open) {
     var el = document.getElementById(id);
@@ -65,12 +78,12 @@ function toggleRight(id, open) {
     if (img.src.indexOf("images/arrowleft.png") >= 0 || open) { //box == "hide-right"
         el.style.display = "block";
         el.setAttribute("class", "show-right");
-        delay(img, "images/arrowright.png", 400);
+        engineGUI.menuDelay(img, "images/arrowright.png", 400);
     } else if (!open) {
         el.setAttribute("class", "hide-right");
-        delay(img, "images/arrowleft.png", 400);
+        engineGUI.menuDelay(img, "images/arrowleft.png", 400);
     }
-}
+};
 
 function toggleLeft(id, open) {
     var el = document.getElementById(id);
@@ -80,18 +93,18 @@ function toggleLeft(id, open) {
     if (img.src.indexOf("images/arrowright.png") >= 0 || open) { //box == "hide-left"
         el.style.display = "block";
         el.setAttribute("class", id + "-show-left");
-        delay(img, "images/arrowleft.png", 400);
+        engineGUI.menuDelay(img, "images/arrowleft.png", 400);
     } else if (!open) {
         el.setAttribute("class", "hide-left");
-        delay(img, "images/arrowright.png", 400);
+        engineGUI.menuDelay(img, "images/arrowright.png", 400);
     }
-}
+};
 
-function delay(elem, src, delayTime) {
+engineGUI.menuDelay = function(elem, src, delayTime) {
     window.setTimeout(function() {
         elem.setAttribute("src", src);
     }, delayTime);
-}
+};
 
 function menuItemClick(self) {
     //console.log("click");
@@ -123,7 +136,7 @@ function menuItemClick(self) {
     } else {
         return false;
     }
-}
+};
 
 function getMenuItem(itemData, last) {
     //console.log(itemData);
@@ -161,7 +174,7 @@ function getMenuItem(itemData, last) {
         item.append(subList);
     }
     return item;
-}
+};
 
 function getMenuObjectItem(menu,itemData) {
     //console.log(itemData);
@@ -249,20 +262,6 @@ function selectMeasurement() {
         //$('#menuMeasureText').html("Metric");
         REALSIZERATIO = 1.8311874; //Metric Ratio
     }
-}
-
-function makeScreenshot()
-{
-    getScreenshotData = true;
-    
-    /*
-    renderer.preserveDrawingBuffer = true;
-    window.open(renderer.domElement.toDataURL('image/png'), 'Final');
-
-    setTimeout(function() {
-        renderer.preserveDrawingBuffer = false;
-    }, 1400);
-    */
 }
 
 /*

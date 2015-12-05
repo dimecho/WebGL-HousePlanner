@@ -26,9 +26,9 @@ rm ../three.js.map
 
 cd ../../paper/build/
 rm -rf jsdoc-toolkit
-./build.sh
-./minify.sh
-rm ../paper.js
+#./build.sh
+#./minify.sh
+#rm ../paper.js
 rm ../dist/paper-core.js
 rm ../dist/paper-full.js
 rm ../dist/paper-node.js
