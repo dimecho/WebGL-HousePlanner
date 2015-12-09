@@ -55,6 +55,7 @@ engine2D.new = function (){
 	for(var i=0; i<=2; i++) //TODO: make this dynamic increase
 	{
 		scene2DWallMesh[i] = [];
+		scene2DFloorShape[i] = new paper.Group();
 		scene2DWallDimentions[i] = [];
 		scene2DDoorGroup[i] = new paper.Group();
 		scene2DWallGroup[i] = new paper.Group();

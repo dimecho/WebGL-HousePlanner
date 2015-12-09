@@ -1,66 +1,103 @@
 var engine2D = window.engine2D || {};
 
+//=========================================
+var drawWall = {
+    radius: 5,
+    tolerance: 20,
+    handle: null,
+    path: null,
+    curPoint: null,
+    prevPoint: null,
+    curHandleSeg: null
+};
+
 engine2D.drawWall = function()
 {
-	var values = {
-		radius: 10,
-		tolerance: 5
-	};
-	var handle;
-	var path;
-	var min = values.radius * 2;
-	var curPoint, prevPoint, curHandleSeg;
-		
-	if (values.tolerance < min) values.tolerance = min;
-		handle = values.radius * paper.Numerical.KAPPA;
+    var min = drawWall.radius * 2;
+	if (drawWall.tolerance < min) drawWall.tolerance = min;
+		drawWall.handle = drawWall.radius * paper.Numerical.KAPPA;
 	
-	canvas2D.attach('mousedown', function(event) {
-		path = new paper.Path({
-			segments: [event.point, event.point],
-			strokeColor: 'black',
-			strokeWidth: 5,
-			strokeCap: 'round'
-		});
-		prevPoint = path.firstSegment.point;
-		curPoint = path.lastSegment.point;
-		curHandleSeg = null;
-		
-		return event.preventDefault();
-	});
-	
-	canvas2D.attach('mouseup', function(event) {
-	});
-	
-	canvas2D.attach('mousedrag', function(event, delta) {
-		var point = event.point;
-		var diff = (point - prevPoint).abs();
-		if (diff.x < diff.y) {
-			curPoint.x = prevPoint.x;
-			curPoint.y = point.y;
-		} else {
-			curPoint.x = point.x;
-			curPoint.y = prevPoint.y;
-		}
-		var normal = curPoint - prevPoint;
-		normal.length = 1;
-		if (curHandleSeg) {
-			curHandleSeg.point = prevPoint + (normal * values.radius);
-			curHandleSeg.handleIn = normal * -handle;
-		}
-		var minDiff = Math.min(diff.x, diff.y);
-		if (minDiff > values.tolerance) {
-			var point = curPoint - (normal * values.radius);
-			var segment = new Segment(point, null, normal * handle);
-			path.insert(path.segments.length - 1, segment);
-			curHandleSeg = path.lastSegment;
-			// clone as we want the unmodified one:
-			prevPoint = curHandleSeg.point.clone();
-			path.add(curHandleSeg);
-			curPoint = path.lastSegment.point;
-		}
-		return event.preventDefault();
-	});
+	canvas2D.on('mousedown', engine2D.drawWall_onMouseDown);
 };
+
+engine2D.drawWall_onMouseDown = function(event)
+{
+    event.preventDefault();
+
+    drawWall.path = new paper.Path({
+        segments: [event.point, event.point],
+        strokeColor: 'black',
+        strokeWidth: 10,
+        strokeCap: 'round'
+    });
+    drawWall.prevPoint = drawWall.path.firstSegment.point;
+    drawWall.curPoint = drawWall.path.lastSegment.point;
+    drawWall.curHandleSeg = null;
+    
+    canvas2D.on('mouseup', engine2D.drawWall_onMouseUp);
+    canvas2D.on('mousedrag', engine2D.drawWall_onMouseDrag);
+};
+
+engine2D.drawWall_onMouseUp = function(event)
+{
+    event.preventDefault();
+    canvas2D.off('mouseup', engine2D.drawWall_onMouseUp);
+    canvas2D.off('mousedrag', engine2D.drawWall_onMouseDrag);
+};
+
+engine2D.drawWall_onMouseDrag = function(event)
+{
+    event.preventDefault();
+
+    var point = event.point;
+
+    //var diff = (point - prevPoint).abs();
+    var x = point.x - drawWall.prevPoint.x;
+    var y = point.y - drawWall.prevPoint.y;
+    var diff = new paper.Point(x, y).abs();
+
+    if (diff.x < diff.y) {
+        drawWall.curPoint.x = drawWall.prevPoint.x;
+        drawWall.curPoint.y = point.y;
+    } else {
+        drawWall.curPoint.x = point.x;
+        drawWall.curPoint.y = drawWall.prevPoint.y;
+    }
+    //var normal = curPoint - prevPoint;
+    x = drawWall.curPoint.x - drawWall.prevPoint.x;
+    y = drawWall.curPoint.y - drawWall.prevPoint.y;
+    var normal = new paper.Point(x, y);
+
+    normal.length = 1;
+    if (drawWall.curHandleSeg) {
+        //curHandleSeg.point = prevPoint + (normal * drawWall.radius);
+        x = drawWall.prevPoint.x + (normal.x * drawWall.radius);
+        y = drawWall.prevPoint.y + (normal.y * drawWall.radius);
+        drawWall.curHandleSeg.point = new paper.Point(x, y);
+
+        //curHandleSeg.handleIn = normal * -drawWall.handle;
+        x = normal.x * -drawWall.handle;
+        y = normal.y * -drawWall.handle;
+        drawWall.curHandleSeg.handleIn = new paper.Point(x, y);
+    }
+    var minDiff = Math.min(diff.x, diff.y);
+    if (minDiff > drawWall.tolerance) {
+
+        //var point = curPoint - (normal * drawWall.radius);
+        x = drawWall.curPoint.x - (normal.x * drawWall.radius);
+        y = drawWall.curPoint.y - (normal.y * drawWall.radius);
+        var point = new paper.Point(x, y);
+
+        var segment = new paper.Segment(point, null, normal * drawWall.handle);
+        drawWall.path.insert(drawWall.path.segments.length - 1, segment);
+        drawWall.curHandleSeg = drawWall.path.lastSegment;
+        // clone as we want the unmodified one:
+        drawWall.prevPoint = drawWall.curHandleSeg.point.clone();
+        drawWall.path.add(drawWall.curHandleSeg);
+        drawWall.curPoint = drawWall.path.lastSegment.point;
+    }
+};
+//=========================================
 
 engine2D.makeWall = function (v1,v2,c) {
 
@@ -99,9 +136,9 @@ engine2D.makeWall = function (v1,v2,c) {
         items = [];
         var arrowVector = vector.normalize(10);
         var end = vectorStart + vector;
-        vectorItem = new Group(
-            new Path(vectorStart, end),
-            new Path(
+        vectorItem = new paper.Group(
+            new paper.Path(vectorStart, end),
+            new paper.Path(
                 end + arrowVector.rotate(135),
                 end,
                 end + arrowVector.rotate(-135)
@@ -113,7 +150,7 @@ engine2D.makeWall = function (v1,v2,c) {
         dashedItems = [];
         // Draw Circle
         if (values.showCircle) {
-            dashedItems.push(new Path.Circle(vectorStart, vector.length));
+            dashedItems.push(new paper.Path.Circle(vectorStart, vector.length));
         }
         // Draw Labels
         if (values.showAngleLength) {
@@ -145,21 +182,21 @@ engine2D.makeWall = function (v1,v2,c) {
         var radius = 25, threshold = 10;
         if (vector.length < radius + threshold || Math.abs(vector.angle) < 15)
             return;
-        var from = new Point(radius, 0);
+        var from = new paper.Point(radius, 0);
         var through = from.rotate(vector.angle / 2);
         var to = from.rotate(vector.angle);
         var end = center + to;
-        dashedItems.push(new Path.Line(center, center + new Point(radius + threshold, 0)));
-        dashedItems.push(new Path.Arc(center + from, center + through, end));
+        dashedItems.push(new paper.Path.Line(center, center + new paper.Point(radius + threshold, 0)));
+        dashedItems.push(new paper.Path.Arc(center + from, center + through, end));
         var arrowVector = to.normalize(7.5).rotate(vector.angle < 0 ? -90 : 90);
-        dashedItems.push(new Path([
+        dashedItems.push(new paper.Path([
                 end + arrowVector.rotate(135),
                 end,
                 end + arrowVector.rotate(-135)
         ]));
         if (label) {
             // Angle Label
-            var text = new PointText(center + through.normalize(radius + 10) + new Point(0, 3));
+            var text = new paper.PointText(center + through.normalize(radius + 10) + new paper.Point(0, 3));
             text.content = Math.floor(vector.angle * 100) / 100 + '\xb0';
             items.push(text);
         }
@@ -174,7 +211,7 @@ engine2D.makeWall = function (v1,v2,c) {
         var upVector = vector.normalize(lengthSize).rotate(45 * sign);
         var downVector = upVector.rotate(-90 * sign);
         var lengthVector = vector.normalize(vector.length / 2 - lengthSize * Math.sqrt(2));
-        var line = new Path();
+        var line = new paper.Path();
         line.add(from + awayVector);
         line.lineBy(upVector);
         line.lineBy(lengthVector);
@@ -190,7 +227,7 @@ engine2D.makeWall = function (v1,v2,c) {
             // Label needs to move away by different amounts based on the
             // vector's quadrant:
             var away = (sign >= 0 ? [1, 4] : [2, 3]).indexOf(vector.quadrant) != -1 ? 8 : 0;
-            var text = new PointText(middle + awayVector.normalize(away + lengthSize));
+            var text = new paper.PointText(middle + awayVector.normalize(away + lengthSize));
             text.rotate(textAngle);
             text.justification = 'center';
             value = value || vector.length;
@@ -455,6 +492,40 @@ engine2D.makeWall = function (v1,v2,c) {
     return group;
 };
 
+engine2D.wall_onMouseEnter = function(event)
+{
+    event.preventDefault();
+
+};
+
+engine2D.wall_onMouseDown = function(event)
+{
+    event.preventDefault();
+
+    canvas2D.on('mouseup', engine2D.wall_onMouseUp);
+    canvas2D.on('mousedrag', engine2D.wall_onMouseDrag);
+    canvas2D.off('mousemove', engine2D.wall_onMouseMove);
+};
+
+engine2D.wall_onMouseUp = function(event)
+{
+    event.preventDefault();
+    canvas2D.off('mouseup', engine2D.wall_onMouseUp);
+    canvas2D.off('mousedrag', engine2D.wall_onMouseDrag);
+    canvas2D.off('mousemove', engine2D.wall_onMouseMove);
+};
+
+engine2D.wall_onMouseDrag = function(event)
+{
+
+};
+
+engine2D.wall_onMouseMove = function(event)
+{
+
+};
+//=========================================
+
 //http://stackoverflow.com/questions/16991895/paperjs-to-draw-line-with-arrow
 paper.Shape.ArrowLine = function (sx, sy, ex, ey, isDouble) {
 
@@ -574,7 +645,7 @@ engine2D.calculateWallMeasureColor = function (edge) {
             //var line = edge.attachments[i].children[4+l];
             var line = scene2DWallGroup[FLOOR].children[i].children[l];
 
-            var hitResult = scene2DFloorShape.hitTest(line.children[0].segments[0].point);
+            var hitResult = scene2DFloorShape[FLOOR].hitTest(line.children[0].segments[0].point);
             if (hitResult) {
                 line.strokeColor = '#606060'; //inside
                 //line.parent.children[7].position = line.children[0].getLocationAt(line.children[0].length/2).point;
@@ -842,6 +913,26 @@ engine2D.calculateWallCorners = function () {
 
 	paper.project.layers.push(scene2DWallPointGroup[FLOOR]);
 	//scene2DWallPointGroup[FLOOR].bringToFront();
+};
+
+engine2D.edge_onMouseDown = function(event)
+{
+    event.preventDefault();
+
+    canvas2D.on('mouseup', engine2D.edge_onMouseUp);
+    canvas2D.on('mousedrag', engine2D.edge_onMouseDrag);
+};
+
+engine2D.edge_onMouseUp = function(event)
+{
+    event.preventDefault();
+    canvas2D.off('mouseup', engine2D.edge_onMouseUp);
+    canvas2D.off('mousedrag', engine2D.edge_onMouseDrag);
+};
+
+engine2D.edge_onMouseDrag = function(event)
+{
+
 };
 
 engine2D.calculateWallEdge = function (edge) {

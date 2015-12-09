@@ -4,8 +4,8 @@ engine2D.makeFloor = function () {
 
     if(scene2DWallGroup[FLOOR] !== undefined)
     {
-        if(scene2DWallGroup[FLOOR].children.length > 0)
-        {
+        //if(scene2DWallGroup[FLOOR].children.length > 0){
+            
     		console.log("2D Floor Generate " + scene2DWallGroup[FLOOR].children.length);
 
     		var shape = new paper.Path();
@@ -80,13 +80,13 @@ engine2D.makeFloor = function () {
     			};
     			var raster = new paper.Raster(canvas, new paper.Point(shape.bounds.x,shape.bounds.y));
     			raster.fitBounds(shape.bounds, true);
-    			scene2DFloorShape = new paper.Group([shape, raster]);
-    			scene2DFloorShape.clipped = true;
-    			canvas2D.addChild(scene2DFloorShape);
+    			scene2DFloorShape[FLOOR] = new paper.Group([shape, raster]);
+    			scene2DFloorShape[FLOOR].clipped = true;
+    			canvas2D.addChild(scene2DFloorShape[FLOOR]);
     		//}
 
     		engine2D.calculateWallMeasureColor();
-        }
+        //}
     }
 };
 

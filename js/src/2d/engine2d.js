@@ -41,14 +41,11 @@ engine2D.show = function (){
 
     console.log("engine2d.show()");
 
+    SCENE = '2d';
     animateStop();
     engine3D.freeMemory();
     engine2D.freeMemory();
-
     engine3D.hide();
-    $('#engine2D').show();
-
-    SCENE = '2d';
 
     //engineGUI.initMenu("menuRight2D","FloorPlan/index.json");
 
@@ -56,18 +53,19 @@ engine2D.show = function (){
 
     //Create Grid
     //============================
-	canvas2D = new paper.Group();
+    canvas2D = new paper.Group();
 	var circle = new paper.Path.Circle(new paper.Point(0, 0), 450);
 	circle.fillColor = '#CCCCCC';
 	circle.opacity = 0.2;
 	circle.position.x = paper.view.center.x + 40;
 	circle.position.y = paper.view.center.y + 80;
-
 	var rec = new paper.Path.Rectangle(new paper.Point(0, 0), paper.view.viewSize); //TODO: raster image
 	rec.fillColor = '#ffffff';
-
 	canvas2D.addChild(rec);
 	canvas2D.addChild(circle);
+
+    $('#engine2D').show();
+
 	/*
 	canvas2D.attach('mousedrag', function(event, delta) {
 		var deltaX = (paper.view.center.x/2 - event.point.x/2);
@@ -131,6 +129,8 @@ engine2D.show = function (){
         //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
     }
 
+    engine2D.drawWall();
+
     //scene2DArrayToLineWalls();
 
     //scene2DCalculateWallLength();
@@ -145,6 +145,16 @@ engine2D.hide = function() {
         }
     }
     */
+    if(canvas2D)
+    {
+        canvas2D.off('mouseenter');
+        canvas2D.off('mouseleave');
+        canvas2D.off('mousedown');
+        canvas2D.off('mouseup');
+        canvas2D.off('mousedrag');
+        canvas2D.off('mousemove');
+        canvas2D.off('doubleclick');
+    }
     try{
         $('#menu2DTools').tooltipster('hide');
     }catch(e){}

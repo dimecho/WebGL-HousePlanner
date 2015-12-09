@@ -14,7 +14,7 @@
    height="250"
    id="svg2816"
    version="1.1"
-   inkscape:version="0.48.2 r9819"
+   inkscape:version="0.48.5 r10040"
    sodipodi:docname="roof.svg">
   <defs
      id="defs2818">
@@ -209,16 +209,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.56"
-     inkscape:cx="148.62993"
-     inkscape:cy="118.10845"
+     inkscape:zoom="4"
+     inkscape:cx="135.60515"
+     inkscape:cy="107.00675"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:window-width="1680"
-     inkscape:window-height="911"
+     inkscape:window-height="920"
      inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-y="1"
      inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
@@ -246,24 +246,26 @@
      id="layer1"
      transform="translate(0,-802.36218)">
     <path
-       style="fill:#4d4d4d;fill-opacity:1;stroke:#d80000;stroke-width:0.60000002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;filter:url(#filter3706)"
-       d="M 78.865396,974.74733 0.39077649,930.44108 75.110636,866.61004 179.11768,882.38006 78.865396,974.74733 z"
+       style="fill:#000000;fill-opacity:1;stroke:#d80000;stroke-width:0.60000002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;filter:url(#filter3706)"
+       d="m 81,969.36218 -79,-41 72,-54 100,9 z"
        id="path3628"
        inkscape:export-filename="C:\Documents and Settings\Fastallow\Desktop\banner1.png"
        inkscape:export-xdpi="52.390923"
        inkscape:export-ydpi="52.390923"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc" />
     <path
        style="fill:#000000;fill-opacity:1;stroke:#c20000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter3710)"
-       d="m 79.616356,974.74733 4.88119,5.25667 94.244654,-88.6125 66.45937,53.31769 3.75477,-6.00762 -69.08771,-56.32151 -100.252274,92.36727 z"
+       d="M 79.616356,974.74733 84,979.36218 l 94.7422,-87.97068 66.45937,53.31769 3.75477,-6.00762 -69.08771,-56.32151 z"
        id="path3630"
        inkscape:export-filename="C:\Documents and Settings\Fastallow\Desktop\banner1.png"
        inkscape:export-xdpi="52.390923"
        inkscape:export-ydpi="52.390923"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccc" />
     <path
-       style="fill:#333333;fill-opacity:1;stroke:#b00000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter3714)"
-       d="m 165.22504,880.1272 -0.16797,-14.51515 19.27774,-0.0395 0.0395,20.18685 -5.63215,-4.13024 -13.51716,-1.50191 z"
+       style="fill:#000000;fill-opacity:1;stroke:#b00000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter3714)"
+       d="m 166.48288,880.86022 -0.16797,-14.51515 19.27774,-0.0395 0.0395,20.18685 L 180,882.36218 166.48284,880.86027 z"
        sodipodi:nodetypes="cccccc"
        inkscape:export-filename="C:\Documents and Settings\Fastallow\Desktop\banner1.png"
        inkscape:export-xdpi="52.390923"
@@ -271,13 +273,14 @@
        id="path3632"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:#333333;fill-opacity:1;stroke:#ac0000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter3718)"
-       d="m 301.88325,440.33519 -84.10678,-46.5591 -0.75095,-4.50572 81.10296,43.55529 3.75477,7.50953 z"
+       style="fill:#000301;fill-opacity:1;stroke:#ac0000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter3718)"
+       d="m 301.16985,440.16164 -82.11714,-46.11184 0,-4.19199 81.10335,44.01585 z"
        id="path3634"
        inkscape:export-filename="C:\Documents and Settings\Fastallow\Desktop\banner1.png"
        inkscape:export-xdpi="52.390923"
        inkscape:export-ydpi="52.390923"
-       transform="matrix(0.98639581,0,0,0.95420183,-214.07268,559.35914)"
-       inkscape:connector-curvature="0" />
+       transform="matrix(0.98639581,0,0,0.95420183,-214.07268,558.35914)"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc" />
   </g>
 </svg>

@@ -1,3 +1,0 @@
-#!/bin/sh
-
-open -a 'Google Chrome Canary' --args --allow-file-access-from-files "$(dirname "$0")/debug.html"
