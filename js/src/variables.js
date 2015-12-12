@@ -33,6 +33,7 @@ var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by fl
 var scene3DFloorDoorContainer = [];
 var scene3DFloorWindowContainer = [];
 var scene3DFloorShapeContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
+var scene3DCeilingShapeContainer = [];
 var scene2DFloorShape = [];
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 

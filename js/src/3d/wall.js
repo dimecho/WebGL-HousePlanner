@@ -65,7 +65,7 @@ engine3D.makeWalls = function () {
         });
         */
 
-        var scene3DWallMaterial = new THREE.MeshLambertMaterial({
+        var material = new THREE.MeshLambertMaterial({
             map: scene3DWallInteriorTextureDefault,
             transparent: true,
             opacity: 0.6,
@@ -73,7 +73,7 @@ engine3D.makeWalls = function () {
             //wireframe: true
         });
 
-        var mesh = new THREE.Mesh(geometry, scene3DWallMaterial);
+        var mesh = new THREE.Mesh(geometry, material);
         mesh.rotation.x = -(90 * RADIAN); //extrusion happens in Z direction, we need the wall pointing UP
         mesh.position.y = 0;
 

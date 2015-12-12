@@ -80,6 +80,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 	// internal state cache
 
 	_currentProgram = null,
+	_currentRenderTarget = null,
 	_currentFramebuffer = null,
 	_currentMaterialId = - 1,
 	_currentGeometryProgram = '',
@@ -217,6 +218,12 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	//
 
+	function getTargetPixelRatio() {
+
+		return _currentRenderTarget === null ? pixelRatio : 1;
+
+	}
+
 	function glClearColor( r, g, b, a ) {
 
 		if ( _premultipliedAlpha === true ) {
@@ -256,6 +263,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 	this.context = _gl;
 	this.capabilities = capabilities;
 	this.extensions = extensions;
+	this.properties = properties;
 	this.state = state;
 
 	// shadow map
@@ -732,7 +740,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			}
 
-			activeInfluences.sort( numericalSort );
+			activeInfluences.sort( absNumericalSort );
 
 			if ( activeInfluences.length > 8 ) {
 
@@ -843,7 +851,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( material.wireframe === true ) {
 
-				state.setLineWidth( material.wireframeLinewidth * pixelRatio );
+				state.setLineWidth( material.wireframeLinewidth * getTargetPixelRatio() );
 				renderer.setMode( _gl.LINES );
 
 			} else {
@@ -873,7 +881,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 			if ( lineWidth === undefined ) lineWidth = 1; // Not using Line*Material
 
-			state.setLineWidth( lineWidth * pixelRatio );
+			state.setLineWidth( lineWidth * getTargetPixelRatio() );
 
 			if ( object instanceof THREE.LineSegments ) {
 
@@ -1030,9 +1038,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	// Sorting
 
-	function numericalSort ( a, b ) {
+	function absNumericalSort( a, b ) {
 
-		return b[ 0 ] - a[ 0 ];
+		return Math.abs( b[ 0 ] ) - Math.abs( a[ 0 ] );
 
 	}
 
@@ -1307,7 +1315,7 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 						var geometry = objects.update( object );
 
-						if ( material instanceof THREE.MeshFaceMaterial ) {
+						if ( material instanceof THREE.MultiMaterial ) {
 
 							var groups = geometry.groups;
 							var materials = material.materials;
@@ -1975,9 +1983,9 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	function refreshUniformsPoints ( uniforms, material ) {
 
-		uniforms.psColor.value = material.color;
+		uniforms.diffuse.value = material.color;
 		uniforms.opacity.value = material.opacity;
-		uniforms.size.value = material.size * pixelRatio;
+		uniforms.size.value = material.size * getTargetPixelRatio();
 		uniforms.scale.value = _canvas.height / 2.0; // TODO: Cache this.
 
 		uniforms.map.value = material.map;
@@ -3357,6 +3365,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 	}
 
 	this.setRenderTarget = function ( renderTarget ) {
+
+		_currentRenderTarget = renderTarget;
 
 		if ( renderTarget && properties.get( renderTarget ).__webglFramebuffer === undefined ) {
 

@@ -979,7 +979,7 @@ engine3D.showHouse = function() {
     
     engine3D.setLights();
 
-    engine3D.makeFloor();
+    //engine3D.makeFloor();
 
     //engine3D.makeWalls();
 
@@ -994,7 +994,7 @@ engine3D.showHouse = function() {
     scene3D.add(scene3DHouseContainer);
     scene3D.add(scene3DRoofContainer);
 
-    //scene3D.add(scene3DFloorShapeContainer[FLOOR]);
+    scene3D.add(scene3DFloorShapeContainer[FLOOR]);
     
     for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
         scene3D.add(scene3DFloorFurnitureContainer[i]);
@@ -1141,7 +1141,7 @@ engine3D.showFloor = function () {
     }
 
     scene3D.add(scene3DFloorWallContainer[FLOOR]); //walls
-    //scene3D.add(scene3DFloorShapeContainer[FLOOR]); //floor ground
+    scene3D.add(scene3DFloorShapeContainer[FLOOR]); //floor ground
     //scene3D.add(scene3DFloorOtherContainer[FLOOR]); //notes
 
     //$(renderer.domElement).bind('mousemove', on3DMouseMove);
@@ -1398,6 +1398,7 @@ engine3D.newFloor = function(name)
     scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
     scene3DFloorWallContainer[i] = new THREE.Object3D();
     scene3DFloorShapeContainer[i] = new THREE.Object3D();
+    scene3DCeilingShapeContainer[i] = new THREE.Object3D();
     //scene3DFloorOtherContainer[i] = new THREE.Object3D();
     scene2DWallMesh[i] = [];
     scene2DWallDimentions[i] = [];

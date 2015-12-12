@@ -2,55 +2,70 @@ var engine3D = window.engine3D || {};
 
 engine3D.makeFloor = function () {
     
-    if(scene2DFloorShape[FLOOR] !== undefined)
+    //if(scene2DWallGroup[FLOOR] !== undefined)
+    if(scene2DWallGroup[FLOOR].children.length > 0)
     {
-        console.log(scene2DFloorShape[FLOOR]);
-    }
-
-    /*
-    if(scene2DWallGroup[FLOOR] !== undefined){
-
         console.log("3D Floor Generate " + scene2DWallGroup[FLOOR].children.length);
 
-        scene3DFloorShapeContainer[FLOOR] = new THREE.Object3D();
-
-        for(i = 0; i < scene2DWallGroup[FLOOR].children.length; i++)
+        /*
+        var points = [];
+        for(i = 0; i < scene2DFloorShape[FLOOR].children[0].segments.length; i++)
         {
-            var wall = scene2DWallGroup[FLOOR].children[i].children[0].children[0].segments; //inside a Group()
-            console.log(wall);
-            //if(i == 0)
-            /
-            if (floorShape === null)
-            {
-                //Generate 3D Floor Shape
-                floorShape = new THREE.Shape();
-                floorShape.moveTo(x1, y1);
-                floorShape.quadraticCurveTo(cx, cy, x2, y2);
-            }else{
-                if(x2 == corner.x && y2 == corner.y){
-                    floorShape.quadraticCurveTo(cx, cy, x1,y1);
-                    corner = {x:x1,y:y1};
-                }else{
-                    floorShape.quadraticCurveTo(cx, cy, x2,y2);
-                    corner = {x:x2,y:y2};
-                }
-            }
-            /
-
-            /
-            var curve = new THREE.SplineCurve([
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(0, 0, -100),
-                new THREE.Vector3(100, 0, -100)
-            ]);
-            /
-            //var curve = new THREE.QuadraticBezierCurve(new THREE.Vector2(x1,y1),new THREE.Vector2(cx,cy),new THREE.Vector2(x2,y2));
+            var p = scene2DFloorShape[FLOOR].children[0].segments[i].point;
+            points.push(new THREE.Vector2(p.x,p.y));
         }
+        console.log(points);
+        var geometry = engine3D.triangulateUsingP2T(points);
+        console.log(geometry);
+        */
+
+        scene3DFloorShapeContainer[FLOOR] = new THREE.Object3D();
+        //scene3DCeilingShapeContainer[FLOOR] = new THREE.Object3D();
+
+        var shape = new THREE.Shape();
+        for(i = 0; i < scene2DFloorShape[FLOOR].children[0].segments.length; i++)
+        {
+            var p = scene2DFloorShape[FLOOR].children[0].segments[i].point;
+            var x = (p.x/100) * 2 - 1;
+            var y = -(p.y/100) * 2 + 1;
+            //var cx = ((p.x + p.x)/2)/100 * 2 - 1;
+            //var cy = -((p.y + p.y)/2)/100 * 2 + 1;
+            x -= 13;
+            y += 7;
+
+            if (i === 0)
+            {
+                shape.moveTo(x, y);
+            }else{
+                //shape.quadraticCurveTo(cx, cy, p.x,p.y);
+                shape.lineTo(x, y);
+            }
+        }
+
+        var geometry = new THREE.ShapeGeometry(shape);
+        var material = new THREE.MeshBasicMaterial();
+        var texture = THREE.ImageUtils.loadTexture("objects/Platform/Textures/W23643.jpg");
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;          
+        material.map = texture;
+        var mesh = new THREE.Mesh(geometry, material);
+        mesh.rotation.x = -(90 * RADIAN);
+        mesh.position.y = 0.2;
+        scene3DFloorShapeContainer[FLOOR].add(mesh);
+
+        //scene3DCeilingShapeContainer[FLOOR].add(mesh);
     }
-    */
 };
 
+/*
 engine3D.triangulateUsingP2T = function (pts, holes) {
+    
+    var pts = [
+        new THREE.Vector2(100, 100),
+        new THREE.Vector2(100, 300),
+        new THREE.Vector2(300, 300),
+        new THREE.Vector2(300, 100)
+    ];
     
     var allpts = pts.slice(0);
     var shape = [];
@@ -58,7 +73,8 @@ engine3D.triangulateUsingP2T = function (pts, holes) {
     var lastPoint = pts[pts.length - 1];
     var threshold = 1e-3;
     for (var p = 0, pl = pts.length; p < pl; p++) {
-        if (lastPoint.distanceTo(pts[p]) > threshold) shape.push(new poly2tri.Point(pts[p].x, pts[p].y));
+        if (lastPoint.distanceTo(pts[p]) > threshold)
+            shape.push(new poly2tri.Point(pts[p].x, pts[p].y));
         lastPoint = pts[p];
     }
     if (shape.length < 3) return;
@@ -92,3 +108,4 @@ engine3D.triangulateUsingP2T = function (pts, holes) {
     geom.vertices = allpts;
     return geom;
 };
+*/

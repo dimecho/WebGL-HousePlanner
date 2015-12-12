@@ -64,4 +64,57 @@ engine2D.new = function (){
 		scene2DInteriorMesh[i] = [];
 		scene2DExteriorMesh[i] = [];
 	}
+	//Create Grid
+    //============================
+    canvas2D = new paper.Group();
+	var circle = new paper.Path.Circle(new paper.Point(0, 0), 450);
+	circle.fillColor = '#CCCCCC';
+	circle.opacity = 0.2;
+	circle.position.x = paper.view.center.x + 40;
+	circle.position.y = paper.view.center.y + 80;
+	var rec = new paper.Path.Rectangle(new paper.Point(0, 0), paper.view.viewSize); //TODO: raster image
+	rec.fillColor = '#ffffff';
+	canvas2D.addChild(rec);
+	canvas2D.addChild(circle);
+    engine2D.makeGrid(40,'#6dcff6');
+    engine2D.makeGrid(20,'#E0E0E0');
+    //============================
+};
+
+engine2D.open = function (zip){
+
+    var i = 0;
+
+    $.each(JSON.parse(zip.file("scene2DFloorContainer.json").asText()), function(index)
+    {
+        //var objects2DWalls = JSON.parse(this);
+        //console.log(this);
+       
+		$.each(this, function(index)
+		{
+			if(this.door !== undefined)
+			{
+				scene2DDoorGroup[i].addChild(engine2D.makeDoor(this.length,{x:this.x,y:this.y},this.z,this.type,this.open,this.direction,this.door));
+			}
+			else if(this.window !== undefined)
+			{
+				//scene2DWindowGroup[i] = engine2D.makeWindow(this['x'],this['y'],this['z'],this['open'],this['direction'],this.window);
+			}
+			else if(this.wall !== undefined)
+			{
+				scene2DWallGroup[i].addChild(engine2D.makeWall({x:this.x1,y:this.y1},{x:this.x2,y:this.y2},{x:this.cx,y:this.cy}));
+			}
+			else if(this.label !== undefined)
+			{
+				scene2DLabelGroup[i].addChild(engine2D.makeLabel(this.label,this.size,this.x,this.y));
+			}
+		});
+		//scene2DWallGroup[i].activate();
+		//scene2DWallGroup[i].bringToFront();
+
+		engine2D.makeFloor();
+		//scene2DLabelGroup[i].bringToFront()
+        
+        i++;
+    });
 };

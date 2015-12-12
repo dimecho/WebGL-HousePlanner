@@ -4,7 +4,7 @@ engine2D.makeFloor = function () {
 
     if(scene2DWallGroup[FLOOR] !== undefined)
     {
-        //if(scene2DWallGroup[FLOOR].children.length > 0){
+        if(scene2DWallGroup[FLOOR].children.length > 0){
             
     		console.log("2D Floor Generate " + scene2DWallGroup[FLOOR].children.length);
 
@@ -86,7 +86,7 @@ engine2D.makeFloor = function () {
     		//}
 
     		engine2D.calculateWallMeasureColor();
-        //}
+        }
     }
 };
 

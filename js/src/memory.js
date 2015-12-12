@@ -57,5 +57,5 @@ engine2D.freeMemory = function ()
 		children[i].remove();
 	}
     
-    canvas2D = null;
+    //canvas2D = null;
 };

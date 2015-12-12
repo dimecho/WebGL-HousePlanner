@@ -1,3 +1,5 @@
+var engineGUI = window.engineGUI || {};
+
 $(document).ready(function() {
 
     /*
@@ -195,7 +197,7 @@ function sceneMapBox() {
     }
 }
 
-function sceneOpen(s) {
+engineGUI.open = function(s) {
 
     document.body.appendChild(spinner);
     document.getElementById("start").getElementsByClassName("close")[0].setAttribute('href', "#close");
@@ -247,8 +249,8 @@ function sceneOpen(s) {
                         }catch(ex){}
                         //show2D(); //DEBUG 2D
 
-                        engine3D.open(zip);
                         engine2D.open(zip);
+                        engine3D.open(zip);
 
                         setTimeout(function() {
                             document.body.removeChild(spinner);

@@ -1,41 +1,5 @@
 var engine2D = window.engine2D || {};
 
-engine2D.open = function (zip){
-
-    var i = 0;
-
-    $.each(JSON.parse(zip.file("scene2DFloorContainer.json").asText()), function(index)
-    {
-        //var objects2DWalls = JSON.parse(this);
-        //console.log(this);
-       
-		$.each(this, function(index)
-		{
-			if(this.door !== undefined)
-			{
-				scene2DDoorGroup[i].addChild(engine2D.makeDoor(this.length,{x:this.x,y:this.y},this.z,this.type,this.open,this.direction,this.door));
-			}
-			else if(this.window !== undefined)
-			{
-				//scene2DWindowGroup[i] = engine2D.makeWindow(this['x'],this['y'],this['z'],this['open'],this['direction'],this.window);
-			}
-			else if(this.wall !== undefined)
-			{
-				scene2DWallGroup[i].addChild(engine2D.makeWall({x:this.x1,y:this.y1},{x:this.x2,y:this.y2},{x:this.cx,y:this.cy}));
-			}
-			else if(this.label !== undefined)
-			{
-				scene2DLabelGroup[i].addChild(engine2D.makeLabel(this.label,this.size,this.x,this.y));
-			}
-		});
-		//scene2DWallGroup[i].activate();
-		scene2DWallGroup[i].bringToFront();
-		//scene2DLabelGroup[i].bringToFront()
-        
-        i++;
-    });
-};
-
 //*The problem is that bind adds an event listener, and not replace it.*
 engine2D.show = function (){
 
@@ -51,34 +15,18 @@ engine2D.show = function (){
 
     //scene3DSetBackground(null);
 
-    //Create Grid
-    //============================
-    canvas2D = new paper.Group();
-	var circle = new paper.Path.Circle(new paper.Point(0, 0), 450);
-	circle.fillColor = '#CCCCCC';
-	circle.opacity = 0.2;
-	circle.position.x = paper.view.center.x + 40;
-	circle.position.y = paper.view.center.y + 80;
-	var rec = new paper.Path.Rectangle(new paper.Point(0, 0), paper.view.viewSize); //TODO: raster image
-	rec.fillColor = '#ffffff';
-	canvas2D.addChild(rec);
-	canvas2D.addChild(circle);
-
     $('#engine2D').show();
 
-	/*
-	canvas2D.attach('mousedrag', function(event, delta) {
-		var deltaX = (paper.view.center.x/2 - event.point.x/2);
-		var deltaY = (paper.view.center.y/2 - event.point.y/2);
+    /*
+    canvas2D.attach('mousedrag', function(event, delta) {
+        var deltaX = (paper.view.center.x/2 - event.point.x/2);
+        var deltaY = (paper.view.center.y/2 - event.point.y/2);
 
-		//console.log(1/paper.view.zoom)
-		view.center = panAndZoom.changeCenter(paper.view.center, -deltaX, deltaY, (1/paper.view.zoom)/2.5);
-		return event.preventDefault();
-	});
-	*/
-    engine2D.makeGrid(40,'#6dcff6');
-    engine2D.makeGrid(20,'#E0E0E0');
-    //============================
+        //console.log(1/paper.view.zoom)
+        view.center = panAndZoom.changeCenter(paper.view.center, -deltaX, deltaY, (1/paper.view.zoom)/2.5);
+        return event.preventDefault();
+    });
+    */
 
     if(scene2DWallGroup[FLOOR])
     {
@@ -102,7 +50,7 @@ engine2D.show = function (){
 
         engine2D.makeFloor();
 
-        engine2D.drawWalls();
+        engine2D.drawWall();
         //=========================
 
         /*
@@ -128,8 +76,6 @@ engine2D.show = function (){
         //document.getElementById('menuRight').setAttribute("class", "hide-right");
         //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
     }
-
-    engine2D.drawWall();
 
     //scene2DArrayToLineWalls();
 
@@ -172,6 +118,8 @@ engine2D.makeGrid = function (grid, color) {
 		var a = new paper.Path.Line(new paper.Point(x, 0), new paper.Point(x, paper.view.size.width));
 		var b = new paper.Path.Line(new paper.Point(0, x), new paper.Point(paper.view.size.width, x));
 		a.strokeColor = b.strokeColor = color;
+        canvas2D.addChild(a);
+        canvas2D.addChild(b);
 	}
 };
 /*

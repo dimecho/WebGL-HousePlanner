@@ -784,7 +784,7 @@ engine3D.new = function (){
         scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
         scene3DFloorWallContainer[i] = new THREE.Object3D();
         scene3DFloorShapeContainer[i] = new THREE.Object3D();
-
+        scene3DCeilingShapeContainer[i] = new THREE.Object3D();
         scene3DWallInteriorTextures[i] = new Array();
         scene3DWallExteriorTextures[i] = new Array();
     }
@@ -855,4 +855,6 @@ engine3D.open = function(zip) {
     $.each(JSON.parse(zip.file("scene3DRoofContainer.json").asText()), function(index){
         engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
+
+    engine3D.makeFloor();
 };
