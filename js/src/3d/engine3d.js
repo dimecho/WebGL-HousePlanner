@@ -18,7 +18,6 @@ function scene3DSplitViewTop()
 
 function scene3DSplitViewFront()
 {
-
     var w = window.innerWidth*0.3;
     var h = window.innerHeight*0.2;
 
@@ -53,79 +52,6 @@ function scene3DSplitView3D()
 {
     
 };
-
-/*
-function rotateAroundWorldAxis(object,axis, radians) {
-    rotWorldMatrix = new THREE.Matrix4();
-    rotWorldMatrix.makeRotationAxis(axis, radians);
-    object.matrix.multiplyMatrices(rotWorldMatrix,object.matrix); // r56
-    rotWorldMatrix.extractRotation(object.matrix);
-    object.rotation.setEulerFromRotationMatrix(rotWorldMatrix, object.eulerOrder ); 
-    object.position.getPositionFromMatrix( object.matrix );
-};
-
-function rotateAroundWorldAxisX(radians) { 
-    this._vector.set(1,0,0);
-    rotateAroundWorldAxis(this._vector,radians);
-};
-function rotateAroundWorldAxisY(radians) { 
-    this._vector.set(0,1,0);
-    rotateAroundWorldAxis(this._vector,radians);
-};
-function rotateAroundWorldAxisZ(degrees){ 
-    this._vector.set(0,0,1);
-    rotateAroundWorldAxis(this._vector,degrees);
-};
-
-// Rotate an object around an arbitrary axis in world space       
-function rotateAroundWorldAxis(object, axis, radians) {
-    rotWorldMatrix = new THREE.Matrix4();
-    rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
-    //rotWorldMatrix.multiplySelf(object.matrix);        // pre-multiply
-    object.matrix = rotWorldMatrix;
-    object.rotation.getRotationFromMatrix(object.matrix, object.scale);
-};
-*/
-
-/*
-function loadOBJ(obj,mtl,object,x,y,z) {
-  var loader = new THREE.OBJMTLLoader();
-  loader.addEventListener('load', function(event) {
-    var material = new THREE.ShaderMaterial({
-      uniforms: shader.uniforms,
-      fragmentShader: shader.fragmentShader,
-      vertexShader: shader.vertexShader
-    });
-
-    var model = event.content;
-      model.traverse( function ( child ) {
-      if ( child instanceof THREE.Mesh ) {
-        child.material = material;
-      }
-    });
-        
-    model.position.x = x;
-    model.position.y = y;
-    model.position.z = z;
-    object.add(model);
-  });
-    loader.load('./models/obj/' + obj, 'models/obj/' + mtl);
-};
-*/
-
-/*
-THREE.ImageUtils.prototype.loadTextureBinary = function(data, mapping, callback) {
-    var image = new Image(),
-        texture = new THREE.Texture(image, mapping);
-    image.onload = function() {
-        texture.needsUpdate = true;
-        if (callback) callback(this);
-    };
-    image.crossOrigin = this.crossOrigin;
-    image.src = "data:image/png;base64," + Base64.encode(data);
-    return texture;
-};
-*/
 
 function camera3DFloorFlyIn(floor)
 {
@@ -384,12 +310,6 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
 
         var callbackObject = function(object) {
 
-            /* 
-            Texture Fix
-            https://github.com/denzp/three.js
-            https://github.com/denzp/three.js/commit/c069ec1b26014b55bc961846feaf7f7554fc2bb2
-            */
-
             object.name = js;
 
             object.boundingBox = [];
@@ -499,16 +419,15 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                                 var isImagePowerOfTwo = THREE.Math.isPowerOfTwo(child.material.map.image.width) && THREE.Math.isPowerOfTwo(child.material.map.image.height);
                                 if(!isImagePowerOfTwo)
                                 {
-                                    var texture = new THREE.Texture(scene3DGenerateClampToEdgeTexture(child.material.map.image));
+                                    var texture = new THREE.Texture(engine3D.generateClampToEdgeTexture(child.material.map.image));
                                     if (texture) texture.needsUpdate = true;
                                     texture.minFilter = THREE.LinearFilter;
                                     child.material.map = texture;
-                                    //child.material.map.image = scene3DGenerateClampToEdgeTexture(child.material.map.image);
+                                    //child.material.map.image = engine3D.generateClampToEdgeTexture(child.material.map.image);
                                     //child.material.map.image.needsUpdate = true;
                                 }
                             }
                         }
-                        
                         //============================
                     }
                     
@@ -549,7 +468,6 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
             object.position.x = x;
             object.position.y = y;
             object.position.z = z;
-
             object.rotation.x = xaxis;
             object.rotation.y = yaxis + Math.PI;
             //object.rotation.z = zaxis;
@@ -710,45 +628,6 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
         {
             var filename = js.split('/').pop().slice(0, -4) + ".json";
 
-            /*
-            var fullpath = window.location.pathname; // + window.location.search;
-            var r = /[^\/]*$/;
-            fullpath = fullpath.replace(r, '');
-            console.log(fullpath + "objects/" + js + " > " + filename + " > " + ext);
-            */
-            /*
-            switch (window.location.protocol) {
-                case 'http:':
-                case 'https:':
-
-                    $.get(url, function(data) {
-                        zip.load(data);
-                        data = zip.file(filename + ".js").asText();
-                        console.log(data);
-                    });
-    				
-                    break;
-                case 'file:':
-
-    				//Looks like jQuery method has a limit of 422315 ?
-    				
-                    $("#fileJQueryLoad").load(url, function(response, status, xhr) {
-                        if (status == "error") {
-                            console.log(xhr.status + " " + xhr.statusText);
-                        } else {
-                            //console.log(response);
-                            zip.load(response);
-            data = zip.file(filename + ".json").asText();
-                            console.log(data);
-                        }
-                    });
-    				
-                    url = "objects/" + js.slice(0, -4) + ".json";
-                    break;
-                default:
-            }
-    		*/
-
             $.ajax(js,{
                 
                 contentType: "application/zip",
@@ -897,32 +776,21 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
     }
 };
 
-function scene3DGenerateClampToEdgeTexture(img) {
-    // var texture = new THREE.Texture( scene3DGenerateClampToEdgeTexture( ) );
-    //if (texture) texture.needsUpdate = true;
+engine3D.generateClampToEdgeTexture = function(img) {
+
     var canvas = document.createElement('canvas');
     var context = canvas.getContext( '2d' );
-    //canvas.width = 128;
-    //canvas.height = 128;
 
-    //setTimeout(function() {
-    //if(img.complete){
-        var pattern = context.createPattern(img,"repeat");
-        var size = img.width;
-        if(img.height > img.width)
-            size = img.height;
-        canvas.width = size;
-        canvas.height = size;
-        //context.rect(0,0,size,size); 
-        context.fillStyle = pattern;
-        context.fillRect( 0, 0, size, size );
-        
-    //}else{
-    //    context.fillStyle = "#FF0000";
-    //    context.fillRect( 0, 0, size, size );
-    //}
+    var pattern = context.createPattern(img,"repeat");
+    var size = img.width;
+    if(img.height > img.width)
+        size = img.height;
+    canvas.width = size;
+    canvas.height = size;
+    //context.rect(0,0,size,size); 
+    context.fillStyle = pattern;
+    context.fillRect( 0, 0, size, size );
     context.fill();
-    //},100);
 
     return canvas;
 };
@@ -979,7 +847,7 @@ engine3D.showHouse = function() {
     
     engine3D.setLights();
 
-    //engine3D.makeFloor();
+    engine3D.makeFloor();
 
     //engine3D.makeWalls();
 
@@ -994,12 +862,20 @@ engine3D.showHouse = function() {
     scene3D.add(scene3DHouseContainer);
     scene3D.add(scene3DRoofContainer);
 
-    scene3D.add(scene3DFloorShapeContainer[FLOOR]);
+    if(scene2DWallGroup[FLOOR].children[0] != undefined)
+    {
+        var offset = [-1,0,1,2,3];
+        for(i = 0; i < scene2DFloorShape.length; i++)
+        {
+            scene3D.add(scene3DFloorShapeContainer[i]);
+            scene3DFloorShapeContainer[i].position.y = 0.1 + (offset[i] * scene2DWallGroup[FLOOR].children[0].h);
+            scene3D.add(scene3DCeilingShapeContainer[i]);
+        }
     
-    for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
-        scene3D.add(scene3DFloorFurnitureContainer[i]);
+        for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
+            scene3D.add(scene3DFloorFurnitureContainer[i]);
+        }
     }
-
     if(scene3DCube)
     {
         scene3DCube.add(scene3DCubeMesh);
@@ -1021,7 +897,7 @@ engine3D.showLandscape = function() {
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
     engine3D.hide();
-    //scene3D = new THREE.Scene();
+
     SCENE = 'landscape';
 
     engine3D.setSky('day');
@@ -1051,12 +927,6 @@ engine3D.showLandscape = function() {
 
     $('#engine3D').show();
     $('#WebGLCanvas').show();
-
-    //texture = THREE.ImageUtils.loadTexture( 'objects/Landscape/Textures/G3756.jpg' )
-    //texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    //texture.repeat.set(10, 10);
-    
-    //scene3D.add(scene3DFloorShapeContainer[1][0]);
 
     /*
     //http://danni-three.blogspot.ca/2013/09/threejs-heightmaps.html
@@ -1091,6 +961,7 @@ engine3D.showFloor = function () {
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
     engine3D.hide();
+
     SCENE = 'floor';
 
     engineGUI.initMenu("menuRight3DFloor","Interior/index.json");
@@ -1111,6 +982,8 @@ engine3D.showFloor = function () {
 
     engine3D.setLights();
 
+    engine3D.makeFloor();
+
     engine3D.makeWalls();
     
     /*
@@ -1128,7 +1001,10 @@ engine3D.showFloor = function () {
     //scene3D.add(scene3DCutawayPlaneMesh); //DEBUG
 
     scene3D.add(scene3DFloorFurnitureContainer[FLOOR]); //furnishings
+    scene3D.add(scene3DFloorShapeContainer[FLOOR]);
     scene3D.add(scene3DFloorGroundContainer);
+
+    scene3DFloorShapeContainer[FLOOR].position.y = 0.1; //reset from each floor
 
     if(TOOL3DFLOOR == 'measure')
     {
@@ -1190,10 +1066,10 @@ engine3D.showFloorLevel = function() {
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
     engine3D.hide();
-    //scene3D = new THREE.Scene();
+
     SCENE = 'floorlevel';
 
-    //engine3D.SetBackground('blue');
+    //engine3D.setBackground('blue');
     engine3D.setSky('day');
     engine3D.setLights();
 
@@ -1202,10 +1078,11 @@ engine3D.showFloorLevel = function() {
     camera3D.position.set(10, 10, 15);
     camera3D.lookAt(scene3D.position);
 
-    scene3DLevelWallGenerate();
+    engine3D.generateLevelWalls();
 
     scene3D.add(skyMesh);
     //scene3D.add(scene3DLevelGroundContainer);
+
     scene3D.add(scene3DHouseGroundContainer);
 
     //scene3DCube.add(scene3DCubeMesh);
@@ -1225,11 +1102,12 @@ engine3D.showRoofDesign = function() {
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
     engine3D.hide();
+
     SCENE = 'roof';
 
     engineGUI.initMenu("menuRight3DRoof","Roof/index.json");
 
-    //engine3D.SetBackground('split');
+    //engine3D.setBackground('split');
     engine3D.setLights();
 
     //camera3D.position.set(0, 4, 12);
@@ -1265,31 +1143,6 @@ engine3D.showRoofDesign = function() {
     engine3D.animate();
 };
 
-/*
-function initObjectCollisions(container) {
-
-	//colliderSystem = new THREEx.ColliderSystem();
-	colliderSystem = new Array();
-
-	console.log("init colliderSystem (" + container.children.length + ")");
-
-	for (var i = 0; i < container.children.length; i++) {
-
-		console.log("adding " + container.children[i].name + " to collision detection");
-
-		colliderSystem.push(new Array(container.children[i].name, new THREE.Box3().setFromPoints(container.children[i].geometry.vertices)));
-
-		//var collider = THREEx.Collider.createFromObject3d(container.children[i]);
-		//colliderSystem.add(collider)
-		//collider.update();
-
-		//collider.addEventListener('contactEnter', function(otherCollider){
-		//	console.log('contactEnter', collider.object3d.name, 'with', otherCollider.object3d.name)
-		//});
-    }
-}
-*/
-
 engine3D.hide = function() {
 
     $('#engine3D').hide();
@@ -1303,6 +1156,12 @@ engine3D.hide = function() {
     if(scene3DCube)
     {
         scene3DCube.remove(scene3DCubeMesh);
+    }
+
+    for(i = 0; i < scene2DFloorShape.length; i++)
+    {
+        scene3D.remove(scene3DFloorShapeContainer[i]);
+        scene3D.remove(scene3DCeilingShapeContainer[i]);
     }
     
     //$(renderer.domElement).unbind('mousedown', on3DMouseDown);
@@ -1398,7 +1257,9 @@ engine3D.newFloor = function(name)
     scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
     scene3DFloorWallContainer[i] = new THREE.Object3D();
     scene3DFloorShapeContainer[i] = new THREE.Object3D();
+    scene3DFloorShapeTextures[i] = [];
     scene3DCeilingShapeContainer[i] = new THREE.Object3D();
+    scene3DCeilingShapeTextures[i] = [];
     //scene3DFloorOtherContainer[i] = new THREE.Object3D();
     scene2DWallMesh[i] = [];
     scene2DWallDimentions[i] = [];
@@ -1778,47 +1639,6 @@ jQuery.loadScript = function (url, callback) {
 }
 */
 
-function exportPDF() {
-	
-    if (!fabric.Canvas.supports('toDataURL')) {
-        alert('Sorry, your browser is not supported.');
-    } else {
-
-        if (typeof jsPDF == 'undefined') $.getScript("js/dynamic/jspdf.js", function(data, textStatus, jqxhr) {
-        //if (typeof jsPDF == 'undefined') $.loadScript("js/jspdf.js", function(){
-            /*
-            console.log(data); //data returned
-            console.log(textStatus); //success
-            console.log(jqxhr.status); //200
-            console.log('Load was performed.');
-            */
-
-            var doc = new jsPDF('l', 'in', [8.5, 11]);
-
-            doc.setFontSize(40);
-            doc.text(4.5, 1, scene3DFloorFurnitureContainer[FLOOR].name);
-
-            var image = scene2D.toDataURL("image/jpeg"); //.replace("data:image/png;base64,", "");
-            doc.addImage(image, 'JPEG', 0, 1.5, 11, 7);
-
-            //var image = scene2D.toSVG();
-            //doc.addImage(image, 'PNG', 15, 40, 180, 180);
-
-            doc.output('dataurl');
-            /*
-            window.open(
-                doc.output('dataurl'),
-                '_blank'
-            );
-            */
-
-            //saveAs(doc.output('dataurl'), scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
-            //doc.save(scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
-            //saveAs(doc.output('blob'), scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
-        });
-    }
-};
-
 engine3D.collectArrayFromContainer = function(container) {
 
 	var json = [];
@@ -1840,114 +1660,6 @@ engine3D.collectArrayFromContainer = function(container) {
     }
     return json;
 };
-
-function saveScene(online) {
-
-    setTimeout(function(){
-
-        var zip = new JSZip();
-
-        //console.log(JSON.stringify(terrain3DRawData));
-
-        zip.file("scene3DTerrain.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DHouseGroundContainer)));
-        //zip.file("scene3DTerrainHill.json", JSON.stringify(terrain3DRawHillData));
-        //zip.file("scene3DTerrainValley.json", JSON.stringify(terrain3DRawValleyData));
-
-        var o= {};
-        o.settings = settings;
-        o.floors = [];
-        for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
-            o.floors.push(JSON.stringify('"name":"' + scene3DFloorFurnitureContainer[i].name + '"'));
-        }
-        zip.file("options.json", JSON.stringify(o));
-
-        zip.file("scene3DRoofContainer.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DRoofContainer)));
-        zip.file("scene3DHouseContainer.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DHouseContainer)));
-
-        var json3d = [];
-        var json2d = [];
-        
-        for (var i = 0; i < scene2DWallMesh.length; i++)
-        {
-            json3d.push(engine3D.collectArrayFromContainer(scene3DFloorFurnitureContainer[i]));
-            json2d.push(engine2D.collectArrayFromContainer(i));
-        }
-        zip.file("scene3DFloorContainer.json", JSON.stringify(json3d));
-        zip.file("scene2DFloorContainer.json", JSON.stringify(json2d));
-
-        try{
-            zip.file("house.jpg", imageBase64('imgHouse'), {
-                base64: true
-            });
-        }catch(ex){}
-
-        if (!online)
-        {
-            zip.file("readme.txt", "Saved by WebGL HousePlanner.");
-
-            var ob = zip.folder("obj");
-            var tx = zip.folder("obj/Textures");
-
-            //var result= new THREE.OBJExporter().parse(scene3D.geometry); //MaterialExporter.js
-            //var result = JSON.stringify(new THREE.ObjectExporter().parse(scene3D)); 
-            //ob.file("THREE.Scene.json", result);
-
-            /*
-            tx.file("house.jpg", imgData, {
-                base64: true
-            });
-            */
-        }
-
-        var content = zip.generate({
-            type: "blob"
-        });
-
-        /*
-	    var content = zip.generate({
-	        type: "string"
-	    });
-	    */
-        //location.href="data:application/zip;base64," + zip.generate({type:"base64"});
-
-        if (online)
-        {
-        	if(SESSION === '')
-		    {
-                //saveAs(content, "scene.zip"); //Debug
-		        window.location = "#openLogin";
-		    }
-		    else
-		    {
-	        	var data = new FormData();
-	          	data.append('file', content);
-
-	            //saveAs(content, "scene.zip");
-	    		$.ajax('php/objects.php?upload=scene', {
-	    		   	type: 'POST',
-	    		   	contentType: 'application/octet-stream',
-	    		   	//contentType: false,
-	    		   	//dataType: blob.type,
-	          		processData: false,
-	    		   	data: data,
-	    		   	success: function(data, status) {
-	              		if(data.status != 'error')
-	                	alert("ok");
-	            	},
-	            	error: function() {
-	              		alert("not so ok");
-	            	}
-	    		});
-	    		window.location = "#close";
-		    }
-        }
-        else
-        {
-        	saveAs(content, "scene.zip");
-            window.location = "#close";
-        }
-    }, 4000);
-}
 
 function imageBase64(id) {
 
@@ -1996,7 +1708,7 @@ function scene3DFloorObjectWallMeasurementAjust() {
 
 }
 
-function scene3DLevelWallGenerate() {
+engine3D.generateLevelWalls = function() {
 
     scene3DLevelWallContainer = new THREE.Object3D();
 
@@ -2023,50 +1735,8 @@ function scene3DLevelWallGenerate() {
     scene3D.add(scene3DLevelWallContainer);
 }
 
-
-/*
-function scene3DGround(_texture, _grid) {
-
-    //var geometry = new THREE.SphereGeometry(20, 4, 2);
-    //var material = new THREE.MeshBasicMaterial({ color: 0xff0000});
-
-    scene3D.remove(groundGrid);
-
-    if (_grid) {
-        groundGrid = new THREE.GridHelper(20, 2);
-        scene3D.add(groundGrid);
-    }
-
-    var groundTexture = new THREE.ImageUtils.loadTexture(_texture);
-    groundTexture.wrapS = THREE.RepeatWrapping;
-    groundTexture.wrapT = THREE.RepeatWrapping;
-    groundTexture.repeat.set(10, 10);
-
-    // DoubleSide: render texture on both sides of mesh
-    var floorMaterial = new THREE.MeshBasicMaterial({
-        map: groundTexture,
-        //side: THREE.DoubleSide,
-        transparent: false
-    });
-    var floorGeometry = new THREE.PlaneGeometry(15, 15, 1, 1);
-
-    groundMesh = new THREE.Mesh(floorGeometry, floorMaterial);
-    //groundMesh.position.y = -0.5;
-
-    groundMesh.receiveShadow = true;
-    //groundMesh.geometry.needsUpdate = false;
-
-    groundMesh.rotation.x = Math.PI / 2;
-
-    groundMesh.doubleSided = true;
-    //scene3D.remove(groundMesh);
-    scene3D.add(groundMesh);
-}
-*/
-
 // reproduction of a demo of @mrdoob by http://mrdoob.com/lab/javascript/webgl/clouds/
-
-engine3D.SetBackground = function(set) {
+engine3D.setBackground = function(set) {
 
     //var canvas = document.getElementById('WebGLCanvas');
     var canvas = document.createElement('canvas');
@@ -2189,10 +1859,6 @@ function scene3DFloorSky() {
 }
 */
 
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 function insertSceneObject(path) {
 
     if(RUNMODE == "database")
@@ -2249,66 +1915,6 @@ function insertSceneObject(path) {
     }
 }
 
-function showRightObjectMenu(path) {
-
-    //console.log("Get from " + path + "/index.json");
-  
-    if(RUNMODE == "database")
-    {
-        path = "php/objects.php?objects=" + path; //item.split('/').shift();
-    }else{
-        path = "objects/" + path + '/index.json';
-    }
-
-    var menu = $("#menuRightObjects .scroll");
-    //var menu = $("#menuRightObjects .cssmenu > ul");
-    //menu.append("<div id='menuLoading' style='position:relative;left:0;top:0;width:100%;height:100%;background-color:grey;opacity:0.5'>loading...</div>");
-
-    $('#menuRight3DHouse').hide();
-    $('#menuRight3DFloor').hide();
-    $('#menuRight3DRoof').hide();
-    $('#menuRight2D').hide();
-    $('#menuRightObjects').show();
-
-     $.ajax(path,{
-        dataType: 'json',
-        success: function(json){
-            var empty = "<li><span style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</span></li>";
-            menu.empty();
-            try
-            {
-                //var json = JSON.parse(binary.read('string'));
-                $.each(json.menu, function() {
-                    if(Object.keys(json.menu).length > 0)
-                    {
-
-                        //menu.append(getMenuObjectItem(this));
-                        getMenuObjectItem(menu,this);
-                    }
-                    else
-                    {
-                        menu.append(empty); //database empty
-                    }
-                });
-            }
-            catch(e)
-            {
-                menu.append(empty); //local no json
-            }
-
-            //$('.bttrlazyloading').trigger('bttrlazyloading.load');
-
-            //$("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
-            //    menuItemClick(this);
-            //});
-        }
-    });
-
-    //$('#menuLoading').remove();
-
-    //correctMenuHeight();
-}
-
 function CalculateCutawayGeometry() {
   
     alertify.confirm("This feature is experimental and may not work properly. Continue?", function (e) {
@@ -2337,20 +1943,6 @@ function CalculateCutawayGeometry() {
         //} else { // user clicked "cancel"
         }
     });
-}
-
-function showRightCatalogMenu() {
-
-    if (SCENE == 'house') {
-        $('#menuRight3DHouse').show();
-    } else if (SCENE == 'floor') {
-        $('#menuRight3DFloor').show();
-    }
-
-    $('#menuRightObjects').hide();
-    $("#menuRightObjects .scroll").empty(); //empty ahead of time (faster)
-
-    //correctMenuHeight();
 }
 
 function animatePanorama() {
@@ -2802,39 +2394,6 @@ engine3D.animate = function()
     }
 };
 
-function webAddNewFloor() {
-    
-    if($("#webAddNewFloor").val())
-    {
-        engine3D.newFloor($("#webAddNewFloor").val());
-
-        var a = "<a href='#' onclick='camera3DFloorFlyIn(" + scene3DFloorFurnitureContainer.length + ")'><span>" + $("#webAddNewFloor").val() + "</span></a>";
-        var item = $("<li>").append(a);
-        $("#menuLeft3DHouseFloorList").append(item);
-    }
-}
-
-function webItemListGenerate() {
-
-    var list = $("#webItemListGenerate");
-    list.empty();
-
-    for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
-        
-        console.log(scene3DFloorFurnitureContainer[i].name);
-
-        for (var c = 0; c < scene3DFloorFurnitureContainer[i].children.length; c++) {
-
-            console.log(scene3DFloorFurnitureContainer[i].children[c].children[0].name);
-        }
-    }
-
-    for (var i = 0; i < scene3DHouseContainer.children.length; i++) {
-
-        console.log(scene3DHouseContainer.children[i].children[0].name);
-    }
-}
-
 function fileSelect(action) {
     // Check for the various File API support.
     if (window.File && window.FileReader && window.FileList && window.Blob) {
@@ -2910,26 +2469,6 @@ function ajaxBeforeSubmit() {
         return false;
     }
 }
-
-/*
-function ajaxAfterSuccess()
-{
-	$('#submit-btn').show(); //hide submit button
-	$('#loading-img').hide(); //hide submit button
-
-}
-function ajaxProgress(event, position, total, percentComplete)
-{
-    //Progress bar
-    $('#progressbox').show();
-    $('#progressbar').width(percentComplete + '%') //update progressbar percent complete
-    $('#statustxt').html(percentComplete + '%'); //update status text
-    if(percentComplete>50)
-    {
-        $('#statustxt').css('color','#000'); //change status text to white after 50%
-    }
-}
-*/
 
 //TODO: optimize there two functions into one
 function handleFile3DObjectSelect(event) {
@@ -3069,3 +2608,173 @@ function toggleTextureSelect() {
         }
     }
 }
+
+/*
+function scene3DGround(_texture, _grid) {
+
+    //var geometry = new THREE.SphereGeometry(20, 4, 2);
+    //var material = new THREE.MeshBasicMaterial({ color: 0xff0000});
+
+    scene3D.remove(groundGrid);
+
+    if (_grid) {
+        groundGrid = new THREE.GridHelper(20, 2);
+        scene3D.add(groundGrid);
+    }
+
+    var groundTexture = new THREE.ImageUtils.loadTexture(_texture);
+    groundTexture.wrapS = THREE.RepeatWrapping;
+    groundTexture.wrapT = THREE.RepeatWrapping;
+    groundTexture.repeat.set(10, 10);
+
+    // DoubleSide: render texture on both sides of mesh
+    var floorMaterial = new THREE.MeshBasicMaterial({
+        map: groundTexture,
+        //side: THREE.DoubleSide,
+        transparent: false
+    });
+    var floorGeometry = new THREE.PlaneGeometry(15, 15, 1, 1);
+
+    groundMesh = new THREE.Mesh(floorGeometry, floorMaterial);
+    //groundMesh.position.y = -0.5;
+
+    groundMesh.receiveShadow = true;
+    //groundMesh.geometry.needsUpdate = false;
+
+    groundMesh.rotation.x = Math.PI / 2;
+
+    groundMesh.doubleSided = true;
+    //scene3D.remove(groundMesh);
+    scene3D.add(groundMesh);
+}
+*/
+
+/*
+function initObjectCollisions(container) {
+
+    //colliderSystem = new THREEx.ColliderSystem();
+    colliderSystem = new Array();
+
+    console.log("init colliderSystem (" + container.children.length + ")");
+
+    for (var i = 0; i < container.children.length; i++) {
+
+        console.log("adding " + container.children[i].name + " to collision detection");
+
+        colliderSystem.push(new Array(container.children[i].name, new THREE.Box3().setFromPoints(container.children[i].geometry.vertices)));
+
+        //var collider = THREEx.Collider.createFromObject3d(container.children[i]);
+        //colliderSystem.add(collider)
+        //collider.update();
+
+        //collider.addEventListener('contactEnter', function(otherCollider){
+        //  console.log('contactEnter', collider.object3d.name, 'with', otherCollider.object3d.name)
+        //});
+    }
+}
+*/
+
+/*
+function ajaxAfterSuccess()
+{
+    $('#submit-btn').show(); //hide submit button
+    $('#loading-img').hide(); //hide submit button
+}
+function ajaxProgress(event, position, total, percentComplete)
+{
+    //Progress bar
+    $('#progressbox').show();
+    $('#progressbar').width(percentComplete + '%') //update progressbar percent complete
+    $('#statustxt').html(percentComplete + '%'); //update status text
+    if(percentComplete>50)
+    {
+        $('#statustxt').css('color','#000'); //change status text to white after 50%
+    }
+}
+*/
+
+/*
+engine3D.loadShader = function(shader, type, async)
+{
+    return $.ajax({
+        url: shader,
+        async: async,
+        beforeSend: function (req) {
+            req.overrideMimeType('text/plain; charset=x-shader/x-' + type); //important - set for binary!
+        }
+    }).responseText;
+};
+*/
+
+/*
+function rotateAroundWorldAxis(object,axis, radians) {
+    rotWorldMatrix = new THREE.Matrix4();
+    rotWorldMatrix.makeRotationAxis(axis, radians);
+    object.matrix.multiplyMatrices(rotWorldMatrix,object.matrix); // r56
+    rotWorldMatrix.extractRotation(object.matrix);
+    object.rotation.setEulerFromRotationMatrix(rotWorldMatrix, object.eulerOrder ); 
+    object.position.getPositionFromMatrix( object.matrix );
+};
+
+function rotateAroundWorldAxisX(radians) { 
+    this._vector.set(1,0,0);
+    rotateAroundWorldAxis(this._vector,radians);
+};
+function rotateAroundWorldAxisY(radians) { 
+    this._vector.set(0,1,0);
+    rotateAroundWorldAxis(this._vector,radians);
+};
+function rotateAroundWorldAxisZ(degrees){ 
+    this._vector.set(0,0,1);
+    rotateAroundWorldAxis(this._vector,degrees);
+};
+
+// Rotate an object around an arbitrary axis in world space       
+function rotateAroundWorldAxis(object, axis, radians) {
+    rotWorldMatrix = new THREE.Matrix4();
+    rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
+    //rotWorldMatrix.multiplySelf(object.matrix);        // pre-multiply
+    object.matrix = rotWorldMatrix;
+    object.rotation.getRotationFromMatrix(object.matrix, object.scale);
+};
+*/
+
+/*
+function loadOBJ(obj,mtl,object,x,y,z) {
+  var loader = new THREE.OBJMTLLoader();
+  loader.addEventListener('load', function(event) {
+    var material = new THREE.ShaderMaterial({
+      uniforms: shader.uniforms,
+      fragmentShader: shader.fragmentShader,
+      vertexShader: shader.vertexShader
+    });
+
+    var model = event.content;
+      model.traverse( function ( child ) {
+      if ( child instanceof THREE.Mesh ) {
+        child.material = material;
+      }
+    });
+        
+    model.position.x = x;
+    model.position.y = y;
+    model.position.z = z;
+    object.add(model);
+  });
+    loader.load('./models/obj/' + obj, 'models/obj/' + mtl);
+};
+*/
+
+/*
+THREE.ImageUtils.prototype.loadTextureBinary = function(data, mapping, callback) {
+    var image = new Image(),
+        texture = new THREE.Texture(image, mapping);
+    image.onload = function() {
+        texture.needsUpdate = true;
+        if (callback) callback(this);
+    };
+    image.crossOrigin = this.crossOrigin;
+    image.src = "data:image/png;base64," + Base64.encode(data);
+    return texture;
+};
+*/

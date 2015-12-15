@@ -28,20 +28,20 @@ engine2D.show = function (){
     });
     */
 
-    if(scene2DWallGroup[FLOOR])
+    toggleRight('menuRight', true);
+    toggleLeft('menuLeft2D', true);
+
+    //$('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
+    $('#menuFloorSelector').show();
+
+    var menuBottom = [1,5,8,9,10];
+    menuBottom.forEach(function(item) {
+         $('#menuBottomItem' + item).show();
+    });
+    $('#menuBottom').show();
+
+    if(scene2DWallGroup[FLOOR].children[0] !== undefined)
     {
-        toggleRight('menuRight', true);
-        toggleLeft('menuLeft2D', true);
-
-        //$('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
-        $('#menuFloorSelector').show();
-
-        var menuBottom = [1,5,8,9,10];
-        menuBottom.forEach(function(item) {
-             $('#menuBottomItem' + item).show();
-        });
-        $('#menuBottom').show();
-
         //=========================
         
         engine2D.calculateWallCorners();
@@ -49,8 +49,11 @@ engine2D.show = function (){
         engine2D.attachDoorsToWalls();
 
         engine2D.makeFloor();
-
+        
         engine2D.drawWall();
+        
+        engine2D.clear(FLOOR,true);
+
         //=========================
 
         /*
@@ -66,20 +69,32 @@ engine2D.show = function (){
             zoom2Dimg.src = 'images/progress-tiles.jpg'; // Load the image
         }
         $('#zoom2DLevel').show();
-
-        //scene2DdrawRuler();
-
-        engineGUI.menuSelect(6, 'menuTopItem', '#ff3700');
-        correctMenuHeight();
-
-        //Auto close right menu
-        //document.getElementById('menuRight').setAttribute("class", "hide-right");
-        //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
     }
 
+    //scene2DdrawRuler();
+
+    engineGUI.menuSelect(6, 'menuTopItem', '#ff3700');
+    correctMenuHeight();
+
+    //Auto close right menu
+    //document.getElementById('menuRight').setAttribute("class", "hide-right");
+    //delay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
+    
     //scene2DArrayToLineWalls();
 
     //scene2DCalculateWallLength();
+};
+
+engine2D.clear = function (i, b){
+
+    for(var w = 0; w < scene2DWallGroup[i].children.length; w++)
+    {
+        scene2DWallGroup[i].children[w].visible = b;
+    }
+    for(var f = 0; f < scene2DFloorShape[i].children.length; f++)
+    {
+        scene2DFloorShape[i].children[f].visible = b;
+    }
 };
 
 engine2D.hide = function() {
@@ -93,6 +108,10 @@ engine2D.hide = function() {
     */
     if(canvas2D)
     {
+        for(var i = 0; i < scene2DWallGroup.length; i++)
+        {
+            engine2D.clear(i,false);
+        }
         canvas2D.off('mouseenter');
         canvas2D.off('mouseleave');
         canvas2D.off('mousedown');
@@ -159,48 +178,6 @@ engine2D.lockObject = function(id) {
     //}
 
     return false; //href="#" fix
-};
-
-engine2D.splitWallEdgeCircle = function(id) {
-
-    var result = scene2D.getObjects().filter(function(e) { return e.id === id; });
-
-    //if (result.length >= 1) {
-    var circle = scene2DMakeWallEdgeCircle(result[0].left, result[0].top, false);
-    
-    for (var i = 1; i < 4; i++)
-    {
-        if(result[0].line[i])
-        {
-            circle.line[i] = result[0].line[i];
-            result[0].line[i] = undefined;
-            result[0].bend[i] = undefined;
-        }
-        if(result[0].pivot[i])
-        {
-            circle.pivot[i] = result[0].pivot[i];
-            result[0].pivot[i] = undefined;
-        }
-    }
-    scene2D.add(circle);
-
-    //}
-    return false; //href="#" fix
-};
-
-engine2D.joinWallEdgeCircle = function(id) {
-
-    var result = scene2D.getObjects().filter(function(e) { return e.id === id; });
-
-    //if (result.length >= 1) {
-        //A bit more tricky ..nned to get "closes" edgeCircle and pick parameters from.
-    //}
-    return false; //href="#" fix
-};
-
-
-engine2D.joinWall = function(){
-
 };
 
 engine2D.collectArrayFromContainer = function(n) {

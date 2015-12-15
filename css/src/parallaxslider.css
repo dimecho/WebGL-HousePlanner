@@ -28,15 +28,15 @@
 	background-color:transparent;
 }
 .pxs_bg .pxs_bg1{
-	background-image:url(scenes/images/bg1.jpg);
+	background-image:url(../images/bg1.jpg);
 	/*left negative 1/8 of ww*/
 }
 .pxs_bg .pxs_bg2{
-	background-image:url(scenes/images/bg2.png);
+	background-image:url(../images/bg2.png);
 	/*left negative 1/4 of ww*/
 }
 .pxs_bg .pxs_bg3{
-	background-image:url(scenes/images/bg3.png);
+	background-image:url(../images/bg3.png);
 	/*left negative 1/2 of ww*/
 }
 .pxs_slider_wrapper{
@@ -109,10 +109,10 @@ ul.pxs_thumbnails li.selected img{
 	opacity:0.9;
 }
 .pxs_navigation span.pxs_prev{
-	background:#000 url(scenes/images/prev.png) no-repeat center center;
+	background:#000 url(../images/prev.png) no-repeat center center;
 }
 .pxs_navigation span.pxs_next{
-	background:#000 url(scenes/images/next.png) no-repeat center center;
+	background:#000 url(../images/next.png) no-repeat center center;
 }
 /*
 .pxs_loading{

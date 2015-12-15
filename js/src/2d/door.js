@@ -2,20 +2,35 @@ var engine2D = window.engine2D || {};
 
 engine2D.attachDoorsToWalls = function() {
 
-    for (var d = 0; d < scene2DDoorGroup[FLOOR].children.length; d++) {
+	for(i = 0; i < scene2DWallGroup.length; i++)
+	{
+        if(scene2DWallGroup[i].children[0] !== undefined)
+        {
+			console.log("2D Atach Doors to Walls [" + i + "] " + scene2DDoorGroup[i].children.length);
 
-        var point = scene2DDoorGroup[FLOOR].children[d].children[1].segments; //inside a Group()
-        var hitWallResult = scene2DWallGroup[FLOOR].hitTest(point[0].point); //TODO: make this midpoint check
+		    for (var d = 0; d < scene2DDoorGroup[i].children.length; d++) {
 
-        if (hitWallResult ) {
-            hitWallResult.item.doors.push(scene2DDoorGroup[FLOOR].children[d]);
-            hitWallResult.item.parent.parent.children[7].visible = false; //pivot point
-            //console.log(hitWallResult.item);
+		        var point = scene2DDoorGroup[i].children[d].children[1].segments; //inside a Group()
 
-            //TODO: rotate according to wall angle
-            engine2D.snapDoor(hitWallResult.item,scene2DDoorGroup[FLOOR].children[d]);
-        }
-    }
+		        for (var w = 0; w < scene2DWallGroup[i].children.length; w++) {
+		        	var wall = scene2DWallGroup[i].children[w];
+			        var hitWallResult = wall.children[4].hitTest(point[0].point); //TODO: make this midpoint check
+			        
+			        if (hitWallResult)
+			        {
+			            hitWallResult.item.doors.push(scene2DDoorGroup[i].children[d]);
+			            //console.log(wall);
+			            wall.children[7].visible = false; //pivot point
+			            //console.log(hitWallResult.item);
+
+			            //TODO: rotate according to wall angle
+			            engine2D.snapDoor(hitWallResult.item,scene2DDoorGroup[i].children[d]);
+			            break;
+			        }
+		    	}
+		    }
+		}
+	}
 };
 
 engine2D.snapDoor = function(wall,door) {

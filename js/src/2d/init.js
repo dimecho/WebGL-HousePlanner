@@ -52,7 +52,7 @@ engine2D.initialize = function (){
 
 engine2D.new = function (){
   
-	for(var i=0; i<=2; i++) //TODO: make this dynamic increase
+	for(var i=0; i<3; i++) //TODO: make this dynamic increase
 	{
 		scene2DWallMesh[i] = [];
 		scene2DFloorShape[i] = new paper.Group();
@@ -102,7 +102,7 @@ engine2D.open = function (zip){
 			}
 			else if(this.wall !== undefined)
 			{
-				scene2DWallGroup[i].addChild(engine2D.makeWall({x:this.x1,y:this.y1},{x:this.x2,y:this.y2},{x:this.cx,y:this.cy}));
+				scene2DWallGroup[i].addChild(engine2D.makeWall({x:this.x1,y:this.y1},{x:this.x2,y:this.y2},{x:this.cx,y:this.cy},this.h));
 			}
 			else if(this.label !== undefined)
 			{
@@ -111,9 +111,13 @@ engine2D.open = function (zip){
 		});
 		//scene2DWallGroup[i].activate();
 		//scene2DWallGroup[i].bringToFront();
-
 		engine2D.makeFloor();
 		//scene2DLabelGroup[i].bringToFront()
+
+		//canvas2D.addChild(scene2DFloorShape[i]);
+		//canvas2D.addChild(scene2DWallGroup[i]);
+		//canvas2D.addChild(scene2DDoorGroup[i]);
+		//canvas2D.addChild(scene2DWindowGroup[i]);
         
         i++;
     });

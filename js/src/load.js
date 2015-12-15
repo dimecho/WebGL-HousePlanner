@@ -79,12 +79,12 @@ $(document).ready(function() {
 
     $('.tooltip-save-menu').tooltipster({
                 interactive:true,
-          content: $('<a href="#openLogin" onclick="saveScene(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="saveScene(false);" class="hi-icon icon-usb" style="color:white"></a>')
+          content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="engineGUI.save(false);" class="hi-icon icon-usb" style="color:white"></a>')
     });
 
     $('.tooltip-open-menu').tooltipster({
                 interactive:true,
-          content: $('<a href="#openLogin" onclick="saveScene(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="fileSelect(\'opendesign\')" class="hi-icon icon-usb" style="color:white"></a>')
+          content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="fileSelect(\'opendesign\')" class="hi-icon icon-usb" style="color:white"></a>')
     });
 
     $('.tooltip-tools-menu').tooltipster({
@@ -162,23 +162,6 @@ $(document).ready(function() {
     $('#pxs_container').parallaxSlider();
     //init();
 });
-
-/**
- * Loads a shader using AJAX
- * 
- * @param {String} URL
- * @param {String} The type of shader [vertex|fragment]
- */
-function loadShader(shader, type, async)
-{
-    return $.ajax({
-        url: shader,
-        async: async,
-        beforeSend: function (req) {
-            req.overrideMimeType('text/plain; charset=x-shader/x-' + type); //important - set for binary!
-        }
-    }).responseText;
-}
 
 function sceneMapBox() {
 
@@ -278,6 +261,114 @@ engineGUI.open = function(s) {
             }
         });
     //}, 1000);
+};
+
+engineGUI.save = function(online) {
+
+    setTimeout(function(){
+
+        var zip = new JSZip();
+
+        //console.log(JSON.stringify(terrain3DRawData));
+
+        zip.file("scene3DTerrain.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DHouseGroundContainer)));
+        //zip.file("scene3DTerrainHill.json", JSON.stringify(terrain3DRawHillData));
+        //zip.file("scene3DTerrainValley.json", JSON.stringify(terrain3DRawValleyData));
+
+        var o= {};
+        o.settings = settings;
+        o.floors = [];
+        for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
+            o.floors.push(JSON.stringify('"name":"' + scene3DFloorFurnitureContainer[i].name + '"'));
+        }
+        zip.file("options.json", JSON.stringify(o));
+
+        zip.file("scene3DRoofContainer.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DRoofContainer)));
+        zip.file("scene3DHouseContainer.json", JSON.stringify(engine3D.collectArrayFromContainer(scene3DHouseContainer)));
+
+        var json3d = [];
+        var json2d = [];
+        
+        for (var i = 0; i < scene2DWallMesh.length; i++)
+        {
+            json3d.push(engine3D.collectArrayFromContainer(scene3DFloorFurnitureContainer[i]));
+            json2d.push(engine2D.collectArrayFromContainer(i));
+        }
+        zip.file("scene3DFloorContainer.json", JSON.stringify(json3d));
+        zip.file("scene2DFloorContainer.json", JSON.stringify(json2d));
+
+        try{
+            zip.file("house.jpg", imageBase64('imgHouse'), {
+                base64: true
+            });
+        }catch(ex){}
+
+        if (!online)
+        {
+            zip.file("readme.txt", "Saved by WebGL HousePlanner.");
+
+            var ob = zip.folder("obj");
+            var tx = zip.folder("obj/Textures");
+
+            //var result= new THREE.OBJExporter().parse(scene3D.geometry); //MaterialExporter.js
+            //var result = JSON.stringify(new THREE.ObjectExporter().parse(scene3D)); 
+            //ob.file("THREE.Scene.json", result);
+
+            /*
+            tx.file("house.jpg", imgData, {
+                base64: true
+            });
+            */
+        }
+
+        var content = zip.generate({
+            type: "blob"
+        });
+
+        /*
+        var content = zip.generate({
+            type: "string"
+        });
+        */
+        //location.href="data:application/zip;base64," + zip.generate({type:"base64"});
+
+        if (online)
+        {
+            if(SESSION === '')
+            {
+                //saveAs(content, "scene.zip"); //Debug
+                window.location = "#openLogin";
+            }
+            else
+            {
+                var data = new FormData();
+                data.append('file', content);
+
+                //saveAs(content, "scene.zip");
+                $.ajax('php/objects.php?upload=scene', {
+                    type: 'POST',
+                    contentType: 'application/octet-stream',
+                    //contentType: false,
+                    //dataType: blob.type,
+                    processData: false,
+                    data: data,
+                    success: function(data, status) {
+                        if(data.status != 'error')
+                        alert("ok");
+                    },
+                    error: function() {
+                        alert("not so ok");
+                    }
+                });
+                window.location = "#close";
+            }
+        }
+        else
+        {
+            saveAs(content, "scene.zip");
+            window.location = "#close";
+        }
+    }, 4000);
 };
 
 function getCookie(name) {

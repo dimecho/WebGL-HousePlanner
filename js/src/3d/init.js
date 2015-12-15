@@ -785,8 +785,10 @@ engine3D.new = function (){
         scene3DFloorWallContainer[i] = new THREE.Object3D();
         scene3DFloorShapeContainer[i] = new THREE.Object3D();
         scene3DCeilingShapeContainer[i] = new THREE.Object3D();
-        scene3DWallInteriorTextures[i] = new Array();
-        scene3DWallExteriorTextures[i] = new Array();
+        scene3DFloorShapeTextures[i] = [];
+        scene3DCeilingShapeTextures[i] = [];
+        scene3DWallInteriorTextures[i] = [];
+        scene3DWallExteriorTextures[i] = [];
     }
 
     //==============================================
@@ -836,10 +838,14 @@ engine3D.open = function(zip) {
         //var objects3DFurniture = JSON.parse(this);
         $.each(this, function(index){
             var note = null;
-            if(this.note !== null)
+            if(this.note !== undefined)
                 note = this.note;
-            console.log(this.file);
-            engine3D.open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
+            if(this.file !== undefined)
+                engine3D.open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
+            if(this.floor !== undefined)
+                scene3DFloorShapeTextures[i].push(this.floor);
+            if(this.ceiling !== undefined)
+                scene3DCeilingShapeTextures[i].push(this.ceiling);
         });
         i++;
     });
@@ -856,5 +862,4 @@ engine3D.open = function(zip) {
         engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
-    engine3D.makeFloor();
 };

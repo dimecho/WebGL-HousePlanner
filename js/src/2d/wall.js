@@ -99,7 +99,7 @@ engine2D.drawWall_onMouseDrag = function(event)
 };
 //=========================================
 
-engine2D.makeWall = function (v1,v2,c) {
+engine2D.makeWall = function (v1,v2,c,h) {
 
     var values = {
         fixLength: false,
@@ -488,7 +488,11 @@ engine2D.makeWall = function (v1,v2,c) {
 		return false;
 	};
     
-    group.name = "wall";
+    //group.name = "wall";
+    group.h = h;
+    //group.doors = [];
+    group.visible = false;
+    
     return group;
 };
 
@@ -633,19 +637,19 @@ engine2D.calculateWallMeasureWidth = function (edge,line) {
     }
 };
 
-engine2D.calculateWallMeasureColor = function (edge) {
+engine2D.calculateWallMeasureColor = function (i,edge) {
     //6 = outside
     //7 = inside
 
-    for(i = 0; i < scene2DWallGroup[FLOOR].children.length; i++)
+    for(a = 0; a < scene2DWallGroup[i].children.length; a++)
     //for(i = 0; i < edge.attachments.length; i++) //a little faster than doing hit on scene2DWallGroup[FLOOR]
     {
         for(l = 0; l < 2; l++){
 
             //var line = edge.attachments[i].children[4+l];
-            var line = scene2DWallGroup[FLOOR].children[i].children[l];
+            var line = scene2DWallGroup[i].children[a].children[l];
 
-            var hitResult = scene2DFloorShape[FLOOR].hitTest(line.children[0].segments[0].point);
+            var hitResult = scene2DFloorShape[i].hitTest(line.children[0].segments[0].point);
             if (hitResult) {
                 line.strokeColor = '#606060'; //inside
                 //line.parent.children[7].position = line.children[0].getLocationAt(line.children[0].length/2).point;
@@ -1052,4 +1056,45 @@ engine2D.calculateWallAngle = function (l1,l2) {
     //    angle = 360 - angle;
 
     return angle;
+};
+
+engine2D.joinWall = function(){
+
+};
+
+engine2D.joinWallEdgeCircle = function(id) {
+
+    var result = scene2D.getObjects().filter(function(e) { return e.id === id; });
+
+    //if (result.length >= 1) {
+        //A bit more tricky ..need to get "closes" edgeCircle and pick parameters from.
+    //}
+    return false; //href="#" fix
+};
+
+engine2D.splitWallEdgeCircle = function(id) {
+
+    var result = scene2D.getObjects().filter(function(e) { return e.id === id; });
+
+    //if (result.length >= 1) {
+    var circle = scene2DMakeWallEdgeCircle(result[0].left, result[0].top, false);
+    
+    for (var i = 1; i < 4; i++)
+    {
+        if(result[0].line[i])
+        {
+            circle.line[i] = result[0].line[i];
+            result[0].line[i] = undefined;
+            result[0].bend[i] = undefined;
+        }
+        if(result[0].pivot[i])
+        {
+            circle.pivot[i] = result[0].pivot[i];
+            result[0].pivot[i] = undefined;
+        }
+    }
+    scene2D.add(circle);
+
+    //}
+    return false; //href="#" fix
 };

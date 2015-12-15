@@ -53,6 +53,80 @@ engineGUI.menuSelect = function(item, id, color) {
     }
 };
 
+function showRightObjectMenu(path) {
+
+    //console.log("Get from " + path + "/index.json");
+  
+    if(RUNMODE == "database")
+    {
+        path = "php/objects.php?objects=" + path; //item.split('/').shift();
+    }else{
+        path = "objects/" + path + '/index.json';
+    }
+
+    var menu = $("#menuRightObjects .scroll");
+    //var menu = $("#menuRightObjects .cssmenu > ul");
+    //menu.append("<div id='menuLoading' style='position:relative;left:0;top:0;width:100%;height:100%;background-color:grey;opacity:0.5'>loading...</div>");
+
+    $('#menuRight3DHouse').hide();
+    $('#menuRight3DFloor').hide();
+    $('#menuRight3DRoof').hide();
+    $('#menuRight2D').hide();
+    $('#menuRightObjects').show();
+
+     $.ajax(path,{
+        dataType: 'json',
+        success: function(json){
+            var empty = "<li><span style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</span></li>";
+            menu.empty();
+            try
+            {
+                //var json = JSON.parse(binary.read('string'));
+                $.each(json.menu, function() {
+                    if(Object.keys(json.menu).length > 0)
+                    {
+
+                        //menu.append(getMenuObjectItem(this));
+                        getMenuObjectItem(menu,this);
+                    }
+                    else
+                    {
+                        menu.append(empty); //database empty
+                    }
+                });
+            }
+            catch(e)
+            {
+                menu.append(empty); //local no json
+            }
+
+            //$('.bttrlazyloading').trigger('bttrlazyloading.load');
+
+            //$("#menuRight3DHouse .scroll .cssmenu > ul > li > a").click(function(event) {
+            //    menuItemClick(this);
+            //});
+        }
+    });
+
+    //$('#menuLoading').remove();
+
+    //correctMenuHeight();
+}
+
+function showRightCatalogMenu() {
+
+    if (SCENE == 'house') {
+        $('#menuRight3DHouse').show();
+    } else if (SCENE == 'floor') {
+        $('#menuRight3DFloor').show();
+    }
+
+    $('#menuRightObjects').hide();
+    $("#menuRightObjects .scroll").empty(); //empty ahead of time (faster)
+
+    //correctMenuHeight();
+}
+
 function toggleSideMenus(open) {
 
     //Auto close right menu
