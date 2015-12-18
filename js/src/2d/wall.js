@@ -2,13 +2,17 @@ var engine2D = window.engine2D || {};
 
 //=========================================
 var drawWall = {
-    radius: 5,
+    radius: 4,
     tolerance: 20,
     handle: null,
     path: null,
     curPoint: null,
     prevPoint: null,
     curHandleSeg: null
+};
+
+var makeWall = {
+    dragging: false
 };
 
 engine2D.drawWall = function()
@@ -22,27 +26,64 @@ engine2D.drawWall = function()
 
 engine2D.drawWall_onMouseDown = function(event)
 {
-    event.preventDefault();
+    //event.preventDefault();
+
+    this.on('mouseup', engine2D.drawWall_onMouseUp);
+    this.on('mousedrag', engine2D.drawWall_onMouseDrag);
 
     drawWall.path = new paper.Path({
         segments: [event.point, event.point],
-        strokeColor: 'black',
+        strokeColor: '#ff5733',
         strokeWidth: 10,
         strokeCap: 'round'
     });
     drawWall.prevPoint = drawWall.path.firstSegment.point;
     drawWall.curPoint = drawWall.path.lastSegment.point;
     drawWall.curHandleSeg = null;
-    
-    canvas2D.on('mouseup', engine2D.drawWall_onMouseUp);
-    canvas2D.on('mousedrag', engine2D.drawWall_onMouseDrag);
+    drawWall.path.on('mouseup', engine2D.drawWall_onMouseUp);
+
+    makeWall.dragging = true;
+
+    paper.project.layers.push(drawWall.path);
 };
 
 engine2D.drawWall_onMouseUp = function(event)
 {
-    event.preventDefault();
-    canvas2D.off('mouseup', engine2D.drawWall_onMouseUp);
-    canvas2D.off('mousedrag', engine2D.drawWall_onMouseDrag);
+    //event.preventDefault();
+
+    this.off('mouseup', engine2D.drawWall_onMouseUp);
+    this.off('mousedrag', engine2D.drawWall_onMouseDrag);
+    drawWall.path.off('mouseup', engine2D.drawWall_onMouseUp);
+
+    var hitResult;
+    
+    for (var s = 0; s < drawWall.path.segments.length; s+=2)
+    {
+        var x = drawWall.path.segments[s].point;
+        var y = drawWall.path.segments[s+1].point;
+
+        console.log("Wall draw Segment " + x + ":" + y);
+        
+        var path = new paper.Path({segments:[x, y]});
+        for (var i = 0; i < scene2DWallGroup[FLOOR].children.length; i++)
+        {
+            var wall = scene2DWallGroup[FLOOR].children[i].children[4].children[0]; //inside a Group()
+            var hitResult = wall.getIntersections(path);
+            if(hitResult.length > 0)
+            {
+                break; //TODO: do this for multiple walls
+            }
+        }
+    
+        if(hitResult.length > 0)
+        {
+            console.log("Convert to wall Path + Attach " + hitResult[0].intersection.point);
+        }else{
+            console.log("Convert to wall Path");
+        }
+    }
+    
+    makeWall.dragging = false;
 };
 
 engine2D.drawWall_onMouseDrag = function(event)
@@ -82,7 +123,6 @@ engine2D.drawWall_onMouseDrag = function(event)
     }
     var minDiff = Math.min(diff.x, diff.y);
     if (minDiff > drawWall.tolerance) {
-
         //var point = curPoint - (normal * drawWall.radius);
         x = drawWall.curPoint.x - (normal.x * drawWall.radius);
         y = drawWall.curPoint.y - (normal.y * drawWall.radius);
@@ -310,6 +350,7 @@ engine2D.makeWall = function (v1,v2,c,h) {
 	labelInside.addChild(rect);
 	labelInside.addChild(label.clone());
 	//=================================
+    label.remove(); //temporary cleanup
 	
 	//measureOutside.strokeColor = measureInside.strokeColor  = '#000000';
 	//measureOutside.strokeWidth = measureInside.strokeWidth = 1;
@@ -428,7 +469,7 @@ engine2D.makeWall = function (v1,v2,c,h) {
 	path.attach('mouseenter', function() {
 		//circle.opacity = 1;
 		//line.opacity = 1;
-		if(!this.dragging)
+		if(!makeWall.dragging)
 		{
 			line.visible = true;
 			circle.visible = true;
@@ -436,7 +477,7 @@ engine2D.makeWall = function (v1,v2,c,h) {
 	});
 
 	path.attach('mousemove', function(event) {
-		if(!this.dragging)
+		if(!makeWall.dragging)
 		{
 			clearTimeout(tick);
 			circle.position = this.getNearestPoint(event.point);
@@ -729,7 +770,7 @@ engine2D.calculateWallCorners = function () {
 					for (i = 0; i < this.attachments.length; i++)
 					{
 						var wall = this.attachments[i];
-						wall.dragging = false;
+						makeWall.dragging = false;
 						
 						var line = wall.parent.parent.children[5];
 						var p = this.attachments[i].getLocationAt(this.attachments[i].length/2).point; //calculate quadratic curve center
@@ -757,7 +798,7 @@ engine2D.calculateWallCorners = function () {
 						//console.log(this.attachments[i]);
 
 						var wall = this.attachments[i];
-						wall.dragging = true;
+						makeWall.dragging = true;
 						//wall.visible = false; //DEBUG
 
 						if (wall.length > 120)

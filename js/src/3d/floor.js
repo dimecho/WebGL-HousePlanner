@@ -57,6 +57,39 @@ engine3D.makeFloor = function () {
             mesh2.material = material2;
             mesh2.position.y = h; //TODO: Dynamic height
             scene3DCeilingShapeContainer[i].add(mesh2);
+
+            if(i == 0) //if(i == 1)
+            {
+
+                var geometry = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, {amount: -2, bevelEnabled: false}));
+                geometry.rotation.x = -(90 * RADIAN);
+                //geometry.position.y = 0.5;
+                var floorBSP = new ThreeBSP(geometry);
+
+                scene3DFloorShapeContainer[i].add(geometry); //DEBUG
+
+                _scene3DHouseGroundContainer.traverse (function (mesh)
+                {
+                    if (mesh instanceof THREE.Mesh)
+                    {
+                        //console.log(mesh);
+                        var groundBSP = new ThreeBSP(mesh); //new ThreeBSP(mesh, {timeout: 3000});
+                        //var subtractBSP = groundBSP.subtract(floorBSP);
+                        var subtractBSP = floorBSP.subtract(groundBSP);
+                        var result = subtractBSP.toMesh();
+                        result.geometry.computeVertexNormals();
+                        mesh.geometry = result.geometry;
+                        //mesh.geometry.computeBoundingBox();
+                        //console.log(result.geometry);
+                    }
+                });
+                scene3DHouseGroundContainer.visible= false;
+                //scene3D.remove(scene3DHouseGroundContainer); //DEBUG
+                _scene3DHouseGroundContainer.position.z = -10; //DEBUG
+                scene3D.add(_scene3DHouseGroundContainer);
+
+                
+            }
         }
     }
 };

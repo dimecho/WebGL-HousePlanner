@@ -18,7 +18,8 @@ var camera3DQuadGrid;
 
 var scene3DRoofContainer; //Contains Roof Design
 var scene3DHouseContainer; //Contains all Exterior 3D objects by floor (trees,fences)
-var scene3DHouseGroundContainer; //Grass Ground - 1 object
+var _scene3DHouseGroundContainer; //THREE.Scene  - used for Geometry() refference with ThreeBSP
+var scene3DHouseGroundContainer; //THREE.Object3D - automatically converted to  BufferGeometry()
 var scene3DHouseFXContainer; //Visual Effects container (user not editable/animated) - fying bugs/birds/rainbows
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
 var scene3DPanoramaContainer;

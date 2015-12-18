@@ -473,6 +473,14 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
             //object.rotation.z = zaxis;
             
             console.log("ObjectLoader add model to scene " + object.name);
+            //console.log(typeof(objectContainer));
+
+            if(objectContainer === scene3DHouseGroundContainer)
+            {
+                //console.log(object);
+                _scene3DHouseGroundContainer = object;
+            }
+
             objectContainer.add(object);
 
             /*
@@ -736,6 +744,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                             
                             //=======================================
                             loader.parse(data, callbackObject);
+                            //{ useWorker: true, useBuffers: true }
                             //=======================================
                         //}
                     //} catch (e) { //zip file was probably not found, load regular json

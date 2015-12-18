@@ -64,6 +64,8 @@ engine2D.makeFloor = function () {
             scene2DFloorShape[i] = new paper.Group([shape, raster]);
             scene2DFloorShape[i].clipped = true;
 
+            scene2DFloorShape[i].on('mousedown', engine2D.drawWall_onMouseDown);
+
             engine2D.calculateWallMeasureColor(i);
         }
     }

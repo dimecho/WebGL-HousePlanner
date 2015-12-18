@@ -765,6 +765,7 @@ engine3D.new = function (){
 
     scene3DRoofContainer = new THREE.Object3D();
     scene3DHouseContainer = new THREE.Object3D();
+    //_scene3DHouseGroundContainer = new THREE.Geometry(); //THREE.Scene();
     scene3DHouseGroundContainer = new THREE.Object3D();
     scene3DHouseFXContainer = new THREE.Object3D();
     //scene3DFloorGroundContainer = new THREE.Object3D();
@@ -790,8 +791,8 @@ engine3D.new = function (){
         scene3DWallInteriorTextures[i] = [];
         scene3DWallExteriorTextures[i] = [];
     }
-
     //==============================================
+
     /*
     manager = new THREE.LoadingManager();
     manager.onProgress = function ( item, loaded, total ) {
