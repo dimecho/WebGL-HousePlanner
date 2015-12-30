@@ -873,11 +873,14 @@ engine3D.showHouse = function() {
 
     if(scene2DWallGroup[FLOOR].children[0] != undefined)
     {
-        var offset = [-1,0,1,2,3];
+        var offset = [-1,0,1,2,3,4];
         for(i = 0; i < scene2DFloorShape.length; i++)
         {
+            var y = 0.1 + (offset[i] * scene2DWallGroup[FLOOR].children[0].h);
+            scene3DFloorShapeContainer[i].position.y = y;
+            scene3DCeilingShapeContainer[i].position.y = y + scene2DWallGroup[FLOOR].children[0].h;
+
             scene3D.add(scene3DFloorShapeContainer[i]);
-            scene3DFloorShapeContainer[i].position.y = 0.1 + (offset[i] * scene2DWallGroup[FLOOR].children[0].h);
             scene3D.add(scene3DCeilingShapeContainer[i]);
         }
     
@@ -1810,7 +1813,7 @@ engine3D.setLights = function() {
                 
             }else{
                 //REGULAR LIGHT
-                sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.6);
+                sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.8);
                 scene3D.add(sceneAmbientLight);
                 scene3D.add(sceneDirectionalLight);
             }

@@ -197,7 +197,8 @@ engineGUI.open = function(s) {
                     if (s == 2)
                     {
                         //quick response
-                        buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
+                        engine3D.buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
+                        engine3D.setLights();
 
                         scene3D.remove(skyMesh);
                         scene3D.remove(weatherSkyCloudsMesh);
@@ -205,8 +206,8 @@ engineGUI.open = function(s) {
                         scene3D.remove(scene3DHouseGroundContainer);
 
                         scene3D.add(skyFloorMesh);
-                        scene3DSetLight();
                         scene3D.add(scene3DFloorGroundContainer);
+
                     }else if(s == 3){
                         engine2D.show();
                     }

@@ -55,7 +55,7 @@ engine3D.makeFloor = function () {
             material2.side = THREE.BackSide;
             var mesh2 = mesh.clone();
             mesh2.material = material2;
-            mesh2.position.y = h; //TODO: Dynamic height
+            //mesh2.position.y = h; //TODO: Dynamic height
             scene3DCeilingShapeContainer[i].add(mesh2);
 
             if(i == 0) //if(i == 1)
