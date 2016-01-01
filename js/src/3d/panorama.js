@@ -115,7 +115,7 @@ engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
     ];
     var geometry = new THREE.BoxGeometry(X,Y,Z);
     //console.log(geometry);
-    var mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(sides));
+    var mesh = new THREE.Mesh(geometry, new THREE.MultiMaterial(sides));
 
     container.add(mesh);
 

@@ -492,12 +492,15 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
             if(note)
             {
                 material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
-                geometry = new THREE.TextGeometry(note, {
-                    font: 'helvetiker', // Must be lowercase!
-                    weight: 'normal',
-                    size: 0.05,
-                    height: 0.01
+                fontLoader.load( 'fonts/helvetiker_regular.typeface.js', function ( font ) {
+                    geometry = new THREE.TextGeometry(note, {
+                        font: font,
+                        weight: 'normal',
+                        size: 0.05,
+                        height: 0.01
+                    });
                 });
+
                 var textMesh = new THREE.Mesh(geometry, material);
                 //textGeometry.computeBoundingBox();  // Do some optional calculations. This is only if you need to get the width of the generated text
                 //textGeometry.textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
@@ -555,47 +558,49 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                 realLifeDimentions[1] = object.boundingBox.max.x * 400;
                 //realLifeDimentions[2]  = child.geometry.boundingBox.max.y * 200;
                 
-                for (var u = 0; u <= 1; u++)
-                {
-                    var units = "";
-
-                    if (realLifeDimentions[u] > 100)
+                fontLoader.load( 'font/helvetiker_regular.typeface.js', function ( font ) {
+                    for (var u = 0; u <= 1; u++)
                     {
-                        units = (realLifeDimentions[u]/100).toFixed(2) + " m";
-                    }else{
-                        units = Math.round(realLifeDimentions[u]) + " cm";
+                        var units = "";
+
+                        if (realLifeDimentions[u] > 100)
+                        {
+                            units = (realLifeDimentions[u]/100).toFixed(2) + " m";
+                        }else{
+                            units = Math.round(realLifeDimentions[u]) + " cm";
+                        }
+
+                        geometryText[u] = new THREE.TextGeometry(units, {
+                            font: font, // Must be lowercase!
+                            weight: 'normal',
+                            size: 0.2,
+                            height: 0.01
+                        });
+                        geometryText[u].computeBoundingBox();
                     }
 
-                    geometryText[u] = new THREE.TextGeometry(units, {
-                        font: 'helvetiker', // Must be lowercase!
-                        weight: 'normal',
-                        size: 0.2,
-                        height: 0.01
-                    });
-                    geometryText[u].computeBoundingBox();
-                }
-                
-                var textMeshL = new THREE.Mesh(geometryText[0], material);
-                textMeshL.position.x = x - geometryText[0].boundingBox.max.x/2;
-                textMeshL.position.y = 0.01;
-                textMeshL.position.z = z1 - 0.1;
-                textMeshL.rotation.x = -1.5;
+                    var textMeshL = new THREE.Mesh(geometryText[0], material);
+                    textMeshL.position.x = x - geometryText[0].boundingBox.max.x/2;
+                    textMeshL.position.y = 0.01;
+                    textMeshL.position.z = z1 - 0.1;
+                    textMeshL.rotation.x = -1.5;
 
-                var textMeshW = new THREE.Mesh(geometryText[1], material);
-                textMeshW.position.x = x1 - 0.1;
-                textMeshW.position.y = 0.01;
-                textMeshW.position.z = z + geometryText[1].boundingBox.max.x/2;
-                textMeshW.rotation.x = -1.55;
-                textMeshW.rotation.z = 1.6;
+                    var textMeshW = new THREE.Mesh(geometryText[1], material);
+                    textMeshW.position.x = x1 - 0.1;
+                    textMeshW.position.y = 0.01;
+                    textMeshW.position.z = z + geometryText[1].boundingBox.max.x/2;
+                    textMeshW.rotation.x = -1.55;
+                    textMeshW.rotation.z = 1.6;
+
+                    line.add(textMeshL);
+                    line.add(textMeshW);
+                });
 
                 //line.rotation = scene3DFloorFurnitureContainer[FLOOR].children[i].geometry.rotation.clone();
 
                 //object.add(textMeshL);
                 //object.add(textMeshW);
                 
-                line.add(textMeshL);
-                line.add(textMeshW);
-
                 object.add(line);
 
                 //textMeshL.visible = false;

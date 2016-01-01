@@ -8,6 +8,7 @@ function main() {
 
 	"use strict";
 
+
 	var parser = new argparse.ArgumentParser();
 	parser.addArgument( ['--include'], { action: 'append', required: true } );
 	parser.addArgument( ['--externs'], { action: 'append', defaultValue: ['./externs/common.js'] } );
@@ -40,9 +41,10 @@ function main() {
 	};
 	
 	for ( var i = 0; i < args.include.length; i ++ ){
-		
 		var contents = fs.readFileSync( './includes/' + args.include[i] + '.json', 'utf8' );
 		var files = JSON.parse( contents );
+
+		console.log(files);
 
 		for ( var j = 0; j < files.length; j ++ ){
 

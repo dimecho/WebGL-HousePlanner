@@ -167,6 +167,8 @@ var terrain3D;
 var terrain3DMaterial;
 //var terrainShader;
 
+var fontLoader = new THREE.FontLoader();
+
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
 

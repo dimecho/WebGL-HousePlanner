@@ -65,6 +65,7 @@
 	"src/loaders/Cache.js",
 	"src/loaders/Loader.js",
 	"src/loaders/XHRLoader.js",
+	"src/loaders/FontLoader.js",
 	"src/loaders/ImageLoader.js",
 	"src/loaders/JSONLoader.js",
 	"src/loaders/LoadingManager.js",
@@ -204,5 +205,5 @@
 	"src/renderers/webgl/WebGLState.js",
 	"src/renderers/webgl/plugins/LensFlarePlugin.js",
 	"src/renderers/webgl/plugins/SpritePlugin.js",
-
+	"src/Three.Legacy.js"
 ]

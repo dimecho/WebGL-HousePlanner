@@ -222,6 +222,7 @@ engine3D.initHousePlanner = function () {
     });
 	*/
 
+    /*
     var cubeMaterials = [
         new THREE.MeshBasicMaterial({
             color: 0x33AA55,
@@ -266,7 +267,7 @@ engine3D.initHousePlanner = function () {
             vertexColors: THREE.VertexColors
         }),
     ];
-    material = new THREE.MeshFaceMaterial(cubeMaterials);
+    material = new THREE.MultiMaterial(cubeMaterials);
     material.vertexColors = THREE.FaceColors;
 
     geometry = engine3D.initCube(8); //new THREE.BoxGeometry(10, 10, 10, 1, 1, 1)
@@ -278,8 +279,8 @@ engine3D.initHousePlanner = function () {
         gapSize: 1,
         linewidth: 2
     }), THREE.LineSegments);
-
     scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
+    */
 
     engine3D.initRenderer();
 
