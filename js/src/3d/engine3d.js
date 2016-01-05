@@ -492,7 +492,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
             if(note)
             {
                 material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
-                fontLoader.load( 'fonts/helvetiker_regular.typeface.js', function ( font ) {
+                engine3D.fontLoader.load( 'fonts/helvetiker_regular.typeface.js', function ( font ) {
                     geometry = new THREE.TextGeometry(note, {
                         font: font,
                         weight: 'normal',
@@ -558,7 +558,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                 realLifeDimentions[1] = object.boundingBox.max.x * 400;
                 //realLifeDimentions[2]  = child.geometry.boundingBox.max.y * 200;
                 
-                fontLoader.load( 'font/helvetiker_regular.typeface.js', function ( font ) {
+                engine3D.fontLoader.load( 'font/helvetiker_regular.typeface.js', function ( font ) {
                     for (var u = 0; u <= 1; u++)
                     {
                         var units = "";
@@ -838,7 +838,7 @@ engine3D.showHouse = function() {
         engineGUI.menuSelect(2, 'menuInteractiveItem', '#ff3700');
     }
 
-    var menuBottom = [2,3,4,5,6,7,8,9,10];
+    var menuBottom = [2,3,4,5,6,7,11,12,13];
     menuBottom.forEach(function(item) {
          $('#menuBottomItem' + item).show();
     });
@@ -1050,7 +1050,7 @@ engine3D.showFloor = function () {
     $('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
-    var menuBottom = [8,9,10];
+    var menuBottom = [8,9,10,11,12,13];
     menuBottom.forEach(function(item) {
          $('#menuBottomItem' + item).show();
     });
@@ -1222,7 +1222,7 @@ engine3D.hide = function() {
     $('#menuFloorSelector').hide();
     $("#menuWallInput").hide();
 
-    for (var i = 1; i <= 10; i++) {
+    for (var i = 1; i <= 13; i++) {
         $('#menuBottomItem' + i).hide();
     }
     $('#menuBottom').hide();
@@ -1818,7 +1818,7 @@ engine3D.setLights = function() {
                 
             }else{
                 //REGULAR LIGHT
-                sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.8);
+                sceneAmbientLight = new THREE.AmbientLight(0xFFFFFF, 0.7);
                 scene3D.add(sceneAmbientLight);
                 scene3D.add(sceneDirectionalLight);
             }

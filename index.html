@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
 
   <script type="text/javascript" src="js/jquery.js?v=2.1.4"></script>
-  <script type="text/javascript" src="js/preloader.js?v=2.06"></script>
   <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
+  <script type="text/javascript" src="js/preloader.js?v=2.06"></script>
 
   <script>
     console.log = function(){};
@@ -247,8 +247,8 @@
 
 <div id="openAddNewFloor" class="modalDialog">
     <div id="wrap">
-        <a href="#close" class="close" onclick="webAddNewFloor()">X</a>
-        <br/><input id="webAddNewFloor" placeholder="Floor Name" type="text" autocomplete="off"/><br/>
+        <a href="#close" class="close" onclick="engineGUI.addNewFloor()">X</a>
+        <br/><input id="addNewFloor" placeholder="Floor Name" type="text" autocomplete="off"/><br/>
     </div>
 </div>
 
@@ -274,7 +274,7 @@
 <div id="openItemList" class="modalDialog">
   <div style="width:600px;height:300px;background-image:url('images/background.png');background-repeat:repeat;">
     <a href="#close" class="close">X</a>
-    <div id="webItemListGenerate"></div>
+    <div id="generateItemList"></div>
   </div>
 </div>
 
@@ -299,7 +299,7 @@
           <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
           <!--<a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>-->
           <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
-          <a href="#openItemList" onclick="webItemListGenerate()" class="hi-icon icon-checklist tooltip-top" title="Item List"></a>
+          <a href="#openItemList" onclick="engineGUI.generateItemList()" class="hi-icon icon-checklist tooltip-top" title="Item List"></a>
           <!--
           <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
           <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
@@ -370,7 +370,7 @@
     </ul>
     <div id="links-left" style="width:180px;height:100px;">
           <a href="#panorama" onclick="engine3D.initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
-            <img class="tooltip-top" title="MLS#: 123456" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;border:5px solid #FFFFFF;border-radius:2px;"/>
+            <img class="tooltip-top" title="MLS#: 123456" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;"/>
           </a>
     </div>
     <div id="links-left" class='cssmenu' style="width:180px;margin-top:20px">
@@ -419,12 +419,25 @@
       <img id="arrow-left" onclick="toggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
     </li>
   </ul>
-  <div id="links-left" style="width:80px">
-    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
-      <a href="#" onclick="scene3DFloorMeasurementShow()" class="hi-icon icon-ruler tooltip-right" title="Measure twice, Cut once" id="menuLeft3DFloorItem0"></a>
-      <a href="#" onclick="scene3DFloorInsertPicture()" class="hi-icon icon-images11 tooltip-right" title="Insert Panorama Photo" id="menuLeft3DFloorItem1"></a>
-      <a href="#" onclick="scene3DFloorInsertAR()" class="hi-icon icon-ar tooltip-right" title="Insert AR Photo" id="menuLeft3DFloorItem2"></a>
-    </div>
+  <div id="links-left" style="width:200px;height:120px;">
+    <a href="#" onclick="">
+      <img src="panoramas/3428/back.jpg" alt="" style="height:100px"/>
+    </a>
+  </div>
+  <div id="links-left" style="width:200px;height:120px;">
+    <a href="#" onclick="">
+      <img src="images/placeholder.jpg" alt="" style="height:100px"/>
+    </a>
+  </div>
+  <div id="links-left" style="width:200px;height:120px;">
+    <a href="#" onclick="">
+      <img src="images/placeholder.jpg" alt="" style="height:100px"/>
+    </a>
+  </div>
+  <div id="links-left" style="width:200px;height:120px;">
+    <a href="#" onclick="">
+      <img src="images/placeholder.jpg" alt="" style="height:100px"/>
+    </a>
   </div>
 </div>
 
@@ -486,15 +499,18 @@
   
   <div id="menuBottom">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-      <a href="#" onclick="exportPDF()" class="hi-icon icon-print tooltip" title="Print PDF" id="menuBottomItem1"></a>
+      <a href="#" onclick="engineGUI.exportPDF()" class="hi-icon icon-print tooltip" title="Print PDF" id="menuBottomItem1"></a>
       <a href="#" onclick="camera3DWalkViewToggle()" class="hi-icon icon-walk tooltip" title="Walk View" id="menuBottomItem3"></a>
       <a href="#" onclick="CalculateCutawayGeometry()" class="hi-icon icon-cutaway tooltip" title="Cutaway View" id="menuBottomItem4"></a>
       <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" id="menuBottomItem5"></a>
       <a href="#" onclick="selectDayNight()" class="hi-icon icon-day tooltip" title="Day/Night" id="menuBottomItem6"></a>
       <a href="#" onclick="engine3D.selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" id="menuBottomItem7"></a>
-      <a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuBottomItem8"></a>
-      <a href="#" class="hi-icon icon-redo tooltip" title="Redo" id="menuBottomItem9"></a>
-      <a href="#" class="hi-icon icon-help tooltip" title="Help" id="menuBottomItem10"></a>
+      <a href="#" onclick="scene3DFloorMeasurementShow()" class="hi-icon icon-ruler tooltip" title="Measure twice, Cut once" id="menuBottomItem8"></a>
+      <a href="#" onclick="scene3DFloorInsertPicture()" class="hi-icon icon-images11 tooltip" title="Insert Panorama Photo" id="menuBottomItem9"></a>
+      <a href="#" onclick="scene3DFloorInsertAR()" class="hi-icon icon-ar tooltip" title="Insert AR Photo" id="menuBottomItem10"></a>
+      <a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuBottomItem11"></a>
+      <a href="#" class="hi-icon icon-redo tooltip" title="Redo" id="menuBottomItem12"></a>
+      <a href="#" class="hi-icon icon-help tooltip" title="Help" id="menuBottomItem13"></a>
     </div>
   </div>
 

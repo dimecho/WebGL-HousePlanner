@@ -222,65 +222,66 @@ engine3D.initHousePlanner = function () {
     });
 	*/
 
-    /*
-    var cubeMaterials = [
-        new THREE.MeshBasicMaterial({
-            color: 0x33AA55,
-            transparent: true,
-            opacity: 0.9,
-            shading: THREE.FlatShading,
-            vertexColors: THREE.VertexColors,
-        }),
-        new THREE.MeshBasicMaterial({
-            color: 0x55CC00,
-            transparent: true,
-            opacity: 0.9,
-            shading: THREE.FlatShading,
-            vertexColors: THREE.VertexColors
-        }),
-        new THREE.MeshBasicMaterial({
-            color: 0x000000,
-            transparent: true,
-            opacity: 0.9,
-            shading: THREE.FlatShading,
-            vertexColors: THREE.VertexColors
-        }),
-        new THREE.MeshBasicMaterial({
-            color: 0x000000,
-            transparent: true,
-            opacity: 0.9,
-            shading: THREE.FlatShading,
-            vertexColors: THREE.VertexColors
-        }),
-        new THREE.MeshBasicMaterial({
-            color: 0x0000FF,
-            transparent: true,
-            opacity: 0.9,
-            shading: THREE.FlatShading,
-            vertexColors: THREE.VertexColors
-        }),
-        new THREE.MeshBasicMaterial({
-            color: 0x5555AA,
-            transparent: true,
-            opacity: 0.9,
-            shading: THREE.FlatShading,
-            vertexColors: THREE.VertexColors
-        }),
-    ];
-    material = new THREE.MultiMaterial(cubeMaterials);
-    material.vertexColors = THREE.FaceColors;
+    if(engine3D.showCube === true)
+    {
+        var cubeMaterials = [
+            new THREE.MeshBasicMaterial({
+                color: 0x33AA55,
+                transparent: true,
+                opacity: 0.9,
+                shading: THREE.FlatShading,
+                vertexColors: THREE.VertexColors,
+            }),
+            new THREE.MeshBasicMaterial({
+                color: 0x55CC00,
+                transparent: true,
+                opacity: 0.9,
+                shading: THREE.FlatShading,
+                vertexColors: THREE.VertexColors
+            }),
+            new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.9,
+                shading: THREE.FlatShading,
+                vertexColors: THREE.VertexColors
+            }),
+            new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.9,
+                shading: THREE.FlatShading,
+                vertexColors: THREE.VertexColors
+            }),
+            new THREE.MeshBasicMaterial({
+                color: 0x0000FF,
+                transparent: true,
+                opacity: 0.9,
+                shading: THREE.FlatShading,
+                vertexColors: THREE.VertexColors
+            }),
+            new THREE.MeshBasicMaterial({
+                color: 0x5555AA,
+                transparent: true,
+                opacity: 0.9,
+                shading: THREE.FlatShading,
+                vertexColors: THREE.VertexColors
+            }),
+        ];
+        material = new THREE.MultiMaterial(cubeMaterials);
+        material.vertexColors = THREE.FaceColors;
 
-    geometry = engine3D.initCube(8); //new THREE.BoxGeometry(10, 10, 10, 1, 1, 1)
-    geometry.computeLineDistances();
+        geometry = engine3D.initCube(8); //new THREE.BoxGeometry(10, 10, 10, 1, 1, 1)
+        geometry.computeLineDistances();
 
-    scene3DCubeMesh = new THREE.Line(geometry, new THREE.LineDashedMaterial({
-        color: 0xff3700,
-        dashSize: 3,
-        gapSize: 1,
-        linewidth: 2
-    }), THREE.LineSegments);
-    scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
-    */
+        scene3DCubeMesh = new THREE.Line(geometry, new THREE.LineDashedMaterial({
+            color: 0xff3700,
+            dashSize: 3,
+            gapSize: 1,
+            linewidth: 2
+        }), THREE.LineSegments);
+        scene3DCubeMesh.geometry.dynamic = true; //Changing face.color only works with geometry.dynamic = true
+    }
 
     engine3D.initRenderer();
 
@@ -776,6 +777,8 @@ engine3D.new = function (){
 
     skyMesh = new THREE.Object3D();
     skyFloorMesh = new THREE.Object3D();
+
+    engine3D.fontLoader = new THREE.FontLoader();
 
     //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
     //==============================================

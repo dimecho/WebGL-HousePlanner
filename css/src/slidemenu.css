@@ -2,29 +2,21 @@
 
 #menuLeft3DHouse{
     width: 240px;
-    line-height: 20px;
     left: -180px;
     top: 100px;
     position: fixed;
     z-index: 99;
 }
+
 #menuLeft3DFloor{
-    width: 130px;
-    left: -80px;
+    width: 260px;
+    left: -180px;
     top: 100px;
     position: fixed;
     z-index: 99;
 }
 
-#menuLeft3DLandscape{
-    width: 130px;
-    left: -80px;
-    top: 100px;
-    position: fixed;
-    z-index: 99;
-}
-
-#menuLeft2D{
+#menuLeft3DLandscape, #menuLeft2D{
     width: 130px;
     left: -80px;
     top: 100px;
@@ -39,6 +31,7 @@ div.clear { clear: both; }
   /*padding: 10px;*/
   float: left;
   /*border-right: 1px solid #B4B8BB;*/
+  margin-bottom: 12px;
 
   background: #fff;
 
@@ -54,6 +47,10 @@ div.clear { clear: both; }
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   border-radius: 10px;
+}
+
+#links-left img { 
+  width: 100%;
 }
 
 #tab-left{
@@ -77,12 +74,10 @@ div.clear { clear: both; }
     margin-left:0px;
 }
 
-.menuLeft3DHouse-show-left{
+.menuLeft3DHouse-show-left,.menuLeft3DFloor-show-left{
     margin-left:210px;
 }
-.menuLeft3DFloor-show-left{
-    margin-left:110px;
-}
+
 .menuLeft3DLandscape-show-left{
     margin-left:110px;
 }

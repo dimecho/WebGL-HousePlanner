@@ -1,43 +1,6 @@
 var engine2D = window.engine2D || {};
 
-engine2D.attachDoorsToWalls = function() {
-
-	for(i = 0; i < scene2DWallGroup.length; i++)
-	{
-        if(scene2DWallGroup[i].children[0] !== undefined)
-        {
-			console.log("2D Atach Doors to Walls [" + i + "] " + scene2DDoorGroup[i].children.length);
-
-		    for (var d = 0; d < scene2DDoorGroup[i].children.length; d++) {
-
-		        var point = scene2DDoorGroup[i].children[d].children[1].segments; //inside a Group()
-
-		        for (var w = 0; w < scene2DWallGroup[i].children.length; w++) {
-		        	var wall = scene2DWallGroup[i].children[w];
-			        var hitWallResult = wall.children[4].hitTest(point[0].point); //TODO: make this midpoint check
-			        
-			        if (hitWallResult)
-			        {
-			            hitWallResult.item.doors.push(scene2DDoorGroup[i].children[d]);
-			            //console.log(wall);
-			            wall.children[7].visible = false; //pivot point
-			            //console.log(hitWallResult.item);
-
-			            //TODO: rotate according to wall angle
-			            engine2D.snapDoor(hitWallResult.item,scene2DDoorGroup[i].children[d]);
-			            break;
-			        }
-		    	}
-		    }
-		}
-	}
-};
-
-engine2D.snapDoor = function(wall,door) {
-
-};
-
-engine2D.makeDoor = function(l,c,z,type,open,direction,file) {
+engine2D.makeDoor = function(l,p,z,type,open,direction,file) {
 
     type = "hinge.single"; //DEBUG
     //type = "fold.single"; //DEBUG
@@ -105,7 +68,7 @@ engine2D.makeDoor = function(l,c,z,type,open,direction,file) {
 		engine2D.makeHingeDoubleDoor(group,path,A,B,open,direction);
 	}
 
-	group.position = new paper.Point(c.x,c.y); //TODO: Fix this
+	group.position = new paper.Point(p.x,p.y); //TODO: Fix this
 	paper.project.layers.push(group);
 
     return group;

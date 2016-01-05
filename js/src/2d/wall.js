@@ -91,7 +91,10 @@ engine2D.drawWall_onMouseUp = function(event)
             console.log("Convert to wall Path");
         }
     }
-    
+
+    drawWall.path.visible = false;
+    drawWall.path.remove();
+
     makeWall.dragging = false;
 };
 
@@ -458,7 +461,7 @@ engine2D.makeWall = function (v1,v2,c,h) {
 		//this.fillColor = '#909090';
 		//line.visible = true;
 		//circle.visible = false;
-        this.parent.parent.children[6].visible = false;
+        //this.parent.parent.children[6].visible = false;
         //console.log(this.parent.parent);
 	});
 	pivot.attach('mouseleave', function() {
@@ -578,6 +581,25 @@ engine2D.edge_onMouseLeave = function(event)
     this.children[3].opacity = 0; //this.children[3].visible = false;
 };
 
+engine2D.wallRelativePoints = function(event,object,segments)
+{
+    var a = event.point;
+    var b = segments[1].point;
+
+    //Fix: left to right / right to left
+    //==================================
+    //console.log(Math.round(this.position) + " " + b);
+
+    if(object.hitTest(b)){ //innerCircle
+        //console.log('reverse [' + i + "]");
+        a = segments[0].point;
+        b = event.point;
+    }
+    //==================================
+
+    return {start:a,end:b};
+};
+
 engine2D.edge_onMouseDrag = function(event)
 {
     event.preventDefault();
@@ -589,14 +611,15 @@ engine2D.edge_onMouseDrag = function(event)
         this.off('mouseenter', engine2D.edge_onMouseEnter);
         this.off('mouseleave', engine2D.edge_onMouseLeave);
     }
-    
+
+    makeWall.dragging = true;
+
     for (i = 0; i < this.attachments.length; i++) {
 
         //console.log(this.attachments[i].parent.parent);
         //console.log(this.attachments[i]);
 
         var wall = this.attachments[i];
-        makeWall.dragging = true;
         //wall.visible = false; //DEBUG
 
         if (wall.length > 120)
@@ -606,12 +629,11 @@ engine2D.edge_onMouseDrag = function(event)
             wall.parent.parent.children[7].visible = false;
         }
 
+        var r = engine2D.wallRelativePoints(event,this.children[2],wall.segments);
+        /*
         var a = event.point;
         var b = wall.segments[1].point;
 
-        var cx = wall.segments[0].point.x + wall.segments[1].point.x;
-        var cy = wall.segments[0].point.y + wall.segments[1].point.y;
-        
         //Fix: left to right / right to left
         //==================================
         //console.log(Math.round(this.position) + " " + b);
@@ -622,9 +644,13 @@ engine2D.edge_onMouseDrag = function(event)
             b = event.point;
         }
         //==================================
+        */
+
+        var cx = wall.segments[0].point.x + wall.segments[1].point.x;
+        var cy = wall.segments[0].point.y + wall.segments[1].point.y;
 
         var angle1 = wall.segments[0].point.subtract(wall.segments[1].point).angle;
-        var angle2 = a.subtract(b).angle;
+        var angle2 = r.start.subtract(r.end).angle;
 
         //var line = wall.parent.parent.children[1];
         //var circle = wall.parent.parent.children[2];
@@ -634,6 +660,8 @@ engine2D.edge_onMouseDrag = function(event)
         //var p = wall.getLocationAt(wall.length/2).point; //calculate quadratic curve center
         
         var dl = wall.doors.length;
+        var wl = wall.windows.length;
+
         if(dl > 0)
         {
             //==================================
@@ -656,8 +684,8 @@ engine2D.edge_onMouseDrag = function(event)
         //==================================
         //Wall
         wall.clear();
-        wall.moveTo(a);
-        wall.quadraticCurveTo(p, b);
+        wall.moveTo(r.start);
+        wall.quadraticCurveTo(p, r.end);
         //==================================
         //Measuring Lines
         wall.parent.parent.children[0].clear();
@@ -689,7 +717,6 @@ engine2D.edge_onMouseDrag = function(event)
         wall.parent.parent.children[9] = engine2D.calculatePathOffset(wall, 10, 1, 1.5); //Outside
         //==================================
 
-       
         /*
         clearTimeout(tick);
         tick = setTimeout(function() {
@@ -710,42 +737,67 @@ engine2D.edge_onMouseDrag = function(event)
 
 engine2D.edgeSmashCorner = function(edge)
 {
-    for (var i = 0; i < edge.attachments.length; i+=2) {
+    if(edge.attachments.length >= 2) //make sure there more than one wall attached to the edge
+    {
+        for (var i = 0; i < edge.attachments.length; i+=2) {
 
-        if(edge.attachments[i+1] !== undefined)
-        {
-            var angle = engine2D.calculateWallAngle(edge.attachments[i],edge.attachments[i+1]);
-            angle = Math.abs(angle) + 180;
-            angle = Math.abs(angle - 360);
-            
-            edge.children[4].children[3].content = Math.round(angle) + '\xb0';
-            //==================================
-            //Angle lines
-            edge.children[4].children[0].clear();
-            edge.children[4].children[1].clear();
-            
-            //Arc
-            //edge.children[4].children[2].clear();
-            //==================================
+            if(edge.attachments[i+1] !== undefined)
+            {
+                var angle = engine2D.calculateWallAngle(edge.attachments[i],edge.attachments[i+1]);
+                angle = Math.abs(angle) + 180;
+                angle = Math.abs(angle - 360);
+                
+                edge.children[4].children[3].content = Math.round(angle) + '\xb0';
+                //==================================
+                //Angle lines
+                edge.children[4].children[0].clear();
+                edge.children[4].children[1].clear();
+                
+                //Arc
+                //edge.children[4].children[2].clear();
+                //==================================
 
-            //Smash Corner
-            //==================================
-            var intersections = edge.attachments[i].parent.parent.children[9].getIntersections(edge.attachments[i+1].parent.parent.children[9]); //Outside
-            if(intersections[0]){
+                //Smash Corner
+                //==================================
+                var cornerA = edge.attachments[i].parent.parent.children[9].getIntersections(edge.attachments[i+1].parent.parent.children[9]); //Outside
+                var cornerB = edge.attachments[i].parent.parent.children[8].getIntersections(edge.attachments[i+1].parent.parent.children[8]); //Inside
+                
                 var crossA = edge.attachments[i].parent.parent.children[9].getIntersections(edge.attachments[i+1].parent.parent.children[8]);
                 var crossB = edge.attachments[i].parent.parent.children[8].getIntersections(edge.attachments[i+1].parent.parent.children[9]);
-                if(crossA[0] && crossB[0]){
-                    //edge.children[1].position = intersections[0].point; //DEBUG
-                    //edge.children[1].position = crossB[0].point; //DEBUG
 
-                    edge.children[1].clear();
-                    edge.children[1].moveTo(intersections[0].point);
-                    edge.children[1].lineTo(crossA[0].point);
-                    edge.children[1].lineTo(crossB[0].point);
+                edge.children[1].clear();
+
+                if(cornerA[0]){
+
+                    edge.children[1].moveTo(cornerA[0].point);
+                    //edge.children[1].position = cornerA[0].point; //DEBUG
+
+                    if(crossA[0] && crossB[0]){
+                        edge.children[1].lineTo(crossA[0].point);
+                        edge.children[1].lineTo(crossB[0].point);
+                        //edge.children[1].position = crossB[0].point; //DEBUG
+                    }
+                }
+
+                if(cornerB[0]){
+
+                    if(cornerA[0]){
+                        edge.children[1].lineTo(cornerB[0].point);
+                    }else{
+                        edge.children[1].moveTo(cornerB[0].point);
+                    }
+                    //edge.children[1].position = cornerB[0].point; //DEBUG
+
+                    if(crossA[0] && crossB[0]){
+
+                        edge.children[1].lineTo(crossA[0].point);
+                        edge.children[1].lineTo(crossB[0].point);
+                        //edge.children[1].position = crossB[0].point; //DEBUG
+                    }
                 }
             }
+            //==================================
         }
-        //==================================
     }
 };
 
@@ -753,7 +805,7 @@ engine2D.edge_onMouseDown = function(event)
 {
     this.on('mouseup', engine2D.edge_onMouseUp);
     this.on('mousedrag', engine2D.edge_onMouseDrag);
-}
+};
 
 engine2D.edge_onMouseUp = function(event)
 {
@@ -844,7 +896,6 @@ paper.Shape.ArrowLine = function (sx, sy, ex, ey, isDouble) {
     return compoundPath;
 };
 
-
 engine2D.calculatePathOffset = function(path, offset, precision, scale)
 {
     /*
@@ -866,8 +917,8 @@ engine2D.calculatePathOffset = function(path, offset, precision, scale)
         copy.add(point.add(normal));
     }
 
-    //copy.smooth;
     copy.scale(scale);
+    copy.smooth;
     copy.remove();
 
     return copy;
@@ -944,8 +995,8 @@ engine2D.addWallCorner = function (wall,point) {
     circleOuter.fillColor = circleInner.fillColor = '#00CC33';
     circleOuter.opacity = circleInner.opacity = 0;
 
-    var cornerSmash = new paper.Path();
-    cornerSmash.fillColor = '#000000';
+    var cornerSmash = new paper.Path(); //new paper.Path.Circle(point, 2);
+    cornerSmash.fillColor = '#000000'; //'#880000';
 
     var edge = new paper.Group([size, cornerSmash, circleInner, circleOuter]); //0
     edge.dragging = false;
@@ -1189,6 +1240,7 @@ engine2D.joinWall = function(wall){
 };
 
 engine2D.splitWall = function(wall,hit) {
+    
 	console.log(wall);
 	
 	//wall.children[4].children[0].path.segments[0].point = hit.intersection.point;
@@ -1235,4 +1287,57 @@ engine2D.splitWallEdgeCircle = function(id) {
 
     //}
     return false; //href="#" fix
+};
+
+engine2D.snapObjectToWall = function(wall,object) {
+
+    var angle1 = wall.segments[0].point.subtract(wall.segments[1].point).angle;
+    object.rotation = angle1;
+
+    //var r = engine2D.wallRelativePoints(event,this.children[2],wall.segments);
+};
+
+engine2D.attachObjectsToWalls = function(group) {
+
+    for(i = 0; i < scene2DWallGroup.length; i++)
+    {
+        if(scene2DWallGroup[i].children[0] !== undefined)
+        {
+            console.log("2D Atach Objects to Walls [" + i + "] " + group[i].children.length);
+
+            for (var d = 0; d < group[i].children.length; d++) {
+
+                var path = group[i].children[d]; //inside a Group()
+
+                for (var w = 0; w < scene2DWallGroup[i].children.length; w++) {
+
+                    var wall = scene2DWallGroup[i].children[w];
+
+                    var intersections = wall.children[4].children[0].getIntersections(path.children[1]);
+                    if(intersections[0]) {
+                        
+                        var hitWallResult = wall.children[4].children[0].hitTest(intersections[0].point);
+                        if(group === scene2DDoorGroup)
+                        {
+                            hitWallResult.item.doors.push(group[i].children[d]);
+                        }
+                        else if(group === scene2DWindowGroup)
+                        {
+                            hitWallResult.item.windows.push(group[i].children[d]);
+                        }
+
+                        engine2D.snapObjectToWall(hitWallResult.item,path);
+                        
+                        //console.log(intersections[0]);
+                        //console.log(hitWallResult);
+                        //console.log(wall);
+
+                        wall.children[7].visible = false; //pivot point
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
 };

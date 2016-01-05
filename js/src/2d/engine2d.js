@@ -46,7 +46,9 @@ engine2D.show = function (){
         
         engine2D.calculateWallCorners();
 
-        engine2D.attachDoorsToWalls();
+        engine2D.attachObjectsToWalls(scene2DDoorGroup);
+
+        engine2D.attachObjectsToWalls(scene2DWindowGroup);
 
         engine2D.makeFloor();
         

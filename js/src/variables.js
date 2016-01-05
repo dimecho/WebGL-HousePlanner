@@ -167,7 +167,7 @@ var terrain3D;
 var terrain3DMaterial;
 //var terrainShader;
 
-var fontLoader = new THREE.FontLoader();
+
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
@@ -184,3 +184,4 @@ var FXAAProcessing = { enabled : true}; // renderMode: 0('framebuffer'), 1('only
 var SSAOProcessing = { enabled : false, renderMode: 0 }; // renderMode: 0('framebuffer'), 1('onlyAO')
 
 engine3D.showCube = false;
+engine3D.fontLoader;

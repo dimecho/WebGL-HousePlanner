@@ -58,6 +58,7 @@ engine2D.new = function (){
 		scene2DFloorShape[i] = new paper.Group();
 		scene2DWallDimentions[i] = [];
 		scene2DDoorGroup[i] = new paper.Group();
+		scene2DWindowGroup[i] = new paper.Group();
 		scene2DWallGroup[i] = new paper.Group();
 		scene2DWallPointGroup[i] = new paper.Group();
 		scene2DLabelGroup[i] = new paper.Group();
@@ -98,7 +99,7 @@ engine2D.open = function (zip){
 			}
 			else if(this.window !== undefined)
 			{
-				//scene2DWindowGroup[i] = engine2D.makeWindow(this['x'],this['y'],this['z'],this['open'],this['direction'],this.window);
+				scene2DWindowGroup[i].addChild(engine2D.makeWindow(this.length,{x:this.x,y:this.y},this.z,this.open,this.direction,this.window));
 			}
 			else if(this.wall !== undefined)
 			{
