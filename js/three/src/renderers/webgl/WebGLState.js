@@ -6,6 +6,8 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 
 	var _this = this;
 
+	var color = new THREE.Vector4();
+
 	var newAttributes = new Uint8Array( 16 );
 	var enabledAttributes = new Uint8Array( 16 );
 	var attributeDivisors = new Uint8Array( 16 );
@@ -49,14 +51,18 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 	var currentTextureSlot = undefined;
 	var currentBoundTextures = {};
 
+	var currentClearColor = new THREE.Vector4();
+	var currentClearDepth = null;
+	var currentClearStencil = null;
+
 	var currentScissor = new THREE.Vector4();
 	var currentViewport = new THREE.Vector4();
 
 	this.init = function () {
 
-		gl.clearColor( 0, 0, 0, 1 );
-		gl.clearDepth( 1 );
-		gl.clearStencil( 0 );
+		this.clearColor( 0, 0, 0, 1 );
+		this.clearDepth( 1 );
+		this.clearStencil( 0 );
 
 		this.enable( gl.DEPTH_TEST );
 		gl.depthFunc( gl.LEQUAL );
@@ -167,7 +173,8 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 			compressedTextureFormats = [];
 
 			if ( extensions.get( 'WEBGL_compressed_texture_pvrtc' ) ||
-			     extensions.get( 'WEBGL_compressed_texture_s3tc' ) ) {
+			     extensions.get( 'WEBGL_compressed_texture_s3tc' ) ||
+			     extensions.get( 'WEBGL_compressed_texture_etc1' )) {
 
 				var formats = gl.getParameter( gl.COMPRESSED_TEXTURE_FORMATS );
 
@@ -523,7 +530,7 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 
 		}
 
-	}
+	};
 
 	this.bindTexture = function ( webglType, webglTexture ) {
 
@@ -581,6 +588,43 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 
 	};
 
+	// clear values
+
+	this.clearColor = function ( r, g, b, a ) {
+
+		color.set( r, g, b, a );
+
+		if ( currentClearColor.equals( color ) === false ) {
+
+			gl.clearColor( r, g, b, a );
+			currentClearColor.copy( color );
+
+		}
+
+	};
+
+	this.clearDepth = function ( depth ) {
+
+		if ( currentClearDepth !== depth ) {
+
+			gl.clearDepth( depth );
+			currentClearDepth = depth;
+
+		}
+
+	};
+
+	this.clearStencil = function ( stencil ) {
+
+		if ( currentClearStencil !== stencil ) {
+
+			gl.clearStencil( stencil );
+			currentClearStencil = stencil;
+
+		}
+
+	};
+
 	//
 
 	this.scissor = function ( scissor ) {
@@ -626,9 +670,9 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 
 		currentBlending = null;
 
+		currentColorWrite = null;
 		currentDepthWrite = null;
 		currentStencilWrite = null;
-		currentColorWrite = null;
 
 		currentFlipSided = null;
 

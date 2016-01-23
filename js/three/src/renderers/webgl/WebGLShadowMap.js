@@ -97,7 +97,7 @@ THREE.WebGLShadowMap = function ( _renderer, _lights, _objects ) {
 		if ( scope.autoUpdate === false && scope.needsUpdate === false ) return;
 
 		// Set GL state for depth map.
-		_gl.clearColor( 1, 1, 1, 1 );
+		_state.clearColor( 1, 1, 1, 1 );
 		_state.disable( _gl.BLEND );
 		_state.enable( _gl.CULL_FACE );
 		_gl.frontFace( _gl.CCW );
@@ -251,7 +251,7 @@ THREE.WebGLShadowMap = function ( _renderer, _lights, _objects ) {
 					var geometry = _objects.update( object );
 					var material = object.material;
 
-					if ( material instanceof THREE.MeshFaceMaterial ) {
+					if ( material instanceof THREE.MultiMaterial ) {
 
 						var groups = geometry.groups;
 						var materials = material.materials;

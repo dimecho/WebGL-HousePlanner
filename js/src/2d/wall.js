@@ -429,7 +429,9 @@ engine2D.makeWall = function (v1,v2,c,h) {
 	//var wall2 = new Group([raster,path.clone()]);
 	wall2.clipped = true;
 	*/
-	
+
+	//path.fillColor = {pattern: {url: '../objects/FloorPlan/Default/0.png', repeat: 'repeat'}}
+
 	var wall = new paper.Group([path]);
 
 	group.addChild(measureOutside); //0
