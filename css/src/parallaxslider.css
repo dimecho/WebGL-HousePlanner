@@ -31,14 +31,14 @@
 	background-image:url(../images/bg1.jpg);
 	/*left negative 1/8 of ww*/
 }
+/*
 .pxs_bg .pxs_bg2{
 	background-image:url(../images/bg2.png);
-	/*left negative 1/4 of ww*/
 }
 .pxs_bg .pxs_bg3{
 	background-image:url(../images/bg3.png);
-	/*left negative 1/2 of ww*/
 }
+*/
 .pxs_slider_wrapper{
 	display:none;
 }

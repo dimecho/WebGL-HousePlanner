@@ -15,8 +15,7 @@ THREE.ShaderLib = {
 
 			THREE.UniformsLib[ "common" ],
 			THREE.UniformsLib[ "aomap" ],
-			THREE.UniformsLib[ "fog" ],
-			THREE.UniformsLib[ "shadowmap" ]
+			THREE.UniformsLib[ "fog" ]
 
 		] ),
 
@@ -104,9 +103,6 @@ THREE.ShaderLib = {
 			"	reflectedLight.indirectSpecular = vec3( 0.0 );",
 
 				THREE.ShaderChunk[ "aomap_fragment" ],
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
-
-				"reflectedLight.indirectDiffuse *= shadowMask;",
 
 				"vec3 outgoingLight = reflectedLight.indirectDiffuse;",
 
@@ -133,7 +129,6 @@ THREE.ShaderLib = {
 			THREE.UniformsLib[ "fog" ],
 			THREE.UniformsLib[ "ambient" ],
 			THREE.UniformsLib[ "lights" ],
-			THREE.UniformsLib[ "shadowmap" ],
 
 			{
 				"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) }
@@ -236,7 +231,6 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "alphatest_fragment" ],
 				THREE.ShaderChunk[ "specularmap_fragment" ],
 				THREE.ShaderChunk[ "emissivemap_fragment" ],
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
 
 				// accumulation
 			"	reflectedLight.indirectDiffuse = getAmbientLightIrradiance( ambientLightColor );",
@@ -255,7 +249,7 @@ THREE.ShaderLib = {
 
 			"	#endif",
 
-			"	reflectedLight.directDiffuse *= ( BRDF_Diffuse_Lambert( diffuseColor.rgb ) * shadowMask );",
+			"	reflectedLight.directDiffuse *= BRDF_Diffuse_Lambert( diffuseColor.rgb );",
 
 				// modulation
 				THREE.ShaderChunk[ "aomap_fragment" ],
@@ -290,7 +284,6 @@ THREE.ShaderLib = {
 			THREE.UniformsLib[ "fog" ],
 			THREE.UniformsLib[ "ambient" ],
 			THREE.UniformsLib[ "lights" ],
-			THREE.UniformsLib[ "shadowmap" ],
 
 			{
 				"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
@@ -406,8 +399,6 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "normal_fragment" ],
 				THREE.ShaderChunk[ "emissivemap_fragment" ],
 
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
-
 				// accumulation
 				THREE.ShaderChunk[ "lights_phong_fragment" ],
 				THREE.ShaderChunk[ "lights_template" ],
@@ -446,7 +437,6 @@ THREE.ShaderLib = {
 			THREE.UniformsLib[ "fog" ],
 			THREE.UniformsLib[ "ambient" ],
 			THREE.UniformsLib[ "lights" ],
-			THREE.UniformsLib[ "shadowmap" ],
 
 			{
 				"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
@@ -575,8 +565,6 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "normal_fragment" ],
 				THREE.ShaderChunk[ "emissivemap_fragment" ],
 
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
-
 				// accumulation
 				THREE.ShaderChunk[ "lights_standard_fragment" ],
 				THREE.ShaderChunk[ "lights_template" ],
@@ -603,8 +591,7 @@ THREE.ShaderLib = {
 		uniforms: THREE.UniformsUtils.merge( [
 
 			THREE.UniformsLib[ "points" ],
-			THREE.UniformsLib[ "fog" ],
-			THREE.UniformsLib[ "shadowmap" ]
+			THREE.UniformsLib[ "fog" ]
 
 		] ),
 
@@ -659,9 +646,8 @@ THREE.ShaderLib = {
 				THREE.ShaderChunk[ "map_particle_fragment" ],
 				THREE.ShaderChunk[ "color_fragment" ],
 				THREE.ShaderChunk[ "alphatest_fragment" ],
-				THREE.ShaderChunk[ "shadowmap_fragment" ],
 
-			"	outgoingLight = diffuseColor.rgb * shadowMask;",
+			"	outgoingLight = diffuseColor.rgb;",
 
 				THREE.ShaderChunk[ "fog_fragment" ],
 
@@ -1018,7 +1004,7 @@ THREE.ShaderLib = {
 
 			"	const vec4 bit_shift = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );",
 			"	const vec4 bit_mask = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );",
-			"	vec4 res = mod( depth * bit_shift * vec4( 255 ), vec4( 256 ) ) / vec4( 255 );", // "	vec4 res = fract( depth * bit_shift );",
+			"	vec4 res = mod( depth * bit_shift * vec4( 255 ), vec4( 256 ) ) / vec4( 255 );",
 			"	res -= res.xxyz * bit_mask;",
 			"	return res;",
 
@@ -1090,12 +1076,12 @@ THREE.ShaderLib = {
 
 			"vec4 pack1K ( float depth ) {",
 
-			"   depth /= 1000.0;",
-			"   const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );",
-  			"	const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );",
-   			"	vec4 res = fract( depth * bitSh );",
-   			"	res -= res.xxyz * bitMsk;",
-   			"	return res; ",
+			"	depth /= 1000.0;",
+			"	const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );",
+			"	const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );",
+			"	vec4 res = mod( depth * bitSh * vec4( 255 ), vec4( 256 ) ) / vec4( 255 );",
+			"	res -= res.xxyz * bitMsk;",
+			"	return res; ",
 
 			"}",
 
