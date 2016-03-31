@@ -914,6 +914,7 @@ engine3D.showLandscape = function() {
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
     engine3D.hide();
+    engine2D.hide();
 
     SCENE = 'landscape';
 
@@ -978,6 +979,7 @@ engine3D.showFloor = function () {
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
     engine3D.hide();
+    engine2D.hide();
 
     SCENE = 'floor';
 
@@ -1083,6 +1085,7 @@ engine3D.showFloorLevel = function() {
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
     engine3D.hide();
+    engine2D.hide();
 
     SCENE = 'floorlevel';
 
@@ -1119,6 +1122,7 @@ engine3D.showRoofDesign = function() {
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
     engine3D.hide();
+    engine2D.hide();
 
     SCENE = 'roof';
 
