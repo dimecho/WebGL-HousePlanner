@@ -34,8 +34,8 @@ THREE.Geometry = function () {
 
 	// update flags
 
-	this.verticesNeedUpdate = false;
 	this.elementsNeedUpdate = false;
+	this.verticesNeedUpdate = false;
 	this.uvsNeedUpdate = false;
 	this.normalsNeedUpdate = false;
 	this.colorsNeedUpdate = false;
@@ -44,9 +44,7 @@ THREE.Geometry = function () {
 
 };
 
-THREE.Geometry.prototype = {
-
-	constructor: THREE.Geometry,
+Object.assign( THREE.Geometry.prototype, THREE.EventDispatcher.prototype, {
 
 	applyMatrix: function ( matrix ) {
 
@@ -1202,8 +1200,6 @@ THREE.Geometry.prototype = {
 
 	}
 
-};
-
-THREE.EventDispatcher.prototype.apply( THREE.Geometry.prototype );
+} );
 
 THREE.GeometryIdCount = 0;

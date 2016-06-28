@@ -1,11 +1,366 @@
 /*!
 
-Split Pane v0.8.0
+Split Pane v0.9.3
 
-Copyright (c) 2014 Simon Hagström
+Copyright (c) 2014 - 2016 Simon Hagström
 
 Released under the MIT license
 https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
 */
-!function(t){"use strict";function e(){var e=t(this),i=h(e);e.is(".fixed-top, .fixed-bottom, .horizontal-percent")?e.css("min-height",c(i.first)+c(i.last)+t(i.divider).height()+"px"):e.css("min-width",u(i.first)+u(i.last)+t(i.divider).width()+"px")}function i(e){var i=t(this),n=i.parent(),r=i.siblings(".split-pane-resize-shim");r.show(),i.addClass("dragged"),e.type.match(/^touch/)&&i.addClass("touch");var o=f(n,g(e),v(e));t(document).on("touchmove mousemove",o),t(document).one("touchend mouseup",function(e){t(document).off("touchmove mousemove",o),i.removeClass("dragged touch"),r.hide(),n.trigger("dividerdragend",[s(n)])}),n.trigger("dividerdragstart",[s(n)])}function s(t){var e=t.is(".fixed-top, .fixed-bottom, .horizontal-percent")?"height":"width";return{firstComponentSize:t.find(".split-pane-component:first")[e](),lastComponentSize:t.find(".split-pane-component:last")[e]()}}function n(t){var e=h(t);return t.is(".fixed-top")?function(i){var s=c(e.last),n=e.splitPane.offsetHeight-s-e.divider.offsetHeight;e.first.offsetHeight>n&&H(e,n+"px"),t.trigger("splitpaneresize")}:t.is(".fixed-bottom")?function(i){var s=c(e.first),n=e.splitPane.offsetHeight-s-e.divider.offsetHeight;e.last.offsetHeight>n&&P(e,n+"px"),t.trigger("splitpaneresize")}:t.is(".horizontal-percent")?function(i){var s=c(e.last),n=c(e.first),f=e.splitPane.offsetHeight-n-e.divider.offsetHeight;e.last.offsetHeight>f?P(e,f/e.splitPane.offsetHeight*100+"%"):e.splitPane.offsetHeight-e.first.offsetHeight-e.divider.offsetHeight<s&&P(e,s/e.splitPane.offsetHeight*100+"%"),t.trigger("splitpaneresize")}:t.is(".fixed-left")?function(i){var s=u(e.last),n=e.splitPane.offsetWidth-s-e.divider.offsetWidth;e.first.offsetWidth>n&&W(e,n+"px"),t.trigger("splitpaneresize")}:t.is(".fixed-right")?function(i){var s=u(e.first),n=e.splitPane.offsetWidth-s-e.divider.offsetWidth;e.last.offsetWidth>n&&z(e,n+"px"),t.trigger("splitpaneresize")}:t.is(".vertical-percent")?function(i){var s=u(e.last),n=u(e.first),f=e.splitPane.offsetWidth-n-e.divider.offsetWidth;e.last.offsetWidth>f?z(e,f/e.splitPane.offsetWidth*100+"%"):e.splitPane.offsetWidth-e.first.offsetWidth-e.divider.offsetWidth<s&&z(e,s/e.splitPane.offsetWidth*100+"%"),t.trigger("splitpaneresize")}:void 0}function f(t,e,i){var s=h(t);return t.is(".fixed-top")?r(s,i):t.is(".fixed-bottom")?o(s,i):t.is(".horizontal-percent")?a(s,i):t.is(".fixed-left")?d(s,e):t.is(".fixed-right")?p(s,e):t.is(".vertical-percent")?l(s,e):void 0}function r(e,i){var s=c(e.first),n=e.splitPane.offsetHeight-c(e.last)-e.divider.offsetHeight,f=e.divider.offsetTop-i;return function(i){var r=m(s,n,f+v(i));H(e,r+"px"),t(e.splitPane).trigger("splitpaneresize")}}function o(e,i){var s=c(e.last),n=e.splitPane.offsetHeight-c(e.first)-e.divider.offsetHeight,f=e.last.offsetHeight+i;return function(i){i.preventDefault&&i.preventDefault();var r=Math.min(Math.max(s,f-v(i)),n);P(e,r+"px"),t(e.splitPane).trigger("splitpaneresize")}}function a(e,i){var s=e.splitPane.offsetHeight,n=c(e.last),f=s-c(e.first)-e.divider.offsetHeight,r=e.last.offsetHeight+i;return function(i){i.preventDefault&&i.preventDefault();var o=Math.min(Math.max(n,r-v(i)),f);P(e,o/s*100+"%"),t(e.splitPane).trigger("splitpaneresize")}}function d(e,i){var s=u(e.first),n=e.splitPane.offsetWidth-u(e.last)-e.divider.offsetWidth,f=e.divider.offsetLeft-i;return function(i){i.preventDefault&&i.preventDefault();var r=x(s,n,f+g(i));W(e,r+"px"),t(e.splitPane).trigger("splitpaneresize")}}function p(e,i){var s=u(e.last),n=e.splitPane.offsetWidth-u(e.first)-e.divider.offsetWidth,f=e.last.offsetWidth+i;return function(i){i.preventDefault&&i.preventDefault();var r=Math.min(Math.max(s,f-g(i)),n);z(e,r+"px"),t(e.splitPane).trigger("splitpaneresize")}}function l(e,i){var s=e.splitPane.offsetWidth,n=u(e.last),f=s-u(e.first)-e.divider.offsetWidth,r=e.last.offsetWidth+i;return function(i){i.preventDefault&&i.preventDefault();var o=Math.min(Math.max(n,r-g(i)),f);z(e,o/s*100+"%"),t(e.splitPane).trigger("splitpaneresize")}}function h(t){return{splitPane:t[0],first:t.children(".split-pane-component:first")[0],divider:t.children(".split-pane-divider")[0],last:t.children(".split-pane-component:last")[0]}}function g(t){return void 0!==t.pageX?t.pageX:void 0!==t.originalEvent.pageX?t.originalEvent.pageX:t.originalEvent.touches?t.originalEvent.touches[0].pageX:void 0}function v(t){return void 0!==t.pageY?t.pageY:void 0!==t.originalEvent.pageY?t.originalEvent.pageY:t.originalEvent.touches?t.originalEvent.touches[0].pageY:void 0}function c(e){return parseInt(t(e).css("min-height"))||0}function u(e){return parseInt(t(e).css("min-width"))||0}function m(t,e,i){return Math.min(Math.max(t,i),e)}function x(t,e,i){return Math.min(Math.max(t,i),e)}function H(t,e){t.first.style.height=e,t.divider.style.top=e,t.last.style.top=e}function P(t,e){t.first.style.bottom=e,t.divider.style.bottom=e,t.last.style.height=e}function W(t,e){t.first.style.width=e,t.divider.style.left=e,t.last.style.left=e}function z(t,e){t.first.style.right=e,t.divider.style.right=e,t.last.style.width=e}var w={};w.init=function(){var s=this;s.each(e),s.append('<div class="split-pane-resize-shim">'),s.children(".split-pane-divider").html('<div class="split-pane-divider-inner"></div>'),s.children(".split-pane-divider").on("touchstart mousedown",i),setTimeout(function(){s.each(function(){var e=n(t(this)),i=t(this).parent().closest(".split-pane")[0]||window;t(i).on(i===window?"resize":"splitpaneresize",function(t){var s=t.target===document?window:t.target;s===i&&e(t)})}),t(window).trigger("resize")},100)},w.firstComponentSize=function(e){this.each(function(){var i=t(this),s=h(i);i.is(".fixed-top")?r(s,s.divider.offsetTop)({pageY:e}):i.is(".fixed-bottom")?(e=s.splitPane.offsetHeight-s.divider.offsetHeight-e,o(s,-s.last.offsetHeight)({pageY:-e})):i.is(".horizontal-percent")?(e=s.splitPane.offsetHeight-s.divider.offsetHeight-e,a(s,-s.last.offsetHeight)({pageY:-e})):i.is(".fixed-left")?d(s,s.divider.offsetLeft)({pageX:e}):i.is(".fixed-right")?(e=s.splitPane.offsetWidth-s.divider.offsetWidth-e,p(s,-s.last.offsetWidth)({pageX:-e})):i.is(".vertical-percent")&&(e=s.splitPane.offsetWidth-s.divider.offsetWidth-e,l(s,-s.last.offsetWidth)({pageX:-e}))})},w.lastComponentSize=function(e){this.each(function(){var i=t(this),s=h(i);i.is(".fixed-top")?(e=s.splitPane.offsetHeight-s.divider.offsetHeight-e,r(s,s.divider.offsetTop)({pageY:e})):i.is(".fixed-bottom")?o(s,-s.last.offsetHeight)({pageY:-e}):i.is(".horizontal-percent")?a(s,-s.last.offsetHeight)({pageY:-e}):i.is(".fixed-left")?(e=s.splitPane.offsetWidth-s.divider.offsetWidth-e,d(s,s.divider.offsetLeft)({pageX:e})):i.is(".fixed-right")?p(s,-s.last.offsetWidth)({pageX:-e}):i.is(".vertical-percent")&&l(s,-s.last.offsetWidth)({pageX:-e})})},t.fn.splitPane=function(e){w[e||"init"].apply(this,t.grep(arguments,function(t,e){return e>0}))}}(jQuery);
+
+(function ($) {
+
+	'use strict';
+
+	var methods = {};
+
+	methods.init = function() {
+		var $splitPanes = this;
+		$splitPanes.each(setMinHeightAndMinWidth);
+		$splitPanes.children('.split-pane-divider').html('<div class="split-pane-divider-inner"></div>');
+		$splitPanes.children('.split-pane-divider').on('touchstart mousedown', mousedownHandler);
+		setTimeout(function() {
+			// Doing this later because of an issue with Chrome (v23.0.1271.64) returning split-pane width = 0
+			// and triggering multiple resize events when page is being opened from an <a target="_blank"> .
+			$splitPanes.each(attachResizeHandler);
+			$(window).trigger('resize');
+		}, 100);
+	};
+
+	methods.firstComponentSize = function(value) {
+		this.each(function() {
+			var $splitPane = $(this),
+				components = getComponents($splitPane);
+			if ($splitPane.is('.fixed-top')) {
+				fixedTopHandler(components, components.divider.offsetTop)({pageY: value});
+			} else if ($splitPane.is('.fixed-bottom')) {
+				value = components.splitPane.offsetHeight -components.divider.offsetHeight - value;
+				fixedBottomHandler(components, -components.last.offsetHeight)({pageY: -value});
+			} else if ($splitPane.is('.horizontal-percent')) {
+				value = components.splitPane.offsetHeight -components.divider.offsetHeight - value;
+				horizontalPercentHandler(components, -components.last.offsetHeight)({pageY: -value});
+			} else if ($splitPane.is('.fixed-left')) {
+				fixedLeftHandler(components, components.divider.offsetLeft)({pageX: value});
+			} else if ($splitPane.is('.fixed-right')) {
+				value = components.splitPane.offsetWidth -components.divider.offsetWidth - value;
+				fixedRightHandler(components, -components.last.offsetWidth)({pageX: -value});
+			} else if ($splitPane.is('.vertical-percent')) {
+				value = components.splitPane.offsetWidth -components.divider.offsetWidth - value;
+				verticalPercentHandler(components, -components.last.offsetWidth)({pageX: -value});
+			}
+		});
+	};
+
+	methods.lastComponentSize = function(value) {
+		this.each(function() {
+			var $splitPane = $(this),
+				components = getComponents($splitPane);
+			if ($splitPane.is('.fixed-top')) {
+				value = components.splitPane.offsetHeight -components.divider.offsetHeight - value;
+				fixedTopHandler(components, components.divider.offsetTop)({pageY: value});
+			} else if ($splitPane.is('.fixed-bottom')) {
+				fixedBottomHandler(components, -components.last.offsetHeight)({pageY: -value});
+			} else if ($splitPane.is('.horizontal-percent')) {
+				horizontalPercentHandler(components, -components.last.offsetHeight)({pageY: -value});
+			} else if ($splitPane.is('.fixed-left')) {
+				value = components.splitPane.offsetWidth -components.divider.offsetWidth - value;
+				fixedLeftHandler(components, components.divider.offsetLeft)({pageX: value});
+			} else if ($splitPane.is('.fixed-right')) {
+				fixedRightHandler(components, -components.last.offsetWidth)({pageX: -value});
+			} else if ($splitPane.is('.vertical-percent')) {
+				verticalPercentHandler(components, -components.last.offsetWidth)({pageX: -value});
+			}
+		});
+	};
+
+	$.fn.splitPane = function(method) {
+		methods[method || 'init'].apply(this, $.grep(arguments, function(it, i) { return i > 0; }));
+	};
+
+	function setMinHeightAndMinWidth() {
+		var $splitPane = $(this),
+			components = getComponents($splitPane);
+		if ($splitPane.is('.fixed-top, .fixed-bottom, .horizontal-percent')) {
+			$splitPane.css('min-height', (minHeight(components.first) + minHeight(components.last) + $(components.divider).height()) + 'px');
+		} else {
+			$splitPane.css('min-width', (minWidth(components.first) + minWidth(components.last) + $(components.divider).width()) + 'px');
+		}
+	}
+
+	function mousedownHandler(event) {
+		event.preventDefault();
+		var $divider = $(this),
+			$splitPane = $divider.parent();
+		$divider.addClass('dragged');
+		if (event.type.match(/^touch/)) {
+			$divider.addClass('touch');
+		}
+		var moveEventHandler = createMousemove($splitPane, pageXof(event), pageYof(event));
+		$(document).on('touchmove mousemove', moveEventHandler);
+		$(document).one('touchend mouseup', function(event) {
+			$(document).off('touchmove mousemove', moveEventHandler);
+			$divider.removeClass('dragged touch');
+			$splitPane.trigger('dividerdragend', [ getComponentsSizes($splitPane) ]);
+		});
+		$splitPane.trigger('dividerdragstart', [ getComponentsSizes($splitPane) ]);
+	}
+
+	function getComponentsSizes($splitPane) {
+		var property = $splitPane.is('.fixed-top, .fixed-bottom, .horizontal-percent') ?
+			'height' : 'width';
+		return {
+			firstComponentSize: $splitPane.find('.split-pane-component:first')[property](),
+			lastComponentSize: $splitPane.find('.split-pane-component:last')[property]()
+		};
+	}
+
+	function attachResizeHandler() {
+		var $splitPane = $(this),
+			internalHandler = createParentresizeHandler($splitPane),
+			parent = $splitPane.parent().closest('.split-pane')[0] || window;
+		$(parent).on(parent === window ? 'resize' : 'splitpaneresize', function(event) {
+			var target = event.target === document ? window : event.target;
+			if (target === parent) {
+				internalHandler(event);
+			}
+		});
+	}
+
+	function createParentresizeHandler($splitPane) {
+		var components = getComponents($splitPane);
+		if ($splitPane.is('.fixed-top')) {
+			return function(event) {
+				var lastComponentMinHeight = minHeight(components.last),
+					maxfirstComponentHeight = components.splitPane.offsetHeight - lastComponentMinHeight -  components.divider.offsetHeight;
+				if (components.first.offsetHeight > maxfirstComponentHeight) {
+					setTop(components, maxfirstComponentHeight + 'px');
+				}
+				$splitPane.trigger('splitpaneresize');
+			};
+		} else if ($splitPane.is('.fixed-bottom')) {
+			return function(event) {
+				var firstComponentMinHeight = minHeight(components.first),
+					maxLastComponentHeight = components.splitPane.offsetHeight - firstComponentMinHeight -  components.divider.offsetHeight;
+				if (components.last.offsetHeight > maxLastComponentHeight) {
+					setBottom(components, maxLastComponentHeight + 'px');
+				}
+				$splitPane.trigger('splitpaneresize');
+			};
+		} else if ($splitPane.is('.horizontal-percent')) {
+			return function(event) {
+				var lastComponentMinHeight = minHeight(components.last),
+					firstComponentMinHeight = minHeight(components.first),
+					maxLastComponentHeight = components.splitPane.offsetHeight - firstComponentMinHeight -  components.divider.offsetHeight;
+				if (components.last.offsetHeight > maxLastComponentHeight) {
+					setBottom(components, (maxLastComponentHeight / components.splitPane.offsetHeight * 100) + '%');
+				} else {
+					if (components.splitPane.offsetHeight - components.first.offsetHeight -  components.divider.offsetHeight < lastComponentMinHeight) {
+						setBottom(components, (lastComponentMinHeight / components.splitPane.offsetHeight * 100) + '%');
+					}
+				}
+				$splitPane.trigger('splitpaneresize');
+			};
+		} else if ($splitPane.is('.fixed-left')) {
+			return function(event) {
+				var lastComponentMinWidth = minWidth(components.last),
+					maxFirstComponentWidth = components.splitPane.offsetWidth - lastComponentMinWidth -  components.divider.offsetWidth;
+				if (components.first.offsetWidth > maxFirstComponentWidth) {
+					setLeft(components, maxFirstComponentWidth + 'px');
+				}
+				$splitPane.trigger('splitpaneresize');
+			};
+		} else if ($splitPane.is('.fixed-right')) {
+			return function(event) {
+				var firstComponentMinWidth = minWidth(components.first),
+					maxLastComponentWidth = components.splitPane.offsetWidth - firstComponentMinWidth -  components.divider.offsetWidth;
+				if (components.last.offsetWidth > maxLastComponentWidth) {
+					setRight(components, maxLastComponentWidth + 'px');
+				}
+				$splitPane.trigger('splitpaneresize');
+			};
+		} else if ($splitPane.is('.vertical-percent')) {
+			return function(event) {
+				var lastComponentMinWidth = minWidth(components.last),
+					firstComponentMinWidth = minWidth(components.first),
+					maxLastComponentWidth = components.splitPane.offsetWidth - firstComponentMinWidth -  components.divider.offsetWidth;
+				if (components.last.offsetWidth > maxLastComponentWidth) {
+					setRight(components, (maxLastComponentWidth / components.splitPane.offsetWidth * 100) + '%');
+				} else {
+					if (components.splitPane.offsetWidth - components.first.offsetWidth -  components.divider.offsetWidth < lastComponentMinWidth) {
+						setRight(components, (lastComponentMinWidth / components.splitPane.offsetWidth * 100) + '%');
+					}
+				}
+				$splitPane.trigger('splitpaneresize');
+			};
+		}
+	}
+
+	function createMousemove($splitPane, pageX, pageY) {
+		var components = getComponents($splitPane);
+		if ($splitPane.is('.fixed-top')) {
+			return fixedTopHandler(components, pageY);
+		} else if ($splitPane.is('.fixed-bottom')) {
+			return fixedBottomHandler(components, pageY);
+		} else if ($splitPane.is('.horizontal-percent')) {
+			return horizontalPercentHandler(components, pageY);
+		} else if ($splitPane.is('.fixed-left')) {
+			return fixedLeftHandler(components, pageX);
+		} else if ($splitPane.is('.fixed-right')) {
+			return fixedRightHandler(components, pageX);
+		} else if ($splitPane.is('.vertical-percent')) {
+			return verticalPercentHandler(components, pageX);
+		}
+	}
+
+	function fixedTopHandler(components, pageY) {
+		var firstComponentMinHeight =  minHeight(components.first),
+			maxFirstComponentHeight = components.splitPane.offsetHeight - minHeight(components.last) - components.divider.offsetHeight,
+			topOffset = components.divider.offsetTop - pageY;
+		return function(event) {
+			event.preventDefault && event.preventDefault();
+			var top = newTop(firstComponentMinHeight, maxFirstComponentHeight, topOffset + pageYof(event));
+			setTop(components, top + 'px');
+			$(components.splitPane).trigger('splitpaneresize');
+		};
+	}
+
+	function fixedBottomHandler(components, pageY) {
+		var lastComponentMinHeight = minHeight(components.last),
+			maxLastComponentHeight = components.splitPane.offsetHeight - minHeight(components.first) - components.divider.offsetHeight,
+			bottomOffset = components.last.offsetHeight + pageY;
+		return function(event) {
+			event.preventDefault && event.preventDefault();
+			var bottom = Math.min(Math.max(lastComponentMinHeight, bottomOffset - pageYof(event)), maxLastComponentHeight);
+			setBottom(components, bottom + 'px');
+			$(components.splitPane).trigger('splitpaneresize');
+		};
+	}
+
+	function horizontalPercentHandler(components, pageY) {
+		var splitPaneHeight = components.splitPane.offsetHeight,
+			lastComponentMinHeight = minHeight(components.last),
+			maxLastComponentHeight = splitPaneHeight - minHeight(components.first) - components.divider.offsetHeight,
+			bottomOffset = components.last.offsetHeight + pageY;
+		return function(event) {
+			event.preventDefault && event.preventDefault();
+			var bottom = Math.min(Math.max(lastComponentMinHeight, bottomOffset - pageYof(event)), maxLastComponentHeight);
+			setBottom(components, (bottom / splitPaneHeight * 100) + '%');
+			$(components.splitPane).trigger('splitpaneresize');
+		};
+	}
+
+	function fixedLeftHandler(components, pageX) {
+		var firstComponentMinWidth = minWidth(components.first),
+			maxFirstComponentWidth = components.splitPane.offsetWidth - minWidth(components.last) - components.divider.offsetWidth,
+			leftOffset = components.divider.offsetLeft - pageX;
+		return function(event) {
+			event.preventDefault && event.preventDefault();
+			var left = newLeft(firstComponentMinWidth, maxFirstComponentWidth, leftOffset + pageXof(event));
+			setLeft(components, left + 'px');
+			$(components.splitPane).trigger('splitpaneresize');
+		};
+	}
+
+	function fixedRightHandler(components, pageX) {
+		var lastComponentMinWidth = minWidth(components.last),
+			maxLastComponentWidth = components.splitPane.offsetWidth - minWidth(components.first) - components.divider.offsetWidth,
+			rightOffset = components.last.offsetWidth + pageX;
+		return function(event) {
+			event.preventDefault && event.preventDefault();
+			var right = Math.min(Math.max(lastComponentMinWidth, rightOffset - pageXof(event)), maxLastComponentWidth);
+			setRight(components, right + 'px');
+			$(components.splitPane).trigger('splitpaneresize');
+		};
+	}
+
+	function verticalPercentHandler(components, pageX) {
+		var splitPaneWidth = components.splitPane.offsetWidth,
+			lastComponentMinWidth = minWidth(components.last),
+			maxLastComponentWidth = splitPaneWidth - minWidth(components.first) - components.divider.offsetWidth,
+			rightOffset = components.last.offsetWidth + pageX;
+		return function(event) {
+			event.preventDefault && event.preventDefault();
+			var right = Math.min(Math.max(lastComponentMinWidth, rightOffset - pageXof(event)), maxLastComponentWidth);
+			setRight(components, (right / splitPaneWidth * 100) + '%');
+			$(components.splitPane).trigger('splitpaneresize');
+		};
+	}
+
+	function getComponents($splitPane) {
+		return {
+			splitPane: $splitPane[0],
+			first: $splitPane.children('.split-pane-component:first')[0],
+			divider: $splitPane.children('.split-pane-divider')[0],
+			last: $splitPane.children('.split-pane-component:last')[0]
+		};
+	}
+
+	function pageXof(event) {
+		if (event.pageX !== undefined) {
+			return event.pageX;
+		} else if (event.originalEvent.pageX !== undefined) {
+			return event.originalEvent.pageX;
+		} else if (event.originalEvent.touches) {
+			return event.originalEvent.touches[0].pageX;
+		}
+	}
+
+	function pageYof(event) {
+		if (event.pageY !== undefined) {
+			return event.pageY;
+		} else if (event.originalEvent.pageY !== undefined) {
+			return event.originalEvent.pageY;
+		} else if (event.originalEvent.touches) {
+			return event.originalEvent.touches[0].pageY;
+		}
+	}
+
+	function minHeight(element) {
+		return parseInt($(element).css('min-height'), 10) || 0;
+	}
+
+	function minWidth(element) {
+		return parseInt($(element).css('min-width'), 10) || 0;
+	}
+
+	function maxHeight(element) {
+		return parseInt($(element).css('max-height'), 10);
+	}
+
+	function maxWidth(element) {
+		return parseInt($(element).css('max-width'), 10);
+	}
+
+	function newTop(firstComponentMinHeight, maxFirstComponentHeight, value) {
+		return Math.min(Math.max(firstComponentMinHeight, value), maxFirstComponentHeight);
+	}
+
+	function newLeft(firstComponentMinWidth, maxFirstComponentWidth, value) {
+		return Math.min(Math.max(firstComponentMinWidth, value), maxFirstComponentWidth);
+	}
+	function setTop(components, top) {
+		components.first.style.height = top;
+		components.divider.style.top = top;
+		components.last.style.top = top;
+	}
+
+	function setBottom(components, bottom) {
+		components.first.style.bottom = bottom;
+		components.divider.style.bottom = bottom;
+		components.last.style.height = bottom;
+	}
+
+	function setLeft(components, left) {
+		components.first.style.width = left;
+		components.divider.style.left = left;
+		components.last.style.left = left;
+	}
+
+	function setRight(components, right) {
+		components.first.style.right = right;
+		components.divider.style.right = right;
+		components.last.style.width = right;
+	}
+
+})(jQuery);

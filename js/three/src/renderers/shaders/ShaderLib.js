@@ -36,7 +36,7 @@ THREE.ShaderLib = {
 			THREE.UniformsLib[ 'lights' ],
 
 			{
-				"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) }
+				"emissive" : { value: new THREE.Color( 0x000000 ) }
 			}
 
 		] ),
@@ -61,9 +61,9 @@ THREE.ShaderLib = {
 			THREE.UniformsLib[ 'lights' ],
 
 			{
-				"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
-				"specular" : { type: "c", value: new THREE.Color( 0x111111 ) },
-				"shininess": { type: "1f", value: 30 }
+				"emissive" : { value: new THREE.Color( 0x000000 ) },
+				"specular" : { value: new THREE.Color( 0x111111 ) },
+				"shininess": { value: 30 }
 			}
 
 		] ),
@@ -90,16 +90,16 @@ THREE.ShaderLib = {
 			THREE.UniformsLib[ 'lights' ],
 
 			{
-				"emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
-				"roughness": { type: "1f", value: 0.5 },
-				"metalness": { type: "1f", value: 0 },
-				"envMapIntensity" : { type: "1f", value: 1 } // temporary
+				"emissive" : { value: new THREE.Color( 0x000000 ) },
+				"roughness": { value: 0.5 },
+				"metalness": { value: 0 },
+				"envMapIntensity" : { value: 1 }, // temporary
 			}
 
 		] ),
 
-		vertexShader: THREE.ShaderChunk[ 'meshstandard_vert' ],
-		fragmentShader: THREE.ShaderChunk[ 'meshstandard_frag' ]
+		vertexShader: THREE.ShaderChunk[ 'meshphysical_vert' ],
+		fragmentShader: THREE.ShaderChunk[ 'meshphysical_frag' ]
 
 	},
 
@@ -125,9 +125,9 @@ THREE.ShaderLib = {
 			THREE.UniformsLib[ 'fog' ],
 
 			{
-				"scale"    : { type: "1f", value: 1 },
-				"dashSize" : { type: "1f", value: 1 },
-				"totalSize": { type: "1f", value: 2 }
+				"scale"    : { value: 1 },
+				"dashSize" : { value: 1 },
+				"totalSize": { value: 2 }
 			}
 
 		] ),
@@ -139,13 +139,12 @@ THREE.ShaderLib = {
 
 	'depth': {
 
-		uniforms: {
+		uniforms: THREE.UniformsUtils.merge( [
 
-			"mNear": { type: "1f", value: 1.0 },
-			"mFar" : { type: "1f", value: 2000.0 },
-			"opacity" : { type: "1f", value: 1.0 }
+			THREE.UniformsLib[ 'common' ],
+			THREE.UniformsLib[ 'displacementmap' ]
 
-		},
+		] ),
 
 		vertexShader: THREE.ShaderChunk[ 'depth_vert' ],
 		fragmentShader: THREE.ShaderChunk[ 'depth_frag' ]
@@ -156,7 +155,7 @@ THREE.ShaderLib = {
 
 		uniforms: {
 
-			"opacity" : { type: "1f", value: 1.0 }
+			"opacity" : { value: 1.0 }
 
 		},
 
@@ -172,8 +171,9 @@ THREE.ShaderLib = {
 	'cube': {
 
 		uniforms: {
-			"tCube": { type: "t", value: null },
-			"tFlip": { type: "1f", value: - 1 }
+			"tCube": { value: null },
+			"tFlip": { value: - 1 },
+			"opacity": { value: 1.0 }
 		},
 
 		vertexShader: THREE.ShaderChunk[ 'cube_vert' ],
@@ -188,8 +188,8 @@ THREE.ShaderLib = {
 	'equirect': {
 
 		uniforms: {
-			"tEquirect": { type: "t", value: null },
-			"tFlip": { type: "1f", value: - 1 }
+			"tEquirect": { value: null },
+			"tFlip": { value: - 1 }
 		},
 
 		vertexShader: THREE.ShaderChunk[ 'equirect_vert' ],
@@ -197,33 +197,11 @@ THREE.ShaderLib = {
 
 	},
 
-	/* Depth encoding into RGBA texture
-	 *
-	 * based on SpiderGL shadow map example
-	 * http://spidergl.org/example.php?id=6
-	 *
-	 * originally from
-	 * http://www.gamedev.net/topic/442138-packing-a-float-into-a-a8r8g8b8-texture-shader/page__whichpage__1%25EF%25BF%25BD
-	 *
-	 * see also
-	 * http://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
-	 */
-
-	'depthRGBA': {
-
-		uniforms: {},
-
-		vertexShader: THREE.ShaderChunk[ 'depthRGBA_vert' ],
-		fragmentShader: THREE.ShaderChunk[ 'depthRGBA_frag' ]
-
-	},
-
-
 	'distanceRGBA': {
 
 		uniforms: {
 
-			"lightPos": { type: "v3", value: new THREE.Vector3() }
+			"lightPos": { value: new THREE.Vector3() }
 
 		},
 
@@ -231,5 +209,23 @@ THREE.ShaderLib = {
 		fragmentShader: THREE.ShaderChunk[ 'distanceRGBA_frag' ]
 
 	}
+
+};
+
+THREE.ShaderLib[ 'physical' ] = {
+
+	uniforms: THREE.UniformsUtils.merge( [
+
+		THREE.ShaderLib[ 'standard' ].uniforms,
+
+		{
+			"clearCoat": { value: 0 },
+			"clearCoatRoughness": { value: 0 }
+		}
+
+	] ),
+
+	vertexShader: THREE.ShaderChunk[ 'meshphysical_vert' ],
+	fragmentShader: THREE.ShaderChunk[ 'meshphysical_frag' ]
 
 };

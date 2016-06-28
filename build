@@ -24,6 +24,7 @@ rm -rf ../src/cameras/CubeCamera.js
 rm -rf ../src/cameras/StereoCamera.js
 rm -rf ../src/extras/ImageUtils.js
 rm -rf ../src/extras/GeometryUtils.js
+rm -rf ../src/loaders/AudioLoader.js
 #rm -rf ../src/Three.Legacy.js
 node ./build.js --include common --include extras --minify --output ../three.js
 rm ../three.js.map

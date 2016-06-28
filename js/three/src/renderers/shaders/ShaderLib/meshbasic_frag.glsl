@@ -18,8 +18,11 @@ uniform float opacity;
 #include <fog_pars_fragment>
 #include <specularmap_pars_fragment>
 #include <logdepthbuf_pars_fragment>
+#include <clipping_planes_pars_fragment>
 
 void main() {
+
+	#include <clipping_planes_fragment>
 
 	vec4 diffuseColor = vec4( diffuse, opacity );
 
@@ -40,6 +43,7 @@ void main() {
 
 	vec3 outgoingLight = reflectedLight.indirectDiffuse;
 
+	#include <normal_flip>
 	#include <envmap_fragment>
 
 	gl_FragColor = vec4( outgoingLight, diffuseColor.a );

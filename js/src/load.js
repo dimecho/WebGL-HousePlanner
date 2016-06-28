@@ -182,6 +182,8 @@ function sceneMapBox() {
 
 engineGUI.open = function(s) {
 
+    var zip = new JSZip();
+
     document.body.appendChild(spinner);
     document.getElementById("start").getElementsByClassName("close")[0].setAttribute('href', "#close");
 
@@ -217,44 +219,47 @@ engineGUI.open = function(s) {
                     }, 500);
 
                     setTimeout(function() {
-                        var zip = new JSZip(data);
-
+                        
                         engine3D.new();
                         engine2D.new();
 
-                        try{
-                            var o = JSON.parse(zip.file("options.json").asText());
-                            //console.log(o);
-                            settings = o.settings;
-                            for (var i = 0; i < o.floor.length; i++){
-                                //console.log(o.floor[i].name);
-                                scene3DFloorFurnitureContainer[i].name =  o.floor[i].name; 
-                            }
-                        }catch(ex){}
-                        //show2D(); //DEBUG 2D
+                        zip.loadAsync(data).then(function(zip) {
+                            zip.file("options.json").async("string").then(function (content) {
+                                var o = JSON.parse(content);
+                                //console.log(o);
+                                settings = o.settings;
+                                for (var i = 0; i < o.floor.length; i++){
+                                    //console.log(o.floor[i].name);
+                                    scene3DFloorFurnitureContainer[i].name =  o.floor[i].name; 
+                                }
+                            });
 
-                        engine2D.open(zip);
-                        engine3D.open(zip);
+                            engine2D.open(zip);
+                            engine3D.open(zip);
 
-                        setTimeout(function() {
-                            document.body.removeChild(spinner);
-
-                            if(s == 1){
-                                engine3D.showHouse();
-                            }else if (s == 2)
-                            {
-                                engine3D.showFloor();
-                            }
-                            else if (s == 3)
-                            {
-                                engine2D.show();
-                            }
+                            //show2D(); //DEBUG 2D
 
                             setTimeout(function() {
-                                scene3DAnimateRotate = settings.autorotate;
-                            }, 4000);
-                        }, 1000);
-                        //document.getElementById('engine3D').removeChild(spinner);
+                                document.body.removeChild(spinner);
+
+                                if(s == 1){
+                                    engine3D.showHouse();
+                                }else if (s == 2)
+                                {
+                                    engine3D.showFloor();
+                                }
+                                else if (s == 3)
+                                {
+                                    engine2D.show();
+                                }
+
+                                setTimeout(function() {
+                                    scene3DAnimateRotate = settings.autorotate;
+                                }, 4000);
+                            }, 1000);
+                            //document.getElementById('engine3D').removeChild(spinner);
+                        });
+                        
                     }, 2000);
                 } catch (e) {
                     alertify.alert("Failed to open Scene " + e);

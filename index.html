@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
   <meta name="apple-mobile-web-app-capable" content="yes"/>
 
-  <script type="text/javascript" src="js/jquery.js?v=2.1.4"></script>
-  <script type="text/javascript" src="js/jszip.js?v=2.4.0"></script>
-  <script type="text/javascript" src="js/preloader.js?v=2.06"></script>
+  <script type="text/javascript" src="js/jquery.js"></script>
+  <script type="text/javascript" src="js/jszip.js"></script>
+  <script type="text/javascript" src="js/preloader.js"></script>
 
   <script>
     console.log = function(){};
@@ -16,6 +16,7 @@
     
     var RUNMODE = 'local';
     var VIEWMODE = 'designer';
+    var zip = new JSZip();
     
     $.ajax("js/houseplanner.jsz",{
         contentType: "application/zip",
@@ -23,19 +24,32 @@
           req.overrideMimeType('text/plain; charset=x-user-defined');
         },
         success: function(data){
+          //alert(data);
           try {
-            var zip = new JSZip(data);
             //zip.load(binary.read('string'));
-            $(document).ready(function() {
-              //$('head').append("<style>" + zip.file("houseplanner.css").asText() + "<\/style>");
-              $('head').append("<script>" + zip.file("three/three.js").asText() + "<\/script>");
-              $('head').append("<script>" + zip.file("paper/paper.js").asText() + "<\/script>");
-              $('head').append("<script>" + zip.file("houseplanner.js").asText() + "<\/script>");
-              console.log("HousePlanner v1.0");
-              engine3D.initHousePlanner();
+            //$('head').append("<style>" + zip.file("houseplanner.css").asText() + "<\/style>");
+            zip.loadAsync(data).then(function(zip) {
+              zip.file("three/three.js").async("string").then(function (content) {
+                //alert(content);
+                $('head').append("<script>" + content+ "<\/script>");
+
+                zip.file("paper/paper.js").async("string").then(function (content) {
+                  //alert(content);
+                  $('head').append("<script>" + content + "<\/script>");
+                  zip.file("houseplanner.js").async("string").then(function (content) {
+                    //alert(content);
+                    $('head').append("<script>" + content + "<\/script>");
+                  });
+                });
+              });
+              $(document).ready(function() {
+                console.log("HousePlanner v1.0");
+                engine3D.initHousePlanner();
+              });
             });
           } catch (exception) {
             console.log(exception);
+            //alert(exception);
           }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -48,7 +62,7 @@
           });
         }
     });
-
+  
     preloader.config({
       mode: 'number',
       show_percentage: true,
@@ -260,7 +274,7 @@
 
 <div id="panorama" class="modalDialog">
 	<div style="width:80%;height:90%;margin:2% auto;">
-		<a href="#close" class="close" onclick="disposePanorama('WebGLPanoramaHouse')">X</a>
+		<a href="#close" class="close" onclick="disposePanorama('WebGLPanoramaHouse');">X</a>
     <div id="WebGLPanoramaHouse" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
 	</div>
 </div>

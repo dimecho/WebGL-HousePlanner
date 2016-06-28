@@ -24,7 +24,6 @@
  * THREE.QuadraticBezierCurve3
  * THREE.CubicBezierCurve3
  * THREE.SplineCurve3
- * THREE.ClosedSplineCurve3
  *
  * A series of curves can be represented as a THREE.CurvePath
  *
@@ -68,15 +67,15 @@ THREE.Curve.prototype = {
 
 		if ( ! divisions ) divisions = 5;
 
-		var d, pts = [];
+		var points = [];
 
-		for ( d = 0; d <= divisions; d ++ ) {
+		for ( var d = 0; d <= divisions; d ++ ) {
 
-			pts.push( this.getPoint( d / divisions ) );
+			points.push( this.getPoint( d / divisions ) );
 
 		}
 
-		return pts;
+		return points;
 
 	},
 
@@ -86,15 +85,15 @@ THREE.Curve.prototype = {
 
 		if ( ! divisions ) divisions = 5;
 
-		var d, pts = [];
+		var points = [];
 
-		for ( d = 0; d <= divisions; d ++ ) {
+		for ( var d = 0; d <= divisions; d ++ ) {
 
-			pts.push( this.getPointAt( d / divisions ) );
+			points.push( this.getPointAt( d / divisions ) );
 
 		}
 
-		return pts;
+		return points;
 
 	},
 

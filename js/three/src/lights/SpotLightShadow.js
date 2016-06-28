@@ -8,13 +8,13 @@ THREE.SpotLightShadow = function () {
 
 };
 
-THREE.SpotLightShadow.prototype = {
+THREE.SpotLightShadow.prototype = Object.assign( Object.create( THREE.LightShadow.prototype ), {
 
 	constructor: THREE.SpotLightShadow,
 
 	update: function ( light ) {
 
-		var fov = THREE.Math.radToDeg( 2 * light.angle );
+		var fov = THREE.Math.RAD2DEG * 2 * light.angle;
 		var aspect = this.mapSize.width / this.mapSize.height;
 		var far = light.distance || 500;
 
@@ -31,4 +31,4 @@ THREE.SpotLightShadow.prototype = {
 
 	}
 
-};
+} );

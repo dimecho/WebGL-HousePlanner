@@ -450,8 +450,7 @@ engine3D.initRendererQuad = function()
     camera3DQuad[3].position.set(0, 14, 8);
     camera3DQuad[3].lookAt(new THREE.Vector3(0, 0, 0));
 
-    camera3DQuadGrid = new THREE.GridHelper(15, 1);
-    camera3DQuadGrid.setColors(new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
+    camera3DQuadGrid = new THREE.GridHelper(15, 1, new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
 
     engine3D.initRendererQuadSize();
 
@@ -649,30 +648,27 @@ engine3D.initLights = function() {
     
     sceneDirectionalLight = new THREE.DirectionalLight();
     sceneDirectionalLight.color.setHSL(0.1, 1, 0.95);
-    sceneDirectionalLight.position.set(1, 1.8, 0.8); //.normalize();
+    sceneDirectionalLight.position.set(1, 1.8, 0.8).normalize();
     sceneDirectionalLight.target.position.set(0, 0, 0);
     sceneDirectionalLight.position.multiplyScalar(50);
     //sceneDirectionalLight.position.set(-1, 0, 0).normalize();
     sceneDirectionalLight.castShadow = true;
-    sceneDirectionalLight.shadowMapWidth = 2048;
-    sceneDirectionalLight.shadowMapHeight = 2048;
+    sceneDirectionalLight.shadow.mapSize.width = 2048; //shadowMapWidth = 2048;
+    sceneDirectionalLight.shadow.mapSize.height = 2048; //shadowMapHeight = 2048;
     var d = 15;
-    sceneDirectionalLight.shadowCameraLeft = -d;
-    sceneDirectionalLight.shadowCameraRight = d;
-    sceneDirectionalLight.shadowCameraTop = d;
-    sceneDirectionalLight.shadowCameraBottom = -d;
-    sceneDirectionalLight.shadowCameraFar = 2000;
-    sceneDirectionalLight.shadowBias = -0.0001;
-    sceneDirectionalLight.shadowDarkness = 1;
-    
-    //sceneDirectionalLight.shadowCameraVisible = true;
-    
+    sceneDirectionalLight.shadow.camera.left = -d; //shadowCameraLeft = -d;
+    sceneDirectionalLight.shadow.camera.left = d; //shadowCameraRight = d;
+    sceneDirectionalLight.shadow.camera.top = d; //shadowCameraTop = d;
+    sceneDirectionalLight.shadow.camera.bottom = -d; //shadowCameraBottom = -d;
+    sceneDirectionalLight.shadow.camera.far = 2000; //shadowCameraFar = 2000;
+    sceneDirectionalLight.shadow.bias = -0.0001; //shadowBias = -0.0001;
+    //sceneDirectionalLight.shadowDarkness = 1;
+    //sceneDirectionalLight.shadow.camera.visible = true; //shadowCameraVisible = true;
     //scene3D.add(sceneDirectionalLight);
-    
 
     sceneSpotLight = new THREE.SpotLight();
-    sceneSpotLight.shadowCameraNear = 1; // keep near and far planes as tight as possible
-    sceneSpotLight.shadowCameraFar = 38; // shadows not cast past the far plane
+    sceneSpotLight.shadow.camera.near = 1; //shadowCameraNear = 1; // keep near and far planes as tight as possible
+    sceneSpotLight.shadow.camera.far = 38; //shadowCameraFar = 38; // shadows not cast past the far plane
     //sceneSpotLight.shadowCameraVisible = true;
     sceneSpotLight.castShadow = true;
     sceneSpotLight.intensity = 0.8;
@@ -838,33 +834,40 @@ engine3D.open = function(zip) {
     */
 
     var i = 0;
-    $.each(JSON.parse(zip.file("scene3DFloorContainer.json").asText()), function(index)
-    {
-        //var objects3DFurniture = JSON.parse(this);
-        $.each(this, function(index){
-            var note = null;
-            if(this.note !== undefined)
-                note = this.note;
-            if(this.file !== undefined)
-                engine3D.open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
-            if(this.floor !== undefined)
-                scene3DFloorShapeTextures[i].push(this.floor);
-            if(this.ceiling !== undefined)
-                scene3DCeilingShapeTextures[i].push(this.ceiling);
+    zip.file("scene3DFloorContainer.json").async("string").then(function (content) {
+        $.each(JSON.parse(content), function(index)
+        {
+            //var objects3DFurniture = JSON.parse(this);
+            $.each(this, function(index){
+                var note = null;
+                if(this.note !== undefined)
+                    note = this.note;
+                if(this.file !== undefined)
+                    engine3D.open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
+                if(this.floor !== undefined)
+                    scene3DFloorShapeTextures[i].push(this.floor);
+                if(this.ceiling !== undefined)
+                    scene3DCeilingShapeTextures[i].push(this.ceiling);
+            });
+            i++;
         });
-        i++;
-    });
-    
-    $.each(JSON.parse(zip.file("scene3DTerrain.json").asText()), function(index){
-        engine3D.open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
-    $.each(JSON.parse(zip.file("scene3DHouseContainer.json").asText()), function(index){
-        engine3D.open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
-    });
-    
-    $.each(JSON.parse(zip.file("scene3DRoofContainer.json").asText()), function(index){
-        engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+    zip.file("scene3DTerrain.json").async("string").then(function (content) {
+        $.each(JSON.parse(content), function(index){
+            engine3D.open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        });
     });
 
+    zip.file("scene3DHouseContainer.json").async("string").then(function (content) {
+        $.each(JSON.parse(content), function(index){
+            engine3D.open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        });
+    });
+
+    zip.file("scene3DRoofContainer.json").async("string").then(function (content) {
+        $.each(JSON.parse(content), function(index){
+            engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        });
+    });
 };

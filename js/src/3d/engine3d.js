@@ -653,104 +653,111 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                 //responseType:'arraybuffer',
                 success: function(data){
                     //try {
-                        var zip = new JSZip(data);
-                        
-                        //zip.load(binary.read('string'));
-                        data = zip.file(filename).asText(); //console.log("unzip OK " + js);
-                        data = $.parseJSON(data); //JSON.parse(data);
+                        var zip = new JSZip();
+                        zip.loadAsync(data).then(function(zip) {
+                            //console.log(data);
+                            zip.file(filename).async("string").then(function (content) {
+                                //console.log(content);
+                                data = content; //console.log("unzip OK " + js);
+                                data = JSON.parse(data);
 
-                        //if (data.metadata.formatVersion == 3.1){ //using export script io_mesh_threejs
-                        //    console.log("using old format 3 " + js);
-                        //    //loader = new THREE.JSONLoader();
-                        //    var result = loader.parse(data, textures);
-                        //    callback(result.geometry, result.materials);
-                        //}else{ //using export script io_three
-                            /*
-                            https://github.com/mrdoob/three.js/wiki/JSON-Texture-format-4
-                            */
+                                //if (data.metadata.formatVersion == 3.1){ //using export script io_mesh_threejs
+                                //    console.log("using old format 3 " + js);
+                                //    //loader = new THREE.JSONLoader();
+                                //    var result = loader.parse(data, textures);
+                                //    callback(result.geometry, result.materials);
+                                //}else{ //using export script io_three
+                                /*
+                                https://github.com/mrdoob/three.js/wiki/JSON-Texture-format-4
+                                */
 
-                            //console.log("using new format 4 " + js);
-                            //var manager = new THREE.LoadingManager();
-                            var loader = new THREE.ObjectLoader(); //new THREE.ObjectLoader(manager);
-                            loader.setTexturePath(textures);
+                                //console.log("using new format 4 " + js);
+                                //var manager = new THREE.LoadingManager();
+                                var loader = new THREE.ObjectLoader(); //new THREE.ObjectLoader(manager);
+                                loader.setTexturePath(textures);
+                                /*
+                                //=======================================
+                                //Blender Export v72 Fix
+                                //=======================================
+                                for (var i = 0; i < data.textures.length; i++) {
 
-                            //=======================================
-                            //Blender Export v72 Fix
-                            //=======================================
-                            for (var i = 0; i < data.textures.length; i++) {
+                                    if(data.textures[i].mapping)
+                                        data.textures[i].mapping = THREE[data.textures[i].mapping];
 
-                                if(data.textures[i].mapping)
-                                    data.textures[i].mapping = THREE[data.textures[i].mapping];
+                                    if(data.textures[i].minFilter)
+                                        data.textures[i].minFilter = THREE[data.textures[i].minFilter];
+                                    
+                                    if(data.textures[i].magFilter)
+                                        data.textures[i].magFilter = THREE[data.textures[i].magFilter];
 
-                                if(data.textures[i].minFilter)
-                                    data.textures[i].minFilter = THREE[data.textures[i].minFilter];
-                                
-                                if(data.textures[i].magFilter)
-                                    data.textures[i].magFilter = THREE[data.textures[i].magFilter];
-
-                                if(data.textures[i].wrap)
-                                {
-                                    //data.textures[i].wrap = [THREE.ClampToEdgeWrapping,THREE.ClampToEdgeWrapping];
-                                    data.textures[i].wrap = [THREE.RepeatWrapping,THREE.RepeatWrapping];
-                                }
-                            }
-                            /*
-                            for (var i = 0; i < data.images.length; i++) {
-                                if(data.images[i].url)
-                                    data.images[i].url = textures + data.images[i].url;
-                            }
-                            */
-                            for (var i = 0; i < data.object.children.length; i++) {
-
-                                //======================================================
-                                //FIX for r72dev [openning same 3D models more than once]
-                                //======================================================
-                                data.object.children[i].uuid = THREE.Math.generateUUID();
-                                //======================================================
-
-                                var geometry_opacity = 1;
-                                for (var g = 0; g < data.geometries.length; g++) {
-                                    if (data.geometries[g].uuid == data.object.children[i].geometry){
-                                        //data.geometries[g].uuid = THREE.Math.generateUUID();
-                                        //data.object.children[i].geometry = data.geometries[g].uuid;
-                                        geometry_opacity = data.geometries[g].materials[0].opacity;
-                                        break;
+                                    if(data.textures[i].wrap)
+                                    {
+                                        //data.textures[i].wrap = [THREE.ClampToEdgeWrapping,THREE.ClampToEdgeWrapping];
+                                        data.textures[i].wrap = [THREE.RepeatWrapping,THREE.RepeatWrapping];
                                     }
                                 }
-                                if(geometry_opacity === 0)
-                                    geometry_opacity = 0.99;
-                                //====================================
-                                for (var m = 0; m < data.materials.length; m++) {
+                                */
+                                /*
+                                for (var i = 0; i < data.images.length; i++) {
+                                    if(data.images[i].url)
+                                        data.images[i].url = textures + data.images[i].url;
+                                }
+                                */
+                                
+                                for (var i = 0; i < data.object.children.length; i++) {
+
                                     //======================================================
-                                    //FIX for r72dev [openning same 3D models textures - one texture per material]
+                                    //FIX for r72dev [openning same 3D models more than once]
                                     //======================================================
-                                    for (var t = 0; t < data.textures.length; t++){
-                                        if (data.textures[t].uuid == data.materials[m].map){
-                                            data.textures[t].uuid = THREE.Math.generateUUID();
-                                            data.materials[m].map = data.textures[t].uuid;
+                                    data.object.children[i].uuid = THREE.Math.generateUUID();
+                                    //======================================================
+
+                                    var geometry_opacity = 1;
+                                    for (var g = 0; g < data.geometries.length; g++) {
+                                        if (data.geometries[g].uuid == data.object.children[i].geometry){
+                                            //data.geometries[g].uuid = THREE.Math.generateUUID();
+                                            //data.object.children[i].geometry = data.geometries[g].uuid;
+                                            geometry_opacity = data.geometries[g].materials[0].opacity;
                                             break;
                                         }
                                     }
-                                    //==================================
-                                    if (data.materials[m].uuid == data.object.children[i].material){
-                        
-                                        data.materials[m].opacity = geometry_opacity;
-
-                                        var material_uuid = THREE.Math.generateUUID();
-                                        for (var ii = 0; ii < data.object.children.length; ii++) {
-                                            if (data.object.children[ii].material == data.materials[m].uuid)
-                                                data.object.children[ii].material = material_uuid;
+                                    if(geometry_opacity === 0)
+                                        geometry_opacity = 0.99;
+                                    //====================================
+                                    for (var m = 0; m < data.materials.length; m++) {
+                                        //======================================================
+                                        //FIX for r72dev [openning same 3D models textures - one texture per material]
+                                        //======================================================
+                                        for (var t = 0; t < data.textures.length; t++){
+                                            if (data.textures[t].uuid == data.materials[m].map){
+                                                data.textures[t].uuid = THREE.Math.generateUUID();
+                                                data.materials[m].map = data.textures[t].uuid;
+                                                break;
+                                            }
                                         }
-                                        data.materials[m].uuid = material_uuid;
-                                        break;
+                                        //==================================
+                                        if (data.materials[m].uuid == data.object.children[i].material){
+                            
+                                            data.materials[m].opacity = geometry_opacity;
+
+                                            var material_uuid = THREE.Math.generateUUID();
+                                            for (var ii = 0; ii < data.object.children.length; ii++) {
+                                                if (data.object.children[ii].material == data.materials[m].uuid)
+                                                    data.object.children[ii].material = material_uuid;
+                                            }
+                                            data.materials[m].uuid = material_uuid;
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            
-                            //=======================================
-                            loader.parse(data, callbackObject);
-                            //{ useWorker: true, useBuffers: true }
-                            //=======================================
+                                
+                                //=======================================
+                                loader.parse(data, callbackObject);
+                                //{ useWorker: true, useBuffers: true }
+                                //=======================================
+                            });
+                        });
+
                         //}
                     //} catch (e) { //zip file was probably not found, load regular json
                         //console.log("Other 3D format " + e + " " + js.slice(0, -4) + "");

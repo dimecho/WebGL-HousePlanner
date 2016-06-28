@@ -1,4 +1,4 @@
-#define STANDARD
+#define PHYSICAL
 
 varying vec3 vViewPosition;
 
@@ -18,8 +18,9 @@ varying vec3 vViewPosition;
 #include <shadowmap_pars_vertex>
 #include <specularmap_pars_fragment>
 #include <logdepthbuf_pars_vertex>
+#include <clipping_planes_pars_vertex>
 
-void main() { // STANDARD
+void main() {
 
 	#include <uv_vertex>
 	#include <uv2_vertex>
@@ -43,6 +44,7 @@ void main() { // STANDARD
 	#include <skinning_vertex>
 	#include <project_vertex>
 	#include <logdepthbuf_vertex>
+	#include <clipping_planes_vertex>
 
 	vViewPosition = - mvPosition.xyz;
 

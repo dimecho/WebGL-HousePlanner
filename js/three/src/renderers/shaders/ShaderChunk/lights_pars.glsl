@@ -28,15 +28,11 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 
 	uniform DirectionalLight directionalLights[ NUM_DIR_LIGHTS ];
 
-	IncidentLight getDirectionalDirectLightIrradiance( const in DirectionalLight directionalLight, const in GeometricContext geometry ) {
-
-		IncidentLight directLight;
+	void getDirectionalDirectLightIrradiance( const in DirectionalLight directionalLight, const in GeometricContext geometry, out IncidentLight directLight ) {
 
 		directLight.color = directionalLight.color;
 		directLight.direction = directionalLight.direction;
 		directLight.visible = true;
-
-		return directLight;
 
 	}
 
@@ -59,9 +55,8 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 
 	uniform PointLight pointLights[ NUM_POINT_LIGHTS ];
 
-	IncidentLight getPointDirectLightIrradiance( const in PointLight pointLight, const in GeometricContext geometry ) {
-
-		IncidentLight directLight;
+	// directLight is an out parameter as having it as a return value caused compiler errors on some devices
+	void getPointDirectLightIrradiance( const in PointLight pointLight, const in GeometricContext geometry, out IncidentLight directLight ) {
 
 		vec3 lVector = pointLight.position - geometry.position;
 		directLight.direction = normalize( lVector );
@@ -81,8 +76,6 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 			directLight.visible = false;
 
 		}
-
-		return directLight;
 
 	}
 
@@ -108,9 +101,8 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 
 	uniform SpotLight spotLights[ NUM_SPOT_LIGHTS ];
 
-	IncidentLight getSpotDirectLightIrradiance( const in SpotLight spotLight, const in GeometricContext geometry ) {
-
-		IncidentLight directLight;
+	// directLight is an out parameter as having it as a return value caused compiler errors on some devices
+	void getSpotDirectLightIrradiance( const in SpotLight spotLight, const in GeometricContext geometry, out IncidentLight directLight  ) {
 
 		vec3 lVector = spotLight.position - geometry.position;
 		directLight.direction = normalize( lVector );
@@ -133,8 +125,6 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 			directLight.visible = false;
 
 		}
-
-		return directLight;
 
 	}
 
@@ -171,19 +161,11 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 #endif
 
 
-#if defined( USE_ENVMAP ) && defined( STANDARD )
+#if defined( USE_ENVMAP ) && defined( PHYSICAL )
 
 	vec3 getLightProbeIndirectIrradiance( /*const in SpecularLightProbe specularLightProbe,*/ const in GeometricContext geometry, const in int maxMIPLevel ) {
 
-		#ifdef DOUBLE_SIDED
-
-			float flipNormal = ( float( gl_FrontFacing ) * 2.0 - 1.0 );
-
-		#else
-
-			float flipNormal = 1.0;
-
-		#endif
+		#include <normal_flip>
 
 		vec3 worldNormal = inverseTransformDirection( geometry.normal, viewMatrix );
 
@@ -205,6 +187,8 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 
 			#endif
 
+			envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+
 		#elif defined( ENVMAP_TYPE_CUBE_UV )
 
 			vec3 queryVec = flipNormal * vec3( flipEnvMap * worldNormal.x, worldNormal.yz );
@@ -215,8 +199,6 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 			vec4 envMapColor = vec4( 0.0 );
 
 		#endif
-
-		envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
 
 		return PI * envMapColor.rgb * envMapIntensity;
 
@@ -248,15 +230,7 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 
 		#endif
 
-		#ifdef DOUBLE_SIDED
-
-			float flipNormal = ( float( gl_FrontFacing ) * 2.0 - 1.0 );
-
-		#else
-
-			float flipNormal = 1.0;
-
-		#endif
+		#include <normal_flip>
 
 		reflectVec = inverseTransformDirection( reflectVec, viewMatrix );
 
@@ -275,6 +249,8 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 				vec4 envMapColor = textureCube( envMap, queryReflectVec, specularMIPLevel );
 
 			#endif
+
+			envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
 
 		#elif defined( ENVMAP_TYPE_CUBE_UV )
 
@@ -297,9 +273,11 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 
 			#endif
 
+			envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+
 		#elif defined( ENVMAP_TYPE_SPHERE )
 
-			vec3 reflectView = flipNormal * normalize((viewMatrix * vec4( reflectVec, 0.0 )).xyz + vec3(0.0,0.0,1.0));
+			vec3 reflectView = flipNormal * normalize( ( viewMatrix * vec4( reflectVec, 0.0 ) ).xyz + vec3( 0.0,0.0,1.0 ) );
 
 			#ifdef TEXTURE_LOD_EXT
 
@@ -311,9 +289,9 @@ vec3 getAmbientLightIrradiance( const in vec3 ambientLightColor ) {
 
 			#endif
 
-		#endif
+			envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
 
-		envMapColor.rgb = envMapTexelToLinear( envMapColor ).rgb;
+		#endif
 
 		return envMapColor.rgb * envMapIntensity;
 
