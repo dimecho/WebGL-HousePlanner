@@ -26,8 +26,9 @@ rm -rf ../src/extras/ImageUtils.js
 rm -rf ../src/extras/GeometryUtils.js
 rm -rf ../src/loaders/AudioLoader.js
 #rm -rf ../src/Three.Legacy.js
-node ./build.js --include common --include extras --minify --output ../three.js
-rm ../three.js.map
+#node ./build.js --include common --include extras --minify --output ../three.js
+#npm run build
+#npm run build-closure
 
 cd ../../paper/build/
 rm -rf jsdoc-toolkit
@@ -48,9 +49,9 @@ do
 	java -jar yuicompressor.jar --type css "$f" >> ../css/houseplanner.css
 done
 
-cd ../js/
+cd "$(dirname "$0")"/js/
 
-java -jar compiler.jar  --language_in ECMASCRIPT5 --js_output_file=src.js 'src/**.js'
+java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=src.js 'src/**.js'
 java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=library.js 'library/**.js'
 java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=three/three-extra.js 'three/extras/**.js'
 
