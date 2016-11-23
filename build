@@ -1,47 +1,6 @@
 #!/bin/sh
 
-cd "$(dirname "$0")"
-
-if [ ! -f /usr/local/bin/brew ]; then
-    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-fi
-
-if [ ! -d /usr/local/Cellar/node/ ]; then
-    brew install node
-    npm install -g bower
-    npm install argparse
-    npm install uglify-js
-    npm install prepro
-    npm install acorn
-    npm install straps
-    npm install stats.js
-    ./js/paper/build/minify-components.sh
-fi
-
-cd js/three/build/
-rm -rf ../src/audio
-rm -rf ../src/cameras/CubeCamera.js
-rm -rf ../src/cameras/StereoCamera.js
-rm -rf ../src/extras/ImageUtils.js
-rm -rf ../src/extras/GeometryUtils.js
-rm -rf ../src/loaders/AudioLoader.js
-#rm -rf ../src/Three.Legacy.js
-#node ./build.js --include common --include extras --minify --output ../three.js
-#npm run build
-#npm run build-closure
-
-cd ../../paper/build/
-rm -rf jsdoc-toolkit
-#./build.sh
-#./minify.sh
-#rm ../paper.js
-rm ../dist/paper-core.js
-rm ../dist/paper-full.js
-rm ../dist/paper-node.js
-rm ../dist/paper-core.min.js
-mv ../dist/paper-full.min.js ../paper.js
-
-cd ../../../css/
+cd "$(dirname "$0")"/css
 rm houseplanner.css
 for f in $(find ./src/ -name '*.css')
 do
@@ -50,22 +9,10 @@ do
 done
 
 cd "$(dirname "$0")"/js/
-
+rm three/three.extras.js
 java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=src.js 'src/**.js'
-java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=library.js 'library/**.js'
-java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=three/three-extra.js 'three/extras/**.js'
-
-rm houseplanner.jsz
-cat src.js >> houseplanner.js
-cat three/three-extra.js >> houseplanner.js
-cat library.js >> houseplanner.js
-zip houseplanner.jsz houseplanner.js three/three.js paper/paper.js
+java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=three/three.extras.js 'three/extras/**.js'
+rm houseplanner.zip
 rm houseplanner.js
-rm library.js
-rm three/three-extra.js
+cat src.js >> houseplanner.js
 rm src.js
-
-#cd "$(dirname "$0")"
-#java -jar ./js/compiler.jar  --language_in ECMASCRIPT6 --compilation_level ADVANCED_OPTIMIZATIONS --js_output_file=js/h.js 'js/houseplanner.js' 
-
-

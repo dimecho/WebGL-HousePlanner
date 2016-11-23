@@ -39,7 +39,7 @@ http://tympanus.net/Tutorials/ParallaxSlider/
                 
             $images.each(function(){
                 var $img    = $(this);
-                $('<img/>').load(function(){
+                $('<img/>').on("load", function(){
                     ++loaded;
                     if(loaded   == total_elems*2){
                         $pxs_loading.hide();
@@ -188,8 +188,8 @@ http://tympanus.net/Tutorials/ParallaxSlider/
                         });
 
                     }
-                }).error(function(){
-                    alert('here')
+                //}).error(function(){
+                    //alert('here')
                 }).attr('src',$img.attr('src'));
             });        
         });

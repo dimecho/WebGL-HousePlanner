@@ -10,57 +10,26 @@
   <script type="text/javascript" src="js/jszip.js"></script>
   <script type="text/javascript" src="js/preloader.js"></script>
 
+  <script type="text/javascript" src="js/three/three.min.js"></script>
+  <script type="text/javascript" src="js/three/three.modules.js"></script>
+  <script type="text/javascript" src="js/three/three.extras.js"></script>
+  <script type="text/javascript" src="js/paper/paper.min.js"></script>
+  <script type="text/javascript" src="js/houseplanner.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/houseplanner.css" />
+  <link rel="stylesheet" type="text/css" href="font/style.css" />
+
   <script>
+    console.log("HousePlanner v1.0");
     console.log = function(){};
     console.warn = function(){};
     
     var RUNMODE = 'local';
     var VIEWMODE = 'designer';
-    var zip = new JSZip();
     
-    $.ajax("js/houseplanner.jsz",{
-        contentType: "application/zip",
-        beforeSend: function (req) {
-          req.overrideMimeType('text/plain; charset=x-user-defined');
-        },
-        success: function(data){
-          //alert(data);
-          try {
-            //zip.load(binary.read('string'));
-            //$('head').append("<style>" + zip.file("houseplanner.css").asText() + "<\/style>");
-            zip.loadAsync(data).then(function(zip) {
-              zip.file("three/three.js").async("string").then(function (content) {
-                //alert(content);
-                $('head').append("<script>" + content+ "<\/script>");
-
-                zip.file("paper/paper.js").async("string").then(function (content) {
-                  //alert(content);
-                  $('head').append("<script>" + content + "<\/script>");
-                  zip.file("houseplanner.js").async("string").then(function (content) {
-                    //alert(content);
-                    $('head').append("<script>" + content + "<\/script>");
-                  });
-                });
-              });
-              $(document).ready(function() {
-                console.log("HousePlanner v1.0");
-                engine3D.initHousePlanner();
-              });
-            });
-          } catch (exception) {
-            console.log(exception);
-            //alert(exception);
-          }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-          $.getScript( "js/houseplanner.js" )
-              .done(function( script, textStatus ) {
-                engine3D.initHousePlanner();
-              })
-              .fail(function( jqxhr, settings, exception ) {
-                alert('Failed to load script');
-          });
-        }
+    $(document).ready(function()
+    {
+      engine3D.initHousePlanner();
     });
   
     preloader.config({
@@ -87,8 +56,6 @@
     });
     */
   </script>
-  <link rel="stylesheet" type="text/css" href="css/houseplanner.css" />
-  <link rel="stylesheet" type="text/css" href="font/style.css" />
 
   <!--[if gte IE 9]>
     <style type="text/css">
