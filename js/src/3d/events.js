@@ -1,4 +1,5 @@
 var engine3D = window.engine3D || {};
+var isDragging = false;
 
 function onWindowResize() {
 
@@ -23,7 +24,7 @@ function onWindowResize() {
 
 function onCubeMouseMove(event) {
 
-    event.preventDefault();
+    //event.preventDefault();
 
     //scene3DCubeMesh.face.color = new THREE.Color(0xddaa00);
     //scene3DCubeMesh.geometry.colorsNeedUpdate = true;
@@ -66,25 +67,25 @@ function onCubeMouseMove(event) {
 
 function onDocumentDoubleClick(event) {
 
-    event.preventDefault();
+    //event.preventDefault();
 
     if (scene3D.visible && controls3D instanceof THREE.OrbitControls && SelectedObject === null) {
 
         var x = (event.clientX / window.innerWidth) * 2 - 1;
         var y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-        //TODO: zoom out far, reset pivot-point to 0,0,0
+        //console.log('doubleclick 2D ' + x + ":" + y);
 
+        //TODO: zoom out far, reset pivot-point to 0,0,0
         //if (new Date().getTime() - 150 < clickTime) { //Set pivot-point to clicked coordinates
 
-        vector = new THREE.Vector3(x, y, 0.1);
-        //projector.unprojectVector(vector, camera3D);
+        vector = new THREE.Vector3(x, y, 0.5);
         vector.unproject(camera3D);
         var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
-        var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
+        var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children,true);
 
         if (intersects.length > 0) {
-            console.log('doubleclick');
+            //console.log('doubleclick 3D');
 
             clearTimeout(doubleClickTime);
 
@@ -167,10 +168,9 @@ function onDocumentDoubleClick(event) {
     }
 }
 
-
 function on3DLandscapeMouseMove(event) {
 
-    event.preventDefault();
+    //event.preventDefault();
     //event.stopPropagation();
     
     //if (TOOL3DLANDSCAPE == "rotate") {
@@ -225,7 +225,7 @@ function on3DLandscapeMouseMove(event) {
 
 function on3DLandscapeMouseDown(event) {
 
-    event.preventDefault();
+    //event.preventDefault();
     //event.stopPropagation();
     if (event.which == 1) 
         leftButtonDown = true;
@@ -298,6 +298,32 @@ $(document).on('keyup', function(event){
     }
 });
 
+
+function on3DRoofVDividerMouseUp(event) {
+    scene3DInitializeRendererQuadSize();
+}
+
+function on3DRoofSplit0MouseMove(event) {
+
+}
+function on3DRoofSplit1MouseMove(event) {
+
+}
+function on3DRoofSplit2MouseMove(event) {
+
+}
+function on3DRoofSplit3MouseMove(event) {
+
+}
+
+function on3DHouseMouseUp(event) {
+
+    //if(isDragging && SelectedObject !== null)
+    //    on3DObjectMove(scene3DHouseGroundContainer,event);
+
+    on3DMouseUp(event);
+}
+
 function on3DHouseMouseDown(event) {
 
     on3DMouseDown(event);
@@ -320,29 +346,25 @@ function on3DHouseMouseDown(event) {
             //}
         //}
     }
+    
+    //engine3D.enableTransformControls('translate');
 }
 
+function on3DHouseMouseMove(event) {
 
-function on3DRoofVDividerMouseUp(event) {
-    scene3DInitializeRendererQuadSize();
-}
+    //return; //DEBUG
 
-function on3DRoofSplit0MouseMove(event) {
+    if(!isDragging)
+        return;
 
-}
-function on3DRoofSplit1MouseMove(event) {
-
-}
-function on3DRoofSplit2MouseMove(event) {
-
-}
-function on3DRoofSplit3MouseMove(event) {
-
-}
-
-function on3DHouseMouseUp(event) {
-
-    on3DMouseUp(event);
+    //if(TWEEN.getAll().length !== 0) //do not interfere with existing animations (performance)
+    //    return;
+    
+    if(SelectedObject !== null)
+        on3DObjectMove(scene3DHouseGroundContainer,event);
+    //else
+    //    on3DCubeMove();
+    
 }
 
 function on3DFloorMouseDown(event) {
@@ -397,6 +419,9 @@ function on3DCubeMove()
 
 function on3DObjectMove(container,event)
 {
+    //if(SelectedObject.name === "") //Fix: avoid entire scene selection
+    //   return;
+
     var collision = false;
 
     //if(rightButtonDown){
@@ -412,42 +437,28 @@ function on3DObjectMove(container,event)
         var raycaster = new THREE.Raycaster(camera3D.position, vector.sub(camera3D.position).normalize());
         var intersects = raycaster.intersectObjects(container.children,true);
         if (intersects.length > 0) { //No need to check - ground will always be there (faster)
-            //if (!collision){
-                 //controls3D.enabled = false;
+            if (!collision){
+                //controls3D.enabled = false;
+
+                var menu = $('#WebGLSelectMenu');
                 if(leftButtonDown)
                 {
-                    $('#WebGLSelectMenu').tooltipster('hide');
+                    menu.tooltipster('close');
                     //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
                     SelectedObject.position.x = intersects[0].point.x;
                     SelectedObject.position.z = intersects[0].point.z;
                 }else if(rightButtonDown){
-                    $('#WebGLSelectMenu').tooltipster('hide');
+                    menu.tooltipster('close');
                     SelectedObject.rotation.y = intersects[0].point.x;
                 }
-            //}
+            }
         }
     //}
 }
 
-function on3DHouseMouseMove(event) {
-
-    event.preventDefault();
-
-    //if (!leftButtonDown)
-    //   return;
-
-    if(TWEEN.getAll().length !== 0) //do not interfere with existing animations (performance)
-        return;
-
-    if(SelectedObject !== null)
-        on3DObjectMove(scene3DHouseGroundContainer,event);
-    else
-        on3DCubeMove();
-}
-
 function on3DFloorMouseMove(event) {
 
-    event.preventDefault();
+    //event.preventDefault();
 
     //if (!leftButtonDown)
     //    return;
@@ -494,7 +505,7 @@ function on3DFloorMouseMove(event) {
 
 function on3DMouseMove(event) {
 
-    event.preventDefault();
+    //event.preventDefault();
 
     if (!leftButtonDown || !rightButtonDown ||controls3D instanceof THREE.TransformControls || controls3D instanceof THREE.FirstPersonControls) {
         return;
@@ -639,18 +650,18 @@ function on3DMouseMove(event) {
 
 function on3DMouseDown(event) {
 
-    event.preventDefault();
+    //event.preventDefault();
 
     if (event.which === 1) 
         leftButtonDown = true; // Left mouse button was pressed, set flag
 
     if (event.which === 3) 
-        rightButtonDown = true; // Left mouse button was pressed, set flag
+        rightButtonDown = true; // Right mouse button was pressed, set flag
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    //scene3DObjectUnselect();
+    scene3DObjectUnselect();
     /*
     if (SelectedObject != null)
     {
@@ -679,19 +690,19 @@ function on3DMouseDown(event) {
     
     scene3DAnimateRotate = false;
 
-    
     clickTime = setTimeout(function() {
+        isDragging = true;
         if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
             toggleSideMenus(false);
         }
-    }, 1400);
-    
+    }, 500);
 }
-
 
 function on3DMouseUp(event) {
 
-    event.preventDefault();
+    //event.preventDefault();
+
+    isDragging = false;
 
     if (event.which == 1) 
         leftButtonDown = false; // Left mouse button was released, clear flag
@@ -715,13 +726,11 @@ function on3DMouseUp(event) {
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
         //var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},1000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-           var v = scene3DObjectSelectMenuPosition(mouse.x,mouse.y);
-            $('#WebGLSelectMenu').css({ position: 'absolute', left: v.x, top: v.y-50 });
-            $('#WebGLSelectMenu').tooltipster('show');
+            //var v = scene3DObjectSelectMenuPosition(mouse.x,mouse.y);
+            //$('#WebGLSelectMenu').css({ position: 'absolute', left: v.x, top: v.y-50 });
+            //$('#WebGLSelectMenu').tooltipster('show');
         //}).start();
     }else{
-
-
 
     //if (SCENE == '2d') {
 
@@ -820,7 +829,7 @@ function on3DMouseUp(event) {
         clickTime = setTimeout(function() {
             if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0)
                 toggleSideMenus(true);
-        }, 1400);
+        }, 1000);
     }
     //container.style.cursor = 'auto';
 }

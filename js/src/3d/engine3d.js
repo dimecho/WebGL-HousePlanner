@@ -492,7 +492,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
             if(note)
             {
                 material = new THREE.MeshBasicMaterial( { color: 0x000000 } );
-                engine3D.fontLoader.load( 'fonts/helvetiker_regular.typeface.js', function ( font ) {
+                engine3D.fontLoader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
                     geometry = new THREE.TextGeometry(note, {
                         font: font,
                         weight: 'normal',
@@ -558,7 +558,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                 realLifeDimentions[1] = object.boundingBox.max.x * 400;
                 //realLifeDimentions[2]  = child.geometry.boundingBox.max.y * 200;
                 
-                engine3D.fontLoader.load( 'font/helvetiker_regular.typeface.js', function ( font ) {
+                engine3D.fontLoader.load( 'font/helvetiker_regular.typeface.json', function ( font ) {
                     for (var u = 0; u <= 1; u++)
                     {
                         var units = "";
@@ -834,7 +834,7 @@ engine3D.showHouse = function() {
 
     $(renderer.domElement).bind('mousedown', on3DHouseMouseDown);
     $(renderer.domElement).bind('mouseup', on3DHouseMouseUp);
-    $(renderer.domElement).bind('mouseup', on3DHouseMouseMove);
+    $(renderer.domElement).bind('mousemove', on3DHouseMouseMove);
     $(renderer.domElement).bind('dblclick', onDocumentDoubleClick);
 
     if (TOOL3DINTERACTIVE == 'moveXY') {
@@ -1501,9 +1501,12 @@ function scene3DObjectSelect(x, y, camera, object) {
                     scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLWallPaintMenu');
 
                 } else {
+                    //console.log(SelectedObject.name);
                     
-                    if (SelectedObject.name.indexOf("house") != -1) //Avoid selecting house TODO: Dynamic logic
-                        return true;
+                    if (SelectedObject.name.indexOf("house") != -1){ //Avoid selecting house TODO: Dynamic logic
+                        scene3DObjectUnselect();
+                        return false;
+                    }
 
                     //clearTimeout(clickMenuTime);
                     //SelectedObject = intersects[0].object;
@@ -1539,31 +1542,45 @@ function scene3DObjectSelect(x, y, camera, object) {
                             highlighteMesh.remove(highlighteMesh.children[i]); //do not save lines to highlighted mesh
                         }
                     }
+                    
+                    if (SCENE !== 'house')
+                    {
+                        var menu = $('#WebGLSelectMenu');
+                       /*
+                        menu.tooltipster({
+                            plugins: ['test'],
+                            content: '<a href="#item" onclick="" class="lo-icon icon-info" style="color:#606060"></a><a href="#" onclick="" class="lo-icon icon-settings" style="color:#606060"></a>',
+                            interactive: true
+                        });
+                        */
+                        menu.tooltipster( 'content', '<a href="#item" onclick="" class="lo-icon icon-info" style="color:#606060"></a><a href="#" onclick="" class="lo-icon icon-settings" style="color:#606060"></a>');
+                    }
 
-                    $('#WebGLSelectMenu').tooltipster('update', '<a href="#item" onclick="" class="lo-icon icon-info" style="color:#606060"></a><a href="#" onclick="" class="lo-icon icon-settings" style="color:#606060"></a>');
-                    var v = scene3DObjectSelectMenuPosition(mouse.x,mouse.y);
-                    $('#WebGLSelectMenu').css({ position: 'absolute', left: v.x, top: v.y-50, 'z-index': 0});
-
-                    var bbX = 0;
                     //var bbY = 0;
                     if(SelectedObject.boundingBox)
-                        bbX = SelectedObject.boundingBox.max.x;
                         //bbY = SelectedObject.boundingBox.max.y;
-                   
-                    if(intersects[0].distance > 8 && bbX < 4){
+                    
+                    if(intersects[0].distance > 8 && SelectedObject.boundingBox.max.x < 4){
                         camera3DPositionCache = camera3D.position.clone();
                         camera3DPivotCache = controls3D.target.clone();
 
                     	var tween = new TWEEN.Tween(camera3D.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},1000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
-                            $('#WebGLSelectMenu').tooltipster('show');
+
                         	//scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
             			}).start();
 
                         tween = new TWEEN.Tween(controls3D.target).to({x:SelectedObject.position.x, y:SelectedObject.position.y, z:SelectedObject.position.z},1000).easing(TWEEN.Easing.Quadratic.InOut).start();
-                                    
-        			}else{
-                       $('#WebGLSelectMenu').tooltipster('show');
+                        
+        			//}else{
                         //scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+                    }
+
+                    if(menu !== undefined)
+                    {
+                        console.log(SCENE);
+                        var v = scene3DObjectSelectMenuPosition(mouse.x,mouse.y);
+                        menu.css({ position: 'absolute', left: v.x, top: v.y-50, 'z-index': 0});
+                        menu.tooltipster('open');
                     }
 
                     //SelectedObject.add(scene3DAxisHelper);

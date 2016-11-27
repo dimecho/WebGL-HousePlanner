@@ -192,11 +192,12 @@ engine3D.setWeather = function ()
     if (DAY == 'day') {
 
         //scene3D.add(weatherSkyDayMesh);
+
         if(settings.clouds)
         {
             texture = textureLoader.load('images/cloud.png');
-            texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
-            texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
+            //texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
+            //texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
             weatherSkyMaterial.uniforms.map.value = texture;
             weatherSkyCloudsMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
             scene3D.add(weatherSkyCloudsMesh);
@@ -205,8 +206,8 @@ engine3D.setWeather = function ()
         if(settings.rainbow)
         {
             texture = textureLoader.load('images/rainbow.png');
-            texture.minFilter = THREE.LinearFilter;
             var materialRainbow = weatherSkyMaterial.clone();
+            materialRainbow.uniforms = THREE.UniformsUtils.clone(weatherSkyMaterial.uniforms); //fix for three.js 82
             materialRainbow.uniforms.map.value = texture;
 
             geometry = new THREE.Geometry();
@@ -234,7 +235,6 @@ engine3D.setWeather = function ()
         }
     }
 }
-
 
 engine3D.setSky = function(set) {
 

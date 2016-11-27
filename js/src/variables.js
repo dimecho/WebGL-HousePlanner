@@ -184,4 +184,4 @@ var FXAAProcessing = { enabled : true}; // renderMode: 0('framebuffer'), 1('only
 var SSAOProcessing = { enabled : false, renderMode: 0 }; // renderMode: 0('framebuffer'), 1('onlyAO')
 
 engine3D.showCube = false;
-engine3D.fontLoader;
+//engine3D.fontLoader;

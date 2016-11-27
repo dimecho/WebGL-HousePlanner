@@ -28,8 +28,8 @@ $(document).ready(function() {
     var offsetAngle = offsetAngleDegress * Math.PI / 180;
     var circleOffset = $("#WebGLInteractiveMenu").width()/2;
     var tooltips = ["Move Horizontaly", "Info", "Duplicate", "Resize", "Textures", "Rotate", "Remove", "Object Notes"];
-    var actions = ["enableTransformControls('translate')", "", "", "enableTransformControls('scale')", "toggleTextureSelect()", "enableTransformControls('rotate')", "scene3DObjectSelectRemove()", "camera3DNoteAdd()"];
-
+    var actions = ["engine3D.enableTransformControls('translate')", "", "", "engine3D.enableTransformControls('scale')", "toggleTextureSelect()", "engine3D.enableTransformControls('rotate')", "scene3DObjectSelectRemove()", "camera3DNoteAdd()"];
+    
     var $d = $("<div class='rect'></div>").hide().appendTo("body");
     var iconOffset = $(".rect").width()/2;
     $d.remove();
@@ -37,7 +37,7 @@ $(document).ready(function() {
     for(var i=0; i<numberOfIcons; i++)
     {
         var index = i+1;
-      
+        
         $("#WebGLInteractiveMenu").append('<div class="rect tooltip-top" title="' + tooltips[i] + '" id="icn'+ index +'" onclick="' + actions[i] + '"></div>');
        
         var x = Math.cos((offsetAngle * i) - (Math.PI/2));

@@ -9,11 +9,10 @@ find "$ROOT" -name '*.json' | while read f
 do
     if [ "$(basename "$f")" != "index.json" ]
     then
-      DIR="$(dirname "$f")"
-	    cd "$DIR"
-       #Fix Texture Path
-       #============================
-       #cat "$(basename "$f")" | sed -e "s/\"mapDiffuse\": \"/\"mapDiffuse\": \"Textures\\/g" > "$(basename "$f").txt"
+	    cd "$(dirname "$f")"
+      #Fix Texture Path
+      #============================
+      #cat "$(basename "$f")" | sed -e "s/\"mapDiffuse\":\"/\"mapDiffuse\":\"Textures\\/g" > "$(basename "$f").txt"
 
       #Compress JSON (json limit fix)
       #============================

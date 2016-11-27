@@ -11,7 +11,7 @@ rm "io_three.zip"
 
 CONSTANTS_PATH="$BLENDER_PATH/io_three/constants.py"
 
-cat "$CONSTANTS_PATH" | sed -e "s/COPY_TEXTURES: True,/COPY_TEXTURES: False,/g" > "$CONSTANTS_PATH.0"
+cat "$CONSTANTS_PATH" | sed -e "s/EXPORT_TEXTURES: True,/EXPORT_TEXTURES: False,/g" > "$CONSTANTS_PATH.0"
 cat "$CONSTANTS_PATH.0" | sed -e "s/UVS: False,/UVS: True,/g" > "$CONSTANTS_PATH.1"
 cat "$CONSTANTS_PATH.1" | sed -e "s/MATERIALS: False,/MATERIALS: True,/g" > "$CONSTANTS_PATH.0"
 cat "$CONSTANTS_PATH.0" | sed -e "s/FACE_MATERIALS: False,/FACE_MATERIALS: True,/g" > "$CONSTANTS_PATH.1"
