@@ -851,11 +851,10 @@ engine3D.showHouse = function() {
     });
     $('#menuBottom').show();
 
-    toggleRight('menuRight', true);
-    toggleLeft('menuLeft3DHouse', true);
-
+    engineGUI.menuToggleRight('menuRight', true);
+    engineGUI.menuToggleLeft('menuLeft3DHouse', true);
     engineGUI.menuSelect(1, 'menuTopItem', '#ff3700');
-    correctMenuHeight();
+    engineGUI.menuCorrectHeight();
 
     engine3D.setSky(DAY);
     //engine3D.setSky('0000');
@@ -944,11 +943,10 @@ engine3D.showLandscape = function() {
     $(renderer.domElement).bind('mousemove', on3DLandscapeMouseMove);
     //$(renderer.domElement).bind('mouseout', on3DLandscapeMouseUp);
 
+    engineGUI.menuToggleLeft('menuLeft3DLandscape', true);
     engineGUI.menuSelect(0, 'menuLeft3DLandscapeItem', '#ff3700');
-    toggleLeft('menuLeft3DLandscape', true);
-
     engineGUI.menuSelect(2, 'menuTopItem', '#ff3700');
-    correctMenuHeight();
+    engineGUI.menuCorrectHeight();
 
     $('#engine3D').show();
     $('#WebGLCanvas').show();
@@ -1065,12 +1063,11 @@ engine3D.showFloor = function () {
     });
     $('#menuBottom').show();
 
-    toggleRight('menuRight', true);
-    toggleLeft('menuLeft3DFloor', true);
-
+    engineGUI.menuToggleRight('menuRight', true);
+    engineGUI.menuToggleLeft('menuLeft3DFloor', true);
     engineGUI.menuSelect(5, 'menuTopItem', '#ff3700');
     engineGUI.menuSelect(0,'menuLeft3DFloorItem','#ff3700');
-    correctMenuHeight();
+    engineGUI.menuCorrectHeight();
 
     if(scene3DCube)
     {
@@ -1115,7 +1112,7 @@ engine3D.showFloorLevel = function() {
     //scene3DCube.add(scene3DCubeMesh);
 
     engineGUI.menuSelect(3, 'menuTopItem', '#ff3700');
-    correctMenuHeight();
+    engineGUI.menuCorrectHeight();
 
     //$('#HTMLCanvas').hide();
     $('#engine3D').show();
@@ -1157,10 +1154,9 @@ engine3D.showRoofDesign = function() {
     //TODO: show extruded stuff from scene2DFloorContainer[0]
     //scene3DCube.add(scene3DCubeMesh);
 
-    toggleRight('menuRight', true);
-
+    engineGUI.menuToggleRight('menuRight', true);
     engineGUI.menuSelect(4, 'menuTopItem', '#ff3700');
-    correctMenuHeight();
+    engineGUI.menuCorrectHeight();
 
     //$('div.split-pane').splitPane();
     
@@ -1585,7 +1581,7 @@ function scene3DObjectSelect(x, y, camera, object) {
 
                     //SelectedObject.add(scene3DAxisHelper);
                     
-                    toggleSideMenus(false);
+                    engineGUI.toggleSideMenus(false);
                 }
                 return true;
             }
@@ -2653,6 +2649,54 @@ function toggleTextureSelect() {
         }
     }
 }
+
+engine3D.freeMemory = function()
+{
+    if (scene3D instanceof THREE.Scene) 
+    {
+        while (scene3D.children.length > 0)
+        {
+            var obj = scene3D.children[scene3D.children.length - 1];
+            //obj.mesh.geometry.dispose();
+            //obj.mesh.material.map.dispose();
+            //obj.mesh.material.dispose();
+            
+            if (obj.geometry)                                                                               
+                obj.geometry.dispose();                                                                              
+            
+            if (obj.material) {
+                /*                                                                                 
+                    if (obj.material instanceof THREE.MeshFaceMaterial) {                 
+                    $.each(obj.material.materials, function(idx, obj) {                 
+                        obj.dispose();                                                                                   
+                    });                                                                                                
+                } else {
+                */
+                if (obj.material.map)
+                    obj.material.map.dispose();
+
+                obj.material.dispose();                                                                            
+                //}                                                                                          
+            }  
+
+            scene3D.remove(obj);
+        }
+        scene3DObjectUnselect();
+    }
+
+    if(camera3DQuad[0] instanceof THREE.OrthographicCamera)
+    {
+        for(i = 0; i<4; i++)
+        {
+            camera3DQuad[i] = null;
+            rendererQuad[i] = null;
+        }
+    }
+    //skyMesh = new THREE.Object3D();
+    //scene3D.remove(skyMesh);
+    //scene3D = null;
+    //scene3D = new THREE.Scene();
+};
 
 /*
 function scene3DGround(_texture, _grid) {

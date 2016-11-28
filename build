@@ -9,10 +9,7 @@ do
 done
 
 cd "$(dirname "$0")"/js/
-rm three/three.extras.js
-java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=src.js 'src/**.js'
-java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file=three/three.extras.js 'three/extras/**.js'
-rm houseplanner.zip
 rm houseplanner.js
-cat src.js >> houseplanner.js
-rm src.js
+rm three/three.extras.js
+java -jar compiler.jar --language_in ECMASCRIPT5 --js src/library/jquery.js --js `find src/* -type f ! -name *jquery.js ! -name *.DS_Store` --js_output_file houseplanner.js
+java -jar compiler.jar --language_in ECMASCRIPT5 --js_output_file three/three.extras.js 'three/extras/**.js'

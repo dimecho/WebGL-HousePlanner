@@ -19,7 +19,7 @@ function onWindowResize() {
 
     engine3D.initRendererQuadSize();
 
-    correctMenuHeight();
+    engineGUI.menuCorrectHeight();
 }
 
 function onCubeMouseMove(event) {
@@ -693,7 +693,7 @@ function on3DMouseDown(event) {
     clickTime = setTimeout(function() {
         isDragging = true;
         if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
-            toggleSideMenus(false);
+            engineGUI.toggleSideMenus(false);
         }
     }, 500);
 }
@@ -828,7 +828,7 @@ function on3DMouseUp(event) {
 
         clickTime = setTimeout(function() {
             if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0)
-                toggleSideMenus(true);
+                engineGUI.toggleSideMenus(true);
         }, 1000);
     }
     //container.style.cursor = 'auto';

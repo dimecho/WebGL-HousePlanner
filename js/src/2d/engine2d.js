@@ -28,8 +28,8 @@ engine2D.show = function (){
     });
     */
 
-    toggleRight('menuRight', true);
-    toggleLeft('menuLeft2D', true);
+    engineGUI.menuToggleRight('menuRight', true);
+    engineGUI.menuToggleLeft('menuLeft2D', true);
 
     //$('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
@@ -76,7 +76,8 @@ engine2D.show = function (){
     //scene2DdrawRuler();
 
     engineGUI.menuSelect(6, 'menuTopItem', '#ff3700');
-    correctMenuHeight();
+    
+    engineGUI.menuCorrectHeight();
 
     //Auto close right menu
     //document.getElementById('menuRight').setAttribute("class", "hide-right");
@@ -232,4 +233,15 @@ engine2D.collectArrayFromContainer = function(n) {
         }
     }
     return json;
+};
+
+engine2D.freeMemory = function ()
+{
+    var children = paper.project.activeLayer.children;
+
+    for (var i = 0; i < children.length; i++) {
+        children[i].remove();
+    }
+    
+    //canvas2D = null;
 };

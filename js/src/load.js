@@ -146,7 +146,7 @@ $(document).ready(function() {
     $('.cssmenu ul ul li:odd').addClass('odd');
     $('.cssmenu ul ul li:even').addClass('even');
     $('.cssmenu > ul > li > a').click(function(event) {
-        menuItemClick(this);
+        engineGUI.menuItemClick(this);
     });
 
     //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });      
@@ -162,23 +162,6 @@ $(document).ready(function() {
     $('#pxs_container').parallaxSlider();
     //init();
 });
-
-function sceneMapBox() {
-
-    if (typeof mapbox == undefined) 
-    {
-        $.getScript( "js/dynamic/mapbpx.js" )
-              .done(function( script, textStatus ) {
-                L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
-                var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);animateStop()
-              })
-              .fail(function( jqxhr, settings, exception ) {
-                console.log('Failed to load mapbox.js');
-          });
-    //}else{
-        //var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);animateStop();
-    }
-}
 
 engineGUI.open = function(s) {
 

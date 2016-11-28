@@ -5,10 +5,7 @@
   <title>WebGL HousePlanner 3D</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-
-  <script type="text/javascript" src="js/jquery.js"></script>
-  <script type="text/javascript" src="js/jszip.js"></script>
-
+  
   <script src="js/three/three.min.js"></script>
   <script src="js/three/extras/Detector.js"></script>
   <script src="js/three/extras/controls/OrbitControls.js"></script>
@@ -35,6 +32,8 @@
 
   <script src="js/paper/paper.min.js"></script>
 
+  <script src="js/src/library/jquery.js"></script>
+  <script src="js/src/library/jszip.js"></script>
   <script src="js/src/library/jquery.easing.js"></script>
   <script src="js/src/library/wurfl.js"></script>
   <script src="js/src/library/stroll.js"></script>
@@ -47,12 +46,14 @@
   <script src="js/src/library/alertify.js"></script>
   <script src="js/src/library/tween.js"></script>
   <script src="js/src/library/split-pane.js"></script>
+  <script src="js/src/library/colorwheel.js"></script>
+  <script src="js/src/library/parallaxslider.js"></script>
 
   <script src="js/src/variables.js"></script>
-  <script src="js/src/memory.js"></script>
   <script src="js/src/load.js"></script>
   <script src="js/src/gui.js"></script>
-  
+  <script src="js/src/search.js"></script>
+
   <script src="js/src/3d/engine3d.js"></script>
   <script src="js/src/3d/init.js"></script>
   <script src="js/src/3d/events.js"></script>
@@ -71,11 +72,7 @@
   <script src="js/src/2d/window.js"></script>
   <script src="js/src/2d/door.js"></script>
   <script src="js/src/2d/stairs.js"></script>
-  <script src="js/src/menu.js"></script>
-  <script src="js/src/search.js"></script>
-  <script src="js/src/colorwheel.js"></script>
-  <script src="js/src/parallaxslider.js"></script>
-  
+
   <!--
   <script src="js/src.js"></script>
   <script src="js/three/three.js"></script>
@@ -337,7 +334,7 @@
 <div id="menuRight" class="hide-right" style="display:none">
   <ul id="tab-right">
       <li>
-          <img id="arrow-right" onclick="toggleRight('menuRight',false);" src="images/arrowleft.png">
+          <img id="arrow-right" onclick="engineGUI.menuToggleRight('menuRight',false);" src="images/arrowleft.png">
       </li>
   </ul>
 
@@ -387,7 +384,7 @@
 
     <div id="menuRightObjects">
       <div class="cssmenu">
-        <ul><li><a href='#' onclick='showRightCatalogMenu()'><span>&#60; Back to Catalog</span></a></li></ul>
+        <ul><li><a href='#' onclick='engineGUI.showRightCatalogMenu()'><span>&#60; Back to Catalog</span></a></li></ul>
         <ul class="flip scroll"></ul>
       </div>
       <!-- <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div> -->
@@ -404,7 +401,7 @@
       <a href="#start" id="image-circular-src"><img src="images/agent.jpg" alt="" /></a>
     </div>
     <div class="back image-circular">
-      <a href="#map" id="image-circular-src" onclick="sceneMapBox()"><img src="images/map.jpg" alt="" /></a>
+      <a href="#map" id="image-circular-src" onclick="engineGUI.sceneMapBox()"><img src="images/map.jpg" alt="" /></a>
     </div>
   </div>
 </div>
@@ -413,7 +410,7 @@
 <div id="menuLeft3DHouse" class="hide-left" style="display:none;width:240px;" >
     <ul id="tab-left">
         <li>
-            <img id="arrow-left" onclick="toggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
+            <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
         </li>
     </ul>
     <div id="links-left" style="width:180px;height:100px;">
@@ -446,7 +443,7 @@
 <div id="menuLeft3DLandscape" class="hide-left" style="display:none">
   <ul id="tab-left">
     <li>
-      <img id="arrow-left" onclick="toggleLeft('menuLeft3DLandscape',false);" src="images/arrowright.png">
+      <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DLandscape',false);" src="images/arrowright.png">
     </li>
   </ul>
   <div id="links-left" style="width:80px">
@@ -464,7 +461,7 @@
 <div id="menuLeft3DFloor" class="hide-left" style="display:none">
   <ul id="tab-left">
     <li>
-      <img id="arrow-left" onclick="toggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
+      <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
     </li>
   </ul>
   <div id="links-left" style="width:200px;height:120px;">
@@ -492,7 +489,7 @@
 <div id="menuLeft2D" class="hide-left" style="display:none">
   <ul id="tab-left">
     <li>
-      <img id="arrow-left" onclick="toggleLeft('menuLeft2D',false);" src="images/arrowright.png">
+      <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft2D',false);" src="images/arrowright.png">
     </li>
   </ul>
   <div id="links-left" style="width:80px">

@@ -6,14 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
   <meta name="apple-mobile-web-app-capable" content="yes"/>
 
-  <script type="text/javascript" src="../js/jquery.js?v=2.1.4"></script>
-  <script type="text/javascript" src="../js/jszip.js?v=2.4.0"></script>
-
-  <script src="../js/paper/paper.js"></script>
+  <script src="../js/src/library/jquery.js"></script>
+  <script src="../js/src/library/jszip.js"></script>
+  <script src="../js/paper/paper.min.js"></script>
 
   <script src="../js/library/jquery.mousewheel.js"></script>
   <script src="../js/src/variables.js"></script>
-
   <script src="../js/src/2d/engine2d.js"></script>
   <script src="../js/src/2d/init.js"></script>
   <script src="../js/src/2d/zoom.js"></script>
@@ -35,10 +33,12 @@
           req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
         },
         success: function(data){
-          var zip = new JSZip(data);
+          var zip = new JSZip();
           engine2D.new();
-          engine2D.open(zip);
-          engine2D.show();
+          zip.loadAsync(data).then(function(zip) {
+              engine2D.open(zip);
+              engine2D.show();
+          });
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) { 
           alert("Status: " + textStatus); alert("Error: " + errorThrown); 
@@ -53,13 +53,13 @@
     {};
     engine2D.freeMemory = function()
     {};
-    function toggleRight()
+    engineGUI.menuToggleRight = function()
     {}
-    function toggleLeft()
+    engineGUI.menuToggleLeft = function()
     {}
     engineGUI.menuSelect = function()
     {};
-    function correctMenuHeight()
+    engineGUI.menuCorrectHeight = function()
     {}
     engine3D.hide = function()
     {};
