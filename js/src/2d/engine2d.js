@@ -8,8 +8,10 @@ engine2D.show = function (){
     SCENE = '2d';
     animateStop();
     engine3D.freeMemory();
-    engine2D.freeMemory();
+    //engine2D.freeMemory();
     engine3D.hide();
+
+    engine2D.makeGrid();
 
     //engineGUI.initMenu("menuRight2D","FloorPlan/index.json");
 
@@ -40,22 +42,27 @@ engine2D.show = function (){
     });
     $('#menuBottom').show();
 
-    if(scene2DWallGroup[FLOOR].children[0] !== undefined)
-    {
+    //if(scene2DWallGroup[FLOOR].children[0] !== undefined)
+    //{
         //=========================
+        //console.log(scene2DDoorGroup[FLOOR]);
+
+        //engine2D.makeFloor();
+
+        engine2D.clear();
+
+        engine2D.drawFloor(FLOOR);
         
-        engine2D.calculateWallCorners();
+        engine2D.drawWall(FLOOR);
 
-        engine2D.attachObjectsToWalls(scene2DDoorGroup);
+        engine2D.drawDoor(FLOOR);
 
-        engine2D.attachObjectsToWalls(scene2DWindowGroup);
+        engine2D.drawWindow(FLOOR);
 
-        engine2D.makeFloor();
+        engine2D.attachObjectsToWalls(FLOOR,scene2DDoorGroup);
+
+        engine2D.attachObjectsToWalls(FLOOR,scene2DWindowGroup);
         
-        engine2D.drawWall();
-        
-        engine2D.clear(FLOOR,true);
-
         //=========================
 
         /*
@@ -71,7 +78,7 @@ engine2D.show = function (){
             zoom2Dimg.src = 'images/progress-tiles.jpg'; // Load the image
         }
         $('#zoom2DLevel').show();
-    }
+    //}
 
     //scene2DdrawRuler();
 
@@ -88,15 +95,32 @@ engine2D.show = function (){
     //scene2DCalculateWallLength();
 };
 
-engine2D.clear = function (i, b){
+engine2D.showFloor = function(i)
+{
+    console.log("showFloor()");
 
-    for(var w = 0; w < scene2DWallGroup[i].children.length; w++)
+    FLOOR = i;
+};
+
+engine2D.newFloor = function(name)
+{
+
+};
+
+engine2D.clear = function()
+{
+    //Each Floor contains multiple floors, walls, doors and windows
+    
+    for(var i = 0; i < scene2DWallGroup.length; i++)
     {
-        scene2DWallGroup[i].children[w].visible = b;
-    }
-    for(var f = 0; f < scene2DFloorShape[i].children.length; f++)
-    {
-        scene2DFloorShape[i].children[f].visible = b;
+        for (var w = 0; w < scene2DWallGroup[i].children.length; w++) //Walls are not grouped - individual
+        {
+            scene2DWallGroup[i].children[w].visible = false;
+        }
+        scene2DFloorShape[i].visible = false;
+        scene2DLabelGroup[i].visible = false;
+        scene2DDoorGroup[i].visible = false;
+        scene2DWindowGroup[i].visible = false;
     }
 };
 
@@ -133,7 +157,7 @@ engine2D.hide = function() {
     //$('#zoom2DLevel').hide();
 };
 
-engine2D.makeGrid = function (grid, color) {
+engine2D.drawGrid = function (grid, color) {
 
 	for (var x = 0; x <= paper.view.size.width; x += grid)
 	{
@@ -164,6 +188,24 @@ SimplePanAndZoom.prototype.changeZoom = function(oldZoom, delta, centerPoint, of
     return [newZoom, a];
 };
 */
+
+engine2D.makeGrid = function (){
+    //Create Grid
+    //============================
+    canvas2D = new paper.Group();
+    var circle = new paper.Path.Circle(new paper.Point(0, 0), 450);
+    circle.fillColor = '#CCCCCC';
+    circle.opacity = 0.2;
+    circle.position.x = paper.view.center.x + 40;
+    circle.position.y = paper.view.center.y + 80;
+    var rec = new paper.Path.Rectangle(new paper.Point(0, 0), paper.view.viewSize); //TODO: raster image
+    rec.fillColor = '#ffffff';
+    canvas2D.addChild(rec);
+    canvas2D.addChild(circle);
+    engine2D.drawGrid(40,'#6dcff6');
+    engine2D.drawGrid(20,'#E0E0E0');
+    //============================
+}
 
 engine2D.lockObject = function(id) {
 
@@ -239,7 +281,7 @@ engine2D.freeMemory = function ()
 {
     var children = paper.project.activeLayer.children;
 
-    for (var i = 0; i < children.length; i++) {
+    for (var i = 0; i < children.length-1; i++) {
         children[i].remove();
     }
     

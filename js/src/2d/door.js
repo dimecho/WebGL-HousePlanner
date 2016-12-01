@@ -1,6 +1,16 @@
 var engine2D = window.engine2D || {};
 
-engine2D.makeDoor = function(l,p,z,type,open,direction,file) {
+engine2D.drawDoor = function(floor)
+{
+	if(scene2DDoorGroup[floor].children[0] === undefined)
+    	return;
+	//console.log(scene2DDoorGroup[floor]);
+
+    scene2DDoorGroup[floor].visible = true;
+    paper.project.layers.push(scene2DDoorGroup[floor]);
+}
+
+engine2D.makeDoor = function(floor,l,p,z,type,open,direction,file) {
 
     type = "hinge.single"; //DEBUG
     //type = "fold.single"; //DEBUG
@@ -69,7 +79,8 @@ engine2D.makeDoor = function(l,p,z,type,open,direction,file) {
 	}
 
 	group.position = new paper.Point(p.x,p.y); //TODO: Fix this
-	paper.project.layers.push(group);
+
+	//group.visible = false; //draw on demand
 
     return group;
 };

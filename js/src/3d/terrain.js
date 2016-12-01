@@ -293,7 +293,7 @@ engine3D.initTerrainGround = function()
                     var geometry = new THREE.PlaneBufferGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices);
                     
                     var numVertices = geometry.attributes.position.count;
-                    var displacement = new THREE.Float32Attribute(numVertices * 1, 1);
+                    var displacement = new THREE.Float32BufferAttribute(numVertices * 1, 1);
                     geometry.addAttribute( 'displacement', displacement);
 
                     terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);

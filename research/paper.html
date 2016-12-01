@@ -9,6 +9,7 @@
   <script src="../js/src/library/jquery.js"></script>
   <script src="../js/src/library/jszip.js"></script>
   <script src="../js/paper/paper.min.js"></script>
+  <script src="../js/paper/Pattern.js"></script>
 
   <script src="../js/library/jquery.mousewheel.js"></script>
   <script src="../js/src/variables.js"></script>
@@ -22,36 +23,47 @@
   <script src="../js/src/2d/window.js"></script>
   <script src="../js/src/2d/door.js"></script>
 
+  <link rel="stylesheet" type="text/css" href="../font/style.css" />
+  <link rel="stylesheet" type="text/css" href="../css/src/iconhover.css" />
+
   <script type="text/javascript">
     $(document).ready(function() {
 
-      engine2D.initialize();
+        engine2D.initialize();
 
-      $.ajax("../scenes/scene1.zip",{
-        contentType: "application/zip",
-        beforeSend: function (req) {
-          req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
-        },
-        success: function(data){
-          var zip = new JSZip();
-          engine2D.new();
-          zip.loadAsync(data).then(function(zip) {
-              engine2D.open(zip);
-              engine2D.show();
-          });
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown) { 
-          alert("Status: " + textStatus); alert("Error: " + errorThrown); 
-        }
-      });
+        $.ajax("../scenes/scene1.zip",{
+            async: true,
+            contentType: "application/zip",
+            beforeSend: function (req) {
+              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+            },
+            success: function(data){
+              var zip = new JSZip();
+              zip.loadAsync(data).then(function(zip) {
+                  engine2D.open(zip);
+              });
+              setTimeout(function(){ engine2D.show(); }, 2000);
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) { 
+              alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+            }
+        });
     });
     var engine3D = window.engine3D || {};
     var engineGUI = window.engineGUI || {};
+
+    engineGUI.selectFloor = function(next)
+    {
+        var i = FLOOR + next;
+        if (i < FLOOR) {
+            engine2D.showFloor(i);
+        }else{
+          console.log("New Floow");
+        }
+    }
     function animateStop()
     {}
     engine3D.freeMemory = function()
-    {};
-    engine2D.freeMemory = function()
     {};
     engineGUI.menuToggleRight = function()
     {}
@@ -64,22 +76,30 @@
     engine3D.hide = function()
     {};
   </script>
+  <style type="text/css">
+    html,
+    body {
+        margin: 0;
+        overflow: hidden;
+        height: 100%;
+    }
+    /* Scale canvas with resize attribute to full size */
+    canvas[resize] {
+        width: 100%;
+        height: 100%;
+    }
+    </style>
 </head>
 <body>
-<style type="text/css">
-html,
-body {
-    margin: 0;
-    overflow: hidden;
-    height: 100%;
-}
-
-/* Scale canvas with resize attribute to full size */
-canvas[resize] {
-    width: 100%;
-    height: 100%;
-}
-</style>
+ <div id="menuFloorSelector" align="center" style="display:none">
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
+      <a href="#" onclick="engineGUI.selectFloor(-1)" class="hi-icon icon-previous"></a>
+    </div>
+    <div id="menuFloorSelectorText" style="display: inline-block"></div>
+    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
+      <a href="#" onclick="engineGUI.selectFloor(1)" class="hi-icon icon-next"></a>
+    </div>
+  </div>
   <canvas id="engine2D" resize></canvas>
 </body>
 </html>

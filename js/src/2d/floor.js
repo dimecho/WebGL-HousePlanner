@@ -1,90 +1,103 @@
 var engine2D = window.engine2D || {};
 
-engine2D.makeFloor = function () {
+engine2D.drawFloor = function(floor)
+{
+    if(scene2DFloorShape[floor].children[0] === undefined)
+        return;
+    
+    scene2DFloorShape[floor].visible = true;
+    scene2DLabelGroup[floor].visible = true;
+    
+    paper.project.layers.push(scene2DFloorShape[floor]);
+    paper.project.layers.push(scene2DLabelGroup[floor]);
 
-    for(i = 0; i < scene2DWallGroup.length; i++)
-    {
-        if(scene2DWallGroup[i].children[0] !== undefined)
-        {
-    		console.log("2D Floor Generate [" + i + "] " + scene2DWallGroup[i].children.length);
-
-    		var shape = new paper.Path();
-    		shape.closed = true;
-
-    		var path = scene2DWallGroup[i].children[0].children[0].children[0];
-    		var lastPoint = path.segments[0].point;
-    		shape.moveTo(lastPoint);
-
-    		for(a = 0; a < scene2DWallGroup[i].children.length; a++)
-    		{
-    			path = scene2DWallGroup[i].children[a].children[4].children[0];
-    			//path.visible = false;
-    			//console.log("==>" + path.id);
-    			//console.log(path);
-
-    			for(x = 0; x < scene2DWallGroup[i].children.length; x++)
-    			{
-    				var path2 = scene2DWallGroup[i].children[x].children[4].children[0];
-    				
-    				if(path.id != path2.id)
-    				{
-    					if(path.hitTest(path2.segments[0].point))
-    					{
-    						//console.log(lastPoint + "-" + path2.segments[1].point);
-    						shape.quadraticCurveTo(lastPoint, path2.segments[1].point);
-    						lastPoint = path2.segments[1].point;
-    						break;
-    					}
-    					/*
-    					else if(path.hitTest(path2.segments[1].point))
-    					{
-    						//console.log(lastPoint.point + "-" + path2.segments[0].point);
-    						shape.quadraticCurveTo(lastPoint, path2.segments[0].point);
-    						lastPoint = path2.segments[0].point;
-    						break;
-    					}
-    					*/
-    				}
-    			}
-    		}
-
-            var canvas = document.createElement('canvas');
-            canvas.width = shape.bounds.width;
-            canvas.height = shape.bounds.height;
-            var context = canvas.getContext('2d');
-            var img = new Image();
-            img.src = '../objects/FloorPlan/Default/4.png';
-            img.onload = function() {
-                context.fillStyle = context.createPattern(this,"repeat");
-                context.fillRect(0, 0, shape.bounds.width, shape.bounds.height);
-                context.fill();
-            };
-            var raster = new paper.Raster(canvas, new paper.Point(shape.bounds.x,shape.bounds.y));
-            raster.fitBounds(shape.bounds, true);
-            scene2DFloorShape[i] = new paper.Group([shape, raster]);
-            scene2DFloorShape[i].clipped = true;
-
-            scene2DFloorShape[i].on('mousedown', engine2D.drawWall_onMouseDown);
-
-            engine2D.calculateWallMeasureColor(i);
-        }
-    }
+    scene2DFloorShape[floor].on('mousedown', engine2D.drawWall_onMouseDown);
+    
+    engine2D.calculateWallMeasureColor(floor);
 };
 
-engine2D.makeLabel = function (label,size,x,y) {
+engine2D.makeFloor = function(floor)
+{
+    if(scene2DWallGroup[floor].children[0] === undefined)
+        return;
+
+	console.log("2D Floor Generate [" + floor + "] " + scene2DWallGroup[floor].children.length);
+
+	var shape = new paper.Path();
+	shape.closed = true;
+    
+	var path = scene2DWallGroup[floor].children[0].children[0].children[0];
+	var lastPoint = path.segments[0].point;
+	shape.moveTo(lastPoint);
+
+	for(a = 0; a < scene2DWallGroup[floor].children.length; a++)
+	{
+		path = scene2DWallGroup[floor].children[a].children[4].children[0];
+		//path.visible = false;
+		//console.log("==>" + path.id);
+		//console.log(path);
+
+		for(x = 0; x < scene2DWallGroup[floor].children.length; x++)
+		{
+			var path2 = scene2DWallGroup[floor].children[x].children[4].children[0];
+			
+			if(path.id != path2.id)
+			{
+				if(path.hitTest(path2.segments[0].point))
+				{
+					//console.log(lastPoint + "-" + path2.segments[1].point);
+					shape.quadraticCurveTo(lastPoint, path2.segments[1].point);
+					lastPoint = path2.segments[1].point;
+					break;
+				}
+				/*
+				else if(path.hitTest(path2.segments[1].point))
+				{
+					//console.log(lastPoint.point + "-" + path2.segments[0].point);
+					shape.quadraticCurveTo(lastPoint, path2.segments[0].point);
+					lastPoint = path2.segments[0].point;
+					break;
+				}
+				*/
+			}
+		}
+	}
+
+    //Texture the shape
+    var canvas = document.createElement('canvas');
+    canvas.width = shape.bounds.width;
+    canvas.height = shape.bounds.height;
+    var context = canvas.getContext('2d');
+    var img = new Image();
+    img.src = '../objects/FloorPlan/Default/4.png';
+    img.onload = function() {
+        context.fillStyle = context.createPattern(this,"repeat");
+        context.fillRect(0, 0, shape.bounds.width, shape.bounds.height);
+        context.fill();
+    };
+    var raster = new paper.Raster(canvas, new paper.Point(shape.bounds.x,shape.bounds.y));
+    raster.fitBounds(shape.bounds, true);
+    //shape.remove(); //cleanup old
+    //scene2DFloorShape[floor].remove(); //cleanup old
+    scene2DFloorShape[floor].visible = false; //draw on demand
+    scene2DFloorShape[floor] = new paper.Group([shape, raster]);
+    scene2DFloorShape[floor].clipped = true;
+    //scene2DFloorShape[floor].visible = false; //draw on demand
+};
+
+engine2D.makeLabel = function (floor,label,size,x,y) {
 
 	var text = new paper.PointText();
 	text.content = label + '\n' + size;
 	text.justification = 'center';
 	text.fontSize = 28;
 	text.position = new paper.Point(x,y);
-
-	paper.project.layers.push(text);
+    //text.visible = false; //draw on demand
     
     return text;
 };
 
-engine2D.fillFloor = function(shape) {
+engine2D.fillFloor = function(floor,shape) {
     //shape.quickCorner = new Array();
     var count = 1;
     
@@ -95,9 +108,9 @@ engine2D.fillFloor = function(shape) {
 
     var corner = {x:0,y:0};
 
-    for(i=0; i<scene2DWallMesh[FLOOR].length; i++)
+    for(var i=0; i < scene2DWallMesh[floor].length; i++)
     {
-        var obj = scene2DWallMesh[FLOOR][i];
+        var obj = scene2DWallMesh[floor][i];
         //shape.quickCorner.push(obj.id);
         
         //if(obj.edgeB) {

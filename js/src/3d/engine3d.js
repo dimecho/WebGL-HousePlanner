@@ -400,7 +400,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                         });
                         */
                         //console.log(js + " > opacity:" + child.material.opacity);
-
+                        
                         if(child.material.opacity < 1) //glass transparency fix
                         {
                             child.material.transparent = true;
@@ -408,26 +408,31 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                         }else{
                             child.material.transparent = false;
                         }
-
+                        
                         //=============================
                         //Texture Quality Improvement
                         //=============================
+                        /*
                         if(child.material.map !== null){
                             if(child.material.map.image.complete){
                             //while(!child.material.map.image.complete)
                             //    setTimeout(function(){ foo },100);
+                                console.log("...Texture size: " + child.material.map.image.width + ":" + child.material.map.image.height);
                                 var isImagePowerOfTwo = THREE.Math.isPowerOfTwo(child.material.map.image.width) && THREE.Math.isPowerOfTwo(child.material.map.image.height);
                                 if(!isImagePowerOfTwo)
                                 {
+                                    console.log("...Correcting Texture (PowerOfTwo)");
                                     var texture = new THREE.Texture(engine3D.generateClampToEdgeTexture(child.material.map.image));
-                                    if (texture) texture.needsUpdate = true;
-                                    texture.minFilter = THREE.LinearFilter;
+                                    //if (texture) texture.needsUpdate = true;
+                                    //texture.minFilter = THREE.LinearFilter;
                                     child.material.map = texture;
+                                    
                                     //child.material.map.image = engine3D.generateClampToEdgeTexture(child.material.map.image);
                                     //child.material.map.image.needsUpdate = true;
                                 }
                             }
                         }
+                        */
                         //============================
                     }
                     
@@ -484,7 +489,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
             objectContainer.add(object);
 
             /*
-            After automatic translation to BufferedGeometry
+            Add 3D Note
             ===============================================
             */
 			var material;
@@ -515,7 +520,8 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
                 
                 console.log( js + " Add Note: '" + note + "'");
             }
-            
+            //===============================================
+
             if(objectContainer == scene3DFloorFurnitureContainer[FLOOR])
             {
                 material = new THREE.LineBasicMaterial({
@@ -796,7 +802,7 @@ engine3D.open3DModel = function(js, objectContainer, x, y, z, xaxis, yaxis, rati
         console.log("open3DModel Error " + e);
     }
 };
-
+/*
 engine3D.generateClampToEdgeTexture = function(img) {
 
     var canvas = document.createElement('canvas');
@@ -815,7 +821,7 @@ engine3D.generateClampToEdgeTexture = function(img) {
 
     return canvas;
 };
-
+*/
 engine3D.showHouse = function() {
 
     console.log("showHouse()");
@@ -977,9 +983,11 @@ engine3D.showLandscape = function() {
     engine3D.animate();
 };
 
-engine3D.showFloor = function () {
-
+engine3D.showFloor = function(i)
+{
     console.log("showFloor()");
+
+    FLOOR = i;
 
     scene3DAnimateRotate = false;
     engine3D.freeMemory();
@@ -1024,10 +1032,12 @@ engine3D.showFloor = function () {
    
     //scene3D.add(scene3DCutawayPlaneMesh); //DEBUG
 
+    console.log(FLOOR);
+
     scene3D.add(scene3DFloorFurnitureContainer[FLOOR]); //furnishings
     scene3D.add(scene3DFloorShapeContainer[FLOOR]);
     scene3D.add(scene3DFloorGroundContainer);
-
+    
     scene3DFloorShapeContainer[FLOOR].position.y = 0.1; //reset from each floor
 
     if(TOOL3DFLOOR == 'measure')
@@ -1239,33 +1249,6 @@ engine3D.hide = function() {
 
     //scene2DFloorContainer[0].traverse;
 };
-
-function selectFloor(next) {
-
-    var i = FLOOR + next;
-
-    if (scene3DFloorFurnitureContainer[i] instanceof THREE.Object3D) {
-
-        FLOOR = i;
-
-        //TODO: would be awsome to have some kind of flip transition effect
-
-        if (SCENE == 'floor') {
-            engine3D.showFloor();
-
-        } else if (SCENE == '2d') {
-            engine2D.show();
-        }
-    }else{
-    	
-		alertify.confirm("Add New Floor?", function (e) {
-		    if (e) {
-                engine3D.newFloor();
-		    //} else { // user clicked "cancel"
-		    }
-		});
-    }
-}
 
 engine3D.newFloor = function(name)
 {

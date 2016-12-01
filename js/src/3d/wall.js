@@ -2,8 +2,6 @@ var engine3D = window.engine3D || {};
 
 engine3D.makeWalls = function () {
     
-    //return;
-
     //https://www.mixeelabs.com/creator/tutorial:-advanced-geometries/edit
 
     //if(scene2DWallMesh[FLOOR].length == 0)
@@ -11,19 +9,20 @@ engine3D.makeWalls = function () {
 
     for(var i = 0; i < scene2DWallGroup.length; i++)
     {
+        scene3DFloorWallContainer[i] = new THREE.Object3D();
+
         if(scene2DWallGroup[i].children[0] !== undefined)
         {
-            scene3DFloorWallContainer[i]    = new THREE.Object3D();
             //scene3DFloorDoorContainer[FLOOR]    = new THREE.Object3D();
             //scene3DFloorWindowContainer[FLOOR]  = new THREE.Object3D();
 
             console.log("3D Wall Generate [" + i + "] " + scene2DWallGroup[i].children.length);
 
-            for (var a = 0; a < scene2DWallGroup[FLOOR].children.length; a++)
+            for (var a = 0; a < scene2DWallGroup[i].children.length; a++)
             {
-                var wall = scene2DWallGroup[FLOOR].children[a].children[0].children[0];
+                var wall = scene2DWallGroup[i].children[a].children[0].children[0];
 
-                console.log(wall);
+                //console.log(wall);
                 
                 var x1 = (wall.segments[0].point.x/100) * 2 - 1;
                 var y1 = -(wall.segments[0].point.y/100) * 2 + 1;
@@ -83,7 +82,7 @@ engine3D.makeWalls = function () {
                 mesh.rotation.x = -(90 * RADIAN); //extrusion happens in Z direction, we need the wall pointing UP
                 mesh.position.y = 0;
 
-                scene3DFloorWallContainer[FLOOR].add(mesh);
+                scene3DFloorWallContainer[i].add(mesh);
 
                 //http://stackoverflow.com/questions/26272564/how-to-increase-the-thickness-of-the-extrude-geometry-along-x-and-z-axis-three
                 /*

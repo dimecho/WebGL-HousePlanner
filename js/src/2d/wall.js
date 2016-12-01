@@ -1,4 +1,5 @@
 var engine2D = window.engine2D || {};
+//var isDragging = false;
 
 //=========================================
 var drawWall = {
@@ -11,16 +12,25 @@ var drawWall = {
     curHandleSeg: null
 };
 
-var makeWall = {
-    dragging: false
-};
-
-engine2D.drawWall = function()
+engine2D.drawWall = function(floor)
 {
-    var min = drawWall.radius * 2;
-	if (drawWall.tolerance < min) drawWall.tolerance = min;
-		drawWall.handle = drawWall.radius * paper.Numerical.KAPPA;
-	
+    if(scene2DWallGroup[floor].children[0] === undefined)
+        return;
+    //var min = drawWall.radius * 2;
+	//if (drawWall.tolerance < min) drawWall.tolerance = min;
+	//	drawWall.handle = drawWall.radius * paper.Numerical.KAPPA;
+    
+    for(var i = 0; i < scene2DWallGroup[floor].children.length; i++)
+    {
+        scene2DWallGroup[floor].children[i].visible = true;
+    }
+    
+    engine2D.calculateWallCorners(floor);
+
+    paper.project.layers.push(scene2DWallGroup[floor]);
+    paper.project.layers.push(scene2DWallPointGroup[floor]);
+
+    //scene2DWallGroup[floor].on('mousedown', engine2D.drawWall_onMouseDown);
 	canvas2D.on('mousedown', engine2D.drawWall_onMouseDown);
 };
 
@@ -42,7 +52,7 @@ engine2D.drawWall_onMouseDown = function(event)
     drawWall.curHandleSeg = null;
     drawWall.path.on('mouseup', engine2D.drawWall_onMouseUp);
 
-    makeWall.dragging = true;
+    //isDragging = true;
 
     paper.project.layers.push(drawWall.path);
 };
@@ -95,12 +105,12 @@ engine2D.drawWall_onMouseUp = function(event)
     drawWall.path.visible = false;
     drawWall.path.remove();
 
-    makeWall.dragging = false;
+    //isDragging = false;
 };
 
 engine2D.drawWall_onMouseDrag = function(event)
 {
-    event.preventDefault();
+    //event.preventDefault();
 
     var point = event.point;
 
@@ -151,7 +161,7 @@ engine2D.drawWall_onMouseDrag = function(event)
 };
 //=========================================
 
-engine2D.makeWall = function (v1,v2,c,h) {
+engine2D.makeWall = function (floor,v1,v2,c,h) {
 
     /*
     var values = {
@@ -303,7 +313,7 @@ engine2D.makeWall = function (v1,v2,c,h) {
         console.log("Normal " + v1.x + ":" + v1.y + "-" + v2.x + ":" + v2.y);
     }
     */
-    console.log("Normal " + v1.x + ":" + v1.y + "-" + v2.x + ":" + v2.y);
+    console.log("Wall " + v1.x + ":" + v1.y + "-" + v2.x + ":" + v2.y);
     ////////////////////////////////////////////////////////////////////////////////
 
 	var group = new paper.Group();
@@ -523,7 +533,7 @@ engine2D.makeWall = function (v1,v2,c,h) {
 	};
 
 	onPathTouchDrag = function(event) {
-		event.preventDefault();
+		//event.preventDefault();
 		var touch = event.originalEvent.changedTouches[0];
 		onPathDrag({
 			clientX: touch.pageX,
@@ -535,7 +545,9 @@ engine2D.makeWall = function (v1,v2,c,h) {
     //group.name = "wall";
     group.h = h;
     //group.doors = [];
-    group.visible = false;
+    //group.visible = false; //draw on demand
+    
+    //console.log(group);
     
     return group;
 };
@@ -604,7 +616,7 @@ engine2D.wallRelativePoints = function(event,object,segments)
 
 engine2D.edge_onMouseDrag = function(event)
 {
-    event.preventDefault();
+    //event.preventDefault();
 
     //console.log(this.attachments);
     if(this.dragging == false)
@@ -614,7 +626,7 @@ engine2D.edge_onMouseDrag = function(event)
         this.off('mouseleave', engine2D.edge_onMouseLeave);
     }
 
-    makeWall.dragging = true;
+    //isDragging = true;
 
     for (i = 0; i < this.attachments.length; i++) {
 
@@ -735,6 +747,7 @@ engine2D.edge_onMouseDrag = function(event)
     this.position = event.point; //must be last - otherwise will interfere with above logic
 
     engine2D.edgeSmashCorner(this);
+
 };
 
 engine2D.edgeSmashCorner = function(edge)
@@ -817,7 +830,7 @@ engine2D.edge_onMouseUp = function(event)
     for (i = 0; i < this.attachments.length; i++)
     {
         var wall = this.attachments[i];
-        makeWall.dragging = false;
+        //isDragging = false;
         
         var line = wall.parent.parent.children[5];
         var p = this.attachments[i].getLocationAt(this.attachments[i].length/2).point; //calculate quadratic curve center
@@ -839,13 +852,15 @@ engine2D.edge_onMouseUp = function(event)
     this.off('mouseleave', engine2D.edge_onMouseLeave);
     this.off('mousedown', engine2D.edge_onMouseDown);
     this.on('mouseenter', engine2D.edge_onMouseEnter);
+
+    engine2D.makeFloor(FLOOR);
 };
 
 //=========================================
 
 //http://stackoverflow.com/questions/16991895/paperjs-to-draw-line-with-arrow
-paper.Shape.ArrowLine = function (sx, sy, ex, ey, isDouble) {
-
+paper.Shape.ArrowLine = function(sx, sy, ex, ey, isDouble)
+{
     function calcArrow(px0, py0, px, py) {
         var points = [];
         var l = Math.sqrt(Math.pow((px - px0), 2) + Math.pow((py - py0), 2));
@@ -926,8 +941,8 @@ engine2D.calculatePathOffset = function(path, offset, precision, scale)
     return copy;
 };
 
-engine2D.pathOffset = function(path, offset, precision, color){
-
+engine2D.pathOffset = function(path, offset, precision, color)
+{
 	var copy = engine2D.calculatePathOffset(path, offset, precision, 1);
 	var item = new paper.Shape.ArrowLine(copy.segments[0].point.x, copy.segments[0].point.y, copy.segments[1].point.x, copy.segments[1].point.y,true);
 	item.strokeColor = color;
@@ -939,8 +954,8 @@ engine2D.pathOffset = function(path, offset, precision, color){
     return item;
 };
 
-engine2D.calculateWallMeasureWidth = function (edge,line) {
-
+engine2D.calculateWallMeasureWidth = function(edge,line)
+{
     for(i = 0; i < edge.attachments.length; i++) //a little faster than doing hit on scene2DWallGroup[FLOOR]
     {
         for(l = 0; l < 2; l++)
@@ -958,7 +973,8 @@ engine2D.calculateWallMeasureWidth = function (edge,line) {
     }
 };
 
-engine2D.calculateWallMeasureColor = function (i,edge) {
+engine2D.calculateWallMeasureColor = function(i,edge)
+{
     //6 = outside
     //7 = inside
 
@@ -985,16 +1001,16 @@ engine2D.calculateWallMeasureColor = function (i,edge) {
     }
 };
 
-engine2D.addWallCorner = function (wall,point) {
+engine2D.addWallCorner = function(floor,wall,point)
+{
 
     var size = new paper.Path.Circle(point, 60); //fake circle -> centers things in a group
-    //size.fillColor = 'red'; //DEBUG
-
-    var circleOuterMask = new paper.Path.Circle(point, 15);
-    var circleOuterEdge = new paper.Path.Circle(point, 17);
     var circleInner = new paper.Path.Circle(point, 8);
-    var circleOuter = new paper.CompoundPath(circleOuterMask,circleOuterEdge);
-    circleOuter.fillColor = circleInner.fillColor = '#00CC33';
+    var circleOuter = new paper.Path.Circle(point, 17);
+    
+    //circleOuter.fillColor = '#ffffff';
+    circleOuter.strokeColor = circleInner.fillColor = '#00CC33';
+    circleOuter.strokeWidth = 3;
     circleOuter.opacity = circleInner.opacity = 0;
 
     var cornerSmash = new paper.Path(); //new paper.Path.Circle(point, 2);
@@ -1006,14 +1022,14 @@ engine2D.addWallCorner = function (wall,point) {
 
     edge.on('mouseenter', engine2D.edge_onMouseEnter);
 
-    scene2DWallPointGroup[FLOOR].addChild(edge);
+    scene2DWallPointGroup[floor].addChild(edge);
 };
 
-engine2D.calculateWallCorners = function () {
+engine2D.calculateWallCorners = function(floor)
+{
+    console.log("Fix Wall Corner Geometry " + scene2DWallGroup[floor].children.length);
 
-    console.log("Fix Wall Corner Geometry " + scene2DWallGroup[FLOOR].children.length);
-
-	scene2DWallPointGroup[FLOOR] = new paper.Group();
+	scene2DWallPointGroup[floor] = new paper.Group();
 	/*
 	var hitOptions = { 
 		segments: true,
@@ -1028,25 +1044,25 @@ engine2D.calculateWallCorners = function () {
 	var sin = Math.sin(45);
 	var cos = Math.cos(45);
 
-	for (var i = 0; i < scene2DWallGroup[FLOOR].children.length; i++) {
+	for (var i = 0; i < scene2DWallGroup[floor].children.length; i++) {
 
-		var wall = scene2DWallGroup[FLOOR].children[i].children[4].children[0].segments; //inside a Group()
+		var wall = scene2DWallGroup[floor].children[i].children[4].children[0].segments; //inside a Group()
 		//console.log(s);
 
 		for (var h = 0; h < wall.length; h++) {
 
-			var hitEdgeResult = scene2DWallPointGroup[FLOOR].hitTest(wall[h].point);
+			var hitEdgeResult = scene2DWallPointGroup[floor].hitTest(wall[h].point);
 
 			if (!hitEdgeResult) {
 
-                engine2D.addWallCorner(wall,wall[h].point);
+                engine2D.addWallCorner(floor,wall,wall[h].point);
 
 			}else{ //Remove 'gap' and snap the walls together
 
 				//cross-check every other wall
-				for (var x = 0; x < scene2DWallGroup[FLOOR].children.length; x++) {
+				for (var x = 0; x < scene2DWallGroup[floor].children.length; x++) {
 					var edge = hitEdgeResult.item.parent;
-					var path = scene2DWallGroup[FLOOR].children[x].children[4].children[0];
+					var path = scene2DWallGroup[floor].children[x].children[4].children[0];
 					if(path.hitTest(edge.position))
 					{   
 						//if(edge.attachments)
@@ -1068,9 +1084,9 @@ engine2D.calculateWallCorners = function () {
 		//var intersections = path1.getIntersections(path2);
 	}
 
-	for (var i = 0; i < scene2DWallPointGroup[FLOOR].children.length; i++) {
+	for (var i = 0; i < scene2DWallPointGroup[floor].children.length; i++) {
 
-		var edge = scene2DWallPointGroup[FLOOR].children[i];
+		var edge = scene2DWallPointGroup[floor].children[i];
 
 		engine2D.calculateWallEdge(edge);
         engine2D.edgeSmashCorner(edge);
@@ -1082,7 +1098,7 @@ engine2D.calculateWallCorners = function () {
 
 	//console.log(edge);
 
-	paper.project.layers.push(scene2DWallPointGroup[FLOOR]);
+	//paper.project.layers.push(scene2DWallPointGroup[FLOOR]);
 	//scene2DWallPointGroup[FLOOR].bringToFront();
 };
 
@@ -1299,46 +1315,44 @@ engine2D.snapObjectToWall = function(wall,object) {
     //var r = engine2D.wallRelativePoints(event,this.children[2],wall.segments);
 };
 
-engine2D.attachObjectsToWalls = function(group) {
+engine2D.attachObjectsToWalls = function(floor,group) {
 
-    for(i = 0; i < scene2DWallGroup.length; i++)
-    {
-        if(scene2DWallGroup[i].children[0] !== undefined)
-        {
-            console.log("2D Atach Objects to Walls [" + i + "] " + group[i].children.length);
+    if(scene2DWallGroup[floor].children[0] === undefined)
+        return;
 
-            for (var d = 0; d < group[i].children.length; d++) {
+    console.log("2D Attach Objects to Walls [" + floor + "] " + group[floor].children.length);
+    console.log(group[floor].children);
 
-                var path = group[i].children[d]; //inside a Group()
+    for (var d = 0; d < group[floor].children.length; d++) {
 
-                for (var w = 0; w < scene2DWallGroup[i].children.length; w++) {
+        var path = group[floor].children[d]; //inside a Group()
 
-                    var wall = scene2DWallGroup[i].children[w];
+        for (var w = 0; w < scene2DWallGroup[floor].children.length; w++) {
 
-                    var intersections = wall.children[4].children[0].getIntersections(path.children[1]);
-                    if(intersections[0]) {
-                        
-                        var hitWallResult = wall.children[4].children[0].hitTest(intersections[0].point);
-                        if(group === scene2DDoorGroup)
-                        {
-                            hitWallResult.item.doors.push(group[i].children[d]);
-                        }
-                        else if(group === scene2DWindowGroup)
-                        {
-                            hitWallResult.item.windows.push(group[i].children[d]);
-                        }
+            var wall = scene2DWallGroup[floor].children[w];
 
-                        engine2D.snapObjectToWall(hitWallResult.item,path);
-                        
-                        //console.log(intersections[0]);
-                        //console.log(hitWallResult);
-                        //console.log(wall);
-
-                        wall.children[7].visible = false; //pivot point
-
-                        break;
-                    }
+            var intersections = wall.children[4].children[0].getIntersections(path.children[1]);
+            if(intersections[0]) {
+                
+                var hitWallResult = wall.children[4].children[0].hitTest(intersections[0].point);
+                if(group === scene2DDoorGroup)
+                {
+                    hitWallResult.item.doors.push(group[floor].children[d]);
                 }
+                else if(group === scene2DWindowGroup)
+                {
+                    hitWallResult.item.windows.push(group[floor].children[d]);
+                }
+
+                engine2D.snapObjectToWall(hitWallResult.item,path);
+                
+                //console.log(intersections[0]);
+                //console.log(hitWallResult);
+                //console.log(wall);
+
+                wall.children[7].visible = false; //pivot point
+
+                break;
             }
         }
     }

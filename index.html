@@ -447,7 +447,7 @@
       <a href="#" onclick="engine3D.showLandscape()" class="hi-icon icon-terrain tooltip" title="Landscape Editor" id="menuTopItem2"></a>
       <a href="#" onclick="engine3D.showFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
       <a href="#" onclick="engine3D.showRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
-			<a href="#" onclick="engine3D.showFloor()" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
+			<a href="#" onclick="engine3D.showFloor(FLOOR)" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
 			<a href="#" onclick="engine2D.show()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
       <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
 			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
@@ -465,11 +465,11 @@
 
   <div id="menuFloorSelector" align="center" style="display:none">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
-      <a href="#" onclick="selectFloor(-1)" class="hi-icon icon-previous"></a>
+      <a href="#" onclick="engineGUI.selectFloor(-1)" class="hi-icon icon-previous"></a>
     </div>
     <div id="menuFloorSelectorText" style="display: inline-block"></div>
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
-      <a href="#" onclick="selectFloor(1)" class="hi-icon icon-next"></a>
+      <a href="#" onclick="engineGUI.selectFloor(1)" class="hi-icon icon-next"></a>
     </div>
   </div>
   

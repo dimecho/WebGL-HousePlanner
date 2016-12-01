@@ -1,7 +1,170 @@
 var engineGUI = window.engineGUI || {};
 
-engineGUI.initMenu = function(id,item) {
+$(document).ready(function()
+{
+    /*
+     $.ajax("objects/Platform/floorplan1.dxf",{
+            contentType: "application/text",
+            beforeSend: function (req) {
+              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+            },
+            success: function(data){
+                console.log(data);
+                var parser = new DXFParser(data);
+                console.log(parser);
+            },
+            error: function(xhr, textStatus, errorThrown){
+                alertify.alert("DXF (" + js + ") Loading Error");
+            }
+        });
+    */
+  
+    //wireframe = new Wireframe();
+    //wireframe.build(parser);
 
+    /* https://dribbble.com/shots/872582-Circular-Menu */
+    var numberOfIcons = 8;
+    var offsetAngleDegress = 360/numberOfIcons;
+    var offsetAngle = offsetAngleDegress * Math.PI / 180;
+    var circleOffset = $("#WebGLInteractiveMenu").width()/2;
+    var tooltips = ["Move Horizontaly", "Info", "Duplicate", "Resize", "Textures", "Rotate", "Remove", "Object Notes"];
+    var actions = ["engine3D.enableTransformControls('translate')", "", "", "engine3D.enableTransformControls('scale')", "toggleTextureSelect()", "engine3D.enableTransformControls('rotate')", "scene3DObjectSelectRemove()", "camera3DNoteAdd()"];
+    
+    var $d = $("<div class='rect'></div>").hide().appendTo("body");
+    var iconOffset = $(".rect").width()/2;
+    $d.remove();
+
+    for(var i=0; i<numberOfIcons; i++)
+    {
+        var index = i+1;
+        
+        $("#WebGLInteractiveMenu").append('<div class="rect tooltip-top" title="' + tooltips[i] + '" id="icn'+ index +'" onclick="' + actions[i] + '"></div>');
+       
+        var x = Math.cos((offsetAngle * i) - (Math.PI/2));
+        var y = Math.sin((-offsetAngle * i)+ (Math.PI/2));
+        //console.log(offsetAngle *i * 180/Math.PI,x, y);
+
+        var dX = (circleOffset * x) + circleOffset - iconOffset;
+        var dY = (circleOffset * y) + circleOffset - iconOffset;
+
+        //console.log(circleOffset+iconOffset);
+        
+        $("#icn" + index).css({"background-image": 'url("images/hicn' + index + '.png")', "-webkit-animation-delay": "2s", "animation-delay": "2s"});
+        $("#icn" + index).animate({"left":dX,"bottom":dY}, "slow");
+
+        //console.log('url("icn' + index + '.png")');
+    }
+
+    $("#icn1").addClass("active");
+
+    // add click handler to all circles
+    $('.rect').click(function(event)
+    {
+        event.preventDefault();
+        $('.active').removeClass("active");
+        $(this).addClass("active");
+
+        var a = (Number($(this).attr("id").substr(3))-1)*offsetAngleDegress;
+        /* $('#rotateSelector').css({"transform":"rotate(" + a + "deg)", "-webkit-transform":"rotate(" + a + "deg)"}); */
+        /* $('#rotateSelector').css({"transform":"rotate3d(0, 0, 1, " + a + "deg)", "-webkit-transform":"rotate3d(0, 0, 1, " + a + "deg)", "-o-transform":"rotate(" + a + "deg)", "-moz-transform":"rotate3d(0, 0, 1, " + a + "deg)"}); */
+        
+        //console.log(a); 
+    });
+    //=====================================
+
+    $('.tooltip-share-menu').tooltipster({
+        interactive:true,
+        content: $('<a href="#" onclick="" class="hi-icon icon-html tooltip" title="Embed 3D Scene in Your Website" style="color:white"></a><br/><a href="#" class="hi-icon icon-print" style="color:white"></a><br/><a href="#" class="hi-icon icon-email" style="color:white"></a>')
+    });
+
+    $('.tooltip-save-menu').tooltipster({
+                interactive:true,
+          content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="engineGUI.save(false);" class="hi-icon icon-usb" style="color:white"></a>')
+    });
+
+    $('.tooltip-open-menu').tooltipster({
+                interactive:true,
+          content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="fileSelect(\'opendesign\')" class="hi-icon icon-usb" style="color:white"></a>')
+    });
+
+    $('.tooltip-tools-menu').tooltipster({
+                interactive:true,
+          content: $('<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot" style="color:white"></a><br/><a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand" style="color:white"></a>')
+    });
+
+    $('.tooltip').tooltipster({
+        animation: 'fade',
+        delay: 200,
+        theme: 'tooltipster-default',
+        touchDevices: false,
+        trigger: 'hover',
+        position: 'bottom',
+        contentAsHTML: true
+    });
+
+    $('#menu2DTools').tooltipster({
+        theme: 'tooltipster-light',
+        trigger: 'custom',
+        touchDevices: true,
+        //delay: 200,
+        interactive:true,
+        contentAsHTML: true,
+        content: ''
+    });
+
+    $('#WebGLSelectMenu').tooltipster({
+        theme: 'tooltipster-light',
+        trigger: 'custom',
+        touchDevices: true,
+        delay: 0,
+        interactive:true,
+        position: 'top',
+        contentAsHTML: true,
+        content: '',
+    });
+
+    //$('#dragElement').drags();
+
+    $('.tooltip-right').tooltipster({
+        animation: 'fade',
+        delay: 200,
+        theme: 'tooltipster-default',
+        touchDevices: false,
+        trigger: 'hover',
+        position: 'right'
+    });
+    $('.tooltip-top').tooltipster({
+        animation: 'fade',
+        delay: 200,
+        theme: 'tooltipster-default',
+        touchDevices: false,
+        trigger: 'hover',
+        position: 'top',
+        contentAsHTML: true
+    });
+
+    $('.cssmenu ul ul li:odd').addClass('odd');
+    $('.cssmenu ul ul li:even').addClass('even');
+    $('.cssmenu > ul > li > a').click(function(event) {
+        engineGUI.menuItemClick(this);
+    });
+
+    //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });      
+    $("#menuTop p").click(function() {
+        $(this).hide().after('<input type="text" class="editP" value="' + $(this).html() + '" size="10" />');
+        $('.editP').focus();
+    });
+    $('.editP').bind('blur', function() {
+        $(this).hide().prev('#menuTop p').html($(this).val()).show();
+    });
+    stroll.bind('.cssmenu ul');
+
+    $('#pxs_container').parallaxSlider();
+    //init();
+});
+
+engineGUI.initMenu = function(id,item)
+{
     if(RUNMODE == "database")
     {
         item = "php/objects.php?menu=" + item.split('/').shift();
@@ -41,7 +204,8 @@ engineGUI.initMenu = function(id,item) {
     //engineGUI.menuToggleRight('menuRight', true);
 };
 
-engineGUI.menuSelect = function(item, id, color) {
+engineGUI.menuSelect = function(item, id, color)
+{
     if (item === null) //clear all
     {
         for (var i = 0; i <= 6; i++) {
@@ -53,8 +217,8 @@ engineGUI.menuSelect = function(item, id, color) {
     }
 };
 
-engineGUI.showRightObjectMenu = function(path) {
-
+engineGUI.showRightObjectMenu = function(path)
+{
     //console.log("Get from " + path + "/index.json");
   
     if(RUNMODE == "database")
@@ -111,9 +275,10 @@ engineGUI.showRightObjectMenu = function(path) {
     //$('#menuLoading').remove();
 
     //engineGUI.menuCorrectHeight();
-}
+};
 
-engineGUI.showRightCatalogMenu = function() {
+engineGUI.showRightCatalogMenu = function()
+{
 
     if (SCENE == 'house') {
         $('#menuRight3DHouse').show();
@@ -125,10 +290,10 @@ engineGUI.showRightCatalogMenu = function() {
     $("#menuRightObjects .scroll").empty(); //empty ahead of time (faster)
 
     //engineGUI.menuCorrectHeight();
-}
+};
 
-engineGUI.toggleSideMenus = function(open) {
-
+engineGUI.toggleSideMenus = function(open)
+{
     //Auto close right menu
     engineGUI.menuToggleRight('menuRight', open);
 
@@ -144,7 +309,8 @@ engineGUI.toggleSideMenus = function(open) {
     }
 };
 
-engineGUI.menuToggleRight = function(id, open) {
+engineGUI.menuToggleRight = function(id, open)
+{
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-right");
     var box = el.getAttribute("class");
@@ -159,7 +325,8 @@ engineGUI.menuToggleRight = function(id, open) {
     }
 };
 
-engineGUI.menuToggleLeft = function(id, open) {
+engineGUI.menuToggleLeft = function(id, open)
+{
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-left");
     var box = el.getAttribute("class");
@@ -174,13 +341,15 @@ engineGUI.menuToggleLeft = function(id, open) {
     }
 };
 
-engineGUI.menuDelay = function(elem, src, delayTime) {
+engineGUI.menuDelay = function(elem, src, delayTime)
+{
     window.setTimeout(function() {
         elem.setAttribute("src", src);
     }, delayTime);
 };
 
-engineGUI.menuItemClick = function(self) {
+engineGUI.menuItemClick = function(self)
+{
     //console.log("click");
 
     $('.cssmenu > ul > li').removeClass('active');
@@ -212,7 +381,8 @@ engineGUI.menuItemClick = function(self) {
     }
 };
 
-engineGUI.menuGetItem = function(itemData, last) {
+engineGUI.menuGetItem = function(itemData, last)
+{
     //console.log(itemData);
     var li = "<li";
     if (itemData.sub) {
@@ -250,7 +420,8 @@ engineGUI.menuGetItem = function(itemData, last) {
     return item;
 };
 
-function getMenuObjectItem(menu,itemData) {
+function getMenuObjectItem(menu,itemData)
+{
     //console.log(itemData);
 
     var li = "<li style='border:1px solid #aaa;text-align:center'>";
@@ -288,10 +459,10 @@ function getMenuObjectItem(menu,itemData) {
     //console.log(item);
 
     //return item;
-}
+};
 
-engineGUI.menuCorrectHeight = function() {
-
+engineGUI.menuCorrectHeight = function()
+{
     var h = window.innerHeight - 250;
     var a;
     var b;
@@ -325,10 +496,38 @@ engineGUI.menuCorrectHeight = function() {
     } else {
         b.css('height', h);
     }
-}
+};
 
-function selectMeasurement() {
+engineGUI.selectFloor = function(next)
+{
+    var i = FLOOR + next;
 
+    if (i < FLOOR)
+    {
+        //TODO: would be awesome to have some kind of flip transition effect
+
+        if (SCENE == 'floor') {
+            engine3D.showFloor(i);
+        } else if (SCENE == '2d') {
+            engine2D.showFloor(i);
+        }
+    }else{
+
+        alertify.confirm("Add New Floor?", function (e) {
+            if (e) {
+                if (SCENE == 'floor') {
+                    engine3D.newFloor("New Floor");
+                } else if (SCENE == '2d') {
+                    engine2D.newFloor("New Floor");
+                }
+            //} else { // user clicked "cancel"
+            }
+        });
+    }
+};
+
+function selectMeasurement()
+{
     if (REALSIZERATIO == 1.8311874) {
         //$('#menuMeasureText').html("Imperial");
         REALSIZERATIO = 1; //Imperial Ratio TODO: Get the right ratio
@@ -336,7 +535,7 @@ function selectMeasurement() {
         //$('#menuMeasureText').html("Metric");
         REALSIZERATIO = 1.8311874; //Metric Ratio
     }
-}
+};
 
 /*
 function getParents(obj) {
@@ -349,10 +548,11 @@ function getParents(obj) {
             return obj.id;
         }
     }
-}
+};
 */
 
-engineGUI.sceneMapBox = function () {
+engineGUI.sceneMapBox = function()
+{
 
     if (typeof mapbox == undefined) 
     {
@@ -367,7 +567,7 @@ engineGUI.sceneMapBox = function () {
     //}else{
         //var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);animateStop();
     }
-}
+};
 
 engineGUI.makeScreenshot = function()
 {

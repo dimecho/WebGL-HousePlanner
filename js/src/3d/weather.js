@@ -206,8 +206,19 @@ engine3D.setWeather = function ()
         if(settings.rainbow)
         {
             texture = textureLoader.load('images/rainbow.png');
+            /*
+            var uniforms = Object.assign( {},  weatherSkyMaterial.uniforms ); // r.83dev
+            var materialRainbow = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: weatherSkyMaterial.vertexShader,
+                fragmentShader: weatherSkyMaterial.fragmentShader,
+                depthWrite: false,
+                depthTest: false,
+                transparent: true
+            });
+            */
             var materialRainbow = weatherSkyMaterial.clone();
-            materialRainbow.uniforms = THREE.UniformsUtils.clone(weatherSkyMaterial.uniforms); //fix for three.js 82
+            materialRainbow.uniforms = THREE.UniformsUtils.clone(weatherSkyMaterial.uniforms); //r.82dev
             materialRainbow.uniforms.map.value = texture;
 
             geometry = new THREE.Geometry();

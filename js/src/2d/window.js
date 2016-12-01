@@ -1,6 +1,15 @@
 var engine2D = window.engine2D || {};
 
-engine2D.makeWindow = function(l,p,z,open,direction,file) {
+engine2D.drawWindow = function (floor)
+{
+    if(scene2DWindowGroup[floor].children === undefined)
+        return;
+
+    scene2DWindowGroup[floor].visible = true;
+    paper.project.layers.push(scene2DWindowGroup[floor]);
+}
+
+engine2D.makeWindow = function(floor,l,p,z,open,direction,file) {
 
 	var group = new paper.Group();
 	var path = new paper.Path();
@@ -33,8 +42,8 @@ engine2D.makeWindow = function(l,p,z,open,direction,file) {
         A.opacity = 0;
         B.opacity = 0;
     });
-
-	paper.project.layers.push(group);
+    
+    //group.visible = false; //draw on demand
     
     return group;
 };

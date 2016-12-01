@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="../js/src/library/jquery.js"></script>
+    <script src="../js/src/library/FileSaver.js"></script>
+	<script src="base64-binary.js"></script>
+	<script>
+    $(document).ready(function() {
+        var $inputFile = $("#file");
+        $inputFile.on("change", function() {
+
+            var files = $inputFile[0].files;
+            console.log(files[0]);
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var data = this.result;
+                console.log(data);
+                
+                var separator = 'base64,';
+                var index = data.indexOf(separator);
+                if (index != -1) {
+                    //decode the base64 binary into am Uint8Array
+                    var barray = Base64Binary.decode(data.substring(index+separator.length));
+                    console.log(barray);
+                    
+                    var file = new File(barray, files[0].name + ".bin", {type: "application/octet-stream"});
+                    saveAs(file);
+                }
+            }
+            reader.readAsDataURL(files[0]);
+        });
+    });
+	</script>
+</head>
+<body>
+Convert Texture to Uint8Array binary File.<br/><br/>
+<input id="file" type="file" name="file" />
+</body>
+</html>

@@ -295,9 +295,8 @@ engine3D.initHousePlanner = function () {
 
     engine2D.initialize();
    
-    engine3D.new();
-
-    engine2D.new();
+    engine3D.new(0);
+    engine3D.new(1);
 
    	engine3D.enableOrbitControls(camera3D,renderer.domElement);
 
@@ -350,6 +349,8 @@ engine3D.initRenderer = function()
       dpr = window.devicePixelRatio;
     }
 
+    //renderer = new THREE.WebGL2Renderer(); //r.83dev
+    
     renderer = new THREE.WebGLRenderer({
         devicePixelRatio: dpr,
         antialias: false,
@@ -358,6 +359,7 @@ engine3D.initRenderer = function()
         //preserveDrawingBuffer: false
         //autoUpdateObjects: true
     });
+    
     //renderer.autoClear = false; //REQUIRED: for split screen
     
     renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
@@ -753,61 +755,57 @@ engine3D.initCube = function (size) {
     return geometry;
 };
 
-engine3D.new = function (){
-   
-    animateStop();
-    //scene3DFreeMemory();
-    //hideElements();
-    
-    scene3D = new THREE.Scene();
-
-    scene3DRoofContainer = new THREE.Object3D();
-    scene3DHouseContainer = new THREE.Object3D();
-    //_scene3DHouseGroundContainer = new THREE.Geometry(); //THREE.Scene();
-    scene3DHouseGroundContainer = new THREE.Object3D();
-    scene3DHouseFXContainer = new THREE.Object3D();
-    //scene3DFloorGroundContainer = new THREE.Object3D();
-    scene3DLevelGroundContainer = new THREE.Object3D();
-    scene3DLevelWallContainer = new THREE.Object3D();
-    //scene3DPivotPoint = new THREE.Object3D();
-
-    skyMesh = new THREE.Object3D();
-    skyFloorMesh = new THREE.Object3D();
-
-    engine3D.fontLoader = new THREE.FontLoader();
-
-    //This allows for 3 floors -> MAKE THIS DYNAMIC! Array()?
-    //==============================================
-    for(var i=0; i<=2; i++)
+engine3D.new = function(i)
+{
+    if (i === 0)
     {
-        scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
-        //scene3DFloorOtherContainer[i] = new THREE.Object3D();
-        scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
-        scene3DFloorWallContainer[i] = new THREE.Object3D();
-        scene3DFloorShapeContainer[i] = new THREE.Object3D();
-        scene3DCeilingShapeContainer[i] = new THREE.Object3D();
-        scene3DFloorShapeTextures[i] = [];
-        scene3DCeilingShapeTextures[i] = [];
-        scene3DWallInteriorTextures[i] = [];
-        scene3DWallExteriorTextures[i] = [];
+        animateStop();
+        //scene3DFreeMemory();
+        //hideElements();
+        
+        scene3D = new THREE.Scene();
+
+        scene3DRoofContainer = new THREE.Object3D();
+        scene3DHouseContainer = new THREE.Object3D();
+        //_scene3DHouseGroundContainer = new THREE.Geometry(); //THREE.Scene();
+        scene3DHouseGroundContainer = new THREE.Object3D();
+        scene3DHouseFXContainer = new THREE.Object3D();
+        //scene3DFloorGroundContainer = new THREE.Object3D();
+        scene3DLevelGroundContainer = new THREE.Object3D();
+        scene3DLevelWallContainer = new THREE.Object3D();
+        //scene3DPivotPoint = new THREE.Object3D();
+
+        skyMesh = new THREE.Object3D();
+        skyFloorMesh = new THREE.Object3D();
+
+        engine3D.fontLoader = new THREE.FontLoader();
+        /*
+        manager = new THREE.LoadingManager();
+        manager.onProgress = function ( item, loaded, total ) {
+            console.log( item, loaded, total );
+        };
+        */
+        //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
+
+        engine3D.enableOrbitControls(camera3D,renderer.domElement);
+
+        engine3D.initPostprocessing();
     }
-    //==============================================
 
-    /*
-    manager = new THREE.LoadingManager();
-    manager.onProgress = function ( item, loaded, total ) {
-        console.log( item, loaded, total );
-    };
-    */
-    //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
-
-    engine3D.enableOrbitControls(camera3D,renderer.domElement);
-
-    engine3D.initPostprocessing();
+    scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
+    //scene3DFloorOtherContainer[i] = new THREE.Object3D();
+    scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
+    scene3DFloorWallContainer[i] = new THREE.Object3D();
+    scene3DFloorShapeContainer[i] = new THREE.Object3D();
+    scene3DCeilingShapeContainer[i] = new THREE.Object3D();
+    scene3DFloorShapeTextures[i] = [];
+    scene3DCeilingShapeTextures[i] = [];
+    scene3DWallInteriorTextures[i] = [];
+    scene3DWallExteriorTextures[i] = [];
 };
 
-engine3D.open = function(zip) {
-
+engine3D.open = function(zip)
+{
     //zip.folder("Textures").load(data);
     /*
     try{
@@ -838,6 +836,8 @@ engine3D.open = function(zip) {
         $.each(JSON.parse(content), function(index)
         {
             //var objects3DFurniture = JSON.parse(this);
+            engine3D.new(i);
+
             $.each(this, function(index){
                 var note = null;
                 if(this.note !== undefined)
@@ -849,6 +849,7 @@ engine3D.open = function(zip) {
                 if(this.ceiling !== undefined)
                     scene3DCeilingShapeTextures[i].push(this.ceiling);
             });
+
             i++;
         });
     });
