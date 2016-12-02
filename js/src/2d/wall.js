@@ -64,8 +64,6 @@ engine2D.drawWall_onMouseUp = function(event)
     this.off('mouseup', engine2D.drawWall_onMouseUp);
     this.off('mousedrag', engine2D.drawWall_onMouseDrag);
     drawWall.path.off('mouseup', engine2D.drawWall_onMouseUp);
-
-    var hitResult;
     
     for (var s = 0; s < drawWall.path.segments.length; s+=2)
     {
@@ -148,9 +146,9 @@ engine2D.drawWall_onMouseDrag = function(event)
         //var point = curPoint - (normal * drawWall.radius);
         x = drawWall.curPoint.x - (normal.x * drawWall.radius);
         y = drawWall.curPoint.y - (normal.y * drawWall.radius);
-        var point = new paper.Point(x, y);
-
-        var segment = new paper.Segment(point, null, normal * drawWall.handle);
+		
+        var p = new paper.Point(x, y);
+        var segment = new paper.Segment(p, null, normal * drawWall.handle);
         drawWall.path.insert(drawWall.path.segments.length - 1, segment);
         drawWall.curHandleSeg = drawWall.path.lastSegment;
         // clone as we want the unmodified one:
@@ -619,7 +617,7 @@ engine2D.edge_onMouseDrag = function(event)
     //event.preventDefault();
 
     //console.log(this.attachments);
-    if(this.dragging == false)
+    if(this.dragging === false)
     {
         this.dragging = true;
         this.off('mouseenter', engine2D.edge_onMouseEnter);
@@ -935,7 +933,7 @@ engine2D.calculatePathOffset = function(path, offset, precision, scale)
     }
 
     copy.scale(scale);
-    copy.smooth;
+    copy.smooth();
     copy.remove();
 
     return copy;
@@ -1041,9 +1039,10 @@ engine2D.calculateWallCorners = function(floor)
 	};
 	*/
 	
-	var sin = Math.sin(45);
-	var cos = Math.cos(45);
-
+	//var sin = Math.sin(45);
+	//var cos = Math.cos(45);
+	var edge;
+	
 	for (var i = 0; i < scene2DWallGroup[floor].children.length; i++) {
 
 		var wall = scene2DWallGroup[floor].children[i].children[4].children[0].segments; //inside a Group()
@@ -1061,10 +1060,10 @@ engine2D.calculateWallCorners = function(floor)
 
 				//cross-check every other wall
 				for (var x = 0; x < scene2DWallGroup[floor].children.length; x++) {
-					var edge = hitEdgeResult.item.parent;
+					edge = hitEdgeResult.item.parent;
 					var path = scene2DWallGroup[floor].children[x].children[4].children[0];
 					if(path.hitTest(edge.position))
-					{   
+					{
 						//if(edge.attachments)
 							edge.attachments.push(path);
 					}
@@ -1084,10 +1083,9 @@ engine2D.calculateWallCorners = function(floor)
 		//var intersections = path1.getIntersections(path2);
 	}
 
-	for (var i = 0; i < scene2DWallPointGroup[floor].children.length; i++) {
-
-		var edge = scene2DWallPointGroup[floor].children[i];
-
+	for (var i = 0; i < scene2DWallPointGroup[floor].children.length; i++)
+	{
+		edge = scene2DWallPointGroup[floor].children[i];
 		engine2D.calculateWallEdge(edge);
         engine2D.edgeSmashCorner(edge);
     }

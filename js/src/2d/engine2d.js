@@ -4,21 +4,21 @@ var engine2D = window.engine2D || {};
 engine2D.show = function (){
 
     console.log("engine2d.show()");
-
+	
     SCENE = '2d';
     animateStop();
     engine3D.freeMemory();
-    //engine2D.freeMemory();
+    engine2D.freeMemory();
     engine3D.hide();
-
+	
     engine2D.makeGrid();
-
+	
     //engineGUI.initMenu("menuRight2D","FloorPlan/index.json");
-
+	
     //scene3DSetBackground(null);
-
+	
     $('#engine2D').show();
-
+	
     /*
     canvas2D.attach('mousedrag', function(event, delta) {
         var deltaX = (paper.view.center.x/2 - event.point.x/2);
@@ -29,10 +29,10 @@ engine2D.show = function (){
         return event.preventDefault();
     });
     */
-
+	
     engineGUI.menuToggleRight('menuRight', true);
     engineGUI.menuToggleLeft('menuLeft2D', true);
-
+	
     //$('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
 
@@ -41,45 +41,21 @@ engine2D.show = function (){
          $('#menuBottomItem' + item).show();
     });
     $('#menuBottom').show();
-
-    //if(scene2DWallGroup[FLOOR].children[0] !== undefined)
-    //{
-        //=========================
-        //console.log(scene2DDoorGroup[FLOOR]);
-
-        //engine2D.makeFloor();
-
-        engine2D.clear();
-
-        engine2D.drawFloor(FLOOR);
-        
-        engine2D.drawWall(FLOOR);
-
-        engine2D.drawDoor(FLOOR);
-
-        engine2D.drawWindow(FLOOR);
-
-        engine2D.attachObjectsToWalls(FLOOR,scene2DDoorGroup);
-
-        engine2D.attachObjectsToWalls(FLOOR,scene2DWindowGroup);
-        
-        //=========================
-
-        /*
-        https://github.com/rheh/HTML5-canvas-projects/tree/master/progress
-        */
-        var zoom2DCanvas = document.getElementById('zoom2DProgress');
-        if (zoom2DCanvas) // Canvas supported?
-        {
-            zoom2Dimg = new Image(); // Create the image resource
-            zoom2DCTX = zoom2DCanvas.getContext('2d');
-            zoom2DSlider = document.getElementById('zoom2DSlider');
-            zoom2Dimg.onload = drawImage; // Setup the onload event
-            zoom2Dimg.src = 'images/progress-tiles.jpg'; // Load the image
-        }
-        $('#zoom2DLevel').show();
-    //}
-
+	
+	/*
+	https://github.com/rheh/HTML5-canvas-projects/tree/master/progress
+	*/
+	var zoom2DCanvas = document.getElementById('zoom2DProgress');
+	if (zoom2DCanvas) // Canvas supported?
+	{
+		zoom2Dimg = new Image(); // Create the image resource
+		zoom2DCTX = zoom2DCanvas.getContext('2d');
+		zoom2DSlider = document.getElementById('zoom2DSlider');
+		zoom2Dimg.onload = drawImage; // Setup the onload event
+		zoom2Dimg.src = 'images/progress-tiles.jpg'; // Load the image
+	}
+	$('#zoom2DLevel').show();
+  
     //scene2DdrawRuler();
 
     engineGUI.menuSelect(6, 'menuTopItem', '#ff3700');
@@ -93,13 +69,22 @@ engine2D.show = function (){
     //scene2DArrayToLineWalls();
 
     //scene2DCalculateWallLength();
+	
+	engine2D.showFloor(FLOOR);
 };
 
 engine2D.showFloor = function(i)
 {
-    console.log("showFloor()");
-
     FLOOR = i;
+	
+	//engine2D.makeFloor();
+	engine2D.clear();
+	engine2D.drawFloor(FLOOR);
+	engine2D.drawWall(FLOOR);
+	engine2D.drawDoor(FLOOR);
+	engine2D.drawWindow(FLOOR);
+	engine2D.attachObjectsToWalls(FLOOR,scene2DDoorGroup);
+	engine2D.attachObjectsToWalls(FLOOR,scene2DWindowGroup);
 };
 
 engine2D.newFloor = function(name)
@@ -205,7 +190,7 @@ engine2D.makeGrid = function (){
     engine2D.drawGrid(40,'#6dcff6');
     engine2D.drawGrid(20,'#E0E0E0');
     //============================
-}
+};
 
 engine2D.lockObject = function(id) {
 

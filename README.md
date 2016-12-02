@@ -1,11 +1,9 @@
-<p align="center">
-<img src="https://github.com/poofik/webgl-houseplanner/raw/master/objects/Platform/Textures/logo.png" alt="" width="256" height="256" />
-</p>
+<p align="center"><img src="https://github.com/poofik/webgl-houseplanner/raw/master/objects/Platform/Textures/logo.png" alt="" width="256" height="256" /></p>
 
 # WebGL HousePlanner - 3D Home Staging #
 **version 1.0**
 
-Real-estate showcase 3D home properties online - no software installs, any webGL platform.
+Real estate showcase in 3D - no software installs, any webGL platform.
 Advanced geometry project in experimental stage with great concept ideas:
 
 - Small footprint (around 300Kb)
@@ -19,24 +17,28 @@ Advanced geometry project in experimental stage with great concept ideas:
 
 [View Demo](http://houseplanner.iroot.ca/start)
 
-## License
-
-> Licensed under the Microsoft Reciprocal License, (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
->
->    http://opensource.org/licenses/MS-RL
->    
-> Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-## Author Information
-
-WebGL HousePlanner was created by Dima Dykhman.
+## Testing
+Running "index.html" locally (non-webserver) will need to allow your Browser to read files from disk.
+<b>FireFox</b>
+<div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
+    <pre style="margin: 0; line-height: 125%">about:config -> security.fileuri.strict_origin_policy to false</pre>
+</div>
+<b>Chrome</b><br>
+OSX
+<div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
+    <pre style="margin: 0; line-height: 125%">open -a Google\ Chrome --args --disable-web-security --user-data-dir</pre>
+</div>
+Windows
+<div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
+    <pre style="margin: 0; line-height: 125%">chrome.exe --disable-web-security</pre>
+</div>
 
 ![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot.jpg)
 
-![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot2.jpg)
+## Author
+
+Dima Dykhman
+
+## License
+
+<a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license" target="_blank"> <img alt="CC0" border="0" src="http://i.creativecommons.org/l/zero/1.0/88x31.png" title="CC0" /></a>

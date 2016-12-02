@@ -1,6 +1,0 @@
-#!/bin/sh
-
-open /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app
-
-cd "$(dirname "$0")"
-python -m SimpleHTTPServer 8080

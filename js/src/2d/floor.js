@@ -23,23 +23,26 @@ engine2D.makeFloor = function(floor)
 
 	console.log("2D Floor Generate [" + floor + "] " + scene2DWallGroup[floor].children.length);
 
-	var shape = new paper.Path();
-	shape.closed = true;
+    var shape = new paper.Path();
+    shape.closed = true;
+
+    //if(scene2DFloorShape[floor].children[0] !== undefined)
+	//   shape = scene2DFloorShape[floor].children[0];
     
 	var path = scene2DWallGroup[floor].children[0].children[0].children[0];
 	var lastPoint = path.segments[0].point;
 	shape.moveTo(lastPoint);
 
-	for(a = 0; a < scene2DWallGroup[floor].children.length; a++)
+	for(var a = 0; a < scene2DWallGroup[floor].children.length; a++)
 	{
 		path = scene2DWallGroup[floor].children[a].children[4].children[0];
 		//path.visible = false;
 		//console.log("==>" + path.id);
 		//console.log(path);
 
-		for(x = 0; x < scene2DWallGroup[floor].children.length; x++)
+		for(var b = 0; b < scene2DWallGroup[floor].children.length; b++)
 		{
-			var path2 = scene2DWallGroup[floor].children[x].children[4].children[0];
+			var path2 = scene2DWallGroup[floor].children[b].children[4].children[0];
 			
 			if(path.id != path2.id)
 			{
@@ -62,27 +65,32 @@ engine2D.makeFloor = function(floor)
 			}
 		}
 	}
-
+   
+	shape.fillColor = '#D8D8D8';
+    shape.remove(); //clean from view
+    
+	scene2DFloorShape[floor] = new paper.Group([shape]);
+	
     //Texture the shape
     var canvas = document.createElement('canvas');
     canvas.width = shape.bounds.width;
     canvas.height = shape.bounds.height;
     var context = canvas.getContext('2d');
     var img = new Image();
-    img.src = '../objects/FloorPlan/Default/4.png';
+    img.src = 'objects/FloorPlan/Default/4.png';
     img.onload = function() {
         context.fillStyle = context.createPattern(this,"repeat");
         context.fillRect(0, 0, shape.bounds.width, shape.bounds.height);
         context.fill();
+		
+		var raster = new paper.Raster(canvas, new paper.Point(shape.bounds.x,shape.bounds.y));
+		raster.fitBounds(shape.bounds, true);
+		
+		scene2DFloorShape[floor] = new paper.Group([shape, raster]);
+		scene2DFloorShape[floor].clipped = true;
     };
-    var raster = new paper.Raster(canvas, new paper.Point(shape.bounds.x,shape.bounds.y));
-    raster.fitBounds(shape.bounds, true);
-    //shape.remove(); //cleanup old
-    //scene2DFloorShape[floor].remove(); //cleanup old
-    scene2DFloorShape[floor].visible = false; //draw on demand
-    scene2DFloorShape[floor] = new paper.Group([shape, raster]);
-    scene2DFloorShape[floor].clipped = true;
-    //scene2DFloorShape[floor].visible = false; //draw on demand
+	scene2DFloorShape[floor].visible = false; //draw on demand
+    
 };
 
 engine2D.makeLabel = function (floor,label,size,x,y) {

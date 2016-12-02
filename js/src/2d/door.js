@@ -8,7 +8,7 @@ engine2D.drawDoor = function(floor)
 
     scene2DDoorGroup[floor].visible = true;
     paper.project.layers.push(scene2DDoorGroup[floor]);
-}
+};
 
 engine2D.makeDoor = function(floor,l,p,z,type,open,direction,file) {
 
@@ -91,8 +91,8 @@ engine2D.makeFoldSingleDoor = function(group,path,A,B,open,direction) {
 	var p1;
 	var p2;
 	var pv;
-	var x;
-	var y;
+	//var x;
+	//var y;
 	var angle;
 
 	var pivot1 = new paper.Path();
@@ -163,7 +163,7 @@ engine2D.makeFoldSingleDoor = function(group,path,A,B,open,direction) {
 	});
 
 	group.attach('mousedrag', function(event) {
-		if(A.drag == true || B.drag == true)
+		if(A.drag === true || B.drag === true)
 			return;
 		group.position = event.point;
 		A.opacity = 0;
@@ -319,8 +319,7 @@ engine2D.makeHingeSingleDoor = function(group,path,A,B,open,direction) {
 	
 		if(open === "right")
 		{
-
-			if(i == 0) //A
+			if(i === 0) //A
 			{
 				arc = new Path.Arc(event.point, new Point(pivot.segments[0].point.x-(path.length*sin),pivot.segments[0].point.y-(path.length*cos)), new Point(pivot.segments[1].point.x, pivot.segments[1].point.y));
 			
@@ -362,7 +361,7 @@ engine2D.makeHingeSingleDoor = function(group,path,A,B,open,direction) {
 	   }else{
 
 	   }
-	};
+	}
 
 	round1.on('mouseenter', function() {
 		A.opacity = 0;
@@ -406,7 +405,7 @@ engine2D.makeHingeSingleDoor = function(group,path,A,B,open,direction) {
 	});
 
 	group.attach('mousedrag', function(event) {
-		if(A.drag == true || B.drag == true)
+		if(A.drag === true || B.drag === true)
 			return;
 		group.position = event.point;
 		A.opacity = 0;
