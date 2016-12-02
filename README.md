@@ -18,7 +18,7 @@ Advanced geometry project in experimental stage with great concept ideas:
 [View Demo](http://houseplanner.iroot.ca/start)
 
 ## Testing
-Running "index.html" locally (non-webserver) will need to allow your Browser to read files from disk.
+Running "index.html" locally (non-webserver) will need to allow your Browser to read files from disk.<br/>
 <b>FireFox</b>
 <div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
     <pre style="margin: 0; line-height: 125%">about:config -> security.fileuri.strict_origin_policy to false</pre>
@@ -33,7 +33,7 @@ Windows
     <pre style="margin: 0; line-height: 125%">chrome.exe --disable-web-security</pre>
 </div>
 
-![HousePlanner](https://github.com/poofik/webgl-houseplanner/raw/master/screenshot.jpg)
+![HousePlanner](https://raw.githubusercontent.com/poofik/WebGL-HousePlanner/master/screenshot.jpg)
 
 ## Author
 
