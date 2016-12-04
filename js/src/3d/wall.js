@@ -149,4 +149,35 @@ engine3D.makeWalls = function () {
     }
     //scene3D.add(scene3DFloorDoorContainer);
     */
-}
+};
+
+engine3D.generateLevelWalls = function()
+{
+    scene3DLevelWallContainer = new THREE.Object3D();
+
+    //Temporary Sample Data
+    var geometry = new THREE.BoxGeometry(15, 4, 13);
+    var material = new THREE.MeshBasicMaterial({
+        color: 0xE0E0E0,
+    });
+    var mesh = new THREE.Mesh(geometry,material);
+    mesh.position.y = 2;
+    scene3DLevelWallContainer.add(mesh);
+
+
+    geometry = new THREE.BoxGeometry(10, 4, 9);
+    material = new THREE.MeshBasicMaterial({
+        color: 0xB0B0B0,
+    });
+    mesh = new THREE.Mesh(geometry,material);
+    mesh.position.x = 2.5;
+    mesh.position.z = -2;
+    mesh.position.y = 6;
+    scene3DLevelWallContainer.add(mesh);
+
+    scene3D.add(scene3DLevelWallContainer);
+};
+
+function scene3DFloorObjectWallMeasurementAjust() {
+
+};

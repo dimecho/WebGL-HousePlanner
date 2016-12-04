@@ -1,469 +1,476 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8"/>
-  <title>WebGL HousePlanner 3D</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta charset="utf-8"/>
+    <title>WebGL HousePlanner 3D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
 
-  <script type="text/javascript" src="js/three/three.min.js"></script>
-  <script type="text/javascript" src="js/three/three.extras.js"></script>
-  <script type="text/javascript" src="js/paper/paper.min.js"></script>
-  <script type="text/javascript" src="js/houseplanner.js"></script>
-  
-  <link rel="stylesheet" type="text/css" href="css/houseplanner.css" />
-  <link rel="stylesheet" type="text/css" href="font/style.css" />
+    <script src="js/three/three.min.js"></script>
+    <script src="js/three/three.extras.js"></script>
+    <script src="js/paper/paper.min.js"></script>
+    <script src="js/houseplanner.js"></script>
+      
+    <link rel="stylesheet" type="text/css" href="css/houseplanner.css" />
+    <link rel="stylesheet" type="text/css" href="font/style.css" />
 
-  <script>
-    console.log("HousePlanner v1.0");
-    console.log = function(){};
-    console.warn = function(){};
-    
-    var RUNMODE = 'local';
-    var VIEWMODE = 'designer';
-    
-    $(document).ready(function()
-    {
-      engine3D.initHousePlanner();
-    });
-  
-    preloader.config({
-      mode: 'number',
-      show_percentage: true,
-      background: "#000000",
-      text_colour: "#FFFFFF",
-      images: [
-        'panoramas/2056/front.jpg',
-        'panoramas/2056/left.jpg',
-        'panoramas/2056/right.jpg',
-        'panoramas/2056/bottom.jpg',
-        'panoramas/2056/top.jpg',
-        'panoramas/2056/back.jpg',
-        'objects/Landscape/Textures/G36096.jpg',
-        'objects/Landscape/Textures/F56734.jpg'
-      ]
-    });
-    
-    /*
-    $(document).ready(function() {
-      L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
-      initHousePlanner();
-    });
-    */
-  </script>
+    <script>
+        console.log("HousePlanner v1.0");
+        console.log = function(){};
+        console.warn = function(){};
+        
+        var RUNMODE = 'local';
+        var VIEWMODE = 'designer';
+        
+        $(document).ready(function()
+        {
+          //L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
+          engineGUI.initialize();
+        });
+      
+        preloader.config({
+            mode: 'number',
+            show_percentage: true,
+            background: "#000000",
+            text_colour: "#FFFFFF",
+            images: [
+            'panoramas/2056/front.jpg',
+            'panoramas/2056/left.jpg',
+            'panoramas/2056/right.jpg',
+            'panoramas/2056/bottom.jpg',
+            'panoramas/2056/top.jpg',
+            'panoramas/2056/back.jpg',
+            'objects/Landscape/Textures/G36096.jpg',
+            'objects/Landscape/Textures/F56734.jpg'
+            ]
+        });
+    </script>
 
-  <!--[if gte IE 9]>
-    <style type="text/css">
-      .gradient {
-         filter: none;
-      }
-    </style>
-  <![endif]-->
-
+    <!--[if gte IE 9]>
+        <style type="text/css">
+          .gradient {
+             filter: none;
+          }
+        </style>
+    <![endif]-->
 </head>
 
 <body class="preloader">
-
-<!-- Tutorial -->
-<div id="start" class="modalDialog" style="background:rgba(0,0,0,0.4);">
-  <div style="width:550px;height:280px;">
-    <a href="#scene" class="close">X</a>
-    <div>
-        <div style="width:200px;float:left;display:inline-block;">
-          <br/><img src="images/agent.jpg" width="140" haight="180" />
-          <br/>
-          <br/>
-          Agent Name<br/>
-          (111)-111-1111<br/>
-          123 Street Name Rd.
-        </div>
-        <div style="margin-left:200px;">
-          <br/><h2>WebGL Experiment</h2>
-          <br/>3D property listings online.
-          <br/><br/><a href="#Tutorial-1">Start Tutorial.</a>
-          <br/><br/><br/><p><a class="btn" href="#scene">3D Property Listings</a></p>
-        </div>
-    </div>
-  </div>
-</div>
-<div id="Tutorial-1" class="modalDialog" style="background:rgba(0,0,0,0.4);">
-    <div style="position:absolute;left:200px;top:120px;background:rgba(0,0,0,0);"><img src="images/help/pointer-left.png" /></div>
-    <div style="width:400px;height:200px;">
+  <!-- Tutorial -->
+  <div id="start" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+    <div style="width:550px;height:280px;">
       <a href="#scene" class="close">X</a>
-      <br/><h2>Floor Selections</h2>
-      <br/><p>Top view of room floor plans and furniture measurements.</p>
-      <br/><br/><p><a class="btn" href="#Tutorial-2">Next</a></p>
-    </div>
-</div>
-<div id="Tutorial-2" class="modalDialog" style="background:rgba(0,0,0,0.4);">
-    <div style="position:absolute;left:200px;top:-10px;background:rgba(0,0,0,0);"><img src="images/help/pointer-left.png" /></div>
-    <div style="width:400px;height:200px;">
-        <a href="#scene" class="close">X</a>
-        <br/><h2>3D Panoramic Photo View</h2>
-        <br/><p>Get a real-life perspective of peoperty with 3D photo view.</p>
-        <br/><br/><p><a class="btn" href="#Tutorial-3">Next</a></p>
-  </div>
-</div>
-<div id="Tutorial-3" class="modalDialog" style="background:rgba(0,0,0,0.4);">
-    <div style="position:absolute;left:50%;top:-95px;background:rgba(0,0,0,0);"><img src="images/help/pointer-up.png" /></div>
-    <div style="width:400px;height:200px;">
-        <a href="#scene" class="close">X</a>
-        <br/><h2>2D Floor Plans</h2>
-        <br/><p>Design floor plans in vector graphics quick and easy.</p>
-        <br/><br/><p><a class="btn" href="#Tutorial-4">Next</a></p>
-    </div>
-</div>
-<div id="Tutorial-4" class="modalDialog" style="background:rgba(0,0,0,0.4);">
-    <div style="position:absolute;right:75px;top:120px;background:rgba(0,0,0,0);"><img src="images/help/pointer-right.png" /></div>
-    <div style="width:400px;height:200px;">
-        <a href="#scene" class="close">X</a>
-        <br/><h2>3D Objects</h2>
-        <br/><p>Choose from a variety of 3D objects for spatial awareness.</p>
-        <br/><br/><p><a class="btn" href="#scene">Finish</a></p>
-    </div>
-</div>
-<!-- End of Tutorial -->
-
-<div id="map" class="modalDialog" style="background:rgba(0,0,0,0.4);">
-  <div style="width:90%;height:80%;">
-    <a href="#" class="close" onclick="animate()">X</a>
-      <style> #map1 { width:100%; height:100%; } </style>
-      <div id='map1'></div>
-  </div>
-</div>
-
-<div id="item" class="modalDialog" style="background:rgba(0,0,0,0.4);">
-  <div style="width:640px;height:380px;">
-    <a href="#" class="close">X</a>
-    <div>
-        <div style="width:300px;float:left;display:inline-block;">
-          <img src="images/item.png" />
-          <br/>
-          Location<br/>
-        </div>
-        <div style="margin-left:340px;">
-          <br/><h2>Item Name</h2>
-          <br/>Item description
-          <br/><br/><br/><br/><br/>
-          <br/><br/><br/><br/><br/>
-        </div>
+      <div>
+          <div style="width:200px;float:left;display:inline-block;">
+            <br/><img src="images/agent.jpg" width="140" haight="180" />
+            <br/>
+            <br/>
+            Agent Name<br/>
+            (111)-111-1111<br/>
+            123 Street Name Rd.
+          </div>
+          <div style="margin-left:200px;">
+            <br/><h2>WebGL Experiment</h2>
+            <br/>3D property listings online.
+            <br/><br/><a href="#Tutorial-1">Start Tutorial.</a>
+            <br/><br/><br/><p><a class="btn" href="#scene">3D Property Listings</a></p>
+          </div>
+      </div>
     </div>
   </div>
-</div>
+  <div id="Tutorial-1" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+      <div style="position:absolute;left:200px;top:120px;background:rgba(0,0,0,0);"><img src="images/help/pointer-left.png" /></div>
+      <div style="width:400px;height:200px;">
+        <a href="#scene" class="close">X</a>
+        <br/><h2>Floor Selections</h2>
+        <br/><p>Top view of room floor plans and furniture measurements.</p>
+        <br/><br/><p><a class="btn" href="#Tutorial-2">Next</a></p>
+      </div>
+  </div>
+  <div id="Tutorial-2" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+      <div style="position:absolute;left:200px;top:-10px;background:rgba(0,0,0,0);"><img src="images/help/pointer-left.png" /></div>
+      <div style="width:400px;height:200px;">
+          <a href="#scene" class="close">X</a>
+          <br/><h2>3D Panoramic Photo View</h2>
+          <br/><p>Get a real-life perspective of peoperty with 3D photo view.</p>
+          <br/><br/><p><a class="btn" href="#Tutorial-3">Next</a></p>
+    </div>
+  </div>
+  <div id="Tutorial-3" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+      <div style="position:absolute;left:50%;top:-95px;background:rgba(0,0,0,0);"><img src="images/help/pointer-up.png" /></div>
+      <div style="width:400px;height:200px;">
+          <a href="#scene" class="close">X</a>
+          <br/><h2>2D Floor Plans</h2>
+          <br/><p>Design floor plans in vector graphics quick and easy.</p>
+          <br/><br/><p><a class="btn" href="#Tutorial-4">Next</a></p>
+      </div>
+  </div>
+  <div id="Tutorial-4" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+      <div style="position:absolute;right:75px;top:120px;background:rgba(0,0,0,0);"><img src="images/help/pointer-right.png" /></div>
+      <div style="width:400px;height:200px;">
+          <a href="#scene" class="close">X</a>
+          <br/><h2>3D Objects</h2>
+          <br/><p>Choose from a variety of 3D objects for spatial awareness.</p>
+          <br/><br/><p><a class="btn" href="#scene">Finish</a></p>
+      </div>
+  </div>
+  <!-- End of Tutorial -->
 
-<div id="openLogin" class="modalDialog">
-    <div style="width:400px;height:500px;">
+  <!-- Map -->
+  <div id="map" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+    <div style="width:90%;height:80%;">
+      <a href="#" class="close" onclick="animate()">X</a>
+        <style> #map1 { width:100%; height:100%; } </style>
+        <div id='map1'></div>
+    </div>
+  </div>
+  <!-- End of Map -->
+
+  <div id="item" class="modalDialog" style="background:rgba(0,0,0,0.4);">
+    <div style="width:640px;height:380px;">
+      <a href="#" class="close">X</a>
+      <div>
+          <div style="width:300px;float:left;display:inline-block;">
+            <img src="images/item.png" />
+            <br/>Location<br/>
+          </div>
+          <div style="margin-left:340px;">
+            <br/><h2>Item Name</h2>
+            <br/>Item description
+            <br/><br/><br/><br/><br/>
+            <br/><br/><br/><br/><br/>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="list" class="modalDialog">
+    <div style="width:800px;height:600px;">
+      <br/>
+      <div id="menuIndexList"></div>
+    </div>
+  </div>
+
+  <div id="windowWeather" class="modalDialog" style="background: rgba(0,0,0,0)">
+      <div style="width:600px;height:400px;">
+        <a href="#close" class="close">X</a>
+        <br/>
+        <a href="#" onclick="engine3D.selectDayNight()" class="hi-icon icon-day" title="Day/Night"></a>
+        <br/>
+        <a href="#" onclick="engine3D.selectWeather('sunny')" class="hi-icon icon-landscape" title=""></a>
+
+      </div>
+  </div>
+
+  <div id="windowLogin" class="modalDialog">
+      <div style="width:400px;height:500px;">
         <a href="#close" class="close" onclick="document.getElementById('iframe').src = 'about:blank'">X</a>
         <iframe src="" frameborder="0" id="iframe" style="width:100%"></iframe>
-    </div>
-</div>
-
-<div id="scene" class="modalDialog">
-  <div style="width:95%;height:460px;background:#fff;">
-    <a href="#close" class="close">X</a>
-    <div id="pxs_container" class="pxs_container">
-        <div class="pxs_bg">
-            <div class="pxs_bg1"></div>
-            <div class="pxs_bg2"></div>
-            <div class="pxs_bg3"></div>
-        </div>
-        <div class="pxs_loading">Loading scenes...</div>
-        <div class="pxs_slider_wrapper">
-            <ul class="pxs_slider">
-                <li><a href="#" onclick="engineGUI.open(1)"><img src="scenes/1.jpg" alt="" /></a></li>
-                <li><a href="#" onclick="engineGUI.open(2)"><img src="scenes/2.jpg" alt="" /></a></li>
-                <li><a href="#" onclick="engineGUI.open(3)"><img src="scenes/3.jpg" alt="" /></a></li>
-            </ul>
-            
-            <div class="pxs_navigation">
-                <span class="pxs_next"></span>
-                <span class="pxs_prev"></span>
-            </div>
-            
-            <ul class="pxs_thumbnails">
-                <li><img src="scenes/_1.jpg" alt="" /></li>
-                <li><img src="scenes/_2.jpg" alt="" /></li>
-                <li><img src="scenes/_3.jpg" alt="" /></li>
-            </ul>
-        </div>
-    </div>
+      </div>
   </div>
-</div>
 
-<div id="open2DDoorWindowAdjust" class="modalDialog">
-    <div style="width:80%;height:75%;">
+  <div id="scene" class="modalDialog">
+    <div style="width:95%;height:460px;background:#fff;">
       <a href="#close" class="close">X</a>
-      <canvas id="fabricjs2"></canvas>
-    </div>
-</div>
-
-<div id="openPanoramaSelect" class="modalDialog">
-  <div style="width:600px;height:400px">
-    <a href="#close" class="close">X</a>
-    <div>
-      <div class="panoFrame"></div>
-      <div class="panoFrame panoFrameBordered"></div>
-      <div class="panoFrame"></div>
-      <div class="panoFrame"></div>
-    </div>
-    <div>
-      <div class="panoFrame panoFrameBordered"></div>
-      <div class="panoFrame panoFrameBordered"></div>
-      <div class="panoFrame panoFrameBordered"></div>
-      <div class="panoFrame panoFrameBordered"></div>
-    </div>
-    <div>
-      <div class="panoFrame"></div>
-      <div class="panoFrame panoFrameBordered"></div>
-      <div class="panoFrame"></div>
-      <div class="panoFrame"></div>
-    </div>
-  </div>
-</div>
-
-<div id="openAddNewFloor" class="modalDialog">
-    <div id="wrap">
-        <a href="#close" class="close" onclick="engineGUI.addNewFloor()">X</a>
-        <br/><input id="addNewFloor" placeholder="Floor Name" type="text" autocomplete="off"/><br/>
-    </div>
-</div>
-
-<div id="openSaving" class="modalDialog">
-  <div id="savingSpinner" style="width:280px;height:200px">
-    <br/><br/><center>Please Wait - Saving ...</center>
-  </div>
-</div>
-
-<div id="panorama" class="modalDialog">
-	<div style="width:80%;height:90%;margin:2% auto;">
-		<a href="#close" class="close" onclick="disposePanorama('WebGLPanoramaHouse');">X</a>
-    <div id="WebGLPanoramaHouse" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
-	</div>
-</div>
-
-<div id="openExistingDesign" class="modalDialog">
-	<div style="width:600px; height:300px">
-		<a href="#close" class="close">X</a>
-	</div>
-</div>
-
-<div id="openItemList" class="modalDialog">
-  <div style="width:600px;height:300px;background-image:url('images/background.png');background-repeat:repeat;">
-    <a href="#close" class="close">X</a>
-    <div id="generateItemList"></div>
-  </div>
-</div>
-
-<div id="open3DTin" class="modalDialog">
-  <div id="wrap" style="width:90%; height:90%;margin: 2% auto;">
-    <a href="#close" class="close" onclick="document.getElementById('iframe3DTin').src = 'about:blank'">X</a>
-    <iframe src="" frameborder="0" id="iframe3DTin" style="display: block; width:100%; height:100%;"></iframe> 
-  </div>
-</div>
-
-<!-- Slide Right Menu -->
-<div id="menuRight" class="hide-right" style="display:none">
-  <ul id="tab-right">
-      <li>
-          <img id="arrow-right" onclick="engineGUI.menuToggleRight('menuRight',false);" src="images/arrowleft.png">
-      </li>
-  </ul>
-
-  <div id="links-left" style="width:320px;">
-    <div style="display:inline-block;width:100%;vertical-align:top;padding:8px">
-      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
-          <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
-          <!--<a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>-->
-          <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
-          <a href="#openItemList" onclick="engineGUI.generateItemList()" class="hi-icon icon-checklist tooltip-top" title="Item List"></a>
-          <!--
-          <a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
-          <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>
-          -->
-      </div>
-      <img src="images/301.gif" id="loader" />
-      <span onclick="$('#search-box').val('');$('#search_suggestion_holder').hide();$('#search-close').hide();" class="icon-delete" style="font-size:18px" id="search-close"></span>
-      <input id="search-box" placeholder="Search 3D Models" type="text" autocomplete="off" style="border-raius:2px;"/>
-      <ul id="search_suggestion_holder" class="flip scroll"></ul>
-    </div>
-
-    <div id="menuRight3DHouse">
-      <!--<div class="scroll" data-ui="jscroll-default">-->
-        <div class="cssmenu">
-          <ul class="flip scroll"></ul>
-        </div>
-      <!--</div>-->
-    </div>
-
-    <div id="menuRight3DFloor">
-      <div class="cssmenu">
-        <ul class="flip scroll"></ul>
+      <div id="pxs_container" class="pxs_container">
+          <div class="pxs_bg">
+              <div class="pxs_bg1" id="pxs_bg1"></div>
+              <div class="pxs_bg2" id="pxs_bg2"></div>
+              <div class="pxs_bg3" id="pxs_bg3"></div>
+          </div>
+          <!-- <div class="pxs_loading"></div> -->
+          <div class="pxs_slider_wrapper">
+              <ul class="pxs_slider">
+                <!--
+                <li><a href="#" onclick="engineGUI.open(1)"><img src="scenes/4af8b812/1.jpg" alt="" /></a></li>
+                <li><a href="#" onclick="engineGUI.open(2)"><img src="scenes/4af8b812/2.jpg" alt="" /></a></li>
+                <li><a href="#" onclick="engineGUI.open(3)"><img src="scenes/4af8b812/3.jpg" alt="" /></a></li>
+                -->
+              </ul>
+              <div class="pxs_navigation">
+                  <span class="pxs_next"></span>
+                  <span class="pxs_prev"></span>
+              </div>
+              <ul class="pxs_thumbnails">
+                <!--
+                <li><img src="scenes/4af8b812/_1.jpg" alt="" /></li>
+                <li><img src="scenes/4af8b812/_2.jpg" alt="" /></li>
+                <li><img src="scenes/4af8b812/_3.jpg" alt="" /></li>
+                -->
+              </ul>
+          </div>
       </div>
     </div>
-
-    <div id="menuRight3DRoof">
-      <div class="cssmenu">
-        <ul class="flip scroll"></ul>
-      </div>
-    </div>
-                
-    <div id="menuRight2D">
-      <div class="cssmenu">
-        <ul class="flip scroll"></ul>
-      </div>
-    </div>
-
-    <div id="menuRightObjects">
-      <div class="cssmenu">
-        <ul><li><a href='#' onclick='engineGUI.showRightCatalogMenu()'><span>&#60; Back to Catalog</span></a></li></ul>
-        <ul class="flip scroll"></ul>
-      </div>
-      <!-- <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div> -->
-      <!--<div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>-->
-    </div>
-
   </div>
-</div>
-<!-- END Slide Right Menu -->
 
-<div class="flip-container" ontouchstart="this.classList.toggle('hover');">
-  <div class="flipper">
-    <div class="front image-circular">
-      <a href="#start" id="image-circular-src"><img src="images/agent.jpg" alt="" /></a>
-    </div>
-    <div class="back image-circular">
-      <a href="#map" id="image-circular-src" onclick="engineGUI.sceneMapBox()"><img src="images/map.jpg" alt="" /></a>
+  <div id="open2DDoorWindowAdjust" class="modalDialog">
+      <div style="width:80%;height:75%;">
+        <a href="#close" class="close">X</a>
+        <canvas id="fabricjs2"></canvas>
+      </div>
+  </div>
+
+  <div id="openPanoramaSelect" class="modalDialog">
+    <div style="width:600px;height:400px">
+      <a href="#close" class="close">X</a>
+      <div>
+        <div class="panoFrame"></div>
+        <div class="panoFrame panoFrameBordered"></div>
+        <div class="panoFrame"></div>
+        <div class="panoFrame"></div>
+      </div>
+      <div>
+        <div class="panoFrame panoFrameBordered"></div>
+        <div class="panoFrame panoFrameBordered"></div>
+        <div class="panoFrame panoFrameBordered"></div>
+        <div class="panoFrame panoFrameBordered"></div>
+      </div>
+      <div>
+        <div class="panoFrame"></div>
+        <div class="panoFrame panoFrameBordered"></div>
+        <div class="panoFrame"></div>
+        <div class="panoFrame"></div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Slide Left Menu -->
-<div id="menuLeft3DHouse" class="hide-left" style="display:none;width:240px;" >
+  <div id="openAddNewFloor" class="modalDialog">
+      <div id="wrap">
+          <a href="#close" class="close" onclick="engineGUI.addNewFloor()">X</a>
+          <br/><input id="addNewFloor" placeholder="Floor Name" type="text" autocomplete="off"/><br/>
+      </div>
+  </div>
+
+  <div id="openSaving" class="modalDialog">
+    <div id="savingSpinner" style="width:280px;height:200px">
+      <br/><br/><center>Please Wait - Saving ...</center>
+    </div>
+  </div>
+
+  <div id="panorama" class="modalDialog">
+  	<div style="width:80%;height:90%;margin:2% auto;">
+  		<a href="#close" class="close" onclick="engine3D.disposePanorama('#WebGLPanoramaHouse');">X</a>
+      <div id="WebGLPanoramaHouse" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
+  	</div>
+  </div>
+
+  <div id="openExistingDesign" class="modalDialog">
+  	<div style="width:600px; height:300px">
+  		<a href="#close" class="close">X</a>
+  	</div>
+  </div>
+
+  <div id="openItemList" class="modalDialog">
+    <div style="width:600px;height:300px;background-image:url('images/background.png');background-repeat:repeat;">
+      <a href="#close" class="close">X</a>
+      <div id="generateItemList"></div>
+    </div>
+  </div>
+
+  <div id="open3DTin" class="modalDialog">
+    <div id="wrap" style="width:90%; height:90%;margin: 2% auto;">
+      <a href="#close" class="close" onclick="document.getElementById('iframe3DTin').src = 'about:blank'">X</a>
+      <iframe src="" frameborder="0" id="iframe3DTin" style="display: block; width:100%; height:100%;"></iframe> 
+    </div>
+  </div>
+
+  <!-- Slide Right Menu -->
+  <div id="menuRight" class="hide-right" style="display:none">
+      <ul id="tab-right">
+          <li>
+              <img id="arrow-right" onclick="engineGUI.menuToggleRight('menuRight',false);" src="images/arrowleft.png">
+          </li>
+      </ul>
+
+      <div id="links-left" style="width:320px;">
+          <div style="display:inline-block;width:100%;vertical-align:top;padding:8px">
+              <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
+                  <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
+                  <!--<a href="#open3DTin" onclick="document.getElementById('iframe3DTin').src = 'http://www.3dtin.com'" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object"></a>-->
+                  <a href="http://www.tinkercad.com" class="hi-icon icon-cube tooltip-top" title="Create Your 3D Object" target="_blank"></a>
+                  <a href="#openItemList" onclick="engineGUI.generateItemList()" class="hi-icon icon-checklist tooltip-top" title="Item List"></a>
+                  <!--<a href="#" class="hi-icon icon-catalog tooltip-top" title="Catalog"></a>
+                  <a href="#" class="hi-icon icon-shopping tooltip-top" title="Item List"></a>-->
+              </div>
+              <img src="images/301.gif" id="loader" />
+              <span onclick="$('#search-box').val('');$('#search_suggestion_holder').hide();$('#search-close').hide();" class="icon-delete" style="font-size:18px" id="search-close"></span>
+              <input id="search-box" placeholder="Search 3D Models" type="text" autocomplete="off" style="border-raius:2px;"/>
+              <ul id="search_suggestion_holder" class="flip scroll"></ul>
+          </div>
+
+          <div id="menuRight3DHouse">
+              <!--<div class="scroll" data-ui="jscroll-default">-->
+              <div class="cssmenu">
+                <ul class="flip scroll"></ul>
+              </div>
+              <!--</div>-->
+          </div>
+
+          <div id="menuRight3DFloor">
+            <div class="cssmenu">
+              <ul class="flip scroll"></ul>
+            </div>
+          </div>
+
+          <div id="menuRight3DRoof">
+            <div class="cssmenu">
+              <ul class="flip scroll"></ul>
+            </div>
+          </div>
+                      
+          <div id="menuRight2D">
+              <div class="cssmenu">
+                  <ul class="flip scroll"></ul>
+              </div>
+          </div>
+
+          <div id="menuRightObjects">
+              <div class="cssmenu">
+                  <ul><li><a href='#' onclick='engineGUI.showRightCatalogMenu()'><span>&#60; Back to Catalog</span></a></li></ul>
+                  <ul class="flip scroll"></ul>
+              </div>
+              <!-- <div id="dragElement" style="background-image:url('images/object.png');z-index:999"></div> -->
+              <!--<div class="next"><a href="php/objects.php?item=Exterior/Plants&menu=1&page=2"></a></div>-->
+          </div>
+      </div>
+  </div>
+  <!-- END Slide Right Menu -->
+
+  <div id="menuAgent" class="flip-container" ontouchstart="this.classList.toggle('hover');">
+    <div class="flipper">
+      <div class="front image-circular">
+        <a href="#start" id="image-circular-src"><img src="images/agent.jpg" alt="" /></a>
+      </div>
+      <div class="back image-circular">
+        <a href="#map" id="image-circular-src" onclick="engineGUI.sceneMapBox()"><img src="images/map.jpg" alt="" /></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide Left Menu -->
+  <div id="menuLeft3DHouse" class="hide-left" style="width:240px;" >
+      <ul id="tab-left">
+          <li>
+              <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
+          </li>
+      </ul>
+      <div id="links-left" style="width:180px;height:100px;">
+            <a href="#panorama" onclick="engine3D.initPanorama('#WebGLPanoramaHouse','3427',0.78,0.85)">
+              <img class="tooltip-top" title="MLS#: 123456" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;"/>
+            </a>
+      </div>
+      <div id="links-left" class='cssmenu' style="width:180px;margin-top:20px">
+          <ul id="menuLeft3DHouseFloorList" class="flip">
+              <li class='active'><a href='#openAddNewFloor'><span class="icon-add" style="font-size:18px;padding-right:5px"></span><span>Add New Floor</span></a></li>
+              <li><a href='#' onclick="camera3DFloorFlyIn(0)"><span>Basement</span></a></li>
+              <li class='has-sub'><a href='#'><span>Floor 1</span></a>
+                <ul>
+                   <li><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Living Room</span></a></li>
+                   <li><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Kitchen</span></a></li>
+                   <li class='last'><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Garage</span></a></li>
+                </ul>
+              </li>
+              <li class='has-sub'><a href='#'><span>Floor 2</span></a>
+                <ul>
+                   <li><a href='#' onclick="camera3DFloorFlyIn(2)"><span>Bedroom 1</span></a></li>
+                   <li class='last'><a href='#' onclick="camera3DFloorFlyIn(2)"><span>Bedroom 2</span></a></li>
+                </ul>
+              </li>
+          </ul>
+      </div>
+  </div>
+
+  <div id="menuLeft3DLandscape" class="hide-left">
+      <ul id="tab-left">
+          <li>
+              <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DLandscape',false);" src="images/arrowright.png">
+          </li>
+      </ul>
+      <div id="links-left" style="width:80px">
+          <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
+              <a href="#openPanoramaSelect" onclick="" class="hi-icon icon-panorama tooltip" title="Panorama Image"></a>
+              <a href="#" onclick="engineGUI.menuSelect(0,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='rotate'" class="hi-icon icon-rotate2 tooltip" id="menuLeft3DLandscapeItem0" title="Rotate"></a>
+              <a href="#" onclick="engineGUI.menuSelect(1,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='angle'" class="hi-icon icon-angle tooltip" id="menuLeft3DLandscapeItem1" title="Angle"></a>
+              <a href="#" onclick="engineGUI.menuSelect(2,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='hill';landscape.select('hill');" class="hi-icon icon-hill tooltip" id="menuLeft3DLandscapeItem2" title="Create Hill" ></a>
+              <a href="#" onclick="engineGUI.menuSelect(3,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='valley';landscape.select('valley');" class="hi-icon icon-valley tooltip" id="menuLeft3DLandscapeItem3" title="Create Valley"></a>
+              <a href="#" onclick="" class="hi-icon icon-shovel tooltip" id="menuLeft3DLandscapeItem4" title="Reset Ground"></a>
+          </div>
+      </div>
+  </div>
+
+  <div id="menuLeft3DFloor" class="hide-left">
     <ul id="tab-left">
-        <li>
-            <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
-        </li>
+      <li>
+        <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
+      </li>
     </ul>
-    <div id="links-left" style="width:180px;height:100px;">
-          <a href="#panorama" onclick="engine3D.initPanorama('WebGLPanoramaHouse','3427',0.78,0.85)">
-            <img class="tooltip-top" title="MLS#: 123456" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;"/>
-          </a>
+    <div id="links-left" style="width:200px;height:120px;">
+      <a href="#" onclick="">
+        <img src="panoramas/3428/back.jpg" alt="" style="height:100px"/>
+      </a>
     </div>
-    <div id="links-left" class='cssmenu' style="width:180px;margin-top:20px">
-        <ul id="menuLeft3DHouseFloorList" class="flip">
-            <li class='active'><a href='#openAddNewFloor'><span class="icon-add" style="font-size:18px;padding-right:5px"></span><span>Add New Floor</span></a></li>
-            <li><a href='#' onclick="camera3DFloorFlyIn(0)"><span>Basement</span></a></li>
-            <li class='has-sub'><a href='#'><span>Floor 1</span></a>
-              <ul>
-                 <li><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Living Room</span></a></li>
-                 <li><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Kitchen</span></a></li>
-                 <li class='last'><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Garage</span></a></li>
-              </ul>
-            </li>
-            <li class='has-sub'><a href='#'><span>Floor 2</span></a>
-              <ul>
-                 <li><a href='#' onclick="camera3DFloorFlyIn(2)"><span>Bedroom 1</span></a></li>
-                 <li class='last'><a href='#' onclick="camera3DFloorFlyIn(2)"><span>Bedroom 2</span></a></li>
-              </ul>
-            </li>
-        </ul>
+    <div id="links-left" style="width:200px;height:120px;">
+      <a href="#" onclick="">
+        <img src="images/placeholder.jpg" alt="" style="height:100px"/>
+      </a>
     </div>
-</div>
+    <div id="links-left" style="width:200px;height:120px;">
+      <a href="#" onclick="">
+        <img src="images/placeholder.jpg" alt="" style="height:100px"/>
+      </a>
+    </div>
+    <div id="links-left" style="width:200px;height:120px;">
+      <a href="#" onclick=""><img src="images/placeholder.jpg" alt="" style="height:100px"/></a>
+    </div>
+  </div>
 
-
-<div id="menuLeft3DLandscape" class="hide-left" style="display:none">
-  <ul id="tab-left">
-    <li>
-      <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DLandscape',false);" src="images/arrowright.png">
-    </li>
-  </ul>
-  <div id="links-left" style="width:80px">
-      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
-        <a href="#openPanoramaSelect" onclick="" class="hi-icon icon-panorama tooltip" title="Panorama Image"></a>
-        <a href="#" onclick="engineGUI.menuSelect(0,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='rotate'" class="hi-icon icon-rotate2 tooltip" id="menuLeft3DLandscapeItem0" title="Rotate"></a>
-        <a href="#" onclick="engineGUI.menuSelect(1,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='angle'" class="hi-icon icon-angle tooltip" id="menuLeft3DLandscapeItem1" title="Angle"></a>
-        <a href="#" onclick="engineGUI.menuSelect(2,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='hill';landscape.select('hill');" class="hi-icon icon-hill tooltip" id="menuLeft3DLandscapeItem2" title="Create Hill" ></a>
-        <a href="#" onclick="engineGUI.menuSelect(3,'menuLeft3DLandscapeItem','#ff3700');TOOL3DLANDSCAPE='valley';landscape.select('valley');" class="hi-icon icon-valley tooltip" id="menuLeft3DLandscapeItem3" title="Create Valley"></a>
-        <a href="#" onclick="" class="hi-icon icon-shovel tooltip" id="menuLeft3DLandscapeItem4" title="Reset Ground"></a>
+  <div id="menuLeft2D" class="hide-left">
+      <ul id="tab-left">
+          <li>
+              <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft2D',false);" src="images/arrowright.png">
+          </li>
+      </ul>
+      <div id="links-left" style="width:80px">
+          <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
+              <a href="#" onclick="fileSelect('2dautocad')" class="hi-icon icon-dxf tooltip" id="menuLeft2DItem0" title="Upload AutoCAD DXF"></a>
+              <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-jpg tooltip" id="menuLeft2DItem1" title="Upload Draft Plan (pdf, jpg, png)"></a>
+              <a href="#" onclick="engineGUI.menuSelect(2,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=true;TOOL2D='freestyle'" class="hi-icon icon-draw tooltip" id="menuLeft2DItem2" title="Freestyle Sketch" ></a>
+              <a href="#" onclick="engineGUI.menuSelect(3,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=false;TOOL2D='vector'" class="hi-icon icon-vector tooltip" id="menuLeft2DItem3" title="Vector Corrections"></a>
+                <a href="#" onclick="engineGUI.menuSelect(4,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=false;TOOL2D='line'" class="hi-icon icon-vector-line tooltip" id="menuLeft2DItem4" title="Draw Line"></a>
+              <a href="#" onclick="engineGUI.menuSelect(5,'menuLeft2DItem','#ff3700');TOOL2D='square'" class="hi-icon icon-vector-square tooltip" id="menuLeft2DItem5" title="Draw Square"></a>
+              <!--
+              <a href="#" onclick="engineGUI.menuSelect(6,'menuLeft2DItem','#ff3700');TOOL2D='circle'" class="hi-icon icon-vector-circle tooltip" id="menuLeft2DItem6" title="Draw Circle"></a>
+              <a href="#" onclick="engineGUI.menuSelect(7,'menuLeft2DItem','#ff3700');TOOL2D='triangle'" class="hi-icon icon-vector-triangle tooltip" id="menuLeft2DItem7" title="Draw Triangle"></a>
+              -->
+          </div>
       </div>
   </div>
-</div>
-
-<div id="menuLeft3DFloor" class="hide-left" style="display:none">
-  <ul id="tab-left">
-    <li>
-      <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
-    </li>
-  </ul>
-  <div id="links-left" style="width:200px;height:120px;">
-    <a href="#" onclick="">
-      <img src="panoramas/3428/back.jpg" alt="" style="height:100px"/>
-    </a>
-  </div>
-  <div id="links-left" style="width:200px;height:120px;">
-    <a href="#" onclick="">
-      <img src="images/placeholder.jpg" alt="" style="height:100px"/>
-    </a>
-  </div>
-  <div id="links-left" style="width:200px;height:120px;">
-    <a href="#" onclick="">
-      <img src="images/placeholder.jpg" alt="" style="height:100px"/>
-    </a>
-  </div>
-  <div id="links-left" style="width:200px;height:120px;">
-    <a href="#" onclick="">
-      <img src="images/placeholder.jpg" alt="" style="height:100px"/>
-    </a>
-  </div>
-</div>
-
-<div id="menuLeft2D" class="hide-left" style="display:none">
-  <ul id="tab-left">
-    <li>
-      <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft2D',false);" src="images/arrowright.png">
-    </li>
-  </ul>
-  <div id="links-left" style="width:80px">
-      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
-        <a href="#" onclick="fileSelect('2dautocad')" class="hi-icon icon-dxf tooltip" id="menuLeft2DItem0" title="Upload AutoCAD DXF"></a>
-        <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-jpg tooltip" id="menuLeft2DItem1" title="Upload Draft Plan (pdf, jpg, png)"></a>
-        <a href="#" onclick="engineGUI.menuSelect(2,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=true;TOOL2D='freestyle'" class="hi-icon icon-draw tooltip" id="menuLeft2DItem2" title="Freestyle Sketch" ></a>
-        <a href="#" onclick="engineGUI.menuSelect(3,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=false;TOOL2D='vector'" class="hi-icon icon-vector tooltip" id="menuLeft2DItem3" title="Vector Corrections"></a>
-          <a href="#" onclick="engineGUI.menuSelect(4,'menuLeft2DItem','#ff3700');scene2D.isDrawingMode=false;TOOL2D='line'" class="hi-icon icon-vector-line tooltip" id="menuLeft2DItem4" title="Draw Line"></a>
-        <a href="#" onclick="engineGUI.menuSelect(5,'menuLeft2DItem','#ff3700');TOOL2D='square'" class="hi-icon icon-vector-square tooltip" id="menuLeft2DItem5" title="Draw Square"></a>
-        <!--
-        <a href="#" onclick="engineGUI.menuSelect(6,'menuLeft2DItem','#ff3700');TOOL2D='circle'" class="hi-icon icon-vector-circle tooltip" id="menuLeft2DItem6" title="Draw Circle"></a>
-        <a href="#" onclick="engineGUI.menuSelect(7,'menuLeft2DItem','#ff3700');TOOL2D='triangle'" class="hi-icon icon-vector-triangle tooltip" id="menuLeft2DItem7" title="Draw Triangle"></a>
-        -->
-      </div>
-  </div>
-</div>
-<!-- END Slide Right Menu -->
+  <!-- END Slide Right Menu -->
 
 	<!-- Thumbnail class="ui-widget-content" -->
-	<div id="menuTop">
+	<div id="menuTop" class="menuTop">
 		<div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
 			<a href="#" onclick="engine3D.showHouse()" class="hi-icon icon-house tooltip" title="Home Exterior" id="menuTopItem1"></a>
-      <a href="#" onclick="engine3D.showLandscape()" class="hi-icon icon-terrain tooltip" title="Landscape Editor" id="menuTopItem2"></a>
-      <a href="#" onclick="engine3D.showFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
-      <a href="#" onclick="engine3D.showRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
-			<a href="#" onclick="engine3D.showFloor(FLOOR)" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
-			<a href="#" onclick="engine2D.show()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
-      <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
-			<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
-			<a href="#" class="hi-icon icon-open tooltip-open-menu" title="Open" id="menuTopItem8"></a>
-      <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
-      <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
-			<a href="#" class="hi-icon icon-share tooltip-share-menu" title="Share" id="menuTopItem12"></a>
-			<!--
-      <a href="#" onclick="engineGUI.makeScreenshot()" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
-			<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>-->
-			<a href="#openLogin" onclick="document.getElementById('iframe').src = '/profile/login'" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
-      <a href="#" class="hi-icon icon-settings tooltip-tools-menu" title="Tools" id="menuTopItem16"></a>
-		</div>
+          <a href="#" onclick="engine3D.showLandscape()" class="hi-icon icon-terrain tooltip" title="Landscape Editor" id="menuTopItem2"></a>
+          <a href="#" onclick="engine3D.showFloorLevel()" class="hi-icon icon-floors tooltip" title="Floor Arrangements" id="menuTopItem3"></a>
+          <a href="#" onclick="engine3D.showRoofDesign()" class="hi-icon icon-roof tooltip" title="Roof Design" id="menuTopItem4"></a>
+        	<a href="#" onclick="engine3D.showFloor(FLOOR)" class="hi-icon icon-armchair tooltip" title="Floor Furnishings" id="menuTopItem5"></a>
+        	<a href="#" onclick="engine2D.show()" class="hi-icon icon-draftplan tooltip" title="Floor Plans" id="menuTopItem6"></a>
+          <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
+        	<a href="#" onclick="sceneNew()" class="hi-icon icon-new tooltip" title="New" id="menuTopItem7"></a>
+        	<a href="#" class="hi-icon icon-open tooltip-open-menu" title="Open" id="menuTopItem8"></a>
+          <a href="#" class="hi-icon icon-save tooltip-save-menu" title="Save" id="menuTopItem9"></a>
+          <div style="display: inline-block;width:1px;height:28px;background:black;"></div>
+          <!--
+        	<a href="#" class="hi-icon icon-share tooltip-share-menu" title="Share" id="menuTopItem12"></a>
+          <a href="#" onclick="engineGUI.makeScreenshot()" class="hi-icon icon-screenshot tooltip" title="Screenshot" id="menuTopItem13"></a>
+        	<a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand tooltip" title="Full Screen" id="menuTopItem14"></a>
+        	<a href="#windowLogin" onclick="document.getElementById('iframe').src = '/profile/login'" class="hi-icon icon-login tooltip" title="Login" id="menuTopItem15"></a>
+          -->
+          <a href="#" class="hi-icon icon-settings tooltip-tools-menu" title="Tools" id="menuTopItem16"></a>
+        </div>
 	</div>
 
-  <div id="menuFloorSelector" align="center" style="display:none">
+  <div id="menuFloorSelector" align="center">
     <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="display: inline-block">
       <a href="#" onclick="engineGUI.selectFloor(-1)" class="hi-icon icon-previous"></a>
     </div>
@@ -472,139 +479,156 @@
       <a href="#" onclick="engineGUI.selectFloor(1)" class="hi-icon icon-next"></a>
     </div>
   </div>
-  
-  <div id="menuBottom">
-    <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
-      <a href="#" onclick="engineGUI.exportPDF()" class="hi-icon icon-print tooltip" title="Print PDF" id="menuBottomItem1"></a>
-      <a href="#" onclick="camera3DWalkViewToggle()" class="hi-icon icon-walk tooltip" title="Walk View" id="menuBottomItem3"></a>
-      <a href="#" onclick="CalculateCutawayGeometry()" class="hi-icon icon-cutaway tooltip" title="Cutaway View" id="menuBottomItem4"></a>
-      <a href="#" onclick="selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature" id="menuBottomItem5"></a>
-      <a href="#" onclick="selectDayNight()" class="hi-icon icon-day tooltip" title="Day/Night" id="menuBottomItem6"></a>
-      <a href="#" onclick="engine3D.selectWeather()" class="hi-icon icon-landscape tooltip" title="Weather Effects" id="menuBottomItem7"></a>
-      <a href="#" onclick="scene3DFloorMeasurementShow()" class="hi-icon icon-ruler tooltip" title="Measure twice, Cut once" id="menuBottomItem8"></a>
-      <a href="#" onclick="scene3DFloorInsertPicture()" class="hi-icon icon-images11 tooltip" title="Insert Panorama Photo" id="menuBottomItem9"></a>
-      <a href="#" onclick="scene3DFloorInsertAR()" class="hi-icon icon-ar tooltip" title="Insert AR Photo" id="menuBottomItem10"></a>
-      <a href="#" class="hi-icon icon-undo tooltip" title="Undo" id="menuBottomItem11"></a>
-      <a href="#" class="hi-icon icon-redo tooltip" title="Redo" id="menuBottomItem12"></a>
-      <a href="#" class="hi-icon icon-help tooltip" title="Help" id="menuBottomItem13"></a>
-    </div>
+      
+  <div id="menuBottomHouse" class="menuBottom" style="left:32%;width:350px">
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+        <a href="#" onclick="engine3D.cameraWalkViewToggle()" class="hi-icon icon-walk tooltip" title="Walk View"></a>
+        <a href="#" onclick="engine3D.calculateCutawayGeometry()" class="hi-icon icon-cutaway tooltip" title="Cutaway View"></a>
+        <a href="#windowWeather" class="hi-icon icon-landscape tooltip" title="Weather Effects"></a>
+        <a href="#Tutorial-1" class="hi-icon icon-help tooltip" title="Help"></a>
+      </div>
   </div>
+  <div id="menuBottomFloor" class="menuBottom">
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+        <a href="#" onclick="engineGUI.exportPDF()" class="hi-icon icon-print tooltip" title="Print PDF"></a>
+        <a href="#" onclick="engine3D.cameraWalkViewToggle()" class="hi-icon icon-walk tooltip" title="Walk View"></a>
+        <a href="#" onclick="engine3D.calculateCutawayGeometry()" class="hi-icon icon-cutaway tooltip" title="Cutaway View"></a>
+        <a href="#" onclick="engine3D.selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature"></a>
+        <a href="#" onclick="engine3D.scene3DFloorMeasurementShow()" class="hi-icon icon-ruler tooltip" title="Measure twice, Cut once"></a>
+        <a href="#" onclick="engine3D.scene3DFloorInsertPicture()" class="hi-icon icon-images11 tooltip" title="Insert Panorama Photo"></a>
+        <a href="#" onclick="engine3D.scene3DFloorInsertAR()" class="hi-icon icon-ar tooltip" title="Insert AR Photo"></a>
+        <!--
+        <a href="#" onclick="engine3D.scene3DUndo()" class="hi-icon icon-undo tooltip" title="Undo"></a>
+        <a href="#" onclick="engine3D.scene3DRedo()" class="hi-icon icon-redo tooltip" title="Redo"></a>
+        -->
+        <a href="#" class="hi-icon icon-help tooltip" title="Help"></a>
+      </div>
+  </div>
+  <div id="menuBottomPlan" class="menuBottom">
+      <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
+        <a href="#" onclick="engineGUI.exportPDF()" class="hi-icon icon-print tooltip" title="Print PDF"></a>
+        <a href="#" onclick="engine2D.selectMeasurement()" class="hi-icon icon-measure tooltip" title="Units of Meature"></a>
+        <a href="#" onclick="engine3D.scene2DUndo()" class="hi-icon icon-undo tooltip" title="Undo"></a>
+        <a href="#" onclick="engine3D.scene2DRedo()" class="hi-icon icon-redo tooltip" title="Redo"></a>
+        <a href="#" class="hi-icon icon-help tooltip" title="Help"></a>
+      </div>
+  </div>
+  <!--
+  <div class="apple_overlay black" id="photo1">
+    	<img src="img/property-large.jpg" />
+  	<h2>Agent</h2>
+  	<p>Address Location</p>
+  </div>
+  -->
+  <!-- End Thumbnail -->
+  <!-- UI -->
 
-<!--
-<div class="apple_overlay black" id="photo1">
-  	<img src="img/property-large.jpg" />
-	<h2>Agent</h2>
-	<p>Address Location</p>
-</div>
--->
-<!-- End Thumbnail -->
-<!-- UI -->
+  <form action="" method="post" enctype="multipart/form-data" id="uploadForm" style="display:none">
+      <input type="file" name="fileInput" id="fileInput"  hidden />
+      <input type="submit" id="fileSubmit" value="Upload" hidden />
+  </form>
 
-<!-- http://threejs.org/editor -->
-
-<form action="" method="post" enctype="multipart/form-data" id="uploadForm" style="display:none">
-  <input type="file" name="fileInput" id="fileInput"  hidden />
-  <input type="submit" id="fileSubmit" value="Upload" hidden />
-</form>
-
-<div id="engine3D" style="display:none">
-    <div id="WebGLCanvas"></div>
-    <div id="WebGLSplitCanvas">
-        <div class="pretty-split-pane-frame">
-            <div class="split-pane fixed-bottom" id="split-pane-1">
-                <div class="split-pane-component" id="top-component">
-                    <div class="split-pane fixed-left" id="split-pane-2">
-                        <div class="split-pane-component" id="left-component-1">
-                            <div class="pretty-split-pane-component-inner">
-                              <div id="WebGLSplitCanvas-0">
-                                <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="position:absolute;bottom:5px;right:5px;">
-                                  <a href="#" onclick="scene3DSplitViewTop()" class="hi-icon icon-cube25 tooltip" title="Top View"></a>
+  <div id="engine3D" style="display:none">
+      <div id="WebGLCanvas"></div>
+      <div id="WebGLSplitCanvas">
+          <div class="pretty-split-pane-frame">
+              <div class="split-pane fixed-bottom" id="split-pane-1">
+                  <div class="split-pane-component" id="top-component">
+                      <div class="split-pane fixed-left" id="split-pane-2">
+                          <div class="split-pane-component" id="left-component-1">
+                              <div class="pretty-split-pane-component-inner">
+                                <div id="WebGLSplitCanvas-0">
+                                  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="position:absolute;bottom:5px;right:5px;">
+                                    <a href="#" onclick="scene3DSplitViewTop()" class="hi-icon icon-cube25 tooltip" title="Top View"></a>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                        </div>
-                        <div class="split-pane-divider" id="vertical-divider-1"></div>
-                        <div class="split-pane-component" id="right-component-1">
-                            <div class="pretty-split-pane-component-inner">
-                              <div id="WebGLSplitCanvas-1">
-                                <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="position:absolute;bottom:5px;left:5px;">
-                                  <a href="#" onclick="scene3DSplitViewFront()" class="hi-icon icon-cube25 tooltip" title="Front View"></a>
+                          </div>
+                          <div class="split-pane-divider" id="vertical-divider-1"></div>
+                          <div class="split-pane-component" id="right-component-1">
+                              <div class="pretty-split-pane-component-inner">
+                                <div id="WebGLSplitCanvas-1">
+                                  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="position:absolute;bottom:5px;left:5px;">
+                                    <a href="#" onclick="scene3DSplitViewFront()" class="hi-icon icon-cube25 tooltip" title="Front View"></a>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="split-pane-divider" id="horizontal-divider"></div>
-                <div class="split-pane-component" id="bottom-component">
-                    <div class="split-pane fixed-left" id="split-pane-3">
-                        <div class="split-pane-component" id="left-component-2">
-                            <div class="pretty-split-pane-component-inner">
-                              <div id="WebGLSplitCanvas-2">
-                                <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="position:absolute;top:5px;right:5px;">
-                                  <a href="#" onclick="scene3DSplitViewSide()" class="hi-icon icon-cube25 tooltip" title="Side View"></a>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="split-pane-divider" id="horizontal-divider"></div>
+                  <div class="split-pane-component" id="bottom-component">
+                      <div class="split-pane fixed-left" id="split-pane-3">
+                          <div class="split-pane-component" id="left-component-2">
+                              <div class="pretty-split-pane-component-inner">
+                                <div id="WebGLSplitCanvas-2">
+                                  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="position:absolute;top:5px;right:5px;">
+                                    <a href="#" onclick="scene3DSplitViewSide()" class="hi-icon icon-cube25 tooltip" title="Side View"></a>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                        </div>
-                        <div class="split-pane-divider" id="vertical-divider-2"></div>
-                        <div class="split-pane-component" id="right-component-2">
-                            <div class="pretty-split-pane-component-inner">
-                              <div id="WebGLSplitCanvas-3">
-                                <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="position:absolute;top:5px;left:5px;">
-                                  <a href="#" onclick="scene3DSplitView3D()" class="hi-icon icon-cube25 tooltip" title="3D View"></a>
+                          </div>
+                          <div class="split-pane-divider" id="vertical-divider-2"></div>
+                          <div class="split-pane-component" id="right-component-2">
+                              <div class="pretty-split-pane-component-inner">
+                                <div id="WebGLSplitCanvas-3">
+                                  <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="position:absolute;top:5px;left:5px;">
+                                    <a href="#" onclick="scene3DSplitView3D()" class="hi-icon icon-cube25 tooltip" title="3D View"></a>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
-    <div id="WebGLSelectMenu" style="position:absolute"></div>
-    <div id="WebGLInteractiveMenu" style="display:none;"></div>
-
-    <form id="WebGLNote" style="position:absolute;left:40%;top:40%;display:none;">
-        <textarea  name="note" maxlength="1000" cols="50" rows="6" style="border:none;background-color:transparent;">A Note with dynamic text and very cool visual effects</textarea>
-    </form>
-
-    <div id="WebGLPanorama" style="position:absolute;left:10%;bottom:50px;display:none;">
-    </div>
-
-    <div id="WebGLWallPaintMenu" style="display:none;position:absolute;width:35px;height:35px;">
-        <a href="#" onclick="toggleTextureSelect()"><img src="images/colorwheel.svg" /></a>
-    </div>
-
-    <div id="WebGLColorWheelSelect" style="display:none;position:absolute;width:300px;height:300px;">
-        <div class="colorpicker">
-          <canvas id="picker" var="2" width="300" height="300"></canvas>
-          <div class="controls">
-            <div><label>R</label> <input type="text" id="rVal" /></div>
-            <div><label>G</label> <input type="text" id="gVal" /></div>
-            <div><label>B</label> <input type="text" id="bVal" /></div>
-            <div><label>RGB</label> <input type="text" id="rgbVal" /></div>
-            <div><label>HEX</label> <input type="text" id="hexVal" /></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
           </div>
-        </div>
-    </div>
-    <div id="WebGLTextureSelect" style="display:none;width:60%;height:120px;"></div>
-</div>
-
-<canvas id="engine2D" style="display:none">
-  <div id="zoom2DLevel" style="position:absolute;left:10px;bottom:0;z-index:2">
-    <form id="drawForm">
-      <input id="zoom2DSlider" type="range" min="10" max="50" value="10" onchange="drawImage();" onkeyup="drawImage();" style="width:240px" />
-    </form>
-    <canvas id="zoom2DProgress" width="270" height="80"></canvas>
+      </div>
+      <div id="WebGLCubeCanvas" style="position:absolute;left:0;bottom:0;width:100px;height:100px"></div>
+      <div id="WebGLSelectMenu" style="position:absolute"></div>
+      <div id="WebGLInteractiveMenu" style="display:none;"></div>
+      <form id="WebGLNote" style="position:absolute;left:40%;top:40%;display:none;">
+          <textarea  name="note" maxlength="1000" cols="50" rows="6" style="border:none;background-color:transparent;">A Note with dynamic text and very cool visual effects</textarea>
+      </form>
+      <div id="WebGLPanorama" style="position:absolute;left:10%;bottom:50px;display:none;"></div>
+      <div id="WebGLWallPaintMenu" style="display:none;position:absolute;width:35px;height:35px;">
+          <a href="#" onclick="toggleTextureSelect()"><img src="images/colorwheel.svg" /></a>
+      </div>
+      <div id="WebGLColorWheelSelect" style="display:none;position:absolute;width:300px;height:300px;">
+          <div class="colorpicker">
+            <canvas id="picker" var="2" width="300" height="300"></canvas>
+            <div class="controls">
+              <div><label>R</label> <input type="text" id="rVal" /></div>
+              <div><label>G</label> <input type="text" id="gVal" /></div>
+              <div><label>B</label> <input type="text" id="bVal" /></div>
+              <div><label>RGB</label> <input type="text" id="rgbVal" /></div>
+              <div><label>HEX</label> <input type="text" id="hexVal" /></div>
+            </div>
+          </div>
+      </div>
+      <div id="WebGLTextureSelect" style="display:none;width:60%;height:120px;"></div>
   </div>
-  <div id="menu2DTools" style="position:absolute"></div>
-</canvas>
 
-<!--http://www.jquerybyexample.net/2013/05/jquery-scroll-page-automatically-by-few-pixels-after-every-few-seconds.html-->
-<!--<script type="text/javascript" src="js/iscroll.js"></script>-->
-<!-- <script src="js/encryption/jso.php?main.js" type="text/javascript"></script> -->
+  <canvas id="engine2D" style="display:none">
+    <div id="zoom2DLevel" style="position:absolute;left:10px;bottom:0;z-index:2">
+      <form id="drawForm">
+        <input id="zoom2DSlider" type="range" min="10" max="50" value="10" onchange="drawImage();" onkeyup="drawImage();" style="width:240px" />
+      </form>
+      <canvas id="zoom2DProgress" width="270" height="80"></canvas>
+    </div>
+    <div id="menu2DTools" style="position:absolute"></div>
+  </canvas>
 
+  <div id="alertifyCover" class="alertify-cover alertify-hidden" aria-hidden="true"></div>
+  <section id="alertifyDialog" class="alertify alertify-close" aria-labelledby="alertifyTitle" aria-hidden="true">
+      <div class="alertify-body">
+          <p id="alertifyTitle" class="alertify-title"></p>
+          <input type="text" id="alertifyInput" class="alertify-input" aria-hidden="true">
+          <nav id="alertifyButtons" class="alertify-buttons">
+              <button id="alertifyButtonCancel" class="alertify-button alertify-button-cancel" aria-hidden="true"></button>
+              <button id="alertifyButtonOk" class="alertify-button alertify-button-ok" aria-hidden="true"></button>
+          </nav>
+          <a id="alertifyFocusReset" class="alertify-focus-reset" href="#" aria-hidden="true"></a>
+      </div>
+  </section>
 </body>
 </html>

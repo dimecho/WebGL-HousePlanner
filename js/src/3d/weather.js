@@ -1,12 +1,12 @@
 var engine3D = window.engine3D || {};
 
-engine3D.initSunlight = function() {
-
+engine3D.initSunlight = function()
+{
     /*
     God Rays (Sunlight Effect)
     http://threejs.org/examples/webgl_sunlight_godrays.html
     */
-    if(settings.sunlight)
+    if(json.weather.sunlight)
     {
         var sunPosition = new THREE.Vector3( 0, 10, -10 );
         var materialDepth = new THREE.MeshDepthMaterial();
@@ -41,7 +41,7 @@ engine3D.initSunlight = function() {
         // god-ray shaders
 
         var godraysGenShader = THREE.ShaderGodRays.godrays_generate;
-        sunlight.godrayGenUniforms = THREE.UniformsUtils.clone( godraysGenShader.uniforms );
+        sunlight.godrayGenUniforms = Object.assign({},godraysGenShader.uniforms); //THREE.UniformsUtils.clone(godraysGenShader.uniforms);
         sunlight.materialGodraysGenerate = new THREE.ShaderMaterial({
             uniforms: sunlight.godrayGenUniforms,
             vertexShader: godraysGenShader.vertexShader,
@@ -49,7 +49,7 @@ engine3D.initSunlight = function() {
         });
         
         var godraysCombineShader = THREE.ShaderGodRays.godrays_combine;
-        sunlight.godrayCombineUniforms = THREE.UniformsUtils.clone( godraysCombineShader.uniforms );
+        sunlight.godrayCombineUniforms = Object.assign({},godraysCombineShader.uniforms); //THREE.UniformsUtils.clone(godraysCombineShader.uniforms);
         sunlight.materialGodraysCombine = new THREE.ShaderMaterial( {
 
             uniforms: sunlight.godrayCombineUniforms,
@@ -59,7 +59,7 @@ engine3D.initSunlight = function() {
         } );
         
         var godraysFakeSunShader = THREE.ShaderGodRays.godrays_fake_sun;
-        sunlight.godraysFakeSunUniforms = THREE.UniformsUtils.clone( godraysFakeSunShader.uniforms );
+        sunlight.godraysFakeSunUniforms = Object.assign({},godraysFakeSunShader.uniforms); //THREE.UniformsUtils.clone(godraysFakeSunShader.uniforms);
         sunlight.materialGodraysFakeSun = new THREE.ShaderMaterial( {
 
             uniforms: sunlight.godraysFakeSunUniforms,
@@ -79,18 +79,20 @@ engine3D.initSunlight = function() {
         sunlight.quad.position.z = -9900;
         sunlight.scene.add( sunlight.quad );
     }
-}
+};
 
-engine3D.setWeather = function ()
+engine3D.setWeather = function()
 {
     //particleWeather = new SPE.Group({});
     //scene3D.remove(particleWeather.mesh);
 
-    if (WEATHER == "sunny") {
+    engine3D.initWeatherClouds();
+    
+    if (WEATHER === "sunny") {
 
         //TODO: maybe add sun glare effect shader?
 
-    } else if (WEATHER == "snowy") {
+    } else if (WEATHER === "snowy") {
 
         //engine = new ParticleEngine();
         //engine.setValues(weatherSnowMesh);
@@ -179,7 +181,7 @@ engine3D.setWeather = function ()
         scene3D.add(particleWeather.mesh);
         */
 
-    } else if (WEATHER == "rainy") {
+    } else if (WEATHER === "rainy") {
 
         //engine = new ParticleEngine();
         //engine.setValues(weatherRainMesh);
@@ -189,13 +191,13 @@ engine3D.setWeather = function ()
     scene3D.remove(weatherSkyCloudsMesh);
     scene3D.remove(weatherSkyRainbowMesh);
 
-    if (DAY == 'day') {
+    if (DAY === 'day') {
 
         //scene3D.add(weatherSkyDayMesh);
 
-        if(settings.clouds)
+        if(json.weather.clouds)
         {
-            texture = textureLoader.load('images/cloud.png');
+            texture = engine3D.textureLoader.load('images/cloud.png');
             //texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
             //texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
             weatherSkyMaterial.uniforms.map.value = texture;
@@ -203,9 +205,9 @@ engine3D.setWeather = function ()
             scene3D.add(weatherSkyCloudsMesh);
         }
 
-        if(settings.rainbow)
+        if(json.weather.rainbow)
         {
-            texture = textureLoader.load('images/rainbow.png');
+            texture = engine3D.textureLoader.load('images/rainbow.png');
             /*
             var uniforms = Object.assign( {},  weatherSkyMaterial.uniforms ); // r.83dev
             var materialRainbow = new THREE.ShaderMaterial({
@@ -218,7 +220,8 @@ engine3D.setWeather = function ()
             });
             */
             var materialRainbow = weatherSkyMaterial.clone();
-            materialRainbow.uniforms = THREE.UniformsUtils.clone(weatherSkyMaterial.uniforms); //r.82dev
+            //materialRainbow.uniforms = Object.assign({"map": {type: "t", value: texture}}, weatherSkyMaterial.uniforms); //r.82dev
+            materialRainbow.uniforms = THREE.UniformsUtils.clone(weatherSkyMaterial.uniforms);
             materialRainbow.uniforms.map.value = texture;
 
             geometry = new THREE.Geometry();
@@ -233,11 +236,11 @@ engine3D.setWeather = function ()
             scene3D.add(weatherSkyRainbowMesh);
         }
     }
-    else if (DAY == 'night')
+    else if (DAY === 'night')
     {
-        if(settings.clouds)
+        if(json.weather.clouds)
         {
-            texture = textureLoader.load('images/cloud2.png');
+            texture = engine3D.textureLoader.load('images/cloud2.png');
             texture.magFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
             texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
             weatherSkyMaterial.uniforms.map.value = texture;
@@ -245,21 +248,89 @@ engine3D.setWeather = function ()
             scene3D.add(weatherSkyCloudsMesh);
         }
     }
-}
+};
 
-engine3D.setSky = function(set) {
-
-    if(skyMesh.name != set)
+engine3D.initWeatherClouds = function()
+{
+    if(weatherSkyMaterial === undefined)
     {
-        var files = '0000';
+        /* 
+        =======================
+        Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+        =======================
+        */
+        /*
+        $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+            options.async = false;
+        });
+        */
+        //=====================
 
-        if(set == 'day'){
-            files = settings.panorama_day;
-        }else if(set == 'night'){
-            files =  settings.panorama_night;
+        weatherSkyCloudsMesh =  new THREE.Mesh();
+        weatherSkyRainbowMesh = new THREE.Mesh();
+
+        var cloud_vertex_data = $.ajax({ url:"shaders/clouds.vertex.fx", async:false}).responseText;
+        var cloud_fragment_data = $.ajax({ url:"shaders/clouds.fragment.fx", async:false}).responseText;
+
+        // engine3D.ajaxFile("shaders/clouds.fragment.fx");
+
+        var fog = new THREE.Fog(0x4584b4, -100, 1000);
+        weatherSkyMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                "map": {
+                    type: "t",
+                    //value: texture
+                },
+                "fogColor": {
+                    type: "c",
+                    value: fog.color
+                },
+                "fogNear": {
+                    type: "f",
+                    value: fog.near
+                },
+                "fogFar": {
+                    type: "f",
+                    value: fog.far
+                },
+            },
+            vertexShader: cloud_vertex_data,
+            fragmentShader: cloud_fragment_data,
+            depthWrite: false,
+            depthTest: false,
+            transparent: true
+        });
+
+        weatherSkyGeometry = new THREE.Geometry();
+
+        var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
+        for (var i = 0; i < 20; i++) 
+        {
+            plane.position.x = getRandomInt(-20, 20);
+            plane.position.y = getRandomInt(5.5, 10);
+            plane.position.z = i;
+            plane.rotation.z = getRandomInt(5, 10);
+            plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
+            plane.updateMatrix();
+            weatherSkyGeometry.merge(plane.geometry, plane.matrix);
         }
+    }
+};
 
-        skyMesh = new THREE.Object3D();
+engine3D.setSky = function(set)
+{
+    var files = '2056';
+
+    if(set === 'day'){
+        files = json.settings.panorama_day;
+    }else if(set === 'night'){
+        files = json.settings.panorama_night;
+    }
+
+    if(skyMesh.name != files)
+    {
+        //console.log(settings);
+        
         engine3D.buildPanorama(skyMesh, files, 75, 75, 75,"",null);
         skyMesh.position.y = 5;
         //console.log("build Panorama: " + files);
@@ -288,12 +359,12 @@ engine3D.setSky = function(set) {
         //skyMaterial.needsUpdate = true;
         //scene3D.add(skyMesh);
 
-        skyMesh.name = set;
+        skyMesh.name = files;
     }
-}
+};
 
-engine3D.setSkyEffects = function() {
-
+engine3D.setSkyEffects = function()
+{
     //http://mrdoob.com/lab/javascript/webgl/clouds/
     //http://gonchar.me/panorama/
     //engine3D.setSky("day");
@@ -346,4 +417,4 @@ engine3D.setSkyEffects = function() {
         emitterDeathAge: 60
     };
     */
-}
+};

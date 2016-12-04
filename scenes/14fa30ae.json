@@ -1,0 +1,252 @@
+{
+    "info": {
+        "agent": "Test",
+        "mls": "34673",
+        "phone": ""
+    },
+    "settings": {
+        "autorotate": false,
+        "panorama_day": "2056",
+        "panorama_night": "2057"
+    },
+    "weather": {
+        "sunlight": false,
+        "clouds": true,
+        "rainbow": true
+    },
+    "terrain": [],
+    "roof": [],
+    "house": [],
+    "floor": [{
+        "texture": "objects/Platform/Textures/W23643.jpg"
+    },{
+        "texture": "objects/Platform/Textures/W23643.jpg"
+    },{
+        "texture": "objects/Platform/Textures/W23643.jpg"
+    }],
+    "ceiling": [{
+        "texture": "objects/Platform/Textures/L34672.jpg"
+    },{
+        "texture": "objects/Platform/Textures/L34672.jpg"
+    },{
+        "texture": "objects/Platform/Textures/L34672.jpg"
+    }],
+    "furniture": [
+        [],
+        [{
+            "file": "objects/Interior/Furniture/Sofas/clear-sofa.jsz",
+            "note": "cool notes, click to view",
+            "position.x": 0,
+            "position.y": 0.14,
+            "position.z": 0,
+            "rotation.x": 0,
+            "rotation.y": 0,
+            "rotation.z": 0
+        }, {
+            "file": "objects/Interior/Plants/lucky-bamboo.jsz",
+            "position.x": -3,
+            "position.y": 0.14,
+            "position.z": -3,
+            "rotation.x": 0,
+            "rotation.y": 0,
+            "rotation.z": 0
+        }, {
+            "file": "objects/Interior/Tables/Dinning/table-w-table-cloth.jsz",
+            "position.x": -2.5,
+            "position.y": 0.14,
+            "position.z": 3,
+            "rotation.x": 0,
+            "rotation.y": 0,
+            "rotation.z": 0
+        }, {
+            "file": "objects/Platform/camera.jsz",
+            "position.x": 5,
+            "position.y": 0.14,
+            "position.z": -3,
+            "rotation.x": 0,
+            "rotation.y": 2.5,
+            "rotation.z": 0
+        }],
+        []
+    ],"plan": [
+        [{
+            "name": "Basement"
+        }],
+        [{
+            "name": "Floor1"
+        }, {
+            "wall": "standard",
+            "x1": 480,
+            "y1": 180,
+            "x2": 660,
+            "y2": 180,
+            "cx": 570,
+            "cy": 180,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 660,
+            "y1": 180,
+            "x2": 660,
+            "y2": 140,
+            "cx": 660,
+            "cy": 160,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 660,
+            "y1": 140,
+            "x2": 1040,
+            "y2": 140,
+            "cx": 850,
+            "cy": 140,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 1040,
+            "y1": 140,
+            "x2": 1040,
+            "y2": 540,
+            "cx": 1040,
+            "cy": 345,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 1040,
+            "y1": 540,
+            "x2": 930,
+            "y2": 540,
+            "cx": 985,
+            "cy": 540,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 930,
+            "y1": 540,
+            "x2": 930,
+            "y2": 650,
+            "cx": 930,
+            "cy": 595,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 930,
+            "y1": 650,
+            "x2": 480,
+            "y2": 650,
+            "cx": 705,
+            "cy": 650,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 480,
+            "y1": 650,
+            "x2": 480,
+            "y2": 180,
+            "cx": 480,
+            "cy": 415,
+            "h": 3
+        }, {
+            "door": "objects/Exterior/Doors/door-1.jsz",
+            "open": "right",
+            "length": 120,
+            "x": 580,
+            "y": 180,
+            "z": 0,
+            "direction": "out"
+        }, {
+            "window": "objects/Exterior/Windows/window-1.jsz",
+            "open": "slide",
+            "length": 200,
+            "x": 1040,
+            "y": 300,
+            "z": 10,
+            "direction": ""
+        }, {
+            "label": "Room",
+            "size": "11 x 15",
+            "x": 750,
+            "y": 350
+        }],
+        [{
+            "name": "Floor2"
+        }, {
+            "wall": "standard",
+            "x1": 480,
+            "y1": 180,
+            "x2": 660,
+            "y2": 180,
+            "cx": 570,
+            "cy": 180,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 660,
+            "y1": 180,
+            "x2": 660,
+            "y2": 140,
+            "cx": 660,
+            "cy": 160,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 660,
+            "y1": 140,
+            "x2": 1040,
+            "y2": 140,
+            "cx": 850,
+            "cy": 140,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 1040,
+            "y1": 140,
+            "x2": 1040,
+            "y2": 540,
+            "cx": 1040,
+            "cy": 345,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 1040,
+            "y1": 540,
+            "x2": 930,
+            "y2": 540,
+            "cx": 985,
+            "cy": 540,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 930,
+            "y1": 540,
+            "x2": 930,
+            "y2": 650,
+            "cx": 930,
+            "cy": 595,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 930,
+            "y1": 650,
+            "x2": 480,
+            "y2": 650,
+            "cx": 705,
+            "cy": 650,
+            "h": 3
+        }, {
+            "wall": "standard",
+            "x1": 480,
+            "y1": 650,
+            "x2": 480,
+            "y2": 180,
+            "cx": 480,
+            "cy": 415,
+            "h": 3
+        }, {
+            "label": "Room",
+            "size": "11 x 15",
+            "x": 750,
+            "y": 350
+        }]
+    ]
+}

@@ -30,7 +30,7 @@ http://tympanus.net/Tutorials/ParallaxSlider/
             //the interval for the autoplay mode
             slideshow,
             //the loading image
-            $pxs_loading    = $('.pxs_loading',$pxs_container),
+            //$pxs_loading    = $('.pxs_loading',$pxs_container),
             $pxs_slider_wrapper = $('.pxs_slider_wrapper',$pxs_container);
                 
             //first preload all the images
@@ -42,7 +42,7 @@ http://tympanus.net/Tutorials/ParallaxSlider/
                 $('<img/>').on("load", function(){
                     ++loaded;
                     if(loaded   == total_elems*2){
-                        $pxs_loading.hide();
+                        //$pxs_loading.hide();
                         $pxs_slider_wrapper.show();
                             
                         //one images width (assuming all images have the same sizes)

@@ -4,6 +4,23 @@ var panAndZoom;
 
 engine2D.initialize = function (){
 
+	/*
+    $.ajax("objects/Platform/floorplan1.dxf",{
+        contentType: "application/text",
+        beforeSend: function (req) {
+          req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+        },
+        success: function(data){
+            console.log(data);
+            var parser = new DXFParser(data);
+            console.log(parser);
+        },
+        error: function(xhr, textStatus, errorThrown){
+            alertify.alert("DXF (" + js + ") Loading Error").show();
+        }
+    });
+    */
+
     //http://paperjs.org/tutorials/getting-started/using-javascript-directly/
 
 	var canvas = document.getElementById("engine2D");
@@ -48,11 +65,16 @@ engine2D.initialize = function (){
 		return event.preventDefault();
 	});
 	*/
-	engine2D.new(0);
-	engine2D.new(1);
+	//engine2D.newFloor(0);
+	//engine2D.newFloor(1);
 };
 
-engine2D.new = function (i)
+engine2D.new = function ()
+{
+
+};
+
+engine2D.newFloor = function (i)
 {
 	scene2DWallMesh[i] = [];
 	scene2DWallDimentions[i] = [];
@@ -67,58 +89,37 @@ engine2D.new = function (i)
 	scene2DLabelGroup[i] = new paper.Group();
 };
 
-engine2D.open = function (zip){
+engine2D.open = function()
+{
+    for (var i = 0; i < json.plan.length; i++)
+    {
+    	engine2D.newFloor(i);
 
-    var i = 0; //FLOOR
+        $.each(json.plan[i], function()
+        {
+            //console.log(this);
+            
+            if(this.door !== undefined)
+            {
+                scene2DDoorGroup[i].addChild(engine2D.makeDoor(i,this.length,{x:this.x,y:this.y},this.z,this.type,this.open,this.direction,this.door));
+            }
 
-	zip.file("scene2DFloorContainer.json").async("string").then(function (content) {
-		//console.log(content);
-	    $.each(JSON.parse(content), function(index)
-	    {
-	        //var objects2DWalls = JSON.parse(this);
-	       	//if(this.length > 0){
-	       		console.log(this);
+            if(this.window !== undefined)
+            {
+                scene2DWindowGroup[i].addChild(engine2D.makeWindow(i,this.length,{x:this.x,y:this.y},this.z,this.open,this.direction,this.window));
+            }
 
-	       		engine2D.new(i);
+            if(this.wall !== undefined)
+            {
+                scene2DWallGroup[i].addChild(engine2D.makeWall(i,{x:this.x1,y:this.y1},{x:this.x2,y:this.y2},{x:this.cx,y:this.cy},this.h));
+            }
 
-				$.each(this, function(index)
-				{
-					if(this.door !== undefined)
-					{
-						scene2DDoorGroup[i].addChild(engine2D.makeDoor(i,this.length,{x:this.x,y:this.y},this.z,this.type,this.open,this.direction,this.door));
-					}
-
-					if(this.window !== undefined)
-					{
-						scene2DWindowGroup[i].addChild(engine2D.makeWindow(i,this.length,{x:this.x,y:this.y},this.z,this.open,this.direction,this.window));
-					}
-
-					if(this.wall !== undefined)
-					{
-						scene2DWallGroup[i].addChild(engine2D.makeWall(i,{x:this.x1,y:this.y1},{x:this.x2,y:this.y2},{x:this.cx,y:this.cy},this.h));
-					}
-
-					if(this.label !== undefined)
-					{
-						scene2DLabelGroup[i].addChild(engine2D.makeLabel(i,this.label,this.size,this.x,this.y));
-					}
-				});
-
-				engine2D.makeFloor(i); //needed for 3D reference
-				//scene2DWallGroup[i].activate();
-				//scene2DWallGroup[i].bringToFront();
-
-				
-
-				//scene2DLabelGroup[i].bringToFront()
-
-				//canvas2D.addChild(scene2DFloorShape[i]);
-				//canvas2D.addChild(scene2DWallGroup[i]);
-				//canvas2D.addChild(scene2DDoorGroup[i]);
-				//canvas2D.addChild(scene2DWindowGroup[i]);
-		        
-		        i++;
-	    	//}
-	    });
-	});
+            if(this.label !== undefined)
+            {
+                scene2DLabelGroup[i].addChild(engine2D.makeLabel(i,this.label,this.size,this.x,this.y));
+            }
+        });
+    
+    	engine2D.makeFloor(i); //needed for 3D reference
+    }
 };

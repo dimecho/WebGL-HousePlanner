@@ -1,51 +1,89 @@
 var engine3D = window.engine3D || {};
 
+var rendererPanorama;
+var scene3DPanorama;
+var camera3DPanorama;
+var controls3DPanorama;
+
 engine3D.initPanorama = function(id, files, W,H)
 {
+    $(id).show();
+    $(id).append(spinner);
+
     scene3DPanorama = new THREE.Scene();
     camera3DPanorama = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-
     rendererPanorama = new THREE.WebGLRenderer({
-        devicePixelRatio: window.devicePixelRatio || 1,
+        //devicePixelRatio: window.devicePixelRatio || 1,
         antialias: false
     });
-
     rendererPanorama.setSize(window.innerWidth*W, window.innerHeight*H);
-    document.getElementById(id).appendChild(rendererPanorama.domElement);
 
-    //controls3DPanorama = new THREE.OrbitControls(camera3DPanorama, rendererPanorama.domElement);
-    //controls3DPanorama.target = new THREE.Vector3(0, 0, 0);
-    //controls3DPanorama.enabled = true;
+    $(id).append(rendererPanorama.domElement);
+
+    controls3DPanorama = new THREE.OrbitControls(camera3DPanorama, rendererPanorama.domElement);
     
-    document.addEventListener( 'mousedown', onPanoramaMouseDown, false );
-    document.addEventListener( 'mousewheel', onPanoramaMouseWheel, false );
-    document.addEventListener( 'touchstart', onPanoramaTouchStart, false );
-    document.addEventListener( 'touchmove', onPanoramaTouchMove, false );
+    controls3DPanorama.enableDamping = true;
+    controls3DPanorama.dampingFactor = 0.25;
+    controls3DPanorama.enableZoom = false;
+    
+    controls3DPanorama.movementSpeed = 5;
+    controls3DPanorama.lookSpeed = 0.15;
+    controls3DPanorama.noFly = true;
+    controls3DPanorama.lookVertical = false;
+    controls3DPanorama.activeLook = true; //enable later, otherwise view jumps
+    controls3DPanorama.lon = -90;
+    controls3DPanorama.lat = 0;
+    controls3DPanorama.enabled = false;
 
-    document.getElementById(id).appendChild(spinner);
+    $(id).mousedown(function() {
+        controls3DPanorama.enabled = true;
+    });
 
-    //mouse = new THREE.Vector2();
-    //touch = new THREE.Vector2();
-    //var scene = new THREE.Object3D();
-    //engine3D.buildPanorama(scene,files, 512, 512);
-    //scene3DPanorama.add(scene);
+    $(id).mouseup(function() {
+        controls3DPanorama.enabled = false;
+    });
+    
+    engine3D.buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_", null);
+    
+    engine3D.animatePanorama();
+    
+    //window.addEventListener( 'resize', onPanoramaWindowResize, false );
+};
 
-    engine3D.buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_",null);
-
-    document.getElementById(id).removeChild(spinner);
-
-    $('#' + id).show();
-    animatePanorama();
-
-    //TODO: update onWindowResize();
-}
-
-engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
+engine3D.animatePanorama = function()
 {
-    if(container.children.length > 0)
-        return;
+    if (rendererPanorama instanceof THREE.WebGLRenderer)
+    {
+        requestAnimationID = window.requestAnimationFrame(engine3D.animatePanorama);
 
-    var sides = [
+        if(controls3DPanorama.enabled){
+            controls3DPanorama.update();
+        }else{
+            var delta = clock.getDelta();
+
+            mouse.x +=  0.1;
+            mouse.y = Math.max( - 85, Math.min(85, mouse.y));
+            var phi = THREE.Math.degToRad(90 - mouse.y);
+            var theta = THREE.Math.degToRad( mouse.x );
+
+            target.x = Math.sin( phi ) * Math.cos( theta );
+            target.y = Math.cos( phi );
+            target.z = Math.sin( phi ) * Math.sin( theta );
+
+            camera3DPanorama.lookAt(target);
+            //camera3DPanorama.position.copy(camera3DPanorama.target).negate(); // distortion
+        }
+        rendererPanorama.render(scene3DPanorama, camera3DPanorama);
+    }
+    else
+    {
+        engine3D.animate();
+    }
+};
+
+engine3D.cubePanoramaImages = function(files,preloader)
+{
+    var img = [
         'panoramas/' + files + '/' + preloader + 'right.jpg',
         'panoramas/' + files + '/' + preloader + 'left.jpg',
         'panoramas/' + files + '/' + preloader + 'top.jpg',
@@ -53,7 +91,17 @@ engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
         'panoramas/' + files + '/' + preloader + 'front.jpg',
         'panoramas/' + files + '/' + preloader + 'back.jpg'
     ];
-    //console.log(files + " " + preloader);
+    return img;
+};
+
+engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
+{
+    //if(container.children.length > 0)
+    //    return;
+    
+    console.log("Build Panorama :" + files);
+    
+    //scene3D.remove(container);
 
     /*
     var cubemap = THREE.ImageUtils.loadTextureCube(sides);
@@ -85,48 +133,56 @@ engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
     if(preloader === "_") //High Resolution
         engine3D.buildPanorama(container,files,X,Y,Z,"",skybox);
     */
+
+    var img = engine3D.cubePanoramaImages(files,preloader);
     
     //Low Resolution
     var sides = [
         new THREE.MeshBasicMaterial({
-            map: textureLoader.load('panoramas/' + files + '/_right.jpg'),
+            map: engine3D.textureLoader.load(img[0]),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-            map: textureLoader.load('panoramas/' + files + '/_left.jpg'),
+            map: engine3D.textureLoader.load(img[1]),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-            map: textureLoader.load('panoramas/' + files + '/_top.jpg'),
+            map: engine3D.textureLoader.load(img[2]),
             side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-          map: textureLoader.load('panoramas/' + files + '/_bottom.jpg'),
-          side: THREE.BackSide
+            map: engine3D.textureLoader.load(img[3]),
+            side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-           map: textureLoader.load('panoramas/' + files + '/_front.jpg'),
-           side: THREE.BackSide
+            map: engine3D.textureLoader.load(img[4]),
+            side: THREE.BackSide
         }),
         new THREE.MeshBasicMaterial({
-           map: textureLoader.load('panoramas/' + files + '/_back.jpg'),
-           side: THREE.BackSide
+            map: engine3D.textureLoader.load(img[5]),
+            side: THREE.BackSide
         }),
     ];
+
     var geometry = new THREE.BoxGeometry(X,Y,Z);
-    //console.log(geometry);
     var mesh = new THREE.Mesh(geometry, new THREE.MultiMaterial(sides));
 
-    container.add(mesh);
+    if(preloader !== "")
+    {
+        spinner.remove();
 
-    //High Resolution
-    textureLoader.load('panoramas/' + files + '/right.jpg', function (texture) { sides[0].map=texture; });
-    textureLoader.load('panoramas/' + files + '/left.jpg', function (texture) { sides[1].map=texture; });
-    textureLoader.load('panoramas/' + files + '/top.jpg', function (texture) { sides[2].map=texture; });
-    textureLoader.load('panoramas/' + files + '/bottom.jpg', function (texture) { sides[3].map=texture; });
-    textureLoader.load('panoramas/' + files + '/front.jpg', function (texture) { sides[4].map=texture; });
-    textureLoader.load('panoramas/' + files + '/back.jpg', function (texture) {sides[5].map = texture;});
-    
+        img = engine3D.cubePanoramaImages(files,"");
+
+        engine3D.textureLoader.load(img[0], function (texture) { sides[0].map = texture; });
+        engine3D.textureLoader.load(img[1], function (texture) { sides[1].map = texture; });
+        engine3D.textureLoader.load(img[2], function (texture) { sides[2].map = texture; });
+        engine3D.textureLoader.load(img[3], function (texture) { sides[3].map = texture; });
+        engine3D.textureLoader.load(img[4], function (texture) { sides[4].map = texture; });
+        engine3D.textureLoader.load(img[5], function (texture) { sides[5].map = texture; });
+        //for (var i = 0; i <= 5; i++)
+        //    engine3D.textureLoader.load(img[i], function (texture) { sides[i].map = texture; });
+    }
+
     /*
     var geometry = new THREE.SphereGeometry( 500, 60, 40 );
     geometry.applyMatrix( new THREE.Matrix4().makeScale( 1, 1, 1 ) );
@@ -136,33 +192,22 @@ engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
     mesh = new THREE.Mesh( geometry, material );
     scene3DPanorama.add(mesh);
     */
-}
 
-function onPanoramaMouseDown( event ) {
+    container.add(mesh);
+};
 
-    event.preventDefault();
-
-    document.addEventListener( 'mousemove', onPanoramaMouseMove, false );
-    document.addEventListener( 'mouseup', onPanoramaMouseUp, false );
-}
-
-function onPanoramaMouseMove( event ) {
-
+/*
+function onPanoramaMouseMove(event)
+{   
     var movementX = event.movementX || event.mozMovementX || 0;
     var movementY = event.movementY || event.mozMovementY || 0;
 
     mouse.x -= movementX * 0.1;
     mouse.y += movementY * 0.1;
-}
+};
 
-function onPanoramaMouseUp( event ) {
-
-    document.removeEventListener( 'mousemove', onPanoramaMouseMove );
-    document.removeEventListener( 'mouseup', onPanoramaMouseUp );
-}
-
-function onPanoramaMouseWheel( event ) {
-
+function onPanoramaMouseWheel(event)
+{
     if (event.wheelDeltaY)
     {
         camera3DPanorama.fov -= event.wheelDeltaY * 0.05;
@@ -177,21 +222,21 @@ function onPanoramaMouseWheel( event ) {
     }
 
     camera3DPanorama.updateProjectionMatrix();
-}
+};
 
-function onPanoramaTouchStart( event ) {
-
-    event.preventDefault();
+function onPanoramaTouchStart(event)
+{
+    //event.preventDefault();
 
     var touches = event.touches[0];
 
     touch.x = touches.screenX;
     touch.y = touches.screenY;
-}
+};
 
-function onPanoramaTouchMove( event ) {
-
-    event.preventDefault();
+function onPanoramaTouchMove(event)
+{
+    //event.preventDefault();
 
     var touches = event.touches[ 0 ];
 
@@ -200,23 +245,23 @@ function onPanoramaTouchMove( event ) {
 
     touch.x = touches.screenX;
     touch.y = touches.screenY;
-}
+};
+*/
 
-function disposePanorama(id)
+function onPanoramaWindowResize()
 {
-    if (rendererPanorama instanceof THREE.WebGLRenderer)
-    {
-        document.removeEventListener( 'mousedown', onPanoramaMouseDown, false );
-        document.removeEventListener( 'mousewheel', onPanoramaMouseWheel, false );
+    camera3DPanorama.aspect = window.innerWidth / window.innerHeight;
+    camera3DPanorama.updateProjectionMatrix();
+    rendererPanorama.setSize( window.innerWidth, window.innerHeight );
+};
 
-        document.removeEventListener( 'touchstart', onPanoramaTouchStart, false );
-        document.removeEventListener( 'touchmove', onPanoramaTouchMove, false );
-
-        document.getElementById(id).removeChild(rendererPanorama.domElement);
-    }
-    $('#' + id).hide();
+engine3D.disposePanorama = function(id)
+{
+    $(id).hide();
+    $(id).empty();
 
     rendererPanorama = null;
-    camera3DPanorama = null;
+    //camera3DPanorama = null;
     scene3DPanorama = null;
-}
+    controls3DPanorama = null;
+};

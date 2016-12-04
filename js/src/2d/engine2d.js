@@ -35,12 +35,7 @@ engine2D.show = function (){
 	
     //$('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
     $('#menuFloorSelector').show();
-
-    var menuBottom = [1,5,8,9,10];
-    menuBottom.forEach(function(item) {
-         $('#menuBottomItem' + item).show();
-    });
-    $('#menuBottom').show();
+    $('#menuBottomPlan').show();
 	
 	/*
 	https://github.com/rheh/HTML5-canvas-projects/tree/master/progress
@@ -87,7 +82,7 @@ engine2D.showFloor = function(i)
 	engine2D.attachObjectsToWalls(FLOOR,scene2DWindowGroup);
 };
 
-engine2D.newFloor = function(name)
+engine2D.addFloor = function(name)
 {
 
 };
@@ -140,6 +135,7 @@ engine2D.hide = function() {
     $('#menuLeft2D').hide();
     $('#menuRight2D').hide();
     //$('#zoom2DLevel').hide();
+    $('#menuBottomPlan').hide();
 };
 
 engine2D.drawGrid = function (grid, color) {

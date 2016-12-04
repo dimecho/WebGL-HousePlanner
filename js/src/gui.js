@@ -1,97 +1,29 @@
 var engineGUI = window.engineGUI || {};
+var jsonindex = { id:'', name:'', plan:[1,2,3] };
 
-$(document).ready(function()
+engineGUI.initialize = function()
 {
-    /*
-     $.ajax("objects/Platform/floorplan1.dxf",{
-            contentType: "application/text",
-            beforeSend: function (req) {
-              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
-            },
-            success: function(data){
-                console.log(data);
-                var parser = new DXFParser(data);
-                console.log(parser);
-            },
-            error: function(xhr, textStatus, errorThrown){
-                alertify.alert("DXF (" + js + ") Loading Error");
-            }
-        });
-    */
-  
-    //wireframe = new Wireframe();
-    //wireframe.build(parser);
+    window.location.href = "#list";
 
-    /* https://dribbble.com/shots/872582-Circular-Menu */
-    var numberOfIcons = 8;
-    var offsetAngleDegress = 360/numberOfIcons;
-    var offsetAngle = offsetAngleDegress * Math.PI / 180;
-    var circleOffset = $("#WebGLInteractiveMenu").width()/2;
-    var tooltips = ["Move Horizontaly", "Info", "Duplicate", "Resize", "Textures", "Rotate", "Remove", "Object Notes"];
-    var actions = ["engine3D.enableTransformControls('translate')", "", "", "engine3D.enableTransformControls('scale')", "toggleTextureSelect()", "engine3D.enableTransformControls('rotate')", "scene3DObjectSelectRemove()", "camera3DNoteAdd()"];
-    
-    var $d = $("<div class='rect'></div>").hide().appendTo("body");
-    var iconOffset = $(".rect").width()/2;
-    $d.remove();
+    $('#menuTop').hide();
+    $('#menuAgent').hide();
+    $('#menuBottomHouse').hide();
+    $('#menuBottomFloor').hide();
+    $('#menuBottomPlan').hide();
+    $("#WebGLInteractiveMenu").hide();
+    $('#WebGLSelectMenu').hide();
 
-    for(var i=0; i<numberOfIcons; i++)
-    {
-        var index = i+1;
-        
-        $("#WebGLInteractiveMenu").append('<div class="rect tooltip-top" title="' + tooltips[i] + '" id="icn'+ index +'" onclick="' + actions[i] + '"></div>');
-       
-        var x = Math.cos((offsetAngle * i) - (Math.PI/2));
-        var y = Math.sin((-offsetAngle * i)+ (Math.PI/2));
-        //console.log(offsetAngle *i * 180/Math.PI,x, y);
+    $('#menuLeft3DHouse').hide();
+    $('#menuLeft3DLandscape').hide();
+    $('#menuLeft3DFloor').hide();
+    $('#menuLeft2D').hide();
+    $('#menuFloorSelector').hide();
 
-        var dX = (circleOffset * x) + circleOffset - iconOffset;
-        var dY = (circleOffset * y) + circleOffset - iconOffset;
+    engineGUI.initList();
+};
 
-        //console.log(circleOffset+iconOffset);
-        
-        $("#icn" + index).css({"background-image": 'url("images/hicn' + index + '.png")', "-webkit-animation-delay": "2s", "animation-delay": "2s"});
-        $("#icn" + index).animate({"left":dX,"bottom":dY}, "slow");
-
-        //console.log('url("icn' + index + '.png")');
-    }
-
-    $("#icn1").addClass("active");
-
-    // add click handler to all circles
-    $('.rect').click(function(event)
-    {
-        event.preventDefault();
-        $('.active').removeClass("active");
-        $(this).addClass("active");
-
-        var a = (Number($(this).attr("id").substr(3))-1)*offsetAngleDegress;
-        /* $('#rotateSelector').css({"transform":"rotate(" + a + "deg)", "-webkit-transform":"rotate(" + a + "deg)"}); */
-        /* $('#rotateSelector').css({"transform":"rotate3d(0, 0, 1, " + a + "deg)", "-webkit-transform":"rotate3d(0, 0, 1, " + a + "deg)", "-o-transform":"rotate(" + a + "deg)", "-moz-transform":"rotate3d(0, 0, 1, " + a + "deg)"}); */
-        
-        //console.log(a); 
-    });
-    //=====================================
-
-    $('.tooltip-share-menu').tooltipster({
-        interactive:true,
-        content: $('<a href="#" onclick="" class="hi-icon icon-html tooltip" title="Embed 3D Scene in Your Website" style="color:white"></a><br/><a href="#" class="hi-icon icon-print" style="color:white"></a><br/><a href="#" class="hi-icon icon-email" style="color:white"></a>')
-    });
-
-    $('.tooltip-save-menu').tooltipster({
-                interactive:true,
-          content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="engineGUI.save(false);" class="hi-icon icon-usb" style="color:white"></a>')
-    });
-
-    $('.tooltip-open-menu').tooltipster({
-                interactive:true,
-          content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="fileSelect(\'opendesign\')" class="hi-icon icon-usb" style="color:white"></a>')
-    });
-
-    $('.tooltip-tools-menu').tooltipster({
-                interactive:true,
-          content: $('<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot" style="color:white"></a><br/><a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand" style="color:white"></a>')
-    });
-
+engineGUI.initHousePlanner = function(id,item)
+{
     $('.tooltip').tooltipster({
         animation: 'fade',
         delay: 200,
@@ -159,9 +91,75 @@ $(document).ready(function()
     });
     stroll.bind('.cssmenu ul');
 
-    $('#pxs_container').parallaxSlider();
-    //init();
-});
+    //var lazyLoad = new LazyLoad();
+
+    engine3D.initialize();
+};
+
+engineGUI.initTopMenu = function()
+{
+    //var menu = $("#menuTop").empty();
+
+
+
+    $('.tooltip-share-menu').tooltipster({
+        interactive:true,
+        content: $('<a href="#" onclick="" class="hi-icon icon-html tooltip" title="Embed 3D Scene in Your Website" style="color:white"></a><br/><a href="#" class="hi-icon icon-print" style="color:white"></a><br/><a href="#" class="hi-icon icon-email" style="color:white"></a>')
+    });
+
+    $('.tooltip-save-menu').tooltipster({
+        interactive:true,
+        content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="engineGUI.save(false);" class="hi-icon icon-usb" style="color:white"></a>')
+    });
+
+    $('.tooltip-open-menu').tooltipster({
+        interactive:true,
+        content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="fileSelect(\'opendesign\')" class="hi-icon icon-usb" style="color:white"></a>')
+    });
+
+    $('.tooltip-tools-menu').tooltipster({
+        interactive:true,
+        content: $('<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot" style="color:white"></a><br/><a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand" style="color:white"></a>')
+    });
+};
+
+engineGUI.initList = function()
+{
+    $.ajax("scenes/index.json",{
+        contentType: "application/json",
+        dataType: 'json',
+        success: function(data)
+        {
+            jsonindex = data;
+
+            //console.log(jsonindex);
+
+            var menu = $("#menuIndexList").empty();
+            $.each(jsonindex.menu, function()
+            {
+                var div = $("<div>", { width:"300px",style: "padding:20px;display:inline-block;text-align:center;"});
+                var img = $("<img>", {
+                    width: "300px",
+                    height: "150px",
+                    class: "lazy indexImage",
+                    id: this.name,
+                    "data-original": "scenes/" + this.id + "/index.jpg",
+                    //"data-src-retina": itemData.image.slice(0, -4) + "@2x." + itemData.image.split('.').pop(),
+                    //style: "opacity: 0;transition: opacity .3s ease-in;height:100%"
+                });
+                
+                var a =  $("<a>", {href:"javascript:engineGUI.initParallaxSlider('" + this.id + "')"}).append(img);
+                var p =  $("<p>").append(this.name);
+                var item = div.append(a).append(p);
+
+                menu.append(item);
+            });
+            new LazyLoad();
+        }//,error: function (request, status, error) {
+            //alertify.alert(request.responseText).show();
+        //}
+    });
+};
 
 engineGUI.initMenu = function(id,item)
 {
@@ -194,7 +192,7 @@ engineGUI.initMenu = function(id,item)
             });
         },
         error: function(xhr, textStatus, errorThrown){
-            alertify.alert("Menu (" + item + ") Loading Error");
+            alertify.alert("Menu (" + item + ") Loading Error").show();
         }
     });
     
@@ -279,10 +277,9 @@ engineGUI.showRightObjectMenu = function(path)
 
 engineGUI.showRightCatalogMenu = function()
 {
-
-    if (SCENE == 'house') {
+    if (SCENE === 'house') {
         $('#menuRight3DHouse').show();
-    } else if (SCENE == 'floor') {
+    } else if (SCENE === 'floor') {
         $('#menuRight3DFloor').show();
     }
 
@@ -420,6 +417,49 @@ engineGUI.menuGetItem = function(itemData, last)
     return item;
 };
 
+engineGUI.initParallaxSlider = function(id)
+{
+    if (getCookie("firstTimer"))
+    {
+        createCookie("firstTimer","1",15);
+        
+        window.location.href = "#start";
+    }else{
+        window.location.href = "#scene";
+    }
+
+    engineGUI.initHousePlanner();
+
+    var pxs_slider = $('.pxs_slider').empty();
+    var pxs_thumbnails = $('.pxs_thumbnails').empty();
+    
+    $.each(jsonindex.menu, function(index)
+    {
+        if(this.id === id)
+        {
+            for(var i = this.plan[0]; i <= this.plan[this.plan.length-1]; i++)
+            {
+                var img = $("<img>",{src: "scenes/" + id + "/" + i + ".jpg"});
+                var li =  $("<li>").append($("<a>",{href:"javascript:engineGUI.open(" + i + ",'" + id + "')"}).append(img));
+                pxs_slider.append(li);
+            }
+            for(var i = this.plan[0]; i <= this.plan[this.plan.length-1]; i++)
+            {
+                var img = $("<img>",{src: "scenes/" + id + "/_" + i + ".jpg"});
+                var li =  $("<li>").append(img);
+                pxs_thumbnails.append(li);
+            }
+            return true;
+        }
+    });
+
+    $('#pxs_container').parallaxSlider();
+
+    $(".pxs_bg1").css("background-image", "images/bg1.jpg");
+
+    engineGUI.initTopMenu();
+};
+
 function getMenuObjectItem(menu,itemData)
 {
     //console.log(itemData);
@@ -429,7 +469,6 @@ function getMenuObjectItem(menu,itemData)
     var img = $("<img>", {
         id: itemData.name,
         src: "images/loader.gif", //itemData.image,
-        href: "#",
         //width: "100%",
         //height: "100%",
         "data-src": itemData.image,
@@ -442,7 +481,7 @@ function getMenuObjectItem(menu,itemData)
     });
     */
     
-    var a =  $("<a>", {href:"javascript:insertSceneObject('" + itemData.file + "')"}).append(img);
+    var a =  $("<a>", {href:"javascript:engine3D.insert3DModel('" + itemData.file + "')"}).append(img);
     var divInfo = "<span class='objectItemInfo' style='height:40px'>";
 
     var item = $(li).append($(div).append(a).append(divInfo));
@@ -516,9 +555,9 @@ engineGUI.selectFloor = function(next)
         alertify.confirm("Add New Floor?", function (e) {
             if (e) {
                 if (SCENE == 'floor') {
-                    engine3D.newFloor("New Floor");
+                    engine3D.addFloor("New Floor");
                 } else if (SCENE == '2d') {
-                    engine2D.newFloor("New Floor");
+                    engine2D.addFloor("New Floor");
                 }
             //} else { // user clicked "cancel"
             }
@@ -658,4 +697,74 @@ engineGUI.exportPDF = function() {
             });
         }
     }
+};
+
+function scene3DSplitViewTop()
+{
+    var w = window.innerWidth/1.4;
+    var h = window.innerHeight*0.2;
+
+    $("#left-component-1").css({ width: w });
+    $("#right-component-1").css({ left: w });
+    $("#vertical-divider-1").css({ left: w });
+
+    $("#bottom-component").css({ height: h });
+    $("#top-component").css({ bottom: h });
+    $("#horizontal-divider").css({ bottom: h });
+
+    engine3D.initRendererQuadSize();
+};
+
+function scene3DSplitViewFront()
+{
+    var w = window.innerWidth*0.3;
+    var h = window.innerHeight*0.2;
+
+    $("#left-component-1").css({ width: w });
+    $("#right-component-1").css({ left: w });
+    $("#vertical-divider-1").css({ left: w });
+
+    $("#bottom-component").css({ height: h });
+    $("#top-component").css({ bottom: h });
+    $("#horizontal-divider").css({ bottom: h });
+
+    engine3D.initRendererQuadSize();
+};
+
+function scene3DSplitViewSide()
+{
+    var w = window.innerWidth*0.15;
+    var h = window.innerHeight/1.4;
+
+    $("#left-component-1").css({ width: w });
+    $("#right-component-1").css({ left: w });
+    $("#vertical-divider-1").css({ left: w });
+
+    $("#bottom-component").css({ height: h });
+    $("#top-component").css({ bottom: h });
+    $("#horizontal-divider").css({ bottom: h });
+
+    engine3D.initRendererQuadSize();
+};
+
+function scene3DSplitView3D()
+{
+    
+};
+
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) 
+    return parts.pop().split(";").shift();
+};
+
+function createCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+    else var expires = "";
+    document.cookie = name+"="+value+expires+"; path=/";
 };

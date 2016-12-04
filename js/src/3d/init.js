@@ -1,5 +1,5 @@
-engine3D.initHousePlanner = function () {
-
+engine3D.initialize = function()
+{
     if (!Detector.webgl)
     {
         //Detector.addGetWebGLMessage();
@@ -12,35 +12,23 @@ engine3D.initHousePlanner = function () {
         //}else  if (/Version\/[\d\.]+.*Safari/.test(navigator.userAgent)){
             //$('body').append(html + "<img src='images/safari-webgl.png'/></center></div>");
         }
-        $("#menuTop").hide();
-        $("#menuBottom").hide();
 
         document.getElementsByTagName("body")[0].style.overflow = "auto";
         document.getElementsByTagName("html")[0].style.overflow = "auto";
         return;
     }
 
-    if (getCookie("firstTimer"))
-    {
-        createCookie("firstTimer","1",15);
-        window.location.href = "#start";
-    }
-    else
-    {
-        window.location.href = "#scene";
-    }
-
 	//RUNMODE = runmode;
 	//VIEWMODE = viewmode;
 
-    if(RUNMODE == "local")
+    if(RUNMODE === "local")
     {
         $("#menuTopItem12").hide(); //Share
         $("#menuTopItem15").hide(); //Login
     }
 
     $("#menuTop").show();
-    $("#menuBottom").show();
+    $("#menuBottomHouse").show();
 
     // workaround for chrome bug: http://code.google.com/p/chromium/issues/detail?id=35980#c12
     if (window.innerWidth === 0) {
@@ -48,10 +36,8 @@ engine3D.initHousePlanner = function () {
         window.innerHeight = parent.innerHeight;
     }
 
-    spinner.className = "cssload-container";
-    spinner.setAttribute("style","position:absolute;top:32%;left:40%;");
-    spinner.innerHTML = "<ul class='cssload-flex-container'><li><span class='cssload-loading'></span></li></ul>";
-    
+    spinner = $("<div>", {class:"cssload-container", style:"position:absolute;top:32%;left:40%;"}).append($("<ul>", {class:"cssload-flex-container"}).append($("<li>").append($("<span>",{class:"cssload-loading"}))));
+
     /*
 	http://www.ianww.com/blog/2012/12/16/an-introduction-to-custom-shaders-with-three-dot-js/
 	huge improvement in smoothness of the simulation by writing a custom shader for my particle system.
@@ -59,14 +45,16 @@ engine3D.initHousePlanner = function () {
 	a long way toward ensuring the speed and reliability of the simulation. Custom shaders are written in GLSL,
 	which is close enough to C that it’ s not too difficult to translate your math into.
 	*/
-
+    scene3D = new THREE.Scene();
     projector = new THREE.Projector();
-    //zip = new JSZip();
     clock = new THREE.Clock();
     mouse = new THREE.Vector2();
     touch = new THREE.Vector2();
     target = new THREE.Vector3();
-    textureLoader = new THREE.TextureLoader();
+
+    engine3D.jsonLoader = new THREE.LoadingManager();
+    engine3D.fontLoader = new THREE.FontLoader();
+    engine3D.textureLoader = new THREE.TextureLoader();
 
     scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DPivotPoint = new THREE.Object3D();
@@ -291,49 +279,17 @@ engine3D.initHousePlanner = function () {
 
     engine3D.initTerrainWater();
 
-    engine3D.initTerrainClouds();
-
     engine2D.initialize();
    
-    engine3D.new(0);
-    engine3D.new(1);
+    engine3D.new();
 
-   	engine3D.enableOrbitControls(camera3D,renderer.domElement);
-
-    /*
-    manager = new THREE.LoadingManager();
-    manager.onProgress = function ( item, loaded, total ) {
-        //console.log( item, loaded, total );
-        //var material = new THREE.MeshFaceMaterial(materials);
-    };
-    */
-    //scene3DSky();
-
-    engine3D.initLights();
-
-    $('#menuWeatherText').html("Sunny");
-    $('#menuDayNightText').html("Day");
-
-    //animateHouse();
-
-    engine3D.open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
-    engine3D.open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
-    engine3D.open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
-
-    //engine3D.initPostprocessing();
+    engine3D.showHouse();
 
     //automatically resize renderer THREE.WindowResize(renderer, camera); toggle full-screen on given key press THREE.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
     $(window).bind('resize', onWindowResize);
     $(window).bind('beforeunload', function() {
         return 'Are you sure you want to leave?';
     });
-
-    engine3D.showHouse();
-
-    //For debugging purposes
-    //========================
-    //sceneOpen(2);
-    //========================
 };
 
 engine3D.initRenderer = function()
@@ -506,23 +462,22 @@ engine3D.initPostprocessing = function ()
         effectComposer = new THREE.EffectComposer( renderer );
         effectComposer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
 
-        var renderPass = new THREE.RenderPass( scene3D, camera3D ); // Setup render pass
-        effectComposer.addPass( renderPass );
+        var renderPass = new THREE.RenderPass(scene3D, camera3D); // Setup render pass
+        effectComposer.addPass(renderPass);
     //}
 
     if(SSAOProcessing.enabled) // && !(SSAOPass instanceof THREE.ShaderPass))
     {
         console.log("init SSAOShader");
         // Setup depth pass
-        var depthShader = THREE.ShaderLib.depthRGBA;
-        var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
-        depthMaterial = new THREE.ShaderMaterial( { fragmentShader: depthShader.fragmentShader, vertexShader: depthShader.vertexShader, uniforms: depthUniforms, blending: THREE.NoBlending } );
-        depthRenderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
+        depthMaterial = new THREE.MeshDepthMaterial();
+        depthMaterial.depthPacking = THREE.RGBADepthPacking;
+        depthMaterial.blending = THREE.NoBlending;
+        depthRenderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
 
         // Setup SSAO pass
-        SSAOPass = new THREE.ShaderPass( THREE.SSAOShader );
+        SSAOPass = new THREE.ShaderPass(THREE.SSAOShader);
         SSAOPass.renderToScreen = true;
-
         //ssaoPass.uniforms[ "tDiffuse" ].value will be set by ShaderPass
         SSAOPass.uniforms[ "tDepth" ].value = depthRenderTarget;
         SSAOPass.uniforms[ 'size' ].value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
@@ -532,7 +487,7 @@ engine3D.initPostprocessing = function ()
         SSAOPass.uniforms[ 'aoClamp' ].value = 0.3;
         SSAOPass.uniforms[ 'lumInfluence' ].value = 0.5;
 
-        effectComposer.addPass( SSAOPass ); // Add pass to effect composer
+        effectComposer.addPass(SSAOPass); // Add pass to effect composer
     }
 
     /*
@@ -755,120 +710,92 @@ engine3D.initCube = function (size) {
     return geometry;
 };
 
-engine3D.new = function(i)
+engine3D.newFloor = function(i)
 {
-    if (i === 0)
-    {
-        animateStop();
-        //scene3DFreeMemory();
-        //hideElements();
-        
-        scene3D = new THREE.Scene();
-
-        scene3DRoofContainer = new THREE.Object3D();
-        scene3DHouseContainer = new THREE.Object3D();
-        //_scene3DHouseGroundContainer = new THREE.Geometry(); //THREE.Scene();
-        scene3DHouseGroundContainer = new THREE.Object3D();
-        scene3DHouseFXContainer = new THREE.Object3D();
-        //scene3DFloorGroundContainer = new THREE.Object3D();
-        scene3DLevelGroundContainer = new THREE.Object3D();
-        scene3DLevelWallContainer = new THREE.Object3D();
-        //scene3DPivotPoint = new THREE.Object3D();
-
-        skyMesh = new THREE.Object3D();
-        skyFloorMesh = new THREE.Object3D();
-
-        engine3D.fontLoader = new THREE.FontLoader();
-        /*
-        manager = new THREE.LoadingManager();
-        manager.onProgress = function ( item, loaded, total ) {
-            console.log( item, loaded, total );
-        };
-        */
-        //http://blog.andrewray.me/creating-a-3d-font-in-three-js/
-
-        engine3D.enableOrbitControls(camera3D,renderer.domElement);
-
-        engine3D.initPostprocessing();
-    }
-
     scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
     //scene3DFloorOtherContainer[i] = new THREE.Object3D();
     scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
     scene3DFloorWallContainer[i] = new THREE.Object3D();
     scene3DFloorShapeContainer[i] = new THREE.Object3D();
     scene3DCeilingShapeContainer[i] = new THREE.Object3D();
-    scene3DFloorShapeTextures[i] = [];
-    scene3DCeilingShapeTextures[i] = [];
     scene3DWallInteriorTextures[i] = [];
     scene3DWallExteriorTextures[i] = [];
+}
+
+engine3D.new = function(i)
+{
+    //animateStop();
+    //scene3DFreeMemory();
+    //hideElements();
+
+    scene3DRoofContainer = new THREE.Object3D();
+    scene3DHouseContainer = new THREE.Object3D();
+    //_scene3DHouseGroundContainer = new THREE.Geometry(); //THREE.Scene();
+    scene3DHouseGroundContainer = new THREE.Object3D();
+    scene3DHouseFXContainer = new THREE.Object3D();
+    //scene3DFloorGroundContainer = new THREE.Object3D();
+    scene3DLevelGroundContainer = new THREE.Object3D();
+    scene3DLevelWallContainer = new THREE.Object3D();
+    //scene3DPivotPoint = new THREE.Object3D();
+
+    skyMesh = new THREE.Object3D();
+    skyFloorMesh = new THREE.Object3D();
+
+    engine3D.enableOrbitControls(camera3D,renderer.domElement);
+
+    engine3D.initPostprocessing();
+
+    //engine3D.scene3DSky();
+
+    engine3D.initLights();
+
+    //$('#menuWeatherText').html("Sunny");
+    //$('#menuDayNightText').html("Day");
+
+    //animateHouse();
+
+    engine3D.open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
+    engine3D.open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
+    engine3D.open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
 };
 
-engine3D.open = function(zip)
+engine3D.open = function()
 {
-    //zip.folder("Textures").load(data);
-    /*
-    try{
-        terrain3DRawHillData = JSON.parse(zip.file("scene3DTerrainHill.json").asText());
-        landscape.select('hill');
-        $.each(terrain3DRawHillData, function(index)
+    //landscape.select('hill');
+    //landscape.select('valley');
+    
+    //engine3D.new();
+    scene3DHouseGroundContainer = new THREE.Object3D(); //Important to reset
+
+    $.each(json.terrain, function()
+    {
+        //console.log(this);
+        engine3D.open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+    });
+
+    $.each(json.roof, function()
+    {
+        //console.log(this);
+        engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'],this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+    });
+
+    $.each(json.house, function()
+    {
+        //console.log(this);
+        engine3D.open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+    });
+
+    for (var i = 0; i < json.furniture.length; i++)
+    {
+        engine3D.newFloor(i);
+
+        $.each(json.furniture[i], function()
         {
-            terrain3DMouse = this;
-            landscape.onmousemove();
-            //console.log(this);
+            var note = null;
+            if(this.note !== undefined)
+                note = this.note;
+            if(this.file !== undefined)
+                engine3D.open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
         });
-    }catch(ex){}
-
-    try{
-        terrain3DRawValleyData = JSON.parse(zip.file("scene3DTerrainValley.json").asText());
-        landscape.select('valley');
-        $.each(terrain3DRawValleyData, function(index)
-        {
-            terrain3DMouse = this;
-            landscape.onmousemove();
-            //console.log(this);
-        });
-    }catch(ex){}
-    */
-
-    var i = 0;
-    zip.file("scene3DFloorContainer.json").async("string").then(function (content) {
-        $.each(JSON.parse(content), function(index)
-        {
-            //var objects3DFurniture = JSON.parse(this);
-            engine3D.new(i);
-
-            $.each(this, function(index){
-                var note = null;
-                if(this.note !== undefined)
-                    note = this.note;
-                if(this.file !== undefined)
-                    engine3D.open3DModel(this.file, scene3DFloorFurnitureContainer[i], this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, note);
-                if(this.floor !== undefined)
-                    scene3DFloorShapeTextures[i].push(this.floor);
-                if(this.ceiling !== undefined)
-                    scene3DCeilingShapeTextures[i].push(this.ceiling);
-            });
-
-            i++;
-        });
-    });
-
-    zip.file("scene3DTerrain.json").async("string").then(function (content) {
-        $.each(JSON.parse(content), function(index){
-            engine3D.open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
-        });
-    });
-
-    zip.file("scene3DHouseContainer.json").async("string").then(function (content) {
-        $.each(JSON.parse(content), function(index){
-            engine3D.open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
-        });
-    });
-
-    zip.file("scene3DRoofContainer.json").async("string").then(function (content) {
-        $.each(JSON.parse(content), function(index){
-            engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
-        });
-    });
+    }
 };

@@ -209,219 +209,118 @@ function scene3DLandscapeGetHeightData(img,scale) //return array with height dat
 
 engine3D.initTerrainGround = function()
 {
-    /*
-    //var texture = THREE.ImageUtils.loadTexture('assets/combined.png', null, loaded); // load the heightmap we created as a texture
-    var detailTexture = THREE.ImageUtils.loadTexture('objects/Landscape/Textures/G36096.jpg'); //, null, loaded);  // load two other textures we'll use to make the map look more real
+    if(terrain3DMaterial === undefined)
+    {
+        /*
+        //var texture = THREE.ImageUtils.loadTexture('assets/combined.png', null, loaded); // load the heightmap we created as a texture
+        var detailTexture = THREE.ImageUtils.loadTexture('objects/Landscape/Textures/G36096.jpg'); //, null, loaded);  // load two other textures we'll use to make the map look more real
 
-    terrainShader = THREE.ShaderTerrain[ "terrain" ];
-    uniformsTerrain = THREE.UniformsUtils.clone(terrainShader.uniforms);
+        terrainShader = THREE.ShaderTerrain[ "terrain" ];
+        uniformsTerrain = THREE.UniformsUtils.clone(terrainShader.uniforms);
 
-    // how to treat abd scale the normal texture
-    uniformsTerrain[ "tNormal" ].texture = detailTexture;
-    uniformsTerrain[ "uNormalScale" ].value = 0.5;
+        // how to treat abd scale the normal texture
+        uniformsTerrain[ "tNormal" ].texture = detailTexture;
+        uniformsTerrain[ "uNormalScale" ].value = 0.5;
 
-    // displacement is heightmap (greyscale image)
-    //uniformsTerrain[ "tDisplacement" ].value = texture;
-    //uniformsTerrain[ "uDisplacementScale" ].value = 15;
+        // displacement is heightmap (greyscale image)
+        //uniformsTerrain[ "tDisplacement" ].value = texture;
+        //uniformsTerrain[ "uDisplacementScale" ].value = 15;
 
-    // the following textures can be use to finetune how the map is shown. These are good defaults for simple rendering
-    uniformsTerrain[ "tDiffuse1" ].value = detailTexture;
-    uniformsTerrain[ "tDetail" ].texture = detailTexture;
-    uniformsTerrain[ "enableDiffuse1" ].value = true;
-    //uniformsTerrain[ "enableDiffuse2" ].value = true;
-    //uniformsTerrain[ "enableSpecular" ].value = true;
+        // the following textures can be use to finetune how the map is shown. These are good defaults for simple rendering
+        uniformsTerrain[ "tDiffuse1" ].value = detailTexture;
+        uniformsTerrain[ "tDetail" ].texture = detailTexture;
+        uniformsTerrain[ "enableDiffuse1" ].value = true;
+        //uniformsTerrain[ "enableDiffuse2" ].value = true;
+        //uniformsTerrain[ "enableSpecular" ].value = true;
 
-    // diffuse is based on the light reflection
-    //uniformsTerrain[ "uDiffuseColor" ].value.setHex(0xcccccc);
-    //uniformsTerrain[ "uSpecularColor" ].value.setHex(0xff0000);
+        // diffuse is based on the light reflection
+        //uniformsTerrain[ "uDiffuseColor" ].value.setHex(0xcccccc);
+        //uniformsTerrain[ "uSpecularColor" ].value.setHex(0xff0000);
 
-    // is the base color of the terrain
-    //uniformsTerrain[ "uAmbientColor" ].value.setHex(0x0000cc);
- 
-    // how shiny is the terrain
-    //uniformsTerrain[ "uShininess" ].value = 3;
+        // is the base color of the terrain
+        //uniformsTerrain[ "uAmbientColor" ].value.setHex(0x0000cc);
+     
+        // how shiny is the terrain
+        //uniformsTerrain[ "uShininess" ].value = 3;
 
-    // handles light reflection
-    //uniformsTerrain[ "uRepeatOverlay" ].value.set(3, 3);
+        // handles light reflection
+        //uniformsTerrain[ "uRepeatOverlay" ].value.set(3, 3);
 
-    terrain3DMaterial = new THREE.ShaderMaterial({
-        uniforms:       uniformsTerrain,
-        vertexShader:   terrainShader.vertexShader,
-        fragmentShader: terrainShader.fragmentShader,
-        lights:         true,
-        fog:            false
-    });
+        terrain3DMaterial = new THREE.ShaderMaterial({
+            uniforms:       uniformsTerrain,
+            vertexShader:   terrainShader.vertexShader,
+            fragmentShader: terrainShader.fragmentShader,
+            lights:         true,
+            fog:            false
+        });
 
-    var geometryTerrain = new THREE.PlaneGeometry( 40, 40);
-    //geometryTerrain.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-    geometryTerrain.computeFaceNormals();
-    geometryTerrain.computeVertexNormals();
- 
-    terrain3D = new THREE.Mesh(geometryTerrain, terrain3DMaterial);
-    terrain3D.rotation.x = -Math.PI / 2;
-    */
+        var geometryTerrain = new THREE.PlaneGeometry( 40, 40);
+        //geometryTerrain.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI / 2));
+        geometryTerrain.computeFaceNormals();
+        geometryTerrain.computeVertexNormals();
+     
+        terrain3D = new THREE.Mesh(geometryTerrain, terrain3DMaterial);
+        terrain3D.rotation.x = -Math.PI / 2;
+        */
 
-    $.ajax({
-        url: "shaders/ground.vertex.fx",
-        beforeSend: function (req) {
-            req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
-        },
-        success: function(ground_vertex_data){
-            $.ajax({
-                url: "shaders/ground.fragment.fx",
-                beforeSend: function (req) {
-                    req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
+        var ground_vertex_data = $.ajax({ url:"shaders/ground.vertex.fx", dataType:'text', async:false}).responseText;
+        var ground_fragment_data = $.ajax({ url:"shaders/ground.fragment.fx", dataType:'text', async:false}).responseText;
+
+        terrain3DMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                texture_grass: { type: "t", value: engine3D.textureLoader.load('objects/Landscape/Textures/G36096.jpg')},
+                texture_bare: { type: "t", value: engine3D.textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
+                texture_snow: { type: "t", value: engine3D.textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
+                show_ring: { type: 'i', value: true },
+                ring_width: { type: 'f', value: 0.15 },
+                ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
+                ring_center: { type: 'v3', value: new THREE.Vector3() },
+                ring_radius: { type: 'f', value: 1.6 }
+            },
+            vertexShader: ground_vertex_data,
+            fragmentShader: ground_fragment_data,
+            //fog: false,
+            //lights: true
+        });
+        var geometry = new THREE.PlaneBufferGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices);
+        
+        var numVertices = geometry.attributes.position.count;
+        var displacement = new THREE.Float32BufferAttribute(numVertices * 1, 1);
+        geometry.addAttribute( 'displacement', displacement);
+
+        terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);
+        terrain3D.displacement = geometry.attributes.displacement;
+        terrain3D.displacement.dynamic = true;
+        terrain3D.rotation.x = -Math.PI / 2;
+        //console.log(geometry.attributes.displacement);
+        
+        var water_vertex_data = $.ajax({ url:"shaders/water.vertex.fx", dataType:'text', async:false}).responseText;
+        var water_fragment_data = $.ajax({ url:"shaders/water.fragment.fx", dataType:'text', async:false}).responseText;
+        
+        terrain3D.water = new THREE.Mesh(
+            geometry,
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    water_level: { type: 'f', value: -1 },
+                    time: { type: 'f', value: 0 }
                 },
-                success: function(ground_fragment_data){
-
-                    terrain3DMaterial = new THREE.ShaderMaterial({
-                        uniforms: {
-                            texture_grass: { type: "t", value: textureLoader.load('objects/Landscape/Textures/G36096.jpg')},
-                            texture_bare: { type: "t", value: textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
-                            texture_snow: { type: "t", value: textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
-                            show_ring: { type: 'i', value: true },
-                            ring_width: { type: 'f', value: 0.15 },
-                            ring_color: { type: 'v4', value: new THREE.Vector4(1.0, 0.0, 0.0, 1.0) },
-                            ring_center: { type: 'v3', value: new THREE.Vector3() },
-                            ring_radius: { type: 'f', value: 1.6 }
-                        },
-                        vertexShader: ground_vertex_data,
-                        fragmentShader: ground_fragment_data,
-                        //fog: false,
-                        //lights: true
-                    });
-                    var geometry = new THREE.PlaneBufferGeometry( plots_x, plots_y, plots_x * plot_vertices, plots_y * plot_vertices);
-                    
-                    var numVertices = geometry.attributes.position.count;
-                    var displacement = new THREE.Float32BufferAttribute(numVertices * 1, 1);
-                    geometry.addAttribute( 'displacement', displacement);
-
-                    terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);
-                    terrain3D.displacement = geometry.attributes.displacement;
-                    terrain3D.displacement.dynamic = true;
-                    terrain3D.rotation.x = -Math.PI / 2;
-                    //console.log(geometry.attributes.displacement);
-
-                    $.ajax({
-                        url: "shaders/water.vertex.fx",
-                        beforeSend: function (req) {
-                            req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
-                        },
-                        success: function(water_vertex_data){
-                            $.ajax({
-                                url: "shaders/water.fragment.fx",
-                                beforeSend: function (req) {
-                                    req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
-                                },
-                                success: function(water_fragment_data){
-                                    terrain3D.water = new THREE.Mesh(
-                                        geometry,
-                                        new THREE.ShaderMaterial({
-                                            uniforms: {
-                                                water_level: { type: 'f', value: -1 },
-                                                time: { type: 'f', value: 0 }
-                                            },
-                                            vertexShader: water_vertex_data,
-                                            fragmentShader: water_fragment_data,
-                                            transparent: true
-                                        })
-                                    );
-                                    terrain3D.water.displacement = geometry.attributes.displacement;
-                                    terrain3D.water.displacement.dynamic = true;
-                                    terrain3D.water.position.z = -1;
-                                    terrain3D.add(terrain3D.water);
-                                }
-                            }); 
-                        }
-                    }); 
-                }
-            }); 
-        }
-    });
-}
-
-engine3D.initTerrainClouds = function()
-{
-    /* 
-    =======================
-    Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
-    =======================
-    */
-    /*
-    $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
-        options.async = false;
-    });
-    */
-    //=====================
-
-    weatherSkyCloudsMesh =  new THREE.Mesh();
-    weatherSkyRainbowMesh = new THREE.Mesh();
-
-    $.ajax({
-        url: "shaders/clouds.vertex.fx",
-        //async: false,
-        beforeSend: function (req) {
-            req.overrideMimeType('text/plain; charset=x-shader/x-vertex'); //important - set for binary!
-        },
-        success: function(vertex_data){
-            $.ajax({
-                url: "shaders/clouds.fragment.fx",
-                //async: false,
-                beforeSend: function (req) {
-                    req.overrideMimeType('text/plain; charset=x-shader/x-fragment'); //important - set for binary!
-                },
-                success: function(fragment_data){
-                    var fog = new THREE.Fog(0x4584b4, -100, 1000);
-                    weatherSkyMaterial = new THREE.ShaderMaterial({
-                        uniforms: {
-                            "map": {
-                                type: "t",
-                                //value: texture
-                            },
-                            "fogColor": {
-                                type: "c",
-                                value: fog.color
-                            },
-                            "fogNear": {
-                                type: "f",
-                                value: fog.near
-                            },
-                            "fogFar": {
-                                type: "f",
-                                value: fog.far
-                            },
-                        },
-                        vertexShader: vertex_data,
-                        fragmentShader: fragment_data,
-                        depthWrite: false,
-                        depthTest: false,
-                        transparent: true
-                    });
-                    weatherSkyGeometry = new THREE.Geometry();
-                    var plane = new THREE.Mesh(new THREE.PlaneGeometry(4, 4));
-                    for (var i = 0; i < 20; i++) 
-                    {
-                        plane.position.x = getRandomInt(-20, 20);
-                        plane.position.y = getRandomInt(5.5, 10);
-                        plane.position.z = i;
-                        plane.rotation.z = getRandomInt(5, 10);
-                        plane.scale.x = plane.scale.y = getRandomInt(0.5, 1);
-                        plane.updateMatrix();
-                        weatherSkyGeometry.merge(plane.geometry, plane.matrix);
-                    }
-                    engine3D.setWeather();
-                    engine3D.initSunlight(); //SUNLIGHT RAYS
-                }
-            }); 
-        }
-    });
-}
+                vertexShader: water_vertex_data,
+                fragmentShader: water_fragment_data,
+                transparent: true
+            })
+        );
+        terrain3D.water.displacement = geometry.attributes.displacement;
+        terrain3D.water.displacement.dynamic = true;
+        terrain3D.water.position.z = -1;
+        terrain3D.add(terrain3D.water);
+    }
+};
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
 engine3D.initTerrainWater = function ()
 {
 
-}
+};

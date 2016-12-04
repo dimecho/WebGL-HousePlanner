@@ -21,7 +21,7 @@ if(isset($_REQUEST['keyword']))
 
 		// use array_shift to free up the memory associated with the record as we deal with it
 		while($row = array_shift($rows)){
-			echo '<li><img src="' .$row['IMAGE']. '" style="max-width:100%" onclick="insertSceneObject(\'' .$row['ID']. '\')" />' .$row['ID']. '</li>';
+			echo '<li><img src="' .$row['IMAGE']. '" style="max-width:100%" onclick="engine3D.insert3DModel(\'' .$row['ID']. '\')" />' .$row['ID']. '</li>';
 		}
 		
 		$db = null;

@@ -1,0 +1,12 @@
+{
+    "menu": [
+    {
+        "id": "4af8b812",
+        "name": "House Plan 1",
+        "plan": [1,2,3]
+    },{
+        "id": "14fa30ae",
+        "name": "Appartment Plan 1",
+        "plan": [2,3]
+    }]
+}

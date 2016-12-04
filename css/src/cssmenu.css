@@ -96,7 +96,7 @@ http://designmodo.com/demo/css3accordionmenu/#one3
   border: none;
 }
 
-#menuTop{
+.menuTop{
   position: absolute;
   top: 10px;
   left: 20%;
@@ -124,7 +124,7 @@ http://designmodo.com/demo/css3accordionmenu/#one3
   */
 }
 
-#menuBottom {
+.menuBottom {
   position: absolute;
   bottom:10px;
   left: 30%;
@@ -195,4 +195,14 @@ http://designmodo.com/demo/css3accordionmenu/#one3
   border:1px solid #000000;
   padding: 10px;
   margin:15px;
+}
+
+.indexImage {
+    border:2px solid #fff;
+    -moz-box-shadow: 10px 10px 5px #ccc;
+    -webkit-box-shadow: 10px 10px 5px #ccc;
+    box-shadow: 10px 10px 5px #ccc;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    border-radius:4px;
 }

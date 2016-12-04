@@ -272,7 +272,7 @@ $(document).on('keyup', function(event){
         {
             camera3DPositionCache = new THREE.Vector3(0, 6, 20);
             camera3DPivotCache = new THREE.Vector3(0, 0, 0);
-            camera3DAnimateResetView();
+            engine3D.cameraAnimateResetView();
         }
     /*
     }
@@ -298,9 +298,8 @@ $(document).on('keyup', function(event){
     }
 });
 
-
 function on3DRoofVDividerMouseUp(event) {
-    scene3DInitializeRendererQuadSize();
+    engine3D.initRendererQuadSize();
 }
 
 function on3DRoofSplit0MouseMove(event) {

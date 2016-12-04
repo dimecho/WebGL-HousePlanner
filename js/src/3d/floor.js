@@ -2,7 +2,7 @@ var engine3D = window.engine3D || {};
 
 engine3D.makeFloor = function () {
 
-    for(i = 0; i < scene2DFloorShape.length; i++)
+    for(var i = 0; i < scene2DFloorShape.length; i++)
     {
         if(scene2DFloorShape[i].children[0] !== undefined)
         {
@@ -36,9 +36,9 @@ engine3D.makeFloor = function () {
             //Floor
             var geometry = new THREE.ShapeGeometry(shape);
             var material = new THREE.MeshBasicMaterial();
-            var texture = THREE.ImageUtils.loadTexture(scene3DFloorShapeTextures[i][0]);
+            var texture = engine3D.textureLoader.load(json.floor[i].texture);
             texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;          
+            texture.wrapT = THREE.RepeatWrapping;
             material.map = texture;
             //material.side = THREE.DoubleSide;
             var mesh = new THREE.Mesh(geometry, material);
@@ -47,7 +47,7 @@ engine3D.makeFloor = function () {
             scene3DFloorShapeContainer[i].add(mesh);
 
             //Ceiling
-            var texture2 = THREE.ImageUtils.loadTexture(scene3DCeilingShapeTextures[i][0]);
+            var texture2 = engine3D.textureLoader.load(json.ceiling[i].texture);
             texture2.wrapS = THREE.RepeatWrapping;
             texture2.wrapT = THREE.RepeatWrapping;
             var material2 = new THREE.MeshBasicMaterial();

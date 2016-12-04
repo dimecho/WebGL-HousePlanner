@@ -3,14 +3,13 @@ var engine2D = window.engine2D || {};
 
 var scene3D; //Three.js Canvas
 var scene3DCube; //Three.js Canvas
-var scene3DPanorama; //Three.js Canvas
 var scene2D; //Fabric.js Canvas
 var canvas2D;
 var scene2DAdvanced; //Fabric.js Canvas
 var physics3D; //Cannon.js Engine (collisions and other cool stuff)
 
 var dpr;
-var renderer, rendererCube, rendererPanorama;
+var renderer, rendererCube;
 
 var rendererQuad = [4];
 var camera3DQuad = [4];
@@ -22,7 +21,6 @@ var _scene3DHouseGroundContainer; //THREE.Scene  - used for Geometry() refferenc
 var scene3DHouseGroundContainer; //THREE.Object3D - automatically converted to  BufferGeometry()
 var scene3DHouseFXContainer; //Visual Effects container (user not editable/animated) - fying bugs/birds/rainbows
 var scene3DFloorGroundContainer; //Floor Ground - 1 object
-var scene3DPanoramaContainer;
 var scene3DCutawayPlaneMesh; //Virtual mesh used to detect collisions "cut-aways" for front walls
 var scene3DLevelGroundContainer; //Floor Level arrengment Ground - 1 object
 var scene3DLevelWallContainer; //Floor Level arrengment Ground - 1 object
@@ -34,9 +32,7 @@ var scene3DFloorWallContainer = []; //Three.js 3D Layer contains all walls by fl
 var scene3DFloorDoorContainer = [];
 var scene3DFloorWindowContainer = [];
 var scene3DFloorShapeContainer = []; //Three.js 3D Layer contains floor mesh+textures (multiple floors by floor)
-var scene3DFloorShapeTextures = [];
 var scene3DCeilingShapeContainer = [];
-var scene3DCeilingShapeTextures = [];
 var scene2DFloorShape = [];
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 
@@ -47,7 +43,7 @@ var scene3DCubeMesh; // Orange cube for visual orientation
 var sceneAmbientLight;
 var sceneDirectionalLight;
 var sceneSpotLight;
-//var sceneHemisphereLight;
+var sceneHemisphereLight;
 //var sceneParticleLight;
 //var scenePointLight;
 
@@ -56,7 +52,6 @@ var camera3D;
 var camera3DPositionCache;
 var camera3DPivotCache;
 var camera3DCube;
-var camera3DPanorama;
 //var camera3DMirrorReflection;
 
 var groundGrid;
@@ -65,6 +60,7 @@ var skyMesh;
 var skyFloorMesh;
 var weatherSkyGeometry;
 var weatherSkyMaterial;
+//var weatherRainbowMaterial;
 var weatherSkyCloudsMesh;
 var weatherSkyRainbowMesh;
 //var weatherSkyDayMesh;
@@ -75,7 +71,7 @@ var SESSION = '';
 //var VIEWMODE = 'designer'; //public
 var RADIAN = (Math.PI / 180);
 var SCENE = 'house';
-var SCENEFILE = 'scene1.zip';
+var SCENEID = '';
 var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
 var TOOL3DLANDSCAPE = 'rotate';
@@ -145,8 +141,8 @@ var particlePivot;
 var particlePivotEmitter;
 var particleWeather;
 */
-var spinner = document.createElement('div');
-var settings = { sunlight : false, clouds: true, rainbow: true, panorama_day: "2056", panorama_night: "2057", autorotate: false };
+var spinner;
+var json = { info:{}, settings:{}, weather:{}, terrain:[], roof:[], floor:[], ceiling:[], furniture:[], house:[], plan:[] };
 
 //var particleClouds;
 var mouse; //THREE.Vector2()
@@ -154,8 +150,6 @@ var touch; //THREE.Vector2()
 var target; //THREE.Vector3();
 var clock;
 //var engine;
-//var manager;
-var textureLoader;
 var projector;
 var vector;
 var geometry;
@@ -166,8 +160,6 @@ var mesh;
 var terrain3D;
 var terrain3DMaterial;
 //var terrainShader;
-
-
 
 var fileReader; //HTML5 local file reader
 //var progress = document.querySelector('.percent');
