@@ -3,13 +3,13 @@
 <head>
   <title>Paper</title>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1">
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
 
   <script src="../js/src/library/jquery.js"></script>
   <script src="../js/src/library/jszip.js"></script>
   <script src="../js/paper/paper.min.js"></script>
+  <!--
   <script src="../js/paper/Pattern.js"></script>
+  -->
 
   <script src="../js/library/jquery.mousewheel.js"></script>
   <script src="../js/src/variables.js"></script>
@@ -27,41 +27,39 @@
   <link rel="stylesheet" type="text/css" href="../css/src/iconhover.css" />
 
   <script type="text/javascript">
+
+    var engine3D = window.engine3D || {};
+    var engineGUI = window.engineGUI || {};
+
     $(document).ready(function() {
 
         engine2D.initialize();
 
-        $.ajax("../scenes/scene1.zip",{
-            async: true,
-            contentType: "application/zip",
-            beforeSend: function (req) {
-              req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
-            },
-            success: function(data){
-              var zip = new JSZip();
-              zip.loadAsync(data).then(function(zip) {
-                  engine2D.open(zip);
-              });
-              setTimeout(function(){ engine2D.show(); }, 2000);
+        $.ajax("../scenes/4af8b812.json",{
+            contentType: "application/json",
+            dataType: "json",
+            success: function(data)
+            {
+              json = data;
+              engine2D.open();
+              engine2D.show();
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) { 
               alert("Status: " + textStatus); alert("Error: " + errorThrown); 
             }
         });
     });
-    var engine3D = window.engine3D || {};
-    var engineGUI = window.engineGUI || {};
 
     engineGUI.selectFloor = function(next)
     {
-        var i = FLOOR + next;
-        if (i < FLOOR) {
+        var i = engineGUI.floor + next;
+        if (i < engineGUI.floor) {
             engine2D.showFloor(i);
         }else{
           console.log("New Floow");
         }
     }
-    function animateStop()
+    engine3D.animateStop = function()
     {}
     engine3D.freeMemory = function()
     {};

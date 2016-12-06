@@ -2,12 +2,12 @@ var engineGUI = window.engineGUI || {};
 
 engineGUI.open = function(s,id)
 {
-    SCENEID = id;
+    engine3D.id = id;
 
     $("#start").remove();
     $("#scene").remove();
 
-    spinner.appendTo("body");
+    engineGUI.spinner.appendTo("body");
 
     //var data = $.ajax({ url:"scenes/" + id + ".json", async:false, dataType: "json"}).responseText;
     //json = JSON.parse(data);
@@ -19,7 +19,7 @@ engineGUI.open = function(s,id)
         {
             json = data;
 
-            console.log(json);
+            //console.log(json);
             
             if (s === 1){
                 setTimeout(function() {
@@ -28,17 +28,17 @@ engineGUI.open = function(s,id)
             }else if(s===2){
 
                 //quick response
-                SCENE = 'floor';
+                engineGUI.scene = 'floor';
                 engine3D.setLights();
                 engine3D.buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
 
-                scene3D.remove(skyMesh);
-                scene3D.remove(weatherSkyCloudsMesh);
-                scene3D.remove(weatherSkyRainbowMesh);
-                scene3D.remove(scene3DHouseGroundContainer);
+                engine3D.scene.remove(skyMesh);
+                engine3D.scene.remove(weatherSkyCloudsMesh);
+                engine3D.scene.remove(weatherSkyRainbowMesh);
+                engine3D.scene.remove(scene3DHouseGroundContainer);
 
-                scene3D.add(skyFloorMesh);
-                scene3D.add(scene3DFloorGroundContainer);
+                engine3D.scene.add(skyFloorMesh);
+                engine3D.scene.add(scene3DFloorGroundContainer);
 
                 setTimeout(function() {
                     engine3D.cameraAnimate(0,20,0,1500);
@@ -50,12 +50,13 @@ engineGUI.open = function(s,id)
 
             engine2D.open();
             engine3D.open();
-
+            
             setTimeout(function()
             {
-                spinner.remove();
-               
+                engineGUI.spinner.remove();
+                
                 $('#menuAgent').show();
+                $('#agentPicture').attr("src",json.info.agentPicture);
 
                 if(s == 1){
                     engine3D.showHouse();
@@ -69,15 +70,6 @@ engineGUI.open = function(s,id)
                     engine2D.show();
                 }
 
-                $.each(json.plan, function()
-                {
-                    $.each(this, function()
-                    {
-                        console.log(this.name);
-                        //scene3DFloorFurnitureContainer[i].name = this.name;
-                    });
-                });
-
                 setTimeout(function() {
                     scene3DAnimateRotate = json.settings.autorotate;
                 }, 4000);
@@ -87,7 +79,7 @@ engineGUI.open = function(s,id)
         error: function (request, status, error) {
             //console.log(request.responseText);
 
-            spinner.remove();
+            engineGUI.spinner.remove();
             alertify.alert("Cannot load scene json file: " + request.responseText).show();
         }
     });
@@ -108,7 +100,7 @@ engineGUI.save = function(online)
 
         if (online)
         {
-            if(SESSION === '')
+            if(engineGUI.session !== '')
             {
                 //saveAs(content, "scene.zip"); //Debug
                 window.location = "#openLogin";

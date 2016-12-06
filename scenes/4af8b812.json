@@ -1,15 +1,19 @@
 {
     "info": {
         "agent": "Test",
+        "agentPicture": "scenes/4af8b812/agent.jpg",
         "mls": "34672",
         "phone": ""
     },
     "settings": {
         "autorotate": false,
+        "showcube": false,
         "panorama_day": "2056",
         "panorama_night": "2057"
     },
     "weather": {
+        "atmosphere": "sunny",
+        "day": true,
         "sunlight": false,
         "clouds": true,
         "rainbow": true
@@ -26,7 +30,7 @@
         "valley": null
     }],
     "roof": [{
-        "file": "objects/Platform/roof.jsz",
+        "file": "scenes/4af8b812/roof.jsz",
         "position.x": 0,
         "position.y": 0.15,
         "position.z": 0,
@@ -95,7 +99,7 @@
         "rotation.y": 0,
         "rotation.z": 0
     }, {
-        "file": "objects/Platform/house.jsz",
+        "file": "scenes/4af8b812/house.jsz",
         "position.x": 0,
         "position.y": 0,
         "position.z": 0,

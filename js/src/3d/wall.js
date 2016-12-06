@@ -1,11 +1,13 @@
 var engine3D = window.engine3D || {};
 
-engine3D.makeWalls = function () {
-    
+engine3D.makeWalls = function()
+{
     //https://www.mixeelabs.com/creator/tutorial:-advanced-geometries/edit
 
     //if(scene2DWallMesh[FLOOR].length == 0)
     //    return;
+
+    var radians = (Math.PI / 180);
 
     for(var i = 0; i < scene2DWallGroup.length; i++)
     {
@@ -79,7 +81,7 @@ engine3D.makeWalls = function () {
                 });
 
                 var mesh = new THREE.Mesh(geometry, material);
-                mesh.rotation.x = -(90 * RADIAN); //extrusion happens in Z direction, we need the wall pointing UP
+                mesh.rotation.x = -(90 * radians); //extrusion happens in Z direction, we need the wall pointing UP
                 mesh.position.y = 0;
 
                 scene3DFloorWallContainer[i].add(mesh);
@@ -147,7 +149,7 @@ engine3D.makeWalls = function () {
         }
         /
     }
-    //scene3D.add(scene3DFloorDoorContainer);
+    //engine3D.scene.add(scene3DFloorDoorContainer);
     */
 };
 
@@ -175,7 +177,7 @@ engine3D.generateLevelWalls = function()
     mesh.position.y = 6;
     scene3DLevelWallContainer.add(mesh);
 
-    scene3D.add(scene3DLevelWallContainer);
+    engine3D.scene.add(scene3DLevelWallContainer);
 };
 
 function scene3DFloorObjectWallMeasurementAjust() {

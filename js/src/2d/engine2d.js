@@ -5,8 +5,9 @@ engine2D.show = function (){
 
     console.log("engine2d.show()");
 	
-    SCENE = '2d';
-    animateStop();
+    engineGUI.scene= '2d';
+
+    //engine3D.animateStop();
     engine3D.freeMemory();
     engine2D.freeMemory();
     engine3D.hide();
@@ -20,7 +21,7 @@ engine2D.show = function (){
     $('#engine2D').show();
 	
     /*
-    canvas2D.attach('mousedrag', function(event, delta) {
+    engine2D.canvas.attach('mousedrag', function(event, delta) {
         var deltaX = (paper.view.center.x/2 - event.point.x/2);
         var deltaY = (paper.view.center.y/2 - event.point.y/2);
 
@@ -33,7 +34,7 @@ engine2D.show = function (){
     engineGUI.menuToggleRight('menuRight', true);
     engineGUI.menuToggleLeft('menuLeft2D', true);
 	
-    //$('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[FLOOR].name);
+    //$('#menuFloorSelectorText').html(scene3DFloorFurnitureContainer[engineGUI.floor].name);
     $('#menuFloorSelector').show();
     $('#menuBottomPlan').show();
 	
@@ -65,21 +66,24 @@ engine2D.show = function (){
 
     //scene2DCalculateWallLength();
 	
-	engine2D.showFloor(FLOOR);
+	engine2D.showFloor(engineGUI.floor);
 };
 
 engine2D.showFloor = function(i)
 {
-    FLOOR = i;
-	
-	//engine2D.makeFloor();
-	engine2D.clear();
-	engine2D.drawFloor(FLOOR);
-	engine2D.drawWall(FLOOR);
-	engine2D.drawDoor(FLOOR);
-	engine2D.drawWindow(FLOOR);
-	engine2D.attachObjectsToWalls(FLOOR,scene2DDoorGroup);
-	engine2D.attachObjectsToWalls(FLOOR,scene2DWindowGroup);
+    engineGUI.floor = i;
+
+    if(scene2DFloorShape[i] !== undefined)
+	{
+    	//engine2D.makeFloor();
+    	engine2D.clear();
+    	engine2D.drawFloor(engineGUI.floor);
+    	engine2D.drawWall(engineGUI.floor);
+    	engine2D.drawDoor(engineGUI.floor);
+    	engine2D.drawWindow(engineGUI.floor);
+    	engine2D.attachObjectsToWalls(engineGUI.floor,scene2DDoorGroup);
+    	engine2D.attachObjectsToWalls(engineGUI.floor,scene2DWindowGroup);
+    }
 };
 
 engine2D.addFloor = function(name)
@@ -113,25 +117,31 @@ engine2D.hide = function() {
         }
     }
     */
-    if(canvas2D)
+
+    $('#engine2D').hide();
+
+    engineGUI.mousedrag = false;
+    
+    if(engine2D.canvas !== undefined)
     {
         for(var i = 0; i < scene2DWallGroup.length; i++)
         {
             engine2D.clear(i,false);
         }
-        canvas2D.off('mouseenter');
-        canvas2D.off('mouseleave');
-        canvas2D.off('mousedown');
-        canvas2D.off('mouseup');
-        canvas2D.off('mousedrag');
-        canvas2D.off('mousemove');
-        canvas2D.off('doubleclick');
+        /*
+        engine2D.canvas.off('mouseenter');
+        engine2D.canvas.off('mouseleave');
+        engine2D.canvas.off('mousedown');
+        engine2D.canvas.off('mouseup');
+        engine2D.canvas.off('mousedrag');
+        engine2D.canvas.off('mousemove');
+        engine2D.canvas.off('doubleclick');
+        */
     }
     try{
         $('#menu2DTools').tooltipster('hide');
     }catch(e){}
 
-    $('#engine2D').hide();
     $('#menuLeft2D').hide();
     $('#menuRight2D').hide();
     //$('#zoom2DLevel').hide();
@@ -145,8 +155,8 @@ engine2D.drawGrid = function (grid, color) {
 		var a = new paper.Path.Line(new paper.Point(x, 0), new paper.Point(x, paper.view.size.width));
 		var b = new paper.Path.Line(new paper.Point(0, x), new paper.Point(paper.view.size.width, x));
 		a.strokeColor = b.strokeColor = color;
-        canvas2D.addChild(a);
-        canvas2D.addChild(b);
+        engine2D.canvas.addChild(a);
+        engine2D.canvas.addChild(b);
 	}
 };
 /*
@@ -173,7 +183,7 @@ SimplePanAndZoom.prototype.changeZoom = function(oldZoom, delta, centerPoint, of
 engine2D.makeGrid = function (){
     //Create Grid
     //============================
-    canvas2D = new paper.Group();
+    engine2D.canvas = new paper.Group();
     var circle = new paper.Path.Circle(new paper.Point(0, 0), 450);
     circle.fillColor = '#CCCCCC';
     circle.opacity = 0.2;
@@ -181,8 +191,8 @@ engine2D.makeGrid = function (){
     circle.position.y = paper.view.center.y + 80;
     var rec = new paper.Path.Rectangle(new paper.Point(0, 0), paper.view.viewSize); //TODO: raster image
     rec.fillColor = '#ffffff';
-    canvas2D.addChild(rec);
-    canvas2D.addChild(circle);
+    engine2D.canvas.addChild(rec);
+    engine2D.canvas.addChild(circle);
     engine2D.drawGrid(40,'#6dcff6');
     engine2D.drawGrid(20,'#E0E0E0');
     //============================
@@ -266,5 +276,5 @@ engine2D.freeMemory = function ()
         children[i].remove();
     }
     
-    //canvas2D = null;
+    //engine2D.canvas = null;
 };

@@ -17,7 +17,7 @@ engine3D.initSunlight = function()
         sunlight.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,  window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
         sunlight.camera.position.z = 50;
 
-        sunlight.scene.add( sunlight.camera );
+        sunlight.scene.add(sunlight.camera);
 
         var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
         sunlight.rtTextureColors = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, pars );
@@ -81,18 +81,38 @@ engine3D.initSunlight = function()
     }
 };
 
+engine3D.selectWeather = function()
+{
+    if (json.weather.atmosphere === "sunny") {
+
+        json.weather.atmosphere = "snowy";
+        //$('#menuWeatherText').html("Snowy");
+
+    } else if (json.weather.atmosphere === "snowy") {
+
+        json.weather.atmosphere = "rainy";
+        //$('#menuWeatherText').html("Rainy");
+
+    } else if (json.weather.atmosphere === "rainy") {
+
+        json.weather.atmosphere = "sunny";
+        //$('#menuWeatherText').html("Sunny");
+    }
+    engine3D.setWeather();
+};
+
 engine3D.setWeather = function()
 {
     //particleWeather = new SPE.Group({});
-    //scene3D.remove(particleWeather.mesh);
+    //engine3D.scene.remove(particleWeather.mesh);
 
     engine3D.initWeatherClouds();
     
-    if (WEATHER === "sunny") {
+    if (json.weather.atmosphere === "sunny") {
 
         //TODO: maybe add sun glare effect shader?
 
-    } else if (WEATHER === "snowy") {
+    } else if (json.weather.atmosphere === "snowy") {
 
         //engine = new ParticleEngine();
         //engine.setValues(weatherSnowMesh);
@@ -178,22 +198,22 @@ engine3D.setWeather = function()
             isStatic: 0
         });
         particleWeather.addEmitter(particleEmitter);
-        scene3D.add(particleWeather.mesh);
+        engine3D.scene.add(particleWeather.mesh);
         */
 
-    } else if (WEATHER === "rainy") {
+    } else if (json.weather.atmosphere === "rainy") {
 
         //engine = new ParticleEngine();
         //engine.setValues(weatherRainMesh);
         //engine.initialize();
     }
 
-    scene3D.remove(weatherSkyCloudsMesh);
-    scene3D.remove(weatherSkyRainbowMesh);
+    engine3D.scene.remove(weatherSkyCloudsMesh);
+    engine3D.scene.remove(weatherSkyRainbowMesh);
 
-    if (DAY === 'day') {
+    if (json.weather.day) {
 
-        //scene3D.add(weatherSkyDayMesh);
+        //engine3D.scene.add(weatherSkyDayMesh);
 
         if(json.weather.clouds)
         {
@@ -202,7 +222,7 @@ engine3D.setWeather = function()
             //texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
             weatherSkyMaterial.uniforms.map.value = texture;
             weatherSkyCloudsMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
-            scene3D.add(weatherSkyCloudsMesh);
+            engine3D.scene.add(weatherSkyCloudsMesh);
         }
 
         if(json.weather.rainbow)
@@ -233,10 +253,10 @@ engine3D.setWeather = function()
             geometry.merge(plane.geometry, plane.matrix);
             weatherSkyRainbowMesh = new THREE.Mesh(geometry, materialRainbow);
 
-            scene3D.add(weatherSkyRainbowMesh);
+            engine3D.scene.add(weatherSkyRainbowMesh);
         }
     }
-    else if (DAY === 'night')
+    else
     {
         if(json.weather.clouds)
         {
@@ -245,7 +265,7 @@ engine3D.setWeather = function()
             texture.minFilter = THREE.LinearFilter; //THREE.LinearMipMapLinearFilter;
             weatherSkyMaterial.uniforms.map.value = texture;
             weatherSkyCloudsMesh = new THREE.Mesh(weatherSkyGeometry, weatherSkyMaterial);
-            scene3D.add(weatherSkyCloudsMesh);
+            engine3D.scene.add(weatherSkyCloudsMesh);
         }
     }
 };
@@ -317,15 +337,20 @@ engine3D.initWeatherClouds = function()
     }
 };
 
-engine3D.setSky = function(set)
+engine3D.setDay = function(set)
 {
-    var files = '2056';
+    if(set !== undefined)
+        json.weather.day = set;
 
-    if(set === 'day'){
+    var files = '2056';
+    
+    if(json.weather.day === true){
         files = json.settings.panorama_day;
-    }else if(set === 'night'){
+    }else if (json.weather.day === false){
         files = json.settings.panorama_night;
     }
+
+    //console.log("Set Day " + json.weather.day + ":" + files);
 
     if(skyMesh.name != files)
     {
@@ -357,7 +382,7 @@ engine3D.setSky = function(set)
         */
 
         //skyMaterial.needsUpdate = true;
-        //scene3D.add(skyMesh);
+        //engine3D.scene.add(skyMesh);
 
         skyMesh.name = files;
     }
@@ -389,7 +414,7 @@ engine3D.setSkyEffects = function()
 
     //skyNightMesh.eulerOrder = 'XZY';
     //skyNightMesh.renderDepth = 50.0;
-    scene3D.add(skyNightMesh);
+    engine3D.scene.add(skyNightMesh);
     */
     //=============
 

@@ -91,7 +91,7 @@ var landscape = new function() {
     };
     this.onmousemove = function() {
 
-        if (!controls3D.enabled) { // The user has clicked and drug their mouse
+        if (!engine3D.controls.enabled) { // The user has clicked and drug their mouse
             
             // Get all of the vertices in a 5-unit radius
             var vertices = findLattices(3 * plot_vertices, terrain3DMouse.vertex);
@@ -108,18 +108,18 @@ var landscape = new function() {
 
                 vertice_index = verticeIndex(vertices[i]);
 
-                if (terrain3D.displacement.array[vertice_index] > 6) {
-                    terrain3D.displacement.array[vertice_index] = 6;
+                if (engine3D.terrain.displacement.array[vertice_index] > 6) {
+                    engine3D.terrain.displacement.array[vertice_index] = 6;
                 }
                 
-                if (terrain3D.displacement.array[vertice_index] < -5) {
-                    terrain3D.displacement.array[vertice_index] = -5;
+                if (engine3D.terrain.displacement.array[vertice_index] < -5) {
+                    engine3D.terrain.displacement.array[vertice_index] = -5;
                 }
                 
-                terrain3D.water.displacement.array[vertice_index] = terrain3D.displacement.array[vertice_index];
+                engine3D.terrain.water.displacement.array[vertice_index] = engine3D.terrain.displacement.array[vertice_index];
             }
 
-            terrain3D.water.displacement.needsUpdate = true;
+            engine3D.terrain.water.displacement.needsUpdate = true;
         }
     };
     
@@ -142,8 +142,8 @@ var landscape = new function() {
                 vertice_index = verticeIndex(vertice);
                 distance = Math.sqrt(Math.pow(terrain3DMouse.vertex.x - vertice.x, 2) + Math.pow(terrain3DMouse.vertex.y - vertice.y, 2));
                 
-                terrain3D.displacement.array[vertice_index] += Math.pow(radius - distance, 0.5) * 0.03;
-                terrain3D.displacement.needsUpdate = true;
+                engine3D.terrain.displacement.array[vertice_index] += Math.pow(radius - distance, 0.5) * 0.03;
+                engine3D.terrain.displacement.needsUpdate = true;
             }
         },
         
@@ -165,8 +165,8 @@ var landscape = new function() {
                 vertice_index = verticeIndex(vertice);
                 distance = Math.sqrt(Math.pow(terrain3DMouse.vertex.x - vertice.x, 2) + Math.pow(terrain3DMouse.vertex.y - vertice.y, 2));
                 
-                terrain3D.displacement.array[vertice_index] -= Math.pow(radius - distance, 0.5) * 0.03;
-                terrain3D.displacement.needsUpdate = true;
+                engine3D.terrain.displacement.array[vertice_index] -= Math.pow(radius - distance, 0.5) * 0.03;
+                engine3D.terrain.displacement.needsUpdate = true;
             }
         }
     };
@@ -205,11 +205,11 @@ function scene3DLandscapeGetHeightData(img,scale) //return array with height dat
     }
      
     return data;
-}
+};
 
 engine3D.initTerrainGround = function()
 {
-    if(terrain3DMaterial === undefined)
+    if(engine3D.terrainMaterial === undefined)
     {
         /*
         //var texture = THREE.ImageUtils.loadTexture('assets/combined.png', null, loaded); // load the heightmap we created as a texture
@@ -246,7 +246,7 @@ engine3D.initTerrainGround = function()
         // handles light reflection
         //uniformsTerrain[ "uRepeatOverlay" ].value.set(3, 3);
 
-        terrain3DMaterial = new THREE.ShaderMaterial({
+        engine3D.terrainMaterial = new THREE.ShaderMaterial({
             uniforms:       uniformsTerrain,
             vertexShader:   terrainShader.vertexShader,
             fragmentShader: terrainShader.fragmentShader,
@@ -259,14 +259,14 @@ engine3D.initTerrainGround = function()
         geometryTerrain.computeFaceNormals();
         geometryTerrain.computeVertexNormals();
      
-        terrain3D = new THREE.Mesh(geometryTerrain, terrain3DMaterial);
-        terrain3D.rotation.x = -Math.PI / 2;
+        engine3D.terrain = new THREE.Mesh(geometryTerrain, engine3D.terrainMaterial);
+        engine3D.terrain.rotation.x = -Math.PI / 2;
         */
 
         var ground_vertex_data = $.ajax({ url:"shaders/ground.vertex.fx", dataType:'text', async:false}).responseText;
         var ground_fragment_data = $.ajax({ url:"shaders/ground.fragment.fx", dataType:'text', async:false}).responseText;
 
-        terrain3DMaterial = new THREE.ShaderMaterial({
+        engine3D.terrainMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 texture_grass: { type: "t", value: engine3D.textureLoader.load('objects/Landscape/Textures/G36096.jpg')},
                 texture_bare: { type: "t", value: engine3D.textureLoader.load('objects/Landscape/Textures/F46734.jpg')},
@@ -288,16 +288,16 @@ engine3D.initTerrainGround = function()
         var displacement = new THREE.Float32BufferAttribute(numVertices * 1, 1);
         geometry.addAttribute( 'displacement', displacement);
 
-        terrain3D = new THREE.Mesh(geometry, terrain3DMaterial);
-        terrain3D.displacement = geometry.attributes.displacement;
-        terrain3D.displacement.dynamic = true;
-        terrain3D.rotation.x = -Math.PI / 2;
+        engine3D.terrain = new THREE.Mesh(geometry, engine3D.terrainMaterial);
+        engine3D.terrain.displacement = geometry.attributes.displacement;
+        engine3D.terrain.displacement.dynamic = true;
+        engine3D.terrain.rotation.x = -Math.PI / 2;
         //console.log(geometry.attributes.displacement);
         
         var water_vertex_data = $.ajax({ url:"shaders/water.vertex.fx", dataType:'text', async:false}).responseText;
         var water_fragment_data = $.ajax({ url:"shaders/water.fragment.fx", dataType:'text', async:false}).responseText;
         
-        terrain3D.water = new THREE.Mesh(
+        engine3D.terrain.water = new THREE.Mesh(
             geometry,
             new THREE.ShaderMaterial({
                 uniforms: {
@@ -309,10 +309,10 @@ engine3D.initTerrainGround = function()
                 transparent: true
             })
         );
-        terrain3D.water.displacement = geometry.attributes.displacement;
-        terrain3D.water.displacement.dynamic = true;
-        terrain3D.water.position.z = -1;
-        terrain3D.add(terrain3D.water);
+        engine3D.terrain.water.displacement = geometry.attributes.displacement;
+        engine3D.terrain.water.displacement.dynamic = true;
+        engine3D.terrain.water.position.z = -1;
+        engine3D.terrain.add(engine3D.terrain.water);
     }
 };
 

@@ -1,15 +1,19 @@
 {
     "info": {
         "agent": "Test",
+        "agentPicture": "scenes/14fa30ae/agent.jpg",
         "mls": "34673",
         "phone": ""
     },
     "settings": {
         "autorotate": false,
+        "showcube": false,
         "panorama_day": "2056",
         "panorama_night": "2057"
     },
     "weather": {
+        "atmosphere": "sunny",
+        "day": true,
         "sunlight": false,
         "clouds": true,
         "rainbow": true
@@ -69,9 +73,7 @@
         }],
         []
     ],"plan": [
-        [{
-            "name": "Basement"
-        }],
+        [],
         [{
             "name": "Floor1"
         }, {
@@ -162,86 +164,6 @@
             "y": 300,
             "z": 10,
             "direction": ""
-        }, {
-            "label": "Room",
-            "size": "11 x 15",
-            "x": 750,
-            "y": 350
-        }],
-        [{
-            "name": "Floor2"
-        }, {
-            "wall": "standard",
-            "x1": 480,
-            "y1": 180,
-            "x2": 660,
-            "y2": 180,
-            "cx": 570,
-            "cy": 180,
-            "h": 3
-        }, {
-            "wall": "standard",
-            "x1": 660,
-            "y1": 180,
-            "x2": 660,
-            "y2": 140,
-            "cx": 660,
-            "cy": 160,
-            "h": 3
-        }, {
-            "wall": "standard",
-            "x1": 660,
-            "y1": 140,
-            "x2": 1040,
-            "y2": 140,
-            "cx": 850,
-            "cy": 140,
-            "h": 3
-        }, {
-            "wall": "standard",
-            "x1": 1040,
-            "y1": 140,
-            "x2": 1040,
-            "y2": 540,
-            "cx": 1040,
-            "cy": 345,
-            "h": 3
-        }, {
-            "wall": "standard",
-            "x1": 1040,
-            "y1": 540,
-            "x2": 930,
-            "y2": 540,
-            "cx": 985,
-            "cy": 540,
-            "h": 3
-        }, {
-            "wall": "standard",
-            "x1": 930,
-            "y1": 540,
-            "x2": 930,
-            "y2": 650,
-            "cx": 930,
-            "cy": 595,
-            "h": 3
-        }, {
-            "wall": "standard",
-            "x1": 930,
-            "y1": 650,
-            "x2": 480,
-            "y2": 650,
-            "cx": 705,
-            "cy": 650,
-            "h": 3
-        }, {
-            "wall": "standard",
-            "x1": 480,
-            "y1": 650,
-            "x2": 480,
-            "y2": 180,
-            "cx": 480,
-            "cy": 415,
-            "h": 3
         }, {
             "label": "Room",
             "size": "11 x 15",

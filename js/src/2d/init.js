@@ -22,9 +22,9 @@ engine2D.initialize = function (){
     */
 
     //http://paperjs.org/tutorials/getting-started/using-javascript-directly/
-
-	var canvas = document.getElementById("engine2D");
-	paper.setup(canvas);
+    
+	engine2D.canvas = document.getElementById("engine2D");
+	paper.setup(engine2D.canvas);
 	paper.view.setViewSize(window.innerWidth, window.innerHeight);
 	//settings.applyMatrix = false; 
 	//window.dispatchEvent(new Event('resize'));
@@ -65,8 +65,6 @@ engine2D.initialize = function (){
 		return event.preventDefault();
 	});
 	*/
-	//engine2D.newFloor(0);
-	//engine2D.newFloor(1);
 };
 
 engine2D.new = function ()
@@ -76,6 +74,7 @@ engine2D.new = function ()
 
 engine2D.newFloor = function (i)
 {
+    console.log("engine2D.newFloor " + i)
 	scene2DWallMesh[i] = [];
 	scene2DWallDimentions[i] = [];
 	scene2DInteriorMesh[i] = [];
@@ -98,6 +97,11 @@ engine2D.open = function()
         $.each(json.plan[i], function()
         {
             //console.log(this);
+            
+            if(this.name !== undefined)
+            {
+                console.log(this.name);
+            }
             
             if(this.door !== undefined)
             {

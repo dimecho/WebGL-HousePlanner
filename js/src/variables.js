@@ -1,15 +1,9 @@
 var engine3D = window.engine3D || {};
 var engine2D = window.engine2D || {};
+var engineGUI = window.engineGUI || {};
 
-var scene3D; //Three.js Canvas
-var scene3DCube; //Three.js Canvas
-var scene2D; //Fabric.js Canvas
-var canvas2D;
-var scene2DAdvanced; //Fabric.js Canvas
-var physics3D; //Cannon.js Engine (collisions and other cool stuff)
-
-var dpr;
-var renderer, rendererCube;
+var json = { info:{}, settings:{}, weather:{}, terrain:[], roof:[], floor:[], ceiling:[], furniture:[], house:[], plan:[] };
+var jsonindex = { id:'', name:'', plan:[1,2,3] };
 
 var rendererQuad = [4];
 var camera3DQuad = [4];
@@ -36,7 +30,6 @@ var scene3DCeilingShapeContainer = [];
 var scene2DFloorShape = [];
 var scene2DFloorDraftPlanImage = []; //2D Image for plan tracing for multiple floors
 
-var scene3DPivotPoint; // 3D rotational pivot point - 1 object
 //var scene3DNote; // Sticky note visual 3D effect - 1 object
 var scene3DCubeMesh; // Orange cube for visual orientation
 
@@ -47,17 +40,13 @@ var sceneHemisphereLight;
 //var sceneParticleLight;
 //var scenePointLight;
 
-var controls3D; //Multi-Class three.js controls library objects - Orbit, FirstPerson and Transform
-var camera3D;
 var camera3DPositionCache;
 var camera3DPivotCache;
-var camera3DCube;
 //var camera3DMirrorReflection;
 
-var groundGrid;
-var groundMesh;
 var skyMesh;
 var skyFloorMesh;
+
 var weatherSkyGeometry;
 var weatherSkyMaterial;
 //var weatherRainbowMaterial;
@@ -66,19 +55,10 @@ var weatherSkyRainbowMesh;
 //var weatherSkyDayMesh;
 //var weatherSkyNightMesh;
 
-var SESSION = '';
-//var RUNMODE = 'local'; //database
-//var VIEWMODE = 'designer'; //public
-var RADIAN = (Math.PI / 180);
-var SCENE = 'house';
-var SCENEID = '';
-var TOOL3D = 'view';
 var TOOL3DINTERACTIVE = '';
 var TOOL3DLANDSCAPE = 'rotate';
 var TOOL3DFLOOR = 'measure';
 var TOOL2D = 'vector';
-var WEATHER = 'sunny';
-var DAY = 'day';
 var FLOOR = 1; //first floor selected default
 var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
 var SelectedObject = null;
@@ -86,16 +66,14 @@ var SelectedNote = null;
 var SelectedPicture = null;
 var SelectedWall = null;
 
-var leftButtonDown = false;
-var rightButtonDown = false;
 var clickTime;
 var clickMenuTime;
 var doubleClickTime;
 
-var zoom2Dimg, 
-    zoom2Dheight = 80, 
-    zoom2Dwidth = 241, 
-    zoom2DCTX = null, 
+var zoom2Dimg,
+    zoom2Dheight = 80,
+    zoom2Dwidth = 241,
+    zoom2DCTX = null,
     zoom2DSlider = null; //2D zoom control visuals
 var zoom2D = 1; // Global remembering previous zoom factor
 
@@ -141,15 +119,10 @@ var particlePivot;
 var particlePivotEmitter;
 var particleWeather;
 */
-var spinner;
-var json = { info:{}, settings:{}, weather:{}, terrain:[], roof:[], floor:[], ceiling:[], furniture:[], house:[], plan:[] };
-
-//var particleClouds;
-var mouse; //THREE.Vector2()
-var touch; //THREE.Vector2()
-var target; //THREE.Vector3();
-var clock;
-//var engine;
+var mouse;          //THREE.Vector2()
+var touch;          //THREE.Vector2()
+var target;         //THREE.Vector3();
+var clock;          //THREE.Clock();
 var projector;
 var vector;
 var geometry;
@@ -157,23 +130,41 @@ var material;
 var texture;
 var mesh;
 
-var terrain3D;
-var terrain3DMaterial;
-//var terrainShader;
+engineGUI.session = '';
+engineGUI.scene = 'house';
+engineGUI.floor = 1;
+engineGUI.mousedrag = false;
+engineGUI.mouseleft = false;
+engineGUI.mouseright = false;
+engineGUI.spinner = $("<div>");
 
-var fileReader; //HTML5 local file reader
-//var progress = document.querySelector('.percent');
+engine2D.scene;             //paper.Group();
+engine2D.canvas;            //getElementById("engine2D");
+engine2D.history = [];      //Array();
 
-//var colliderSystem = [];
-var getScreenshotData = false;
-
-var FXAAPass;
-var SSAOPass;
-var effectComposer;
-var depthMaterial, depthRenderTarget;
-var depthScale = 1.0;
-var FXAAProcessing = { enabled : true}; // renderMode: 0('framebuffer'), 1('onlyAO')
-var SSAOProcessing = { enabled : false, renderMode: 0 }; // renderMode: 0('framebuffer'), 1('onlyAO')
-
-engine3D.showCube = false;
-//engine3D.fontLoader;
+engine3D.id = '';
+engine3D.renderer;          //THREE.WebGLRenderer();
+engine3D.rendererCube;      //THREE.WebGLRenderer();
+engine3D.scene;             //THREE.Scene();
+engine3D.sceneCube;         //THREE.Scene();
+engine3D.camera;            //THREE.PerspectiveCamera();
+engine3D.cameraCube;        //THREE.PerspectiveCamera();
+engine3D.controls;          //THREE.OrbitControls();
+engine3D.grid;              //THREE.GridHelper();
+engine3D.pivot;             //THREE.Object3D();
+engine3D.jsonLoader;        //THREE.LoadingManager();
+engine3D.fontLoader;        //THREE.FontLoader();
+engine3D.textureLoader;     //THREE.TextureLoader();
+//engine3D.physics;         //CANNON.World();
+//engine3D.collide = [];    //Array()
+engine3D.terrain;           //THREE.Mesh();
+engine3D.terrainMaterial;   //THREE.ShaderMaterial();
+engine3D.renderPass;        //THREE.RenderPass();
+engine3D.FXAAPass;          //THREE.ShaderPass();
+engine3D.SSAOPass;          //THREE.ShaderPass();
+engine3D.effectComposer;    //THREE.EffectComposer();
+engine3D.depthMaterial;     //THREE.MeshDepthMaterial();
+engine3D.depthRenderTarget; //THREE.WebGLRenderTarget()
+engine3D.FXAAProcessing = { enabled : true };
+engine3D.SSAOProcessing = { enabled : false, renderMode: 0 }; // renderMode: 0('framebuffer'), 1('onlyAO')
+engine3D.history = [];      //Array();

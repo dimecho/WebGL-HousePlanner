@@ -8,7 +8,7 @@ var controls3DPanorama;
 engine3D.initPanorama = function(id, files, W,H)
 {
     $(id).show();
-    $(id).append(spinner);
+    $(id).append(engineGUI.spinner);
 
     scene3DPanorama = new THREE.Scene();
     camera3DPanorama = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
@@ -101,7 +101,7 @@ engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
     
     console.log("Build Panorama :" + files);
     
-    //scene3D.remove(container);
+    //engine3D.scene.remove(container);
 
     /*
     var cubemap = THREE.ImageUtils.loadTextureCube(sides);
@@ -169,7 +169,7 @@ engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
 
     if(preloader !== "")
     {
-        spinner.remove();
+        engineGUI.spinner.remove();
 
         img = engine3D.cubePanoramaImages(files,"");
 

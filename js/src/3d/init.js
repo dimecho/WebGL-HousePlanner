@@ -35,9 +35,7 @@ engine3D.initialize = function()
         window.innerWidth = parent.innerWidth;
         window.innerHeight = parent.innerHeight;
     }
-
-    spinner = $("<div>", {class:"cssload-container", style:"position:absolute;top:32%;left:40%;"}).append($("<ul>", {class:"cssload-flex-container"}).append($("<li>").append($("<span>",{class:"cssload-loading"}))));
-
+    
     /*
 	http://www.ianww.com/blog/2012/12/16/an-introduction-to-custom-shaders-with-three-dot-js/
 	huge improvement in smoothness of the simulation by writing a custom shader for my particle system.
@@ -45,7 +43,7 @@ engine3D.initialize = function()
 	a long way toward ensuring the speed and reliability of the simulation. Custom shaders are written in GLSL,
 	which is close enough to C that it’ s not too difficult to translate your math into.
 	*/
-    scene3D = new THREE.Scene();
+    engine3D.scene = new THREE.Scene();
     projector = new THREE.Projector();
     clock = new THREE.Clock();
     mouse = new THREE.Vector2();
@@ -55,9 +53,9 @@ engine3D.initialize = function()
     engine3D.jsonLoader = new THREE.LoadingManager();
     engine3D.fontLoader = new THREE.FontLoader();
     engine3D.textureLoader = new THREE.TextureLoader();
-
+    
     scene3DFloorGroundContainer = new THREE.Object3D();
-    scene3DPivotPoint = new THREE.Object3D();
+    engine3D.pivot = new THREE.Object3D();
     //scene3DAxisHelper = new THREE.AxisHelper(2);
 
     var geometry = new THREE.BoxGeometry( 15, 15, 3 ); //new THREE.PlaneGeometry(15, 15,3);
@@ -144,13 +142,13 @@ engine3D.initialize = function()
     */
     //camera3D = new THREE.CombinedCamera( window.innerWidth, window.innerHeight, 60, 0.1, 80, 1.5, 10);
     /*
-    var tween = new TWEEN.Tween(camera3D.position).to({x:Math.cos(0.1) * 200, z:Math.sin(0.1) * 200},20000).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(function() {
-            //camera3D.updateProjectionMatrix();
-            camera3D.lookAt(scene3D.position);
+    var tween = new TWEEN.Tween(engine3D.camera.position).to({x:Math.cos(0.1) * 200, z:Math.sin(0.1) * 200},20000).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(function() {
+            //engine3D.camera.updateProjectionMatrix();
+            engine3D.camera.lookAt(engine3D.scene.position);
     }).start();
     */
 
-    //camera3D.lookAt(new THREE.Vector3(0, 0, 0));
+    //engine3D.camera.lookAt(new THREE.Vector3(0, 0, 0));
     //camera2D = new THREE.PerspectiveCamera(1, window.innerWidth / window.innerHeight, 1, 5000);
     //camera2D.lookAt(new THREE.Vector3(0, 0, 0));
     //camera2D.position.z = 5000; // the camera starts at 0,0,0 so pull it back
@@ -273,7 +271,7 @@ engine3D.initialize = function()
 
     engine3D.initRenderer();
 
-    //engine3D.initPhysics();
+    engine3D.initPhysics();
 
     engine3D.initTerrainGround();
 
@@ -298,16 +296,13 @@ engine3D.initRenderer = function()
     https://www.udacity.com/course/viewer#!/c-cs291/l-158750187/m-169414761
     */
     //VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-    camera3D = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 80);
+    engine3D.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 80);
 
-    dpr = 1;
-    if (window.devicePixelRatio !== undefined) {
-      dpr = window.devicePixelRatio;
-    }
+    var dpr = window.devicePixelRatio | 1;
 
-    //renderer = new THREE.WebGL2Renderer(); //r.83dev
+    //engine3D.renderer = new THREE.WebGL2Renderer(); //r.83dev
     
-    renderer = new THREE.WebGLRenderer({
+    engine3D.renderer = new THREE.WebGLRenderer({
         devicePixelRatio: dpr,
         antialias: false,
         //alpha: true,
@@ -316,17 +311,17 @@ engine3D.initRenderer = function()
         //autoUpdateObjects: true
     });
     
-    //renderer.autoClear = false; //REQUIRED: for split screen
+    //engine3D.renderer.autoClear = false; //REQUIRED: for split screen
     
-    renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
-    renderer.shadowMapSoft = true;
-    renderer.shadowMapAutoUpdate = true;
+    engine3D.renderer.shadowMap.enabled = true; //shadowMapEnabled = true;
+    engine3D.renderer.shadowMapSoft = true;
+    engine3D.renderer.shadowMapAutoUpdate = true;
     
-    //renderer.shadowMap.debug = true; //shadowMapDebug = true;
-    //renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
+    //engine3D.renderer.shadowMap.debug = true; //shadowMapDebug = true;
+    //engine3D.renderer.shadowMapType = THREE.PCFShadowMap; //THREE.PCFSoftShadowMap; //THREE.BasicShadowMap;
 
-    //renderer.gammaInput = true;
-    //renderer.gammaOutput = true;
+    //engine3D.renderer.gammaInput = true;
+    //engine3D.renderer.gammaOutput = true;
     
     /*
     renderer = new THREE.WebGLDeferredRenderer({
@@ -338,31 +333,31 @@ engine3D.initRenderer = function()
         brightness: 2.5
     });
     */
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    //renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
-    //renderer.physicallyBasedShading = true;
-    //renderer.sortObjects = true; //when scene is opening this make sure clouds stay on top
-    //renderer.setClearColor(0xffffff, 1);
+    engine3D.renderer.setSize(window.innerWidth, window.innerHeight);
+    //engine3D.renderer.sortObjects = false; //http://stackoverflow.com/questions/15994944/transparent-objects-in-threejs
+    //engine3D.renderer.physicallyBasedShading = true;
+    //engine3D.renderer.sortObjects = true; //when scene is opening this make sure clouds stay on top
+    //engine3D.renderer.setClearColor(0xffffff, 1);
 
-    document.getElementById('WebGLCanvas').appendChild(renderer.domElement);
+    document.getElementById('WebGLCanvas').appendChild(engine3D.renderer.domElement);
 
-    if(engine3D.showCube === true)
+    if(json.settings.showcube)
     {
-        scene3DCube = new THREE.Scene();
-        camera3DCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
-        camera3DCube.up = camera3D.up;
-        scene3DCube.add(scene3DCubeMesh);
+        engine3D.sceneCube = new THREE.Scene();
+        engine3D.cameraCube = new THREE.PerspectiveCamera(60, 1, 1, 50);
+        engine3D.cameraCube.up = engine3D.camera.up;
+        engine3D.sceneCube.add(scene3DCubeMesh);
 
-        rendererCube = new THREE.WebGLRenderer({
+        engine3D.rendererCube = new THREE.WebGLRenderer({
             devicePixelRatio: dpr,
             antialias: false,
             alpha: true,
             //transparent: true,
             //preserveDrawingBuffer: false
         });
-        rendererCube.setSize(100, 100);
+        engine3D.rendererCube.setSize(100, 100);
         //$(rendererCube.domElement).bind('mousemove', onCubeMouseMove);
-        document.getElementById('WebGLCubeCanvas').appendChild(rendererCube.domElement);
+        document.getElementById('WebGLCubeCanvas').appendChild(engine3D.rendererCube.domElement);
     }
 };
 
@@ -373,7 +368,7 @@ engine3D.initRendererQuad = function()
     for(i = 0; i<4; i++){
 
         rendererQuad[i] = new THREE.WebGLRenderer({
-            devicePixelRatio: dpr,
+            devicePixelRatio: window.devicePixelRatio | 1,
             antialias: false,
             //alpha: true,
             //autoClear: false
@@ -411,10 +406,7 @@ engine3D.initRendererQuad = function()
     camera3DQuadGrid = new THREE.GridHelper(15, 1, new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
 
     engine3D.initRendererQuadSize();
-
-    //controls3DDebug = new THREE.OrbitControls(camera3DQuad[0], rendererQuad[0].domElement);
-    //controls3DDebug.enabled = true;
-
+    
     /*
     var pane = $('div.split-pane').children('.split-pane-divider');
 
@@ -457,68 +449,69 @@ engine3D.initRendererQuadSize = function()
 
 engine3D.initPostprocessing = function ()
 {
-    //if(!(effectComposer instanceof THREE.EffectComposer)){
-        console.log("init EffectComposer");
-        effectComposer = new THREE.EffectComposer( renderer );
-        effectComposer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+    var dpr = window.devicePixelRatio | 1;
 
-        var renderPass = new THREE.RenderPass(scene3D, camera3D); // Setup render pass
-        effectComposer.addPass(renderPass);
+    //if(!(engine3D.effectComposer instanceof THREE.EffectComposer)){
+        console.log("init EffectComposer");
+        engine3D.effectComposer = new THREE.EffectComposer(engine3D.renderer);
+        engine3D.effectComposer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
+        
+        engine3D.renderPass = new THREE.RenderPass(engine3D.scene, engine3D.camera); // Setup render pass
+        engine3D.effectComposer.addPass(engine3D.renderPass);
     //}
 
-    if(SSAOProcessing.enabled) // && !(SSAOPass instanceof THREE.ShaderPass))
+    if(engine3D.SSAOProcessing.enabled) // && !(SSAOPass instanceof THREE.ShaderPass))
     {
         console.log("init SSAOShader");
         // Setup depth pass
-        depthMaterial = new THREE.MeshDepthMaterial();
-        depthMaterial.depthPacking = THREE.RGBADepthPacking;
-        depthMaterial.blending = THREE.NoBlending;
-        depthRenderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
+        engine3D.depthMaterial = new THREE.MeshDepthMaterial();
+        engine3D.depthMaterial.depthPacking = THREE.RGBADepthPacking;
+        engine3D.depthMaterial.blending = THREE.NoBlending;
+        engine3D.depthRenderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
+        //var depthScale = 1.0;
 
         // Setup SSAO pass
-        SSAOPass = new THREE.ShaderPass(THREE.SSAOShader);
-        SSAOPass.renderToScreen = true;
-        //ssaoPass.uniforms[ "tDiffuse" ].value will be set by ShaderPass
-        SSAOPass.uniforms[ "tDepth" ].value = depthRenderTarget;
-        SSAOPass.uniforms[ 'size' ].value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
-        SSAOPass.uniforms[ 'cameraNear' ].value = camera3D.near;
-        SSAOPass.uniforms[ 'cameraFar' ].value = camera3D.far;
-        SSAOPass.uniforms[ 'onlyAO' ].value = ( SSAOProcessing.renderMode == 1 );
-        SSAOPass.uniforms[ 'aoClamp' ].value = 0.3;
-        SSAOPass.uniforms[ 'lumInfluence' ].value = 0.5;
+        engine3D.SSAOPass = new THREE.ShaderPass(THREE.SSAOShader);
+        engine3D.SSAOPass.renderToScreen = true;
+        //engine3D.ssaoPass.uniforms[ "tDiffuse" ].value will be set by ShaderPass
+        engine3D.SSAOPass.uniforms[ "tDepth" ].value = engine3D.depthRenderTarget;
+        engine3D.SSAOPass.uniforms[ 'size' ].value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+        engine3D.SSAOPass.uniforms[ 'cameraNear' ].value = engine3D.camera.near;
+        engine3D.SSAOPass.uniforms[ 'cameraFar' ].value = engine3D.camera.far;
+        engine3D.SSAOPass.uniforms[ 'onlyAO' ].value = (engine3D.SSAOProcessing.renderMode == 1);
+        engine3D.SSAOPass.uniforms[ 'aoClamp' ].value = 0.3;
+        engine3D.SSAOPass.uniforms[ 'lumInfluence' ].value = 0.5;
 
-        effectComposer.addPass(SSAOPass); // Add pass to effect composer
+        engine3D.effectComposer.addPass(engine3D.SSAOPass); // Add pass to effect composer
     }
-
     /*
-    if ( value == 0 ) { // framebuffer
+    if (engine3D.SSAOProcessing.renderMode == 0 ) { // framebuffer
         ssaoPass.uniforms[ 'onlyAO' ].value = false;
-    } else if ( value == 1 ) {  // onlyAO
+    } else if (engine3D.SSAOProcessing.renderMode == 1 ) {  // onlyAO
         ssaoPass.uniforms[ 'onlyAO' ].value = true;
     } else {
-        console.error( "Not define renderModeChange type: " + value );
+        console.error( "Not define renderModeChange type: " + engine3D.SSAOProcessing.renderMode);
     }
     */
-
-    if(FXAAProcessing.enabled) // && !(FXAAPass instanceof THREE.ShaderPass))
+    if(engine3D.FXAAProcessing.enabled) // && !(FXAAPass instanceof THREE.ShaderPass))
     {
         console.log("init FXAAShader");
-        FXAAPass = new THREE.ShaderPass(THREE.FXAAShader);
-        FXAAPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
-        FXAAPass.renderToScreen = true;
+        engine3D.FXAAPass = new THREE.ShaderPass(THREE.FXAAShader);
+        engine3D.FXAAPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+        engine3D.FXAAPass.renderToScreen = true;
 
-        effectComposer.addPass(FXAAPass); // Add pass to effect composer
+        engine3D.effectComposer.addPass(engine3D.FXAAPass); // Add pass to effect composer
     }
 };
 
-engine3D.initLights = function() {
-
-    //scene3D.add(new THREE.AmbientLight(0xFFFFFF));
+engine3D.initLights = function()
+{
+    //engine3D.scene.add(new THREE.AmbientLight(0xFFFFFF));
 
     /*
     var light = new THREE.PointLight(0xffffff);
     light.position.set(0, 100, 0);
-    scene3D.add(light);
+    engine3D.scene.add(light);
     */
 
     //sky color ground color intensity
@@ -527,17 +520,17 @@ engine3D.initLights = function() {
     hemiLight.color.setHSL(0.6, 1, 0.6);
     hemiLight.groundColor.setHSL(0.095, 1, 0.75);
     hemiLight.position.set(0, 100, 0);
-    scene3D.add(hemiLight);
+    engine3D.scene.add(hemiLight);
     */
 
     //add sunlight
     /*
     var light = new THREE.SpotLight();
     light.position.set(0, 100, 0);
-    scene3D.add(light);
+    engine3D.scene.add(light);
     */
 
-    //scene3D.fog = new THREE.Fog(0xffffff, 0.015, 40); //white fog (0xffffff). The last two properties can be used to tune how the mist will appear. The 0.015 value sets the near property and the 100 value sets the far property 
+    //engine3D.scene.fog = new THREE.Fog(0xffffff, 0.015, 40); //white fog (0xffffff). The last two properties can be used to tune how the mist will appear. The 0.015 value sets the near property and the 100 value sets the far property 
 
     /*
     sceneHemisphereLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
@@ -546,7 +539,7 @@ engine3D.initLights = function() {
     sceneHemisphereLight.position.set(0, 20, 0);
     //sceneHemisphereLight.shadowCameraVisible = true;
     */
-    //scene3D.add(hemiLight);
+    //engine3D.scene.add(hemiLight);
 
     // sky color ground color intensity 
     //sceneHemisphereLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 ); 
@@ -558,7 +551,7 @@ engine3D.initLights = function() {
     sceneParticleLight = new THREE.Mesh(new THREE.SphereGeometry(0, 10, 0), new THREE.MeshBasicMaterial({
         color: 0xffffff
     }));
-    scene3D.add(sceneParticleLight);
+    engine3D.scene.add(sceneParticleLight);
     */
 
     /*
@@ -576,13 +569,13 @@ engine3D.initLights = function() {
     light.position.set(0, 20, 20);
     light.castShadow = true;
     light.shadowCameraNear = 20;
-    light.shadowCameraFar = camera3D.far;
+    light.shadowCameraFar = engine3D.camera.far;
     light.shadowCameraFov = 10;
     light.shadowBias = -0.00022;
     light.shadowDarkness = 0.5;
     light.shadowMapWidth = 2048;
     light.shadowMapHeight = 2048;
-    scene3D.add(light);
+    engine3D.scene.add(light);
     */
     /*
     sceneDirectionalLight = new THREE.DirectionalLight(0xFFBBBB, 0.5);
@@ -621,7 +614,7 @@ engine3D.initLights = function() {
     sceneDirectionalLight.shadow.bias = -0.0001; //shadowBias = -0.0001;
     //sceneDirectionalLight.shadowDarkness = 1;
     //sceneDirectionalLight.shadow.camera.visible = true; //shadowCameraVisible = true;
-    //scene3D.add(sceneDirectionalLight);
+    //engine3D.scene.add(sceneDirectionalLight);
 
     sceneSpotLight = new THREE.SpotLight();
     sceneSpotLight.shadow.camera.near = 1; //shadowCameraNear = 1; // keep near and far planes as tight as possible
@@ -630,7 +623,7 @@ engine3D.initLights = function() {
     sceneSpotLight.castShadow = true;
     sceneSpotLight.intensity = 0.8;
     sceneSpotLight.position.set(-4, 35, 4)
-    //scene3D.add(sceneSpotLight);
+    //engine3D.scene.add(sceneSpotLight);
 
     /*
     var frontLight  = new THREE.DirectionalLight('white', 1)
@@ -647,8 +640,8 @@ engine3D.initPhysics = function ()
 {
     //http://javascriptjamie.weebly.com/blog/part-1-the-physics
     /*
-    physics3D = new CANNON.World();
-    physics3D.gravity.set(0, -9.82, 0);
+    engine3D.physics = new CANNON.World();
+    engine3D.physics.gravity.set(0, -9.82, 0);
     var physicsMaterial = new CANNON.Material("groundMaterial");
     var physicsContactMaterial = new CANNON.ContactMaterial(physicsMaterial, physicsMaterial, {
         friction: 0.4,
@@ -658,7 +651,7 @@ engine3D.initPhysics = function ()
         frictionEquationStiffness: 1e8,
         frictionEquationRegularizationTime: 3,
     });
-    physics3D.addContactMaterial(physicsContactMaterial);
+    engine3D.physics.addContactMaterial(physicsContactMaterial);
     //var boxShape = new CANNON.Box(new CANNON.Vec3(1,1,1));
     */
 };
@@ -724,7 +717,7 @@ engine3D.newFloor = function(i)
 
 engine3D.new = function(i)
 {
-    //animateStop();
+    //engine3D.animateStop();
     //scene3DFreeMemory();
     //hideElements();
 
@@ -736,12 +729,12 @@ engine3D.new = function(i)
     //scene3DFloorGroundContainer = new THREE.Object3D();
     scene3DLevelGroundContainer = new THREE.Object3D();
     scene3DLevelWallContainer = new THREE.Object3D();
-    //scene3DPivotPoint = new THREE.Object3D();
+    //engine3D.pivot = new THREE.Object3D();
 
     skyMesh = new THREE.Object3D();
     skyFloorMesh = new THREE.Object3D();
 
-    engine3D.enableOrbitControls(camera3D,renderer.domElement);
+    engine3D.enableOrbitControls(engine3D.camera,engine3D.renderer.domElement);
 
     engine3D.initPostprocessing();
 
@@ -756,7 +749,7 @@ engine3D.new = function(i)
 
     engine3D.open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
     engine3D.open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
-    engine3D.open3DModel("objects/Platform/pivotpoint.jsz", scene3DPivotPoint, 0, 0, 0.1, 0, 0, 1, false, null);
+    engine3D.open3DModel("objects/Platform/pivotpoint.jsz", engine3D.pivot, 0, 0, 0.1, 0, 0, 1, false, null);
 };
 
 engine3D.open = function()

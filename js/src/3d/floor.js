@@ -1,6 +1,8 @@
 var engine3D = window.engine3D || {};
 
-engine3D.makeFloor = function () {
+engine3D.makeFloor = function()
+{
+    var radians = (Math.PI / 180);
 
     for(var i = 0; i < scene2DFloorShape.length; i++)
     {
@@ -42,7 +44,7 @@ engine3D.makeFloor = function () {
             material.map = texture;
             //material.side = THREE.DoubleSide;
             var mesh = new THREE.Mesh(geometry, material);
-            mesh.rotation.x = -(90 * RADIAN);
+            mesh.rotation.x = -(90 * radians);
             //mesh.position.y = 0.1 + (offset[i] * h);
             scene3DFloorShapeContainer[i].add(mesh);
 
@@ -62,7 +64,7 @@ engine3D.makeFloor = function () {
             {
 
                 var geometry = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, {amount: -2, bevelEnabled: false}));
-                geometry.rotation.x = -(90 * RADIAN);
+                geometry.rotation.x = -(90 * radians);
                 //geometry.position.y = 0.5;
                 var floorBSP = new ThreeBSP(geometry);
 
@@ -84,9 +86,9 @@ engine3D.makeFloor = function () {
                     }
                 });
                 scene3DHouseGroundContainer.visible= false;
-                //scene3D.remove(scene3DHouseGroundContainer); //DEBUG
+                //engine3D.scene.remove(scene3DHouseGroundContainer); //DEBUG
                 _scene3DHouseGroundContainer.position.z = -10; //DEBUG
-                scene3D.add(_scene3DHouseGroundContainer);
+                engine3D.scene.add(_scene3DHouseGroundContainer);
 
                 
             }

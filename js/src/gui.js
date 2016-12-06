@@ -1,5 +1,4 @@
 var engineGUI = window.engineGUI || {};
-var jsonindex = { id:'', name:'', plan:[1,2,3] };
 
 engineGUI.initialize = function()
 {
@@ -18,7 +17,9 @@ engineGUI.initialize = function()
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
     $('#menuFloorSelector').hide();
-
+    
+    engineGUI.spinner = $("<div>", {class:"cssload-container", style:"position:absolute;top:32%;left:40%;"}).append($("<ul>", {class:"cssload-flex-container"}).append($("<li>").append($("<span>",{class:"cssload-loading"}))));
+    
     engineGUI.initList();
 };
 
@@ -96,31 +97,54 @@ engineGUI.initHousePlanner = function(id,item)
     engine3D.initialize();
 };
 
-engineGUI.initTopMenu = function()
+engineGUI.initMenuTop = function(plan)
 {
-    //var menu = $("#menuTop").empty();
+    var menu = $(".menuTop").empty();
+    var div = $("<div>", {class:"hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a"});
 
+    if(plan[0] === 1)
+    {
+        div.append($("<a>", {href:"#", onclick:"engine3D.showHouse()", class:"hi-icon icon-house tooltip",title:"Home Exterior"}));
+        div.append($("<a>", {href:"#", onclick:"engine3D.showLandscape()", class:"hi-icon icon-terrain tooltip",title:"Landscape Editor"}));
+        div.append($("<a>", {href:"#", onclick:"engine3D.showFloorLevel()", class:"hi-icon icon-floors tooltip",title:"Floor Arrangements"}));
+        div.append($("<a>", {href:"#", onclick:"engine3D.showRoofDesign()", class:"hi-icon icon-roof tooltip",title:"Roof Design"}));
+    }
+    if(plan[0] === 2 || plan[1] === 2)
+        div.append($("<a>", {href:"#", onclick:"engine3D.showFloor(engine3D.floor)", class:"hi-icon icon-armchair tooltip",title:"Floor Furnishings"}));
 
+    if(plan[1] === 3 || plan[2] === 3)
+        div.append($("<a>", {href:"#", onclick:"engine2D.show()", class:"hi-icon icon-draftplan tooltip",title:"Floor Plans"}));
 
+    div.append($("<div>", {style:"display:inline-block;width:1px;height:28px;background:black;"}));
+    div.append($("<a>", {href:"#", onclick:"sceneNew()", class:"hi-icon icon-new tooltip",title:"New"}));
+    div.append($("<a>", {href:"#", onclick:"fileSelect(\'opendesign\')", class:"hi-icon icon-open tooltip",title:"Open"}));
+    div.append($("<a>", {href:"#", onclick:"engineGUI.save(false)", class:"hi-icon icon-save tooltip",title:"Save"}));
+    div.append($("<div>", {style:"display: inline-block;width:1px;height:28px;background:black;"}));
+    //div.append($("<a>", {href:"#", class:"hi-icon icon-share tooltip-share-menu",title:"Share"}));
+    div.append($("<a>", {href:"#", onclick:"engineGUI.makeScreenshot()", class:"hi-icon icon-screenshot tooltip",title:"Screenshot"}));
+    div.append($("<a>", {href:"#", onclick:"screenfull.request(document.documentElement)", class:"hi-icon icon-expand tooltip",title:"Full Screen"}));
+    div.append($("<a>", {href:"#", class:"hi-icon icon-settings tooltip",title:"Settings"}));
+    //div.append($("<a>", {href:"#", onclick:"document.getElementById('iframe').src = '/profile/login'", class:"hi-icon icon-login tooltip",title:"Login"}));
+
+    menu.append(div);
+    /*
     $('.tooltip-share-menu').tooltipster({
         interactive:true,
         content: $('<a href="#" onclick="" class="hi-icon icon-html tooltip" title="Embed 3D Scene in Your Website" style="color:white"></a><br/><a href="#" class="hi-icon icon-print" style="color:white"></a><br/><a href="#" class="hi-icon icon-email" style="color:white"></a>')
     });
-
     $('.tooltip-save-menu').tooltipster({
         interactive:true,
         content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="engineGUI.save(false);" class="hi-icon icon-usb" style="color:white"></a>')
     });
-
     $('.tooltip-open-menu').tooltipster({
         interactive:true,
         content: $('<a href="#openLogin" onclick="engineGUI.save(true);" class="hi-icon icon-earth" style="color:white"></a><br/><a href="#openSaving" onclick="fileSelect(\'opendesign\')" class="hi-icon icon-usb" style="color:white"></a>')
     });
-
-    $('.tooltip-tools-menu').tooltipster({
+    $('.tooltip-settings-menu').tooltipster({
         interactive:true,
         content: $('<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot" style="color:white"></a><br/><a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand" style="color:white"></a>')
     });
+    */
 };
 
 engineGUI.initList = function()
@@ -277,9 +301,9 @@ engineGUI.showRightObjectMenu = function(path)
 
 engineGUI.showRightCatalogMenu = function()
 {
-    if (SCENE === 'house') {
+    if (engineGUI.scene === 'house') {
         $('#menuRight3DHouse').show();
-    } else if (SCENE === 'floor') {
+    } else if (engineGUI.scene === 'floor') {
         $('#menuRight3DFloor').show();
     }
 
@@ -298,10 +322,10 @@ engineGUI.toggleSideMenus = function(open)
     //engineGUI.menuDelay(document.getElementById("arrow-right"), "images/arrowleft.png", 400);
 
     //Auto close left menu
-    if (SCENE == 'house') {
+    if (engineGUI.scene == 'house') {
         engineGUI.menuToggleLeft('menuLeft3DHouse', open);
 
-    } else if (SCENE == 'floor') {
+    } else if (engineGUI.scene == 'floor') {
         engineGUI.menuToggleLeft('menuLeft3DFloor', open);
     }
 };
@@ -449,6 +473,8 @@ engineGUI.initParallaxSlider = function(id)
                 var li =  $("<li>").append(img);
                 pxs_thumbnails.append(li);
             }
+
+            engineGUI.initMenuTop(this.plan);
             return true;
         }
     });
@@ -456,8 +482,6 @@ engineGUI.initParallaxSlider = function(id)
     $('#pxs_container').parallaxSlider();
 
     $(".pxs_bg1").css("background-image", "images/bg1.jpg");
-
-    engineGUI.initTopMenu();
 };
 
 function getMenuObjectItem(menu,itemData)
@@ -506,19 +530,19 @@ engineGUI.menuCorrectHeight = function()
     var a;
     var b;
 
-    if (SCENE == 'house') {
+    if (engineGUI.scene == 'house') {
         a = $("#menuRight3DHouse .cssmenu").height();
         //b = $("#menuRight3DHouse .scroll");
         b = $("#menuRight2D .cssmenu");
-    } else if (SCENE == 'floor') {
+    } else if (engineGUI.scene == 'floor') {
         a = $("#menuRight3DFloor .cssmenu").height();
         //b = $("#menuRight3DFloor .scroll");
         b = $("#menuRight2D .cssmenu");
-    } else if (SCENE == 'roof') {
+    } else if (engineGUI.scene == 'roof') {
         a = $("#menuRight3DRoof .cssmenu").height();
         //b = $("#menuRight3DRoof .scroll");
         b = $("#menuRight2D .cssmenu");
-    } else if (SCENE == '2d') {
+    } else if (engineGUI.scene == '2d') {
         a = $("#menuRight2D .cssmenu").height();
         //b = $("#menuRight2D .scroll");
         b = $("#menuRight2D .cssmenu");
@@ -539,24 +563,24 @@ engineGUI.menuCorrectHeight = function()
 
 engineGUI.selectFloor = function(next)
 {
-    var i = FLOOR + next;
+    var i = engineGUI.floor + next;
 
-    if (i < FLOOR)
+    if (i < engineGUI.floor)
     {
         //TODO: would be awesome to have some kind of flip transition effect
 
-        if (SCENE == 'floor') {
+        if (engineGUI.scene == 'floor') {
             engine3D.showFloor(i);
-        } else if (SCENE == '2d') {
+        } else if (engineGUI.scene == '2d') {
             engine2D.showFloor(i);
         }
     }else{
 
         alertify.confirm("Add New Floor?", function (e) {
             if (e) {
-                if (SCENE == 'floor') {
+                if (engineGUI.scene == 'floor') {
                     engine3D.addFloor("New Floor");
-                } else if (SCENE == '2d') {
+                } else if (engineGUI.scene == '2d') {
                     engine2D.addFloor("New Floor");
                 }
             //} else { // user clicked "cancel"
@@ -592,30 +616,29 @@ function getParents(obj) {
 
 engineGUI.sceneMapBox = function()
 {
-
     if (typeof mapbox == undefined) 
     {
+        engine3D.animateStop();
+
         $.getScript( "js/dynamic/mapbpx.js" )
               .done(function( script, textStatus ) {
                 L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
-                var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);animateStop()
+                var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);
               })
               .fail(function( jqxhr, settings, exception ) {
                 console.log('Failed to load mapbox.js');
-          });
-    //}else{
-        //var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);animateStop();
+        });
     }
 };
 
 engineGUI.makeScreenshot = function()
 {
-    getScreenshotData = true;
+    window.open(engine3D.renderer.domElement.toDataURL('image/png'), 'Final');
     
     /*
     renderer.preserveDrawingBuffer = true;
     window.open(renderer.domElement.toDataURL('image/png'), 'Final');
-
+    
     setTimeout(function() {
         renderer.preserveDrawingBuffer = false;
     }, 1400);
@@ -659,7 +682,7 @@ engineGUI.exportPDF = function() {
     
     //alert('Sorry, your browser is not supported.');
 
-    if(SCENE === '2d')
+    if(engineGUI.scene === '2d')
     {
         if (typeof jsPDF === undefined)
         {
@@ -675,7 +698,7 @@ engineGUI.exportPDF = function() {
                 var doc = new jsPDF('l', 'in', [8.5, 11]);
 
                 doc.setFontSize(40);
-                doc.text(4.5, 1, scene3DFloorFurnitureContainer[FLOOR].name);
+                doc.text(4.5, 1, scene3DFloorFurnitureContainer[engineGUI.floor].name);
 
                 var image = scene2D.toDataURL("image/jpeg"); //.replace("data:image/png;base64,", "");
                 doc.addImage(image, 'JPEG', 0, 1.5, 11, 7);
@@ -691,9 +714,9 @@ engineGUI.exportPDF = function() {
                 );
                 */
 
-                //saveAs(doc.output('dataurl'), scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
-                //doc.save(scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
-                //saveAs(doc.output('blob'), scene3DFloorFurnitureContainer[FLOOR].name + ".pdf");
+                //saveAs(doc.output('dataurl'), scene3DFloorFurnitureContainer[engineGUI.floor].name + ".pdf");
+                //doc.save(scene3DFloorFurnitureContainer[engineGUI.floor].name + ".pdf");
+                //saveAs(doc.output('blob'), scene3DFloorFurnitureContainer[engineGUI.floor].name + ".pdf");
             });
         }
     }

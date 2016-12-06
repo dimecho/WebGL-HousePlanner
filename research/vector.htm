@@ -203,7 +203,7 @@ function init() {
 
     camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 10000);
     camera.position.set(0, 0, 500);
-    controls = new THREE.OrbitControls(camera);
+    
     scene = new THREE.Scene();
     var tests = '01234';
     characters = [];
@@ -218,6 +218,8 @@ function init() {
     renderer.setClearColor(0xf0f0f0);
     renderer.setSize(window.innerWidth, window.innerHeight);
     container.appendChild(renderer.domElement);
+
+    controls = new THREE.OrbitControls(camera,renderer.domElement);
 
     renderer.domElement.addEventListener('mousedown', function() {
         mode++;
