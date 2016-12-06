@@ -923,7 +923,7 @@ engine3D.showLandscape = function()
 engine3D.showFloor = function(i)
 {
     console.log("showFloor()");
-
+    
     engineGUI.floor = i;
 
     scene3DAnimateRotate = false;
@@ -973,7 +973,6 @@ engine3D.showFloor = function(i)
     engine3D.scene.add(scene3DFloorFurnitureContainer[engineGUI.floor]); //furnishings
     engine3D.scene.add(scene3DFloorShapeContainer[engineGUI.floor]);
     engine3D.scene.add(scene3DFloorGroundContainer);
-    
     scene3DFloorShapeContainer[engineGUI.floor].position.y = 0.1; //reset from each floor
 
     if(TOOL3DFLOOR === 'measure')
@@ -1328,7 +1327,7 @@ function scene3DObjectSelectMenu(x, y, menuID)
 	var width = height * aspect;                  // visible width
 	*/
 
-    //$('#WebGLInteractiveMenuText').html("Dimentions: " + (SELECTED.geometry.boundingBox.max.x * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.y * REALSIZERATIO).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.z * REALSIZERATIO).toFixed(1) + " Meters");
+    //$('#WebGLInteractiveMenuText').html("Dimentions: " + (SELECTED.geometry.boundingBox.max.x * engine3D.measurements).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.y * engine3D.measurements).toFixed(1) + "x" + (SELECTED.geometry.boundingBox.max.z * engine3D.measurements).toFixed(1) + " Meters");
     //$('#WebGLInteractiveMenu').show();
 };
 

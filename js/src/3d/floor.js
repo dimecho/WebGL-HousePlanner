@@ -47,6 +47,7 @@ engine3D.makeFloor = function()
             mesh.rotation.x = -(90 * radians);
             //mesh.position.y = 0.1 + (offset[i] * h);
             scene3DFloorShapeContainer[i].add(mesh);
+            //scene3DFloorShapeContainer[i].position.y = 0.1;
 
             //Ceiling
             var texture2 = engine3D.textureLoader.load(json.ceiling[i].texture);

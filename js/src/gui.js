@@ -110,7 +110,7 @@ engineGUI.initMenuTop = function(plan)
         div.append($("<a>", {href:"#", onclick:"engine3D.showRoofDesign()", class:"hi-icon icon-roof tooltip",title:"Roof Design"}));
     }
     if(plan[0] === 2 || plan[1] === 2)
-        div.append($("<a>", {href:"#", onclick:"engine3D.showFloor(engine3D.floor)", class:"hi-icon icon-armchair tooltip",title:"Floor Furnishings"}));
+        div.append($("<a>", {href:"#", onclick:"engine3D.showFloor(1)", class:"hi-icon icon-armchair tooltip",title:"Floor Furnishings"}));
 
     if(plan[1] === 3 || plan[2] === 3)
         div.append($("<a>", {href:"#", onclick:"engine2D.show()", class:"hi-icon icon-draftplan tooltip",title:"Floor Plans"}));
@@ -591,12 +591,12 @@ engineGUI.selectFloor = function(next)
 
 function selectMeasurement()
 {
-    if (REALSIZERATIO == 1.8311874) {
+    if (engine3D.measurements == 1.8311874) {
         //$('#menuMeasureText').html("Imperial");
-        REALSIZERATIO = 1; //Imperial Ratio TODO: Get the right ratio
+        engine3D.measurements = 1; //Imperial Ratio TODO: Get the right ratio
     } else {
         //$('#menuMeasureText').html("Metric");
-        REALSIZERATIO = 1.8311874; //Metric Ratio
+        engine3D.measurements = 1.8311874; //Metric Ratio
     }
 };
 

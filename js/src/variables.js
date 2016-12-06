@@ -59,8 +59,6 @@ var TOOL3DINTERACTIVE = '';
 var TOOL3DLANDSCAPE = 'rotate';
 var TOOL3DFLOOR = 'measure';
 var TOOL2D = 'vector';
-var FLOOR = 1; //first floor selected default
-var REALSIZERATIO = 1; //Real-life ratio (Metric/Imperial)
 var SelectedObject = null;
 var SelectedNote = null;
 var SelectedPicture = null;
@@ -164,7 +162,8 @@ engine3D.FXAAPass;          //THREE.ShaderPass();
 engine3D.SSAOPass;          //THREE.ShaderPass();
 engine3D.effectComposer;    //THREE.EffectComposer();
 engine3D.depthMaterial;     //THREE.MeshDepthMaterial();
-engine3D.depthRenderTarget; //THREE.WebGLRenderTarget()
+engine3D.depthRenderTarget; //THREE.WebGLRenderTarget();
 engine3D.FXAAProcessing = { enabled : true };
 engine3D.SSAOProcessing = { enabled : false, renderMode: 0 }; // renderMode: 0('framebuffer'), 1('onlyAO')
+engine3D.measurements = 1;  //Real-life ratio (Metric/Imperial)
 engine3D.history = [];      //Array();
