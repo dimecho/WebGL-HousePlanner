@@ -73,7 +73,7 @@ engine2D.showFloor = function(i)
 {
     engineGUI.floor = i;
 
-    if(scene2DFloorShape[i] !== undefined)
+    if(engine2D.floor[i] !== undefined)
 	{
     	//engine2D.makeFloor();
     	engine2D.clear();
@@ -101,7 +101,7 @@ engine2D.clear = function()
         {
             scene2DWallGroup[i].children[w].visible = false;
         }
-        scene2DFloorShape[i].visible = false;
+        engine2D.floor[i].visible = false;
         scene2DLabelGroup[i].visible = false;
         scene2DDoorGroup[i].visible = false;
         scene2DWindowGroup[i].visible = false;
@@ -216,6 +216,7 @@ engine2D.lockObject = function(id) {
     return false; //href="#" fix
 };
 
+/*
 engine2D.collectArrayFromContainer = function(n) {
 
     var json = [];
@@ -267,6 +268,7 @@ engine2D.collectArrayFromContainer = function(n) {
     }
     return json;
 };
+*/
 
 engine2D.freeMemory = function ()
 {

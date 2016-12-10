@@ -5,7 +5,7 @@ $(document).ready(function(){
 	var timer = null;
 	$('#search-box').keyup(function(e){
 		
-		if( e.keyCode ==38 ){
+		if( e.keyCode === 38 ){
 			if( $('#search_suggestion_holder').is(':visible') ){
 				if( ! $('.selected').is(':visible') ){
 					$('#search_suggestion_holder li').last().addClass('selected');
@@ -17,7 +17,7 @@ $(document).ready(function(){
 					
 				}
 			}
-		}else if(e.keyCode ==40){
+		}else if(e.keyCode === 40){
 			if( $('#search_suggestion_holder').is(':visible') ){
 				if( ! $('.selected').is(':visible') ){
 					$('#search_suggestion_holder li').first().addClass('selected');
@@ -28,14 +28,14 @@ $(document).ready(function(){
 					$('#search_suggestion_holder li:eq('+i+')').addClass('selected');
 				}
 			}					
-		}else if(e.keyCode ==13){
+		}else if(e.keyCode === 13){
 			if( $('.selected').is(':visible') ){
 				var value	=	$('.selected').text();
 				$('#search-box').val(value);
 				$('#search_suggestion_holder').hide();
 			}
 		}else{
-			var keyword		=		$(this).val();
+			var keyword	= $(this).val();
 			$('#search-close').hide();
 			$('#loader').show();
 			setTimeout( function(){

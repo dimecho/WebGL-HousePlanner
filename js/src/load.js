@@ -1,9 +1,7 @@
 var engineGUI = window.engineGUI || {};
 
-engineGUI.open = function(s,id)
+engineGUI.open = function(s)
 {
-    engine3D.id = id;
-
     $("#start").remove();
     $("#scene").remove();
 
@@ -12,77 +10,62 @@ engineGUI.open = function(s,id)
     //var data = $.ajax({ url:"scenes/" + id + ".json", async:false, dataType: "json"}).responseText;
     //json = JSON.parse(data);
 
-    $.ajax("scenes/" + id + ".json",{
-        contentType: "application/json",
-        dataType: "json",
-        success: function(data)
-        {
-            json = data;
+    //console.log(json);
+    
+    if (s === 1){
+        setTimeout(function() {
+            engine3D.cameraAnimate(0,20,0,1500);
+        }, 500);
+    }else if(s===2){
 
-            //console.log(json);
-            
-            if (s === 1){
-                setTimeout(function() {
-                    engine3D.cameraAnimate(0,20,0,1500);
-                }, 500);
-            }else if(s===2){
+        //quick response
+        engineGUI.scene = 'floor';
+        engine3D.setLights();
+        engine3D.buildPanorama(engine3D.skyFloor, '0000', 75, 75, 75,"",null);
 
-                //quick response
-                engineGUI.scene = 'floor';
-                engine3D.setLights();
-                engine3D.buildPanorama(skyFloorMesh, '0000', 75, 75, 75,"",null);
+        engine3D.scene.remove(engine3D.skyHouse);
+        engine3D.scene.remove(weatherSkyCloudsMesh);
+        engine3D.scene.remove(weatherSkyRainbowMesh);
+        engine3D.scene.remove(engine3D.groundHouse);
+        
+        engine3D.scene.add(engine3D.skyFloor);
+        engine3D.scene.add(engine3D.groundFloor);
 
-                engine3D.scene.remove(skyMesh);
-                engine3D.scene.remove(weatherSkyCloudsMesh);
-                engine3D.scene.remove(weatherSkyRainbowMesh);
-                engine3D.scene.remove(scene3DHouseGroundContainer);
+        setTimeout(function() {
+            engine3D.cameraAnimate(0,20,0,1500);
+        }, 800);
+        
+    }else if(s === 3){
+        engine2D.show();
+    }
 
-                engine3D.scene.add(skyFloorMesh);
-                engine3D.scene.add(scene3DFloorGroundContainer);
+    engine2D.open();
+    engine3D.open();
+    
+    setTimeout(function()
+    {
+        engineGUI.spinner.remove();
+        
+        $('#agentPicture').attr("src",json.info.agentPicture);
+        $('#menuAgent').show();
 
-                setTimeout(function() {
-                    engine3D.cameraAnimate(0,20,0,1500);
-                }, 800);
-                
-            }else if(s === 3){
-                engine2D.show();
-            }
-
-            engine2D.open();
-            engine3D.open();
-            
-            setTimeout(function()
-            {
-                engineGUI.spinner.remove();
-                
-                $('#menuAgent').show();
-                $('#agentPicture').attr("src",json.info.agentPicture);
-
-                if(s == 1){
-                    engine3D.showHouse();
-                }
-                else if (s == 2)
-                {
-                    engine3D.showFloor(1);
-                }
-                else if (s == 3)
-                {
-                    engine2D.show();
-                }
-
-                setTimeout(function() {
-                    scene3DAnimateRotate = json.settings.autorotate;
-                }, 4000);
-              
-            }, 2000);
-        },
-        error: function (request, status, error) {
-            //console.log(request.responseText);
-
-            engineGUI.spinner.remove();
-            alertify.alert("Cannot load scene json file: " + request.responseText).show();
+        if(s == 1){
+            engine3D.showHouse();
         }
-    });
+        else if (s == 2)
+        {
+            engine3D.showFloor(1);
+        }
+        else if (s == 3)
+        {
+            engine2D.show();
+        }
+
+        setTimeout(function() {
+            scene3DAnimateRotate = json.settings.autorotate;
+        }, 4000);
+      
+    }, 2000);
 };
 
 engineGUI.save = function(online)

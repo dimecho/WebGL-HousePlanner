@@ -1,5 +1,13 @@
 var engine3D = window.engine3D || {};
 
+var weatherSkyGeometry;
+var weatherSkyMaterial;
+//var weatherRainbowMaterial;
+var weatherSkyCloudsMesh;
+var weatherSkyRainbowMesh;
+//var weatherSkyDayMesh;
+//var weatherSkyNightMesh;
+
 engine3D.initSunlight = function()
 {
     /*
@@ -352,12 +360,12 @@ engine3D.setDay = function(set)
 
     //console.log("Set Day " + json.weather.day + ":" + files);
 
-    if(skyMesh.name != files)
+    if(engine3D.skyHouse.name != files)
     {
         //console.log(settings);
         
-        engine3D.buildPanorama(skyMesh, files, 75, 75, 75,"",null);
-        skyMesh.position.y = 5;
+        engine3D.buildPanorama(engine3D.skyHouse, files, 75, 75, 75,"",null);
+        engine3D.skyHouse.position.y = 5;
         //console.log("build Panorama: " + files);
         
         /*
@@ -373,18 +381,18 @@ engine3D.setDay = function(set)
 
         if (set != 'day') {
             
-            skyMesh = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), material);
-            skyMesh.position.y = 5;
+            engine3D.skyHouse = new THREE.Mesh(new THREE.BoxGeometry(10, 10, 10), material);
+            engine3D.skyHouse.position.y = 5;
         }else{
-            skyMesh = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), material);
-            skyMesh.position.y = 25;
+            engine3D.skyHouse = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), material);
+            engine3D.skyHouse.position.y = 25;
         }
         */
 
         //skyMaterial.needsUpdate = true;
-        //engine3D.scene.add(skyMesh);
+        //engine3D.scene.add(engine3D.skyHouse);
 
-        skyMesh.name = files;
+        engine3D.skyHouse.name = files;
     }
 };
 

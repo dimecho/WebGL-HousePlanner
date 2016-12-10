@@ -6,6 +6,12 @@
         "phone": ""
     },
     "settings": {
+        "mode": "local",
+        "view": "designer",
+        "terrain": false,
+        "floor": true,
+        "house": false,
+        "roof": false,
         "autorotate": false,
         "showcube": false,
         "panorama_day": "2056",
@@ -19,8 +25,9 @@
         "rainbow": true
     },
     "terrain": [],
-    "roof": [],
     "house": [],
+    "houseFX": [],
+    "roof": [],
     "floor": [{
         "texture": "objects/Platform/Textures/W23643.jpg"
     },{
@@ -75,7 +82,8 @@
     ],"plan": [
         [],
         [{
-            "name": "Floor1"
+            "name": "Floor1",
+            "draft": ""
         }, {
             "wall": "standard",
             "x1": 480,

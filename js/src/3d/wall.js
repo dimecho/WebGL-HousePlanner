@@ -4,21 +4,18 @@ engine3D.makeWalls = function()
 {
     //https://www.mixeelabs.com/creator/tutorial:-advanced-geometries/edit
 
-    //if(scene2DWallMesh[FLOOR].length == 0)
-    //    return;
-
     var radians = (Math.PI / 180);
 
     for(var i = 0; i < scene2DWallGroup.length; i++)
     {
-        scene3DFloorWallContainer[i] = new THREE.Object3D();
+        engine3D.walls[i] = new THREE.Object3D();
 
         if(scene2DWallGroup[i].children[0] !== undefined)
         {
             //scene3DFloorDoorContainer[FLOOR]    = new THREE.Object3D();
             //scene3DFloorWindowContainer[FLOOR]  = new THREE.Object3D();
 
-            console.log("3D Wall Generate [" + i + "] " + scene2DWallGroup[i].children.length);
+            console.log("3D Wall Generate [" + i + " of " + scene2DWallGroup.length +"] " + scene2DWallGroup[i].children.length);
 
             for (var a = 0; a < scene2DWallGroup[i].children.length; a++)
             {
@@ -84,7 +81,7 @@ engine3D.makeWalls = function()
                 mesh.rotation.x = -(90 * radians); //extrusion happens in Z direction, we need the wall pointing UP
                 mesh.position.y = 0;
 
-                scene3DFloorWallContainer[i].add(mesh);
+                engine3D.walls[i].add(mesh);
 
                 //http://stackoverflow.com/questions/26272564/how-to-increase-the-thickness-of-the-extrude-geometry-along-x-and-z-axis-three
                 /*
@@ -95,7 +92,7 @@ engine3D.makeWalls = function()
                     mesh_arr[b] = mesh.clone();
                     mesh_arr[b].position.set(b,b,b);
                     mesh_arr[b].updateMatrix();
-                    scene3DFloorWallContainer[FLOOR].add(mesh_arr[b]);
+                    engine3D.walls[FLOOR].add(mesh_arr[b]);
                 }
                 */
             }
@@ -123,7 +120,7 @@ engine3D.makeWalls = function()
         /
 
         /
-        try //Cut a whole in scene3DFloorWallContainer Mesh
+        try //Cut a whole in engine3D.walls Mesh
         {
             var o = scene3DFloorDoorContainer.children.length; //TODO: Have some error catch
 

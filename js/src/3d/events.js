@@ -78,17 +78,17 @@ function onDocumentDoubleClick(event)
         //console.log('doubleclick 2D ' + x + ":" + y);
 
         //TODO: zoom out far, reset pivot-point to 0,0,0
-        //if (new Date().getTime() - 150 < clickTime) { //Set pivot-point to clicked coordinates
+        //if (new Date().getTime() - 150 < clickTimer) { //Set pivot-point to clicked coordinates
 
         vector = new THREE.Vector3(x, y, 0.5);
         vector.unproject(engine3D.camera);
         var raycaster = new THREE.Raycaster(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
-        var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children,true);
+        var intersects = raycaster.intersectObjects(engine3D.groundHouse.children,true);
 
         if (intersects.length > 0) {
             //console.log('doubleclick 3D');
 
-            clearTimeout(doubleClickTime);
+            clearTimeout(engineGUI.doubleClickTime);
 
             engine3D.pivot.position.set(intersects[0].point.x, 0, intersects[0].point.z);
             
@@ -158,7 +158,7 @@ function onDocumentDoubleClick(event)
 
             //engine3D.controls.target = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z); //having THREE.TrackballControls or THREE.OrbitControls seems to override the camera.lookAt function
 
-            doubleClickTime = setTimeout(function() {
+            engineGUI.doubleClickTime = setTimeout(function() {
                 engine3D.scene.remove(engine3D.pivot);
                 //particlePivotEmitter.disable();
                 //engine3D.scene.remove(particlePivot.mesh);
@@ -174,22 +174,22 @@ function on3DLandscapeMouseMove(event)
     //event.preventDefault();
     //event.stopPropagation();
     
-    //if (TOOL3DLANDSCAPE == "rotate") {
+    //if (engine3D.tool == "rotate") {
     //    return;
     //}
 
     //engine3D.controls.enabled = false;
     
-    if (TOOL3DLANDSCAPE === "angle") 
+    if (engine3D.tool === "angle") 
     {
         if (!engineGUI.mouseleft)
         return;
 
         if (event.clientX > window.innerWidth / 2) {
-            //scene3DHouseGroundContainer.children[0].rotation.z = scene3DHouseGroundContainer.children[0].rotation.z + 0.02;
+            //engine3D.groundHouse.children[0].rotation.z = engine3D.groundHouse.children[0].rotation.z + 0.02;
             engine3D.terrain.rotation.y = engine3D.terrain.rotation.y + 0.015;
         } else {
-            //scene3DHouseGroundContainer.children[0].rotation.z = scene3DHouseGroundContainer.children[0].rotation.z - 0.02;
+            //engine3D.groundHouse.children[0].rotation.z = engine3D.groundHouse.children[0].rotation.z - 0.02;
             engine3D.terrain.rotation.y = engine3D.terrain.rotation.y - 0.015;
         }
     }
@@ -233,13 +233,13 @@ function on3DLandscapeMouseDown(event)
 
     engine3D.controls.enabled = false;
 
-    //console.log(TOOL3DLANDSCAPE);
+    //console.log(engine3D.tool);
 
-    if (TOOL3DLANDSCAPE === "rotate")
+    if (engine3D.tool === "rotate")
     {
         engine3D.controls.enabled = true;
     }
-    else if (TOOL3DLANDSCAPE === "hill" || TOOL3DLANDSCAPE === "valley")
+    else if (engine3D.tool === "hill" || engine3D.tool === "valley")
     {
         //event.stopPropagation();
         //event.cancelBubble = true;
@@ -256,7 +256,7 @@ function on3DLandscapeMouseUp(event)
     engineGUI.mouseleft = false;
     engine3D.controls.enabled = false;
 
-    if (TOOL3DLANDSCAPE === "hill" || TOOL3DLANDSCAPE === "valley")
+    if (engine3D.tool === "hill" || engine3D.tool === "valley")
     {
         terrain3DMouse.x = event.clientX;
         terrain3DMouse.y = event.clientY;
@@ -329,11 +329,11 @@ function on3DHouseMouseDown(event)
 {
     on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, scene3DHouseContainer)){
+    if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, engine3D.house)){
         engine3D.scene.add(engine3D.pivot);
 
     //}
-    //else if (scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, scene3DHouseGroundContainer))
+    //else if (scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, engine3D.groundHouse))
     //{
         //if (SelectedObject != null)
         //{
@@ -362,7 +362,7 @@ function on3DHouseMouseMove(event)
     //    return;
     
     if(SelectedObject !== null)
-        on3DObjectMove(scene3DHouseGroundContainer,event);
+        on3DObjectMove(engine3D.groundHouse,event);
     else
         on3DCubeMove();
 };
@@ -371,9 +371,9 @@ function on3DFloorMouseDown(event)
 {
     on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, scene3DFloorFurnitureContainer[FLOOR]))
+    if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, scene3DFloorFurnitureContainer[engineGUI.floor]))
     {
-        //if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, scene3DFloorWallContainer[FLOOR]))
+        //if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, engine3D.walls[engineGUI.floor]))
         //{
             engine3D.scene.add(engine3D.pivot);
         //}
@@ -390,8 +390,8 @@ function on3DFloorMouseUp(event)
        o = 0.5;
     }
     //TODO: exception for collision wall
-    for (var i = 0; i < scene3DFloorWallContainer[FLOOR].children.length; i++)
-        tween = new TWEEN.Tween(scene3DFloorWallContainer[FLOOR].children[i].material).to({opacity:o}, 500).start();
+    for (var i = 0; i < engine3D.walls[engineGUI.floor].children.length; i++)
+        tween = new TWEEN.Tween(engine3D.walls[engineGUI.floor].children[i].material).to({opacity:o}, 500).start();
 };
 
 function on3DCubeMove()
@@ -405,7 +405,7 @@ function on3DCubeMove()
     }
     */
     //console.log("cube move");
-    //clearTimeout(clickMenuTime);
+    //clearTimeout(engineGUI.clickMenuTime);
     //console.log("cube move");
 
     engine3D.cameraCube.position.copy(engine3D.camera.position);
@@ -467,8 +467,10 @@ function on3DFloorMouseMove(event) {
 
     if(SelectedObject !== null)
     {
-        on3DObjectMove(scene3DFloorGroundContainer,event);
-    }else{
+        on3DObjectMove(engine3D.groundFloor,event);
+    }
+    else //if (engine3D.walls[engineGUI.floor].children !== undefined)
+    {
         var tween;
         var v = new THREE.Vector3( 0, 0, 8 ); //TODO: make this dynamic
         v.applyQuaternion(engine3D.camera.quaternion);
@@ -485,7 +487,7 @@ function on3DFloorMouseMove(event) {
             var directionVector = globalVertex.sub(scene3DCutawayPlaneMesh.position);
             
             var ray = new THREE.Raycaster(originPoint,directionVector.clone().normalize());
-            var collisionResults = ray.intersectObjects(scene3DFloorWallContainer[FLOOR].children);
+            var collisionResults = ray.intersectObjects(engine3D.walls[engineGUI.floor].children);
 
             if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
             {
@@ -511,7 +513,7 @@ function on3DMouseMove(event)
     }
 
     //if(TWEEN.getAll().length == 0) { //do not interfere with existing animations
-        clearTimeout(clickMenuTime);
+        clearTimeout(engineGUI.clickMenuTime);
         //console.log("mouse:" + event.clientX + " window:" + window.innerWidth);
      
             engine3D.cameraCube.position.copy(engine3D.camera.position);
@@ -536,26 +538,26 @@ function on3DMouseMove(event)
         $('#WebGLInteractiveMenu').hide();
         $('#WebGLTextureSelect').hide();
 
-        //if (TOOL3DINTERACTIVE == 'moveXY') {
+        //if (engine3D.tool == 'moveXY') {
 
             vector = new THREE.Vector3(x, y, 0.1);
             //projector.unprojectVector(vector, engine3D.camera);
             vector.unproject(engine3D.camera);
             var raycaster = new THREE.Raycaster(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
-            var intersects = raycaster.intersectObjects(scene3DHouseGroundContainer.children);
+            var intersects = raycaster.intersectObjects(engine3D.groundHouse.children);
             //var ray = new THREE.Ray(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
-            //var intersects = ray.intersectObject(scene3DHouseGroundContainer.children[0]);
+            //var intersects = ray.intersectObject(engine3D.groundHouse.children[0]);
             if (intersects.length > 0) {
 
             var collisionContainer;
 
             if (engineGUI.scene == 'house')
             {
-                collisionContainer = scene3DHouseContainer; //.clone();
+                collisionContainer = engine3D.house; //.clone();
             }
             else if (engineGUI.scene == 'floor')
             {
-                collisionContainer = scene3DFloorFurnitureContainer[FLOOR]; //.clone();
+                collisionContainer = scene3DFloorFurnitureContainer[engineGUI.floor]; //.clone();
             }
             
             //collisionContainer.remove(SELECTED); //avoid detecting itself
@@ -621,7 +623,7 @@ function on3DMouseMove(event)
             return;
         }
 
-        var intersects = raycaster.intersectObjects(scene3DHouseContainer);
+        var intersects = raycaster.intersectObjects(engine3D.house);
 
         if (intersects.length > 0) {
 
@@ -665,7 +667,7 @@ function on3DMouseDown(event)
     if (SelectedObject != null)
     {
         console.log("on3DMouseDown unselect objet");
-        clickMenuTime = setTimeout(function(){
+        engineGUI.clickMenuTime = setTimeout(function(){
             //scene3DObjectUnselect();
             if (engine3D.controls instanceof THREE.TransformControls && !TransformConstrolsHighlighted)
             {
@@ -685,12 +687,11 @@ function on3DMouseDown(event)
         return;
     }
     */
-    //clickTime = new Date().getTime();
-    
+
     scene3DAnimateRotate = false;
 
-    clearTimeout(clickTime);
-    clickTime = setTimeout(function()
+    clearTimeout(engineGUI.clickTime);
+    engineGUI.clickTime = setTimeout(function()
     {
         engineGUI.mousedrag = true;
         if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
@@ -703,7 +704,7 @@ function on3DMouseUp(event)
 {
     //event.preventDefault();
 
-    clearTimeout(clickTime);
+    clearTimeout(engineGUI.clickTime);
 
     engineGUI.mousedrag = false;
 
@@ -734,7 +735,7 @@ function on3DMouseUp(event)
 
         //engine3D.scene.updateMatrixWorld();
 
-        clickTime = setTimeout(function() {
+        engineGUI.clickTime = setTimeout(function() {
             if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0)
                 engineGUI.toggleSideMenus(true);
         }, 1000);

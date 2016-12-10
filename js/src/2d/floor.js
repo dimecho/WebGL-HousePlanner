@@ -2,16 +2,16 @@ var engine2D = window.engine2D || {};
 
 engine2D.drawFloor = function(floor)
 {
-    if(scene2DFloorShape[floor].children[0] === undefined)
+    if(engine2D.floor[floor].children[0] === undefined)
         return;
     
-    scene2DFloorShape[floor].visible = true;
+    engine2D.floor[floor].visible = true;
     scene2DLabelGroup[floor].visible = true;
     
-    paper.project.layers.push(scene2DFloorShape[floor]);
+    paper.project.layers.push(engine2D.floor[floor]);
     paper.project.layers.push(scene2DLabelGroup[floor]);
 
-    scene2DFloorShape[floor].on('mousedown', engine2D.drawWall_onMouseDown);
+    engine2D.floor[floor].on('mousedown', engine2D.drawWall_onMouseDown);
     
     engine2D.calculateWallMeasureColor(floor);
 };
@@ -20,14 +20,14 @@ engine2D.makeFloor = function(floor)
 {
     if(scene2DWallGroup[floor].children[0] === undefined)
         return;
-
+    
 	console.log("2D Floor Generate [" + floor + "] " + scene2DWallGroup[floor].children.length);
-
+    
     var shape = new paper.Path();
     shape.closed = true;
 
-    //if(scene2DFloorShape[floor].children[0] !== undefined)
-	//   shape = scene2DFloorShape[floor].children[0];
+    //if(engine2D.floor[floor].children[0] !== undefined)
+	//   shape = engine2D.floor[floor].children[0];
     
 	var path = scene2DWallGroup[floor].children[0].children[0].children[0];
 	var lastPoint = path.segments[0].point;
@@ -69,7 +69,7 @@ engine2D.makeFloor = function(floor)
 	shape.fillColor = '#D8D8D8';
     shape.remove(); //clean from view
     
-	scene2DFloorShape[floor] = new paper.Group([shape]);
+	engine2D.floor[floor] = new paper.Group([shape]);
 	
     //Texture the shape
     var canvas = document.createElement('canvas');
@@ -86,10 +86,10 @@ engine2D.makeFloor = function(floor)
 		var raster = new paper.Raster(canvas, new paper.Point(shape.bounds.x,shape.bounds.y));
 		raster.fitBounds(shape.bounds, true);
 		
-		scene2DFloorShape[floor] = new paper.Group([shape, raster]);
-		scene2DFloorShape[floor].clipped = true;
+		engine2D.floor[floor] = new paper.Group([shape, raster]);
+		engine2D.floor[floor].clipped = true;
     };
-	scene2DFloorShape[floor].visible = false; //draw on demand
+	engine2D.floor[floor].visible = false; //draw on demand
     
 };
 
@@ -104,15 +104,15 @@ engine2D.makeLabel = function (floor,label,size,x,y) {
     
     return text;
 };
-
+/*
 engine2D.fillFloor = function(floor,shape) {
     //shape.quickCorner = new Array();
     var count = 1;
     
-    //var obj = scene2DWallMesh[FLOOR][0];
+    //var obj = scene2DWallMesh[floor][0];
     //shape.path[0][1] = obj.item(0).path[0][1]; //x1
     //shape.path[0][2] = obj.item(0).path[0][2]; //y1
-    //shape.count = scene2DWallMesh[FLOOR].length;
+    //shape.count = scene2DWallMesh[floor].length;
 
     var corner = {x:0,y:0};
 
@@ -147,3 +147,4 @@ engine2D.fillFloor = function(floor,shape) {
         //}
     }
 };
+*/

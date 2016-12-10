@@ -1,30 +1,30 @@
 #!/bin/sh
 
-cd "$(dirname "$0")"
-
-#for f in $(find ./ -name '*.blend1')
-find './' -name '*.blend1' | while read f
-do
+find "$(dirname "$0")" -name '*.blend1' | while read f; do
+    cd "$(dirname "$f")"
 	rm "$f"
 done
 
-#for f in $(find ./ -name '*.blend')
-#do
-#	rm "$(dirname "$f")/$(basename "$f" .blend).jpg"
-#done
-
-#for f in $(find ./ -name '.DS_Store')
-find './' -name '*.DS_Store' | while read f
-do
+find "$(dirname "$0")" -name '*.DS_Store' | while read f; do
+    cd "$(dirname "$f")"
 	rm "$f"
 done
 
-#for f in $(find ./ -name '*.js')
-find './' -name '*.json' | while read f
-do
-    if [ "$(basename "$f")" != "index.json" ]
-    then
+find "$(dirname "$0")" -name "*.json" | while read f; do
+    cd "$(dirname "$f")"
+    if [ -f "$(basename "$f" .json).blend" ]; then
 	   rm "$f"
     fi
 done
 
+find "$(dirname "$0")/../scenes/" -name '*.blend1' | while read f; do
+    cd "$(dirname "$f")"
+    rm "$f"
+done
+
+find "$(dirname "$0")/../scenes/" -name "*.json" | while read f; do
+    cd "$(dirname "$f")"
+    if [ -f "$(basename "$f" .json).blend" ]; then
+       rm "$f"
+    fi
+done

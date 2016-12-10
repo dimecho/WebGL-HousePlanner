@@ -18,15 +18,6 @@ engine3D.initialize = function()
         return;
     }
 
-	//RUNMODE = runmode;
-	//VIEWMODE = viewmode;
-
-    if(RUNMODE === "local")
-    {
-        $("#menuTopItem12").hide(); //Share
-        $("#menuTopItem15").hide(); //Login
-    }
-
     $("#menuTop").show();
     $("#menuBottomHouse").show();
 
@@ -54,7 +45,7 @@ engine3D.initialize = function()
     engine3D.fontLoader = new THREE.FontLoader();
     engine3D.textureLoader = new THREE.TextureLoader();
     
-    scene3DFloorGroundContainer = new THREE.Object3D();
+    engine3D.groundFloor = new THREE.Object3D();
     engine3D.pivot = new THREE.Object3D();
     //scene3DAxisHelper = new THREE.AxisHelper(2);
 
@@ -154,10 +145,10 @@ engine3D.initialize = function()
     //camera2D.position.z = 5000; // the camera starts at 0,0,0 so pull it back
 
     /*
-    camera3DMirrorReflection = new THREE.CubeCamera(0.1, 10, 30);
-    //camera3DMirrorReflection.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
-    camera3DMirrorReflection.renderTarget.width = camera3DMirrorReflection.renderTarget.height = 3;
-    //camera3DMirrorReflection.position.y = -20;
+    engine3D.cameraMirror = new THREE.CubeCamera(0.1, 10, 30);
+    //engine3D.cameraMirror.renderTarget.minFilter = THREE.LinearMipMapLinearFilter;
+    engine3D.cameraMirror.renderTarget.width = engine3D.cameraMirror.renderTarget.height = 3;
+    //engine3D.cameraMirror.position.y = -20;
     */
 
     //================================
@@ -170,23 +161,6 @@ engine3D.initialize = function()
     */
 
     /*
-    scene2DDrawLineGeometry = new THREE.Geometry();
-    scene2DDrawLineMaterial = new THREE.LineBasicMaterial({
-        color: 0x000000,
-        linewidth: 5,
-        linecap: "round",
-        //linejoin: "round"
-        //opacity: 0.5
-    });
-    scene2DDrawLineDashedMaterial = new THREE.LineDashedMaterial({
-        color: 0x000000,
-        dashSize: 1,
-        gapSize: 0.5
-    });
-
-    scene2DDrawLine = new THREE.Line(scene2DDrawLineGeometry, scene2DDrawLineMaterial);
-    scene2DDrawLineContainer.add(scene2DDrawLine);
-    
     texture = new THREE.ImageUtils.loadTexture('objects/FloorPlan/P0001.png');
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
@@ -367,43 +341,43 @@ engine3D.initRendererQuad = function()
 
     for(i = 0; i<4; i++){
 
-        rendererQuad[i] = new THREE.WebGLRenderer({
+        engine3D.rendererQuad[i] = new THREE.WebGLRenderer({
             devicePixelRatio: window.devicePixelRatio | 1,
             antialias: false,
             //alpha: true,
             //autoClear: false
         });
-        rendererQuad[i].setClearColor( 0xffffff );
-        $('#WebGLSplitCanvas-' + i).append(rendererQuad[i].domElement);
+        engine3D.rendererQuad[i].setClearColor( 0xffffff );
+        $('#WebGLSplitCanvas-' + i).append(engine3D.rendererQuad[i].domElement);
 
         //var w = $("#WebGLSplitCanvas-" + i).parent().parent().width();
         //var h = $("#WebGLSplitCanvas-" + i).parent().parent().height();
-        //camera3DQuad[i] = new THREE.OrthographicCamera( w / - 2, w / 2, h / 2, h / - 2, -30, 30 );
+        //engine3D.cameraQuad[i] = new THREE.OrthographicCamera( w / - 2, w / 2, h / 2, h / - 2, -30, 30 );
     }
-
+    
     //Top View Camera
-    camera3DQuad[0] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-0").parent().parent().width() / - 60, $("#WebGLSplitCanvas-0").parent().parent().width() / 60, $("#WebGLSplitCanvas-0").parent().parent().height() / 10, $("#WebGLSplitCanvas-0").parent().parent().height() / - 10, -30, 30 );
-    camera3DQuad[0].up = new THREE.Vector3(0, 0, -1);
-    camera3DQuad[0].lookAt(new THREE.Vector3(0, -1, 0));
+    engine3D.cameraQuad[0] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-0").parent().parent().width() / - 60, $("#WebGLSplitCanvas-0").parent().parent().width() / 60, $("#WebGLSplitCanvas-0").parent().parent().height() / 10, $("#WebGLSplitCanvas-0").parent().parent().height() / - 10, -30, 30 );
+    engine3D.cameraQuad[0].up = new THREE.Vector3(0, 0, -1);
+    engine3D.cameraQuad[0].lookAt(new THREE.Vector3(0, -1, 0));
 
     //Front View Camera
-    camera3DQuad[1] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-1").parent().parent().width() / - 60, $("#WebGLSplitCanvas-1").parent().parent().width() / 60, $("#WebGLSplitCanvas-1").parent().parent().height() / 10, $("#WebGLSplitCanvas-1").parent().parent().height() / - 10, -30, 30 );
-    //camera3DQuad[1].lookAt(new THREE.Vector3(0, 0, -1));
-    //camera3DQuad[1].position.set(0, 0, 0);
-    camera3DQuad[1].lookAt(new THREE.Vector3(1, 0, 0));
-    camera3DQuad[1].position.set(0, 0, 0);
+    engine3D.cameraQuad[1] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-1").parent().parent().width() / - 60, $("#WebGLSplitCanvas-1").parent().parent().width() / 60, $("#WebGLSplitCanvas-1").parent().parent().height() / 10, $("#WebGLSplitCanvas-1").parent().parent().height() / - 10, -30, 30 );
+    //engine3D.cameraQuad[1].lookAt(new THREE.Vector3(0, 0, -1));
+    //engine3D.cameraQuad[1].position.set(0, 0, 0);
+    engine3D.cameraQuad[1].lookAt(new THREE.Vector3(1, 0, 0));
+    engine3D.cameraQuad[1].position.set(0, 0, 0);
 
     //Side View Camera
-    camera3DQuad[2] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-2").parent().parent().width() / - 60, $("#WebGLSplitCanvas-2").parent().parent().width() / 60, $("#WebGLSplitCanvas-2").parent().parent().height() / 10, $("#WebGLSplitCanvas-2").parent().parent().height() / - 40, -30, 30 );
-    camera3DQuad[2].lookAt(new THREE.Vector3(1, 0, 0));
-    camera3DQuad[2].position.set(0, 0, 0);
+    engine3D.cameraQuad[2] = new THREE.OrthographicCamera( $("#WebGLSplitCanvas-2").parent().parent().width() / - 60, $("#WebGLSplitCanvas-2").parent().parent().width() / 60, $("#WebGLSplitCanvas-2").parent().parent().height() / 10, $("#WebGLSplitCanvas-2").parent().parent().height() / - 40, -30, 30 );
+    engine3D.cameraQuad[2].lookAt(new THREE.Vector3(1, 0, 0));
+    engine3D.cameraQuad[2].position.set(0, 0, 0);
 
     //3D View Camera
-    camera3DQuad[3] = new THREE.PerspectiveCamera(70, $("#WebGLSplitCanvas-3").parent().width() / $("#WebGLSplitCanvas-3").parent().height(), 1, 50);
-    camera3DQuad[3].position.set(0, 14, 8);
-    camera3DQuad[3].lookAt(new THREE.Vector3(0, 0, 0));
+    engine3D.cameraQuad[3] = new THREE.PerspectiveCamera(70, $("#WebGLSplitCanvas-3").parent().width() / $("#WebGLSplitCanvas-3").parent().height(), 1, 50);
+    engine3D.cameraQuad[3].position.set(0, 14, 8);
+    engine3D.cameraQuad[3].lookAt(new THREE.Vector3(0, 0, 0));
 
-    camera3DQuadGrid = new THREE.GridHelper(15, 1, new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
+    engine3D.grid = new THREE.GridHelper(15, 1, new THREE.Color(0x000066), new THREE.Color(0x6dcff6));
 
     engine3D.initRendererQuadSize();
     
@@ -432,17 +406,17 @@ engine3D.initRendererQuad = function()
 
 engine3D.initRendererQuadSize = function()
 {
-    if(camera3DQuad[0] instanceof THREE.OrthographicCamera)
+    if(engine3D.cameraQuad[0] instanceof THREE.OrthographicCamera)
     {
-        for(i = 0; i<4; i++){
-           
+        for(var i = 0; i<4; i++)
+        {
             var w = $("#WebGLSplitCanvas-" + i).parent().parent().width();
             var h = $("#WebGLSplitCanvas-" + i).parent().parent().height();
             //console.log(w+ ":" + h);
 
-            camera3DQuad[i].aspect = w / h;
-            camera3DQuad[i].updateProjectionMatrix();
-            rendererQuad[i].setSize(w, h);
+            engine3D.cameraQuad[i].aspect = w / h;
+            engine3D.cameraQuad[i].updateProjectionMatrix();
+            engine3D.rendererQuad[i].setSize(w, h);
         }
     }
 };
@@ -533,20 +507,20 @@ engine3D.initLights = function()
     //engine3D.scene.fog = new THREE.Fog(0xffffff, 0.015, 40); //white fog (0xffffff). The last two properties can be used to tune how the mist will appear. The 0.015 value sets the near property and the 100 value sets the far property 
 
     /*
-    sceneHemisphereLight = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
-    sceneHemisphereLight.color.setHSL(0.6, 0.75, 0.5);
-    sceneHemisphereLight.groundColor.setHSL(0.095, 0.5, 0.5);
-    sceneHemisphereLight.position.set(0, 20, 0);
-    //sceneHemisphereLight.shadowCameraVisible = true;
+    engine3D.lightHemisphere = new THREE.HemisphereLight(0x0000ff, 0x00ff00, 0.6);
+    engine3D.lightHemisphere.color.setHSL(0.6, 0.75, 0.5);
+    engine3D.lightHemisphere.groundColor.setHSL(0.095, 0.5, 0.5);
+    engine3D.lightHemisphere.position.set(0, 20, 0);
+    //engine3D.lightHemisphere.shadowCameraVisible = true;
     */
     //engine3D.scene.add(hemiLight);
 
     // sky color ground color intensity 
-    //sceneHemisphereLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 ); 
+    //engine3D.lightHemisphere = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 ); 
 
-    //var ambientLight = new THREE.AmbientLight(0x444444); // 0xcccccc
-    //scene.add(ambientLight);
-
+    //engine3D.lightAmbient = new THREE.AmbientLight(0x444444); // 0xcccccc
+    //scene.add(engine3D.lightAmbient);
+    
     /*
     sceneParticleLight = new THREE.Mesh(new THREE.SphereGeometry(0, 10, 0), new THREE.MeshBasicMaterial({
         color: 0xffffff
@@ -578,52 +552,52 @@ engine3D.initLights = function()
     engine3D.scene.add(light);
     */
     /*
-    sceneDirectionalLight = new THREE.DirectionalLight(0xFFBBBB, 0.5);
-    sceneDirectionalLight.position.set(2, 10, 6);
-    sceneDirectionalLight.target.position.set(0, 0, 0);
-    sceneDirectionalLight.castShadow = true;
-    sceneDirectionalLight.shadowCameraNear = 0;
-    sceneDirectionalLight.shadowCameraFar = 27;
-    sceneDirectionalLight.shadowCameraRight = 15;
-    sceneDirectionalLight.shadowCameraLeft = -15;
-    sceneDirectionalLight.shadowCameraTop = 15;
-    sceneDirectionalLight.shadowCameraBottom = -15;
-    sceneDirectionalLight.shadowCameraVisible = true;
-    sceneDirectionalLight.shadowBias = 0.005;
-    sceneDirectionalLight.shadowDarkness = 0.4;
-    sceneDirectionalLight.shadowMapWidth = 1024;
-    sceneDirectionalLight.shadowMapHeight = 1024;
+    engine3D.lightDirectional = new THREE.DirectionalLight(0xFFBBBB, 0.5);
+    engine3D.lightDirectional.position.set(2, 10, 6);
+    engine3D.lightDirectional.target.position.set(0, 0, 0);
+    engine3D.lightDirectional.castShadow = true;
+    engine3D.lightDirectional.shadowCameraNear = 0;
+    engine3D.lightDirectional.shadowCameraFar = 27;
+    engine3D.lightDirectional.shadowCameraRight = 15;
+    engine3D.lightDirectional.shadowCameraLeft = -15;
+    engine3D.lightDirectional.shadowCameraTop = 15;
+    engine3D.lightDirectional.shadowCameraBottom = -15;
+    engine3D.lightDirectional.shadowCameraVisible = true;
+    engine3D.lightDirectional.shadowBias = 0.005;
+    engine3D.lightDirectional.shadowDarkness = 0.4;
+    engine3D.lightDirectional.shadowMapWidth = 1024;
+    engine3D.lightDirectional.shadowMapHeight = 1024;
     */
 
     
-    sceneDirectionalLight = new THREE.DirectionalLight();
-    sceneDirectionalLight.color.setHSL(0.1, 1, 0.95);
-    sceneDirectionalLight.position.set(1, 1.8, 0.8).normalize();
-    sceneDirectionalLight.target.position.set(0, 0, 0);
-    sceneDirectionalLight.position.multiplyScalar(50);
-    //sceneDirectionalLight.position.set(-1, 0, 0).normalize();
-    sceneDirectionalLight.castShadow = true;
-    sceneDirectionalLight.shadow.mapSize.width = 2048; //shadowMapWidth = 2048;
-    sceneDirectionalLight.shadow.mapSize.height = 2048; //shadowMapHeight = 2048;
+    engine3D.lightDirectional = new THREE.DirectionalLight();
+    engine3D.lightDirectional.color.setHSL(0.1, 1, 0.95);
+    engine3D.lightDirectional.position.set(1, 1.8, 0.8).normalize();
+    engine3D.lightDirectional.target.position.set(0, 0, 0);
+    engine3D.lightDirectional.position.multiplyScalar(50);
+    //engine3D.lightDirectional.position.set(-1, 0, 0).normalize();
+    engine3D.lightDirectional.castShadow = true;
+    engine3D.lightDirectional.shadow.mapSize.width = 2048; //shadowMapWidth = 2048;
+    engine3D.lightDirectional.shadow.mapSize.height = 2048; //shadowMapHeight = 2048;
     var d = 15;
-    sceneDirectionalLight.shadow.camera.left = -d; //shadowCameraLeft = -d;
-    sceneDirectionalLight.shadow.camera.left = d; //shadowCameraRight = d;
-    sceneDirectionalLight.shadow.camera.top = d; //shadowCameraTop = d;
-    sceneDirectionalLight.shadow.camera.bottom = -d; //shadowCameraBottom = -d;
-    sceneDirectionalLight.shadow.camera.far = 2000; //shadowCameraFar = 2000;
-    sceneDirectionalLight.shadow.bias = -0.0001; //shadowBias = -0.0001;
-    //sceneDirectionalLight.shadowDarkness = 1;
-    //sceneDirectionalLight.shadow.camera.visible = true; //shadowCameraVisible = true;
-    //engine3D.scene.add(sceneDirectionalLight);
+    engine3D.lightDirectional.shadow.camera.left = -d; //shadowCameraLeft = -d;
+    engine3D.lightDirectional.shadow.camera.left = d; //shadowCameraRight = d;
+    engine3D.lightDirectional.shadow.camera.top = d; //shadowCameraTop = d;
+    engine3D.lightDirectional.shadow.camera.bottom = -d; //shadowCameraBottom = -d;
+    engine3D.lightDirectional.shadow.camera.far = 2000; //shadowCameraFar = 2000;
+    engine3D.lightDirectional.shadow.bias = -0.0001; //shadowBias = -0.0001;
+    //engine3D.lightDirectional.shadowDarkness = 1;
+    //engine3D.lightDirectional.shadow.camera.visible = true; //shadowCameraVisible = true;
+    //engine3D.scene.add(engine3D.lightDirectional);
 
-    sceneSpotLight = new THREE.SpotLight();
-    sceneSpotLight.shadow.camera.near = 1; //shadowCameraNear = 1; // keep near and far planes as tight as possible
-    sceneSpotLight.shadow.camera.far = 38; //shadowCameraFar = 38; // shadows not cast past the far plane
-    //sceneSpotLight.shadowCameraVisible = true;
-    sceneSpotLight.castShadow = true;
-    sceneSpotLight.intensity = 0.8;
-    sceneSpotLight.position.set(-4, 35, 4)
-    //engine3D.scene.add(sceneSpotLight);
+    engine3D.lightSpot = new THREE.SpotLight();
+    engine3D.lightSpot.shadow.camera.near = 1; //shadowCameraNear = 1; // keep near and far planes as tight as possible
+    engine3D.lightSpot.shadow.camera.far = 38; //shadowCameraFar = 38; // shadows not cast past the far plane
+    //engine3D.lightSpot.shadowCameraVisible = true;
+    engine3D.lightSpot.castShadow = true;
+    engine3D.lightSpot.intensity = 0.8;
+    engine3D.lightSpot.position.set(-4, 35, 4)
+    //engine3D.scene.add(engine3D.lightSpot);
 
     /*
     var frontLight  = new THREE.DirectionalLight('white', 1)
@@ -708,7 +682,7 @@ engine3D.newFloor = function(i)
     scene3DFloorFurnitureContainer[i] = new THREE.Object3D();
     //scene3DFloorOtherContainer[i] = new THREE.Object3D();
     scene3DFloorMeasurementsContainer[i] = new THREE.Object3D();
-    scene3DFloorWallContainer[i] = new THREE.Object3D();
+    engine3D.walls[i] = new THREE.Object3D();
     scene3DFloorShapeContainer[i] = new THREE.Object3D();
     scene3DCeilingShapeContainer[i] = new THREE.Object3D();
     scene3DWallInteriorTextures[i] = [];
@@ -721,18 +695,18 @@ engine3D.new = function(i)
     //scene3DFreeMemory();
     //hideElements();
 
-    scene3DRoofContainer = new THREE.Object3D();
-    scene3DHouseContainer = new THREE.Object3D();
-    //_scene3DHouseGroundContainer = new THREE.Geometry(); //THREE.Scene();
-    scene3DHouseGroundContainer = new THREE.Object3D();
-    scene3DHouseFXContainer = new THREE.Object3D();
-    //scene3DFloorGroundContainer = new THREE.Object3D();
+    engine3D.roof = new THREE.Object3D();
+    engine3D.house = new THREE.Object3D();
+    engine3D._groundHouse = new THREE.Geometry(); //THREE.Scene();
+    engine3D.groundHouse = new THREE.Object3D();
+    //engine3D.groundFloor = new THREE.Object3D();
     scene3DLevelGroundContainer = new THREE.Object3D();
     scene3DLevelWallContainer = new THREE.Object3D();
     //engine3D.pivot = new THREE.Object3D();
 
-    skyMesh = new THREE.Object3D();
-    skyFloorMesh = new THREE.Object3D();
+    engine3D.skyHouse = new THREE.Object3D();
+    engine3D.skyFX = new THREE.Object3D();
+    engine3D.skyFloor = new THREE.Object3D();
 
     engine3D.enableOrbitControls(engine3D.camera,engine3D.renderer.domElement);
 
@@ -747,8 +721,8 @@ engine3D.new = function(i)
 
     //animateHouse();
 
-    engine3D.open3DModel("objects/Platform/floor.jsz", scene3DFloorGroundContainer, 0, 0, 0, 0, 0, 1, false, null);
-    engine3D.open3DModel("objects/Landscape/round.jsz", scene3DHouseGroundContainer, 0, 0, 0, 0, 0, 1, true, null);
+    engine3D.open3DModel("objects/Platform/floor.jsz", engine3D.groundFloor, 0, 0, 0, 0, 0, 1, false, null);
+    engine3D.open3DModel("objects/Landscape/round.jsz", engine3D.groundHouse, 0, 0, 0, 0, 0, 1, true, null);
     engine3D.open3DModel("objects/Platform/pivotpoint.jsz", engine3D.pivot, 0, 0, 0.1, 0, 0, 1, false, null);
 };
 
@@ -758,24 +732,24 @@ engine3D.open = function()
     //landscape.select('valley');
     
     //engine3D.new();
-    scene3DHouseGroundContainer = new THREE.Object3D(); //Important to reset
+    engine3D.groundHouse = new THREE.Object3D(); //Important to reset
 
     $.each(json.terrain, function()
     {
         //console.log(this);
-        engine3D.open3DModel(this.file, scene3DHouseGroundContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        engine3D.open3DModel(this.file, engine3D.groundHouse, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
     $.each(json.roof, function()
     {
         //console.log(this);
-        engine3D.open3DModel(this.file, scene3DRoofContainer, this['position.x'], this['position.y'],this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        engine3D.open3DModel(this.file, engine3D.roof, this['position.x'], this['position.y'],this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
     $.each(json.house, function()
     {
         //console.log(this);
-        engine3D.open3DModel(this.file, scene3DHouseContainer, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
+        engine3D.open3DModel(this.file, engine3D.house, this['position.x'], this['position.y'], this['position.z'], this['rotation.x'], this['rotation.y'], 1, true, null);
     });
 
     for (var i = 0; i < json.furniture.length; i++)

@@ -74,13 +74,12 @@ engine2D.new = function ()
 
 engine2D.newFloor = function (i)
 {
-    console.log("engine2D.newFloor " + i)
-	scene2DWallMesh[i] = [];
-	scene2DWallDimentions[i] = [];
+    console.log("engine2D.newFloor " + i);
+    
 	scene2DInteriorMesh[i] = [];
 	scene2DExteriorMesh[i] = [];
-
-	scene2DFloorShape[i] = new paper.Group();
+    
+	engine2D.floor[i] = new paper.Group();
 	scene2DDoorGroup[i] = new paper.Group();
 	scene2DWindowGroup[i] = new paper.Group();
 	scene2DWallGroup[i] = new paper.Group();

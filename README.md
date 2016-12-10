@@ -15,7 +15,7 @@ Advanced geometry project in experimental stage with great concept ideas:
 - 2D floor plans
 - Curved walls
 
-[View Demo](http://houseplanner.iroot.ca/start)
+[View Demo](http://poofik.github.io/WebGL-HousePlanner)
 
 ## Testing
 Running "index.html" locally (non-webserver) will need to allow your Browser to read files from disk.<br/>

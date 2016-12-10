@@ -984,7 +984,7 @@ engine2D.calculateWallMeasureColor = function(i,edge)
             //var line = edge.attachments[i].children[4+l];
             var line = scene2DWallGroup[i].children[a].children[l];
 
-            var hitResult = scene2DFloorShape[i].hitTest(line.children[0].segments[0].point);
+            var hitResult = engine2D.floor[i].hitTest(line.children[0].segments[0].point);
             if (hitResult) {
                 line.strokeColor = '#606060'; //inside
                 //line.parent.children[7].position = line.children[0].getLocationAt(line.children[0].length/2).point;
@@ -1102,8 +1102,8 @@ engine2D.calculateWallCorners = function(floor)
 
 engine2D.calculateWallEdge = function (edge) {
 
-	for (a = 0; a < edge.attachments.length; a+=2) {
-
+	for (var a = 0; a < edge.attachments.length; a+=2)
+    {
 		if(edge.attachments[a+1] === undefined)
 			break;
 

@@ -4,9 +4,9 @@ engine3D.makeFloor = function()
 {
     var radians = (Math.PI / 180);
 
-    for(var i = 0; i < scene2DFloorShape.length; i++)
+    for(var i = 0; i < engine2D.floor.length; i++)
     {
-        if(scene2DFloorShape[i].children[0] !== undefined)
+        if(engine2D.floor[i].children[0] !== undefined)
         {
             console.log("3D Floor Generate [" + i + "] " + scene2DWallGroup[i].children.length);
 
@@ -16,9 +16,9 @@ engine3D.makeFloor = function()
             var h = scene2DWallGroup[i].children[0].h;
             var shape = new THREE.Shape();
 
-            for(a = 0; a < scene2DFloorShape[i].children[0].segments.length; a++)
+            for(a = 0; a < engine2D.floor[i].children[0].segments.length; a++)
             {
-                var p = scene2DFloorShape[i].children[0].segments[a].point;
+                var p = engine2D.floor[i].children[0].segments[a].point;
                 var x = (p.x/100) * 2 - 1;
                 var y = -(p.y/100) * 2 + 1;
                 //var cx = ((p.x + p.x)/2)/100 * 2 - 1;
@@ -61,9 +61,12 @@ engine3D.makeFloor = function()
             //mesh2.position.y = h; //TODO: Dynamic height
             scene3DCeilingShapeContainer[i].add(mesh2);
 
+            //===================================================
+            //Subtracting Geometry from groundfor Basement stairs
+            //===================================================
+            /*
             if(i == 0) //if(i == 1)
             {
-
                 var geometry = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, {amount: -2, bevelEnabled: false}));
                 geometry.rotation.x = -(90 * radians);
                 //geometry.position.y = 0.5;
@@ -71,7 +74,7 @@ engine3D.makeFloor = function()
 
                 scene3DFloorShapeContainer[i].add(geometry); //DEBUG
 
-                _scene3DHouseGroundContainer.traverse (function (mesh)
+                engine3D._groundHouse.traverse (function (mesh)
                 {
                     if (mesh instanceof THREE.Mesh)
                     {
@@ -86,13 +89,12 @@ engine3D.makeFloor = function()
                         //console.log(result.geometry);
                     }
                 });
-                scene3DHouseGroundContainer.visible= false;
-                //engine3D.scene.remove(scene3DHouseGroundContainer); //DEBUG
-                _scene3DHouseGroundContainer.position.z = -10; //DEBUG
-                engine3D.scene.add(_scene3DHouseGroundContainer);
-
-                
+                engine3D.groundHouse.visible = false;
+                //engine3D.scene.remove(engine3D.groundHouse); //DEBUG
+                engine3D._groundHouse.position.z = -10; //DEBUG
+                engine3D.scene.add(engine3D._groundHouse);
             }
+            */
         }
     }
 };

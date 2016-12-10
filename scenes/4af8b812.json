@@ -6,6 +6,12 @@
         "phone": ""
     },
     "settings": {
+        "mode": "local",
+        "view": "designer",
+        "terrain": true,
+        "floor": true,
+        "house": true,
+        "roof": true,
         "autorotate": false,
         "showcube": false,
         "panorama_day": "2056",
@@ -29,67 +35,6 @@
         "hill": null,
         "valley": null
     }],
-    "roof": [{
-        "file": "scenes/4af8b812/roof.jsz",
-        "position.x": 0,
-        "position.y": 0.15,
-        "position.z": 0,
-        "rotation.x": 0,
-        "rotation.y": 0,
-        "rotation.z": 0
-    }],
-    "floor": [{
-        "texture": "objects/Platform/Textures/W23643.jpg"
-    },{
-        "texture": "objects/Platform/Textures/W23643.jpg"
-    },{
-        "texture": "objects/Platform/Textures/W23643.jpg"
-    }],
-    "ceiling": [{
-        "texture": "objects/Platform/Textures/L34672.jpg"
-    },{
-        "texture": "objects/Platform/Textures/L34672.jpg"
-    },{
-        "texture": "objects/Platform/Textures/L34672.jpg"
-    }],
-    "furniture": [
-        [],
-        [{
-            "file": "objects/Interior/Furniture/Sofas/clear-sofa.jsz",
-            "note": "cool notes, click to view",
-            "position.x": 0,
-            "position.y": 0.14,
-            "position.z": 0,
-            "rotation.x": 0,
-            "rotation.y": 0,
-            "rotation.z": 0
-        }, {
-            "file": "objects/Interior/Plants/lucky-bamboo.jsz",
-            "position.x": -3,
-            "position.y": 0.14,
-            "position.z": -3,
-            "rotation.x": 0,
-            "rotation.y": 0,
-            "rotation.z": 0
-        }, {
-            "file": "objects/Interior/Tables/Dinning/table-w-table-cloth.jsz",
-            "position.x": -2.5,
-            "position.y": 0.14,
-            "position.z": 3,
-            "rotation.x": 0,
-            "rotation.y": 0,
-            "rotation.z": 0
-        }, {
-            "file": "objects/Platform/camera.jsz",
-            "position.x": 5,
-            "position.y": 0.14,
-            "position.z": -3,
-            "rotation.x": 0,
-            "rotation.y": 2.5,
-            "rotation.z": 0
-        }],
-        []
-    ],
     "house": [{
         "file": "objects/Exterior/Trees/gumtree.jsz",
         "position.x": -6,
@@ -227,12 +172,84 @@
         "rotation.y": 0,
         "rotation.z": 0
     }],
+    "houseFX": [{
+        "file": "objects/Platform/bug.jsz",
+        "position.x": 0,
+        "position.y": 0,
+        "position.z": 0,
+        "rotation.x": 0,
+        "rotation.y": 0,
+        "rotation.z": 0
+    }],
+    "roof": [{
+        "file": "scenes/4af8b812/roof.jsz",
+        "position.x": 0,
+        "position.y": 0.15,
+        "position.z": 0,
+        "rotation.x": 0,
+        "rotation.y": 0,
+        "rotation.z": 0
+    }],
+    "floor": [{
+        "texture": "objects/Platform/Textures/W23643.jpg"
+    },{
+        "texture": "objects/Platform/Textures/W23643.jpg"
+    },{
+        "texture": "objects/Platform/Textures/W23643.jpg"
+    }],
+    "ceiling": [{
+        "texture": "objects/Platform/Textures/L34672.jpg"
+    },{
+        "texture": "objects/Platform/Textures/L34672.jpg"
+    },{
+        "texture": "objects/Platform/Textures/L34672.jpg"
+    }],
+    "furniture": [
+        [],
+        [{
+            "file": "objects/Interior/Furniture/Sofas/clear-sofa.jsz",
+            "note": "cool notes, click to view",
+            "position.x": 0,
+            "position.y": 0.14,
+            "position.z": 0,
+            "rotation.x": 0,
+            "rotation.y": 0,
+            "rotation.z": 0
+        }, {
+            "file": "objects/Interior/Plants/lucky-bamboo.jsz",
+            "position.x": -3,
+            "position.y": 0.14,
+            "position.z": -3,
+            "rotation.x": 0,
+            "rotation.y": 0,
+            "rotation.z": 0
+        }, {
+            "file": "objects/Interior/Tables/Dinning/table-w-table-cloth.jsz",
+            "position.x": -2.5,
+            "position.y": 0.14,
+            "position.z": 3,
+            "rotation.x": 0,
+            "rotation.y": 0,
+            "rotation.z": 0
+        }, {
+            "file": "objects/Platform/camera.jsz",
+            "position.x": 5,
+            "position.y": 0.14,
+            "position.z": -3,
+            "rotation.x": 0,
+            "rotation.y": 2.5,
+            "rotation.z": 0
+        }],
+        []
+    ],
     "plan": [
         [{
-            "name": "Basement"
+            "name": "Basement",
+            "draft": ""
         }],
         [{
-            "name": "Floor1"
+            "name": "Floor1",
+            "draft": ""
         }, {
             "wall": "standard",
             "x1": 480,
@@ -328,7 +345,8 @@
             "y": 350
         }],
         [{
-            "name": "Floor2"
+            "name": "Floor2",
+            "draft": ""
         }, {
             "wall": "standard",
             "x1": 480,
