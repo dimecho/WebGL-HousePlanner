@@ -23,10 +23,8 @@ engineGUI.initialize = function()
     engineGUI.initList();
 };
 
-engineGUI.initHousePlanner = function(id,item)
+engineGUI.initHousePlanner = function(id)
 {
-    console.log(id + ":" + item);
-
     engine3D.id = id;
 
     $.ajax("scenes/" + id + ".json",{
@@ -35,11 +33,9 @@ engineGUI.initHousePlanner = function(id,item)
         success: function(data)
         {
             json = data;
-
         },
         error: function (request, status, error) {
             //console.log(request.responseText);
-
             engineGUI.spinner.remove();
             alertify.alert("Cannot load scene json file: " + request.responseText).show();
         }
@@ -495,7 +491,7 @@ engineGUI.initParallaxSlider = function(id)
         li =  $("<li>").append($("<a>",{href:"javascript:engineGUI.open(1)"}).append(img));
         pxs_slider.append(li);
 
-        img = $("<img>",{src: "scenes/" + id + "/_1.jpg"});
+        img = $("<img>",{src: "scenes/" + id + "/1.jpg", width:146, height:80});
         li =  $("<li>").append(img);
         pxs_thumbnails.append(li);
     }
@@ -507,8 +503,8 @@ engineGUI.initParallaxSlider = function(id)
             img = $("<img>",{src: "scenes/" + id + "/" + i + ".jpg"});
             li =  $("<li>").append($("<a>",{href:"javascript:engineGUI.open(" + i + ")"}).append(img));
             pxs_slider.append(li);
-
-            img = $("<img>",{src: "scenes/" + id + "/_" + i + ".jpg"});
+            
+            img = $("<img>",{src: "scenes/" + id + "/" + i + ".jpg", width:146, height:80});
             li =  $("<li>").append(img);
             pxs_thumbnails.append(li);
         }
