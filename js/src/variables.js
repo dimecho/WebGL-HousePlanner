@@ -1,3 +1,7 @@
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var engine3D = window.engine3D || {};
 var engine2D = window.engine2D || {};
 var engineGUI = window.engineGUI || {};
@@ -93,7 +97,7 @@ engineGUI.doubleClickTime;      //setTimeout();
 engine2D.scene;                 //paper.Group();
 engine2D.canvas;                //getElementById("engine2D");
 engine2D.floor = [];            //paper.Group();
-engine2D.draftPlan = [];        //paper.Raster();
+engine2D.draftPlan;        //paper.Raster();
 engine2D.history = [];          //Array();
 engine2D.tool = 'vector';
 

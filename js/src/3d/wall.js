@@ -1,46 +1,42 @@
 var engine3D = window.engine3D || {};
 
-engine3D.makeWalls = function()
-{
+engine3D.makeWalls = function () {
     //https://www.mixeelabs.com/creator/tutorial:-advanced-geometries/edit
 
-    var radians = (Math.PI / 180);
+    var radians = Math.PI / 180;
 
-    for(var i = 0; i < scene2DWallGroup.length; i++)
-    {
+    for (var i = 0; i < scene2DWallGroup.length; i++) {
         engine3D.walls[i] = new THREE.Object3D();
 
-        if(scene2DWallGroup[i].children[0] !== undefined)
-        {
+        if (scene2DWallGroup[i].children[0] !== undefined) {
             //scene3DFloorDoorContainer[FLOOR]    = new THREE.Object3D();
             //scene3DFloorWindowContainer[FLOOR]  = new THREE.Object3D();
 
-            console.log("3D Wall Generate [" + i + " of " + scene2DWallGroup.length +"] " + scene2DWallGroup[i].children.length);
+            console.log("3D Wall Generate [" + i + " of " + scene2DWallGroup.length + "] " + scene2DWallGroup[i].children.length);
 
-            for (var a = 0; a < scene2DWallGroup[i].children.length; a++)
-            {
+            for (var a = 0; a < scene2DWallGroup[i].children.length; a++) {
                 var wall = scene2DWallGroup[i].children[a].children[0].children[0];
 
                 //console.log(wall);
-                
-                var x1 = (wall.segments[0].point.x/100) * 2 - 1;
-                var y1 = -(wall.segments[0].point.y/100) * 2 + 1;
-                var cx = ((wall.segments[0].point.x + wall.segments[1].point.x)/2)/100 * 2 - 1;
-                var cy = -((wall.segments[0].point.y + wall.segments[1].point.y)/2)/100 * 2 + 1;
-                var x2 = (wall.segments[1].point.x/100) * 2 - 1;
-                var y2 = -(wall.segments[1].point.y/100) * 2 + 1;
+
+                var x1 = wall.segments[0].point.x / 100 * 2 - 1;
+                var y1 = -(wall.segments[0].point.y / 100) * 2 + 1;
+                var cx = (wall.segments[0].point.x + wall.segments[1].point.x) / 2 / 100 * 2 - 1;
+                var cy = -((wall.segments[0].point.y + wall.segments[1].point.y) / 2) / 100 * 2 + 1;
+                var x2 = wall.segments[1].point.x / 100 * 2 - 1;
+                var y2 = -(wall.segments[1].point.y / 100) * 2 + 1;
                 //var a = Math.atan2(y1-y2, x1-x2) * 180 / Math.PI - 180;
 
                 //3D Adjustments
-                x1 = Math.round(x1-13);
-                y1 = Math.round(y1+7);
-                cx = Math.round(cx-13);
-                cy = Math.round(cy+7);
-                x2 = Math.round(x2-13);
-                y2 = Math.round(y2+7);
+                x1 = Math.round(x1 - 13);
+                y1 = Math.round(y1 + 7);
+                cx = Math.round(cx - 13);
+                cy = Math.round(cy + 7);
+                x2 = Math.round(x2 - 13);
+                y2 = Math.round(y2 + 7);
 
-                console.log("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2 + " cx:" + cx + " cy:" + cy)
-                
+                console.log("x1:" + x1 + " y1:" + y1 + " x2:" + x2 + " y2:" + y2 + " cx:" + cx + " cy:" + cy);
+
                 var wallShape = new THREE.Shape();
                 wallShape.moveTo(x1, y1);
                 wallShape.quadraticCurveTo(cx, cy, x2, y2);
@@ -50,15 +46,11 @@ engine3D.makeWalls = function()
                 var extrudeSettings = {
                     amount: 4,
                     //steps: 64,
-                    bevelEnabled: false,
-                    //bevelThickness: 5,
-                    //bevelSize: 0,
-                    //extrudePath: curve
+                    bevelEnabled: false
                 }; // bevelSegments: 2, steps: 2 , bevelSegments: 5, bevelSize: 8, bevelThickness:5
 
                 var geometry = new THREE.ExtrudeGeometry(wallShape, extrudeSettings);
                 geometry.computeBoundingBox();
-                
 
                 //scene3DWallInteriorTextureDefault.repeat.set(12, 12);
                 //scene3DWallInteriorTextureDefault.anisotropy = 2;
@@ -72,9 +64,7 @@ engine3D.makeWalls = function()
                 var material = new THREE.MeshLambertMaterial({
                     map: scene3DWallInteriorTextureDefault,
                     transparent: true,
-                    opacity: 0.6,
-                    //side: THREE.DoubleSide,
-                    //wireframe: true
+                    opacity: 0.6
                 });
 
                 var mesh = new THREE.Mesh(geometry, material);
@@ -100,8 +90,7 @@ engine3D.makeWalls = function()
     }
     /*
     for (var d = 0; d < scene2DDoorGroup[FLOOR].children.length; d++) {
-
-        var door = scene2DDoorGroup[FLOOR].children[d].children[1];
+         var door = scene2DDoorGroup[FLOOR].children[d].children[1];
         /
             var x = (result[0].item(0).x1/100) * 2 - 1;
             var y = 0;
@@ -112,19 +101,16 @@ engine3D.makeWalls = function()
            
             open3DModel(result[0].file, scene3DFloorDoorContainer, x, y, z, 0, a, 1.0, false, null);
         /
-
-        /
+         /
         while (scene3DFloorDoorContainer.children.length == 0) {
             setTimeout(function(){}, 800);
         }
         /
-
-        /
+         /
         try //Cut a whole in engine3D.walls Mesh
         {
             var o = scene3DFloorDoorContainer.children.length; //TODO: Have some error catch
-
-            var cube_geometry = new THREE.CubeGeometry(scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.x, scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.y, scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.z);
+             var cube_geometry = new THREE.CubeGeometry(scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.x, scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.y, scene3DFloorDoorContainer.children[o].geometry.boundingBox.max.z);
             //var cube_geometry = new THREE.CubeGeometry(scene3DFloorDoorContainer.boundingBox.max.x, scene3DFloorDoorContainer.boundingBox.max.y, scene3DFloorDoorContainer.boundingBox.max.z);
             
             var cube_mesh = new THREE.Mesh(cube_geometry);
@@ -136,8 +122,7 @@ engine3D.makeWalls = function()
             //var DoorBSP = new ThreeBSP(scene3DFloorDoorContainer);
             var WallBSP = new ThreeBSP(mesh);
             var WallCutBSP = WallBSP.subtract(DoorBSP);
-
-            var result = WallCutBSP.toMesh(new THREE.MeshLambertMaterial({shading: THREE.SmoothShading}));
+             var result = WallCutBSP.toMesh(new THREE.MeshLambertMaterial({shading: THREE.SmoothShading}));
             //result.geometry.computeVertexNormals();
             mesh.geometry = result.geometry;
             
@@ -150,25 +135,24 @@ engine3D.makeWalls = function()
     */
 };
 
-engine3D.generateLevelWalls = function()
-{
+engine3D.generateLevelWalls = function () {
+    
     scene3DLevelWallContainer = new THREE.Object3D();
 
     //Temporary Sample Data
     var geometry = new THREE.BoxGeometry(15, 4, 13);
     var material = new THREE.MeshBasicMaterial({
-        color: 0xE0E0E0,
+        color: 0xE0E0E0
     });
-    var mesh = new THREE.Mesh(geometry,material);
+    var mesh = new THREE.Mesh(geometry, material);
     mesh.position.y = 2;
     scene3DLevelWallContainer.add(mesh);
 
-
     geometry = new THREE.BoxGeometry(10, 4, 9);
     material = new THREE.MeshBasicMaterial({
-        color: 0xB0B0B0,
+        color: 0xB0B0B0
     });
-    mesh = new THREE.Mesh(geometry,material);
+    mesh = new THREE.Mesh(geometry, material);
     mesh.position.x = 2.5;
     mesh.position.z = -2;
     mesh.position.y = 6;
@@ -177,6 +161,4 @@ engine3D.generateLevelWalls = function()
     engine3D.scene.add(scene3DLevelWallContainer);
 };
 
-function scene3DFloorObjectWallMeasurementAjust() {
-
-};
+function scene3DFloorObjectWallMeasurementAjust() {};

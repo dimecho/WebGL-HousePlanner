@@ -36,6 +36,9 @@
         "valley": null
     }],
     "house": [{
+        "panorama": "scenes/4af8b812/panoramas/3427",
+        "note": ""
+    },{
         "file": "objects/Exterior/Trees/gumtree.jsz",
         "position.x": -6,
         "position.y": 0,
@@ -207,6 +210,9 @@
     "furniture": [
         [],
         [{
+            "panorama": "scenes/4af8b812/panoramas/3428",
+            "note": ""
+        },{
             "file": "objects/Interior/Furniture/Sofas/clear-sofa.jsz",
             "note": "cool notes, click to view",
             "position.x": 0,
@@ -244,12 +250,10 @@
     ],
     "plan": [
         [{
-            "name": "Basement",
-            "draft": ""
+            "name": "Basement"
         }],
         [{
-            "name": "Floor1",
-            "draft": ""
+            "name": "Floor1"
         }, {
             "wall": "standard",
             "x1": 480,
@@ -340,13 +344,12 @@
             "direction": ""
         }, {
             "label": "Room",
-            "size": "11 x 15",
+            "text": "11 x 15",
             "x": 750,
             "y": 350
         }],
         [{
-            "name": "Floor2",
-            "draft": ""
+            "name": "Floor2"
         }, {
             "wall": "standard",
             "x1": 480,
@@ -421,7 +424,7 @@
             "h": 3
         }, {
             "label": "Room",
-            "size": "11 x 15",
+            "text": "11 x 15",
             "x": 750,
             "y": 350
         }]

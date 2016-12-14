@@ -13,6 +13,8 @@ engine2D.show = function (){
     engine3D.hide();
 	
     engine2D.makeGrid();
+
+    engine2D.loadDraftPlan();
 	
     //engineGUI.initMenu("menuRight2D","FloorPlan/index.json");
 	
@@ -128,6 +130,7 @@ engine2D.hide = function() {
         {
             engine2D.clear(i,false);
         }
+        engine2D.draftPlan = undefined;
         /*
         engine2D.canvas.off('mouseenter');
         engine2D.canvas.off('mouseleave');
@@ -181,6 +184,7 @@ SimplePanAndZoom.prototype.changeZoom = function(oldZoom, delta, centerPoint, of
 */
 
 engine2D.makeGrid = function (){
+
     //Create Grid
     //============================
     engine2D.canvas = new paper.Group();
@@ -214,6 +218,146 @@ engine2D.lockObject = function(id) {
     //}
 
     return false; //href="#" fix
+};
+
+engine2D.loadDraftPlan = function(file) {
+
+    var x, y, w, h = 0;
+
+    $.each(json.plan[engineGUI.floor], function() {
+        if(this.draft !== undefined) {
+            if(!file) {
+                //file = "../" + this.draft; //DEBUG
+                file = this.draft;
+                x = this.x;
+                y = this.y;
+                w = this.w;
+                h = this.h;
+            }else{
+                this.draft = file;
+                this.x = paper.view.center.x;
+                this.y = paper.view.center.y;
+                this.w = paper.view.bounds.width/1.25;
+                this.h = paper.view.bounds.height/1.25;
+            }
+            return true;
+        }
+    });
+
+    if(file)
+    {
+        //console.log("Load draft plan: " + file + " " + x + ":" + y + " - " + w + ":" + h);
+
+        var rectangle = new paper.Rectangle(new paper.Point(0,0), new paper.Point(w,h));
+
+        var area = new paper.Path.Rectangle(rectangle);
+        area.strokeColor = '#ffffff';
+        area.opacity = 0.1;
+        area.strokeWidth = 64;
+        //area.visible = false;
+
+        //============================
+        var triangle = new paper.Path.RegularPolygon(new paper.Point(0, 0), 3, 10);
+        triangle.fillColor = '#00e600';
+        triangle.visible = false;
+
+        var triangle_width_left = triangle.clone();
+        triangle_width_left.position = new paper.Point(-15, h/2);
+        triangle_width_left.rotate(90);
+
+        var triangle_width_right = triangle.clone();
+        triangle_width_right.position = new paper.Point(w + 15, h/2);
+        triangle_width_right.rotate(-90);
+
+        var triangle_height_top = triangle.clone();
+        triangle_height_top.position = new paper.Point(w/2, -15);
+        triangle_height_top.rotate(180);
+
+        var triangle_height_bottom = triangle.clone();
+        triangle_height_bottom.position = new paper.Point(w/2, h + 15);
+        //============================
+
+        var path = new paper.Path.Rectangle(rectangle);
+        path.strokeColor = '#00e600';
+        path.strokeWidth = 2;
+        path.visible = false;
+
+        var raster = new paper.Raster({ source:file, position: new paper.Point(0,0)});
+        raster.fitBounds(path.bounds, true);
+        raster.opacity = 0.7;
+
+        raster.attach('mousedrag', function(event) {
+            //engine2D.draftPlan.position = new paper.Point(event.point.x-engine2D.draftPlan.position.x,event.point.y-engine2D.draftPlan.position.y); 
+            engine2D.draftPlan.position = event.point;
+        });
+
+        area.attach('mouseenter', function() {
+            path.visible = true;
+            triangle_width_left.visible = true;
+            triangle_width_right.visible = true;
+            triangle_height_top.visible = true;
+            triangle_height_bottom.visible = true;
+        });
+        area.attach('mouseleave', function() {
+            path.visible = false;
+            triangle_width_left.visible = false;
+            triangle_width_right.visible = false;
+            triangle_height_top.visible = false;
+            triangle_height_bottom.visible = false;
+        });
+
+        /*
+        area.attach('mousedrag', function(event) {
+            //onPathDrag(this.parent,event);
+            console.log(event);
+        });
+        */
+
+        engine2D.draftPlan  = new paper.Group([raster, triangle_width_left, triangle_width_right, triangle_height_top, triangle_height_bottom, area, path]);
+        engine2D.draftPlan.position = new paper.Point(x, y); //paper.view.center;
+
+        //TODO: dynamically adjust image size for current zoom
+        //engine2D.draftPlan.opacity = 0.7;
+        //engine2D.draftPlan.scale(0.5);
+
+        //engine2D.draftPlan[engineGUI.floor].rotate(5);
+        //engine2D.draftPlan[engineGUI.floor].fitBounds(path.bounds, true);
+    }
+};
+
+engine2D.loadCADPlan = function(file) {
+
+    //DXF File Processing
+    
+    $.ajax(file,{
+        contentType: "application/text",
+        beforeSend: function (req) {
+          req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
+        },
+        success: function(data){
+
+            //console.log(data);
+
+            if ((typeof DXFParser == 'undefined' ? 'undefined' : _typeof(DXFParser)) === undefined) {
+            
+                $.getScript("js/dynamic/dxfparser.js").done(function (script, textStatus){
+                    $.getScript("js/dynamic/dxfnode.js").done(function (script, textStatus){
+
+                        var parser = new DXFParser(data);
+                        console.log(parser);
+
+                    }).fail(function (jqxhr, settings, exception) {
+                        alertify.alert("Failed to load dxfnode.js").show();
+                    });
+                }).fail(function (jqxhr, settings, exception) {
+                    alertify.alert("Failed to load dxfparser.js").show();
+                });
+            }
+        },
+        error: function(xhr, textStatus, errorThrown){
+            alertify.alert("DXF (" + file + ") Loading Error").show();
+        }
+    });
 };
 
 /*

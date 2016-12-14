@@ -682,8 +682,13 @@ engine2D.edge_onMouseDrag = function(event)
 
                 //console.log(wall.doors[d]);
                 //wall.doors[d].applyMatrix = true;
-                
+
+                //TODO: Reset to default before rotating
+
+                //wall.doors[d].rotate(-wall.doors[d].angle); //reset
+                //wall.doors[d].angle = angle2-angle1;
                 wall.doors[d].rotate(angle2-angle1);
+                
                 wall.doors[d].position = p;
                 //console.log("[" + i + "][" + d + "] " + angle + ">" + an);
             }
@@ -1306,12 +1311,36 @@ engine2D.splitWallEdgeCircle = function(id) {
     return false; //href="#" fix
 };
 
-engine2D.snapObjectToWall = function(wall,object) {
+engine2D.angleObjectToWall = function(object,wall) {
 
-    var angle1 = wall.segments[0].point.subtract(wall.segments[1].point).angle;
-    object.rotation = angle1;
+    var vector = wall.segments[0].point.subtract(wall.segments[1].point);
+
+    if(object.angle !== vector.angle)
+    {
+        //TODO: Reset to default before rotating
+        object.rotate(-object.angle); //reset
+        
+        object.rotate(vector.angle);
+        object.angle = vector.angle;
+    }
+
+    //TODO: position correction X,Y
 
     //var r = engine2D.wallRelativePoints(event,this.children[2],wall.segments);
+};
+
+engine2D.snapObjectToWall = function(object,point) {
+
+    for (var w = 0; w < scene2DWallGroup[engineGUI.floor].children.length; w++)
+    {
+        var wall = scene2DWallGroup[engineGUI.floor].children[w];
+        var hitWallResult = wall.children[4].children[0].hitTest(point);
+        if(hitWallResult)
+        {
+            engine2D.angleObjectToWall(object,hitWallResult.item);
+            break;
+        }
+    }
 };
 
 engine2D.attachObjectsToWalls = function(floor,group) {
@@ -1343,7 +1372,7 @@ engine2D.attachObjectsToWalls = function(floor,group) {
                     hitWallResult.item.windows.push(group[floor].children[d]);
                 }
 
-                engine2D.snapObjectToWall(hitWallResult.item,path);
+                engine2D.angleObjectToWall(path,hitWallResult.item);
                 
                 //console.log(intersections[0]);
                 //console.log(hitWallResult);

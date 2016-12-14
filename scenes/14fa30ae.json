@@ -29,11 +29,11 @@
     "houseFX": [],
     "roof": [],
     "floor": [{
-        "texture": "objects/Platform/Textures/W23643.jpg"
+        "texture": "objects/Platform/Textures/C0001.jpg"
     },{
-        "texture": "objects/Platform/Textures/W23643.jpg"
+        "texture": "objects/Platform/Textures/C0001.jpg"
     },{
-        "texture": "objects/Platform/Textures/W23643.jpg"
+        "texture": "objects/Platform/Textures/C0001.jpg"
     }],
     "ceiling": [{
         "texture": "objects/Platform/Textures/L34672.jpg"
@@ -45,19 +45,14 @@
     "furniture": [
         [],
         [{
+            "panorama": "scenes/14fa30ae/panoramas/3429",
+            "note": "Living room view"
+        },{
             "file": "objects/Interior/Furniture/Sofas/clear-sofa.jsz",
             "note": "cool notes, click to view",
             "position.x": 0,
             "position.y": 0.14,
             "position.z": 0,
-            "rotation.x": 0,
-            "rotation.y": 0,
-            "rotation.z": 0
-        }, {
-            "file": "objects/Interior/Plants/lucky-bamboo.jsz",
-            "position.x": -3,
-            "position.y": 0.14,
-            "position.z": -3,
             "rotation.x": 0,
             "rotation.y": 0,
             "rotation.z": 0
@@ -82,8 +77,13 @@
     ],"plan": [
         [],
         [{
-            "name": "Floor1",
-            "draft": ""
+            "name": "Apartment"
+        }, {
+            "draft": "scenes/14fa30ae/draft.jpg",
+            "x": 680,
+            "y": 420,
+            "w": 1024,
+            "h": 620
         }, {
             "wall": "standard",
             "x1": 480,
@@ -174,7 +174,7 @@
             "direction": ""
         }, {
             "label": "Room",
-            "size": "11 x 15",
+            "text": "11 x 15",
             "x": 750,
             "y": 350
         }]

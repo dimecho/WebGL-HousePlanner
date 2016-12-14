@@ -67,7 +67,6 @@ engine2D.makeDoor = function(floor,l,p,z,type,open,direction,file) {
 
 	if(type === "fold.single"){
 		engine2D.makeFoldSingleDoor(group,path,A,B,open,direction);
-
 	}else if(type === "fold.double"){
 		engine2D.makeFoldDoubleDoor(group,path,A,B,open,direction);
 
@@ -79,6 +78,8 @@ engine2D.makeDoor = function(floor,l,p,z,type,open,direction,file) {
 	}
 
 	group.position = new paper.Point(p.x,p.y); //TODO: Fix this
+	
+	group.angle = 0; //custom attribute!
 
 	//group.visible = false; //draw on demand
 
@@ -372,6 +373,7 @@ engine2D.makeHingeSingleDoor = function(group,path,A,B,open,direction) {
 		arc.opacity = 0.1;
 		pivot.opacity = 0.1;
 	});
+
 	round1.attach('mousemove', function(event) {
 		clearTimeout(tick);
 		//circle.position = this.getNearestPoint(event.point);
@@ -383,6 +385,7 @@ engine2D.makeHingeSingleDoor = function(group,path,A,B,open,direction) {
 			pivot.opacity = 1;
 		}, 400);
 	});
+
 	round2.attach('mouseenter', function() {
 		A.opacity = 0;
 		B.opacity = 0;
@@ -392,6 +395,7 @@ engine2D.makeHingeSingleDoor = function(group,path,A,B,open,direction) {
 		arc.opacity = 0.1;
 		pivot.opacity = 0.1;
 	});
+	
 	round2.attach('mousemove', function(event) {
 		clearTimeout(tick);
 		//circle.position = this.getNearestPoint(event.point);
@@ -413,5 +417,7 @@ engine2D.makeHingeSingleDoor = function(group,path,A,B,open,direction) {
 		circle.opacity = 0;
 		guide1.opacity = 0;
 		guide2.opacity = 0;
+
+		engine2D.snapObjectToWall(this,event.point);
 	});
 };

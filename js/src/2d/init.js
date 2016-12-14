@@ -4,23 +4,6 @@ var panAndZoom;
 
 engine2D.initialize = function (){
 
-	/*
-    $.ajax("objects/Platform/floorplan1.dxf",{
-        contentType: "application/text",
-        beforeSend: function (req) {
-          req.overrideMimeType('text/plain; charset=x-user-defined'); //important - set for binary!
-        },
-        success: function(data){
-            console.log(data);
-            var parser = new DXFParser(data);
-            console.log(parser);
-        },
-        error: function(xhr, textStatus, errorThrown){
-            alertify.alert("DXF (" + js + ") Loading Error").show();
-        }
-    });
-    */
-
     //http://paperjs.org/tutorials/getting-started/using-javascript-directly/
     
 	engine2D.canvas = document.getElementById("engine2D");
@@ -119,7 +102,7 @@ engine2D.open = function()
 
             if(this.label !== undefined)
             {
-                scene2DLabelGroup[i].addChild(engine2D.makeLabel(i,this.label,this.size,this.x,this.y));
+                scene2DLabelGroup[i].addChild(engine2D.makeLabel(i,this.label,this.text,this.x,this.y));
             }
         });
     

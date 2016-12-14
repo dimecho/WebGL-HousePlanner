@@ -41,8 +41,12 @@ engine2D.makeWindow = function(floor,l,p,z,open,direction,file) {
         group.position = event.point;
         A.opacity = 0;
         B.opacity = 0;
+
+        engine2D.snapObjectToWall(this,event.point);
     });
     
+    group.angle = 0; //custom attribute!
+
     //group.visible = false; //draw on demand
     
     return group;

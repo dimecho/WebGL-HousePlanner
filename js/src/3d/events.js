@@ -1,7 +1,6 @@
 var engine3D = window.engine3D || {};
 
-function onWindowResize()
-{
+function onWindowResize() {
     var dpr = window.devicePixelRatio | 1;
 
     engine3D.camera.aspect = window.innerWidth / window.innerHeight;
@@ -9,13 +8,11 @@ function onWindowResize()
 
     //Shader Post Processing
     //========================
-    if(engine3D.SSAOPass !== undefined)
-        engine3D.SSAOPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
-    if(engine3D.FXAAPass !== undefined)
-        engine3D.FXAAPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+    if (engine3D.SSAOPass !== undefined) engine3D.SSAOPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
+    if (engine3D.FXAAPass !== undefined) engine3D.FXAAPass.uniforms.resolution.value.set(1 / (window.innerWidth * dpr), 1 / (window.innerHeight * dpr));
     engine3D.effectComposer.setSize(window.innerWidth * dpr, window.innerHeight * dpr);
     //========================
-    
+
     engine3D.renderer.setSize(window.innerWidth, window.innerHeight);
 
     engine3D.initRendererQuadSize();
@@ -23,8 +20,7 @@ function onWindowResize()
     engineGUI.menuCorrectHeight();
 };
 
-function onCubeMouseMove(event)
-{
+function onCubeMouseMove(event) {
     //event.preventDefault();
 
     //scene3DCubeMesh.face.color = new THREE.Color(0xddaa00);
@@ -32,26 +28,19 @@ function onCubeMouseMove(event)
     /*
     x = (event.clientX / $(engine3D.rendererCube.domElement).width) * 2 - 1;
     y = -(event.clientY / $(engine3D.rendererCube.domElement).height) * 2 + 1;
-
-    vector = new THREE.Vector3(x, y, 0.5);
+     vector = new THREE.Vector3(x, y, 0.5);
     projector.unprojectVector(vector, engine3D.cameraCube);
-
-    var ray = new THREE.Raycaster(engine3D.cameraCube.position, vector.sub(engine3D.cameraCube.position).normalize());
+     var ray = new THREE.Raycaster(engine3D.cameraCube.position, vector.sub(engine3D.cameraCube.position).normalize());
     var intersects = ray.intersectObjects(scene3DCube.children);
-
-    if (intersects.length > 0) {
-
-        intersects[0].face.color = new THREE.Color(0xddaa00);
+     if (intersects.length > 0) {
+         intersects[0].face.color = new THREE.Color(0xddaa00);
         intersects[0].object.geometry.colorsNeedUpdate = true;
-
-        face = intersects[0].face;
+         face = intersects[0].face;
         var faceIndices = ['a', 'b', 'c', 'd'];
         var numberOfSides = (face instanceof THREE.Face3) ? 3 : 4;
-
-        // assign color to each vertex of current face
+         // assign color to each vertex of current face
         for (var j = 0; j < numberOfSides; j++) {
-
-            var vertexIndex = face[faceIndices[j]];
+             var vertexIndex = face[faceIndices[j]];
             
             geometry.faces.filter(someFilter).forEach(function(face) {
               face.color = someOtherColor;
@@ -66,13 +55,11 @@ function onCubeMouseMove(event)
     */
 };
 
-function onDocumentDoubleClick(event)
-{
+function onDocumentDoubleClick(event) {
     //event.preventDefault();
 
-    if (engine3D.controls instanceof THREE.OrbitControls && SelectedObject === null)
-    {
-        var x = (event.clientX / window.innerWidth) * 2 - 1;
+    if (engine3D.controls instanceof THREE.OrbitControls && SelectedObject === null) {
+        var x = event.clientX / window.innerWidth * 2 - 1;
         var y = -(event.clientY / window.innerHeight) * 2 + 1;
 
         //console.log('doubleclick 2D ' + x + ":" + y);
@@ -83,7 +70,7 @@ function onDocumentDoubleClick(event)
         vector = new THREE.Vector3(x, y, 0.5);
         vector.unproject(engine3D.camera);
         var raycaster = new THREE.Raycaster(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
-        var intersects = raycaster.intersectObjects(engine3D.groundHouse.children,true);
+        var intersects = raycaster.intersectObjects(engine3D.groundHouse.children, true);
 
         if (intersects.length > 0) {
             //console.log('doubleclick 3D');
@@ -91,49 +78,43 @@ function onDocumentDoubleClick(event)
             clearTimeout(engineGUI.doubleClickTime);
 
             engine3D.pivot.position.set(intersects[0].point.x, 0, intersects[0].point.z);
-            
+
             //http://stemkoski.github.io/Three.js/Particle-Engine-Fireworks.html
 
             //particlePivot.removeEmitter(particlePivotEmitter);
 
-        /*
-            engine = new ParticleEngine();
-            fountain = {
-                positionStyle: Type.CUBE,
-                positionBase: new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z),
-                positionSpread: new THREE.Vector3(0, 0, 0),
-
-                velocityStyle: Type.CUBE,
-                velocityBase: new THREE.Vector3(0, 3, 0),
-                velocitySpread: new THREE.Vector3(3, 0, 3),
-
-                accelerationBase: new THREE.Vector3(0, -2, 0),
-
-                particleTexture: THREE.ImageUtils.loadTexture('./images/star.png'),
-
-                angleBase: 0,
-                angleSpread: 180,
-                angleVelocityBase: 0,
-                angleVelocitySpread: 360 * 4,
-
-                sizeTween: new ParticleTween([0, 0.02], [1, 0.4]),
-                opacityTween: new ParticleTween([2, 3], [1, 0]),
-                colorTween: new ParticleTween([0.5, 2], [new THREE.Vector3(0, 1, 0.5), new THREE.Vector3(0.8, 1, 0.5)]),
-
-                particlesPerSecond: 30,
-                particleDeathAge: 4.0,
-                emitterDeathAge: 1.0
-            };
-            engine.setValues(fountain);
-            engine.initialize();
-            */
+            /*
+                engine = new ParticleEngine();
+                fountain = {
+                    positionStyle: Type.CUBE,
+                    positionBase: new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z),
+                    positionSpread: new THREE.Vector3(0, 0, 0),
+                     velocityStyle: Type.CUBE,
+                    velocityBase: new THREE.Vector3(0, 3, 0),
+                    velocitySpread: new THREE.Vector3(3, 0, 3),
+                     accelerationBase: new THREE.Vector3(0, -2, 0),
+                     particleTexture: THREE.ImageUtils.loadTexture('./images/star.png'),
+                     angleBase: 0,
+                    angleSpread: 180,
+                    angleVelocityBase: 0,
+                    angleVelocitySpread: 360 * 4,
+                     sizeTween: new ParticleTween([0, 0.02], [1, 0.4]),
+                    opacityTween: new ParticleTween([2, 3], [1, 0]),
+                    colorTween: new ParticleTween([0.5, 2], [new THREE.Vector3(0, 1, 0.5), new THREE.Vector3(0.8, 1, 0.5)]),
+                     particlesPerSecond: 30,
+                    particleDeathAge: 4.0,
+                    emitterDeathAge: 1.0
+                };
+                engine.setValues(fountain);
+                engine.initialize();
+                */
 
             //particlePivotEmitter.disable();
             //particlePivotEmitter.reset();
             //particlePivot.removeEmitter(particlePivotEmitter);
 
             //particlePivotEmitter.position = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z);
-            
+
             /*
             particlePivot = new SPE.Group({
                 texture: THREE.ImageUtils.loadTexture("images/star.png"),
@@ -154,36 +135,32 @@ function onDocumentDoubleClick(event)
             particlePivotEmitter.enable();
             */
 
-            var tween = new TWEEN.Tween(engine3D.controls.target).to({x:intersects[0].point.x, y:0, z:intersects[0].point.z},800).easing(TWEEN.Easing.Quadratic.InOut).start();
+            var tween = new TWEEN.Tween(engine3D.controls.target).to({ x: intersects[0].point.x, y: 0, z: intersects[0].point.z }, 800).easing(TWEEN.Easing.Quadratic.InOut).start();
 
             //engine3D.controls.target = new THREE.Vector3(intersects[0].point.x, 0, intersects[0].point.z); //having THREE.TrackballControls or THREE.OrbitControls seems to override the camera.lookAt function
 
-            engineGUI.doubleClickTime = setTimeout(function() {
+            engineGUI.doubleClickTime = setTimeout(function () {
                 engine3D.scene.remove(engine3D.pivot);
                 //particlePivotEmitter.disable();
                 //engine3D.scene.remove(particlePivot.mesh);
                 //particlePivot = new SPE.Group({});
-
             }, 4000);
         }
     }
 };
 
-function on3DLandscapeMouseMove(event)
-{
+function on3DLandscapeMouseMove(event) {
     //event.preventDefault();
     //event.stopPropagation();
-    
+
     //if (engine3D.tool == "rotate") {
     //    return;
     //}
 
     //engine3D.controls.enabled = false;
-    
-    if (engine3D.tool === "angle") 
-    {
-        if (!engineGUI.mouseleft)
-        return;
+
+    if (engine3D.tool === "angle") {
+        if (!engineGUI.mouseleft) return;
 
         if (event.clientX > window.innerWidth / 2) {
             //engine3D.groundHouse.children[0].rotation.z = engine3D.groundHouse.children[0].rotation.z + 0.02;
@@ -192,14 +169,12 @@ function on3DLandscapeMouseMove(event)
             //engine3D.groundHouse.children[0].rotation.z = engine3D.groundHouse.children[0].rotation.z - 0.02;
             engine3D.terrain.rotation.y = engine3D.terrain.rotation.y - 0.015;
         }
-    }
-    else
-    {
+    } else {
         //if (terrain3DMouse.state == 1) {
         //    terrain3DMouse.state = 2;
         //}
 
-        var x = (event.clientX / window.innerWidth) * 2 - 1;
+        var x = event.clientX / window.innerWidth * 2 - 1;
         var y = -(event.clientY / window.innerHeight) * 2 + 1;
         //console.log("mouse move" + x + ":" + x);
 
@@ -209,38 +184,32 @@ function on3DLandscapeMouseMove(event)
         var intersection = ray.intersectObjects(engine3D.terrain.children);
 
         if (intersection.length > 0) {
-            
+
             //terrain3DMouse.plot.x = Math.floor(intersection[0].point.x - map_left);
             //terrain3DMouse.plot.y = Math.floor(intersection[0].point.z - map_top);
-            
-            terrain3DMouse.vertex.x = Math.floor((intersection[0].point.x * plot_vertices) - (map_left * plot_vertices));
-            terrain3DMouse.vertex.y = Math.floor((intersection[0].point.z * plot_vertices) - (map_top * plot_vertices));
+
+            terrain3DMouse.vertex.x = Math.floor(intersection[0].point.x * plot_vertices - map_left * plot_vertices);
+            terrain3DMouse.vertex.y = Math.floor(intersection[0].point.z * plot_vertices - map_top * plot_vertices);
 
             engine3D.terrain.material.uniforms.ring_center.value.x = intersection[0].point.x;
             engine3D.terrain.material.uniforms.ring_center.value.y = -intersection[0].point.z;
         }
-        if (engineGUI.mouseleft)
-            landscape.onmousemove();
+        if (engineGUI.mouseleft) landscape.onmousemove();
     }
 };
 
-function on3DLandscapeMouseDown(event)
-{
+function on3DLandscapeMouseDown(event) {
     //event.preventDefault();
     //event.stopPropagation();
-    if (event.which === 1) 
-        engineGUI.mouseleft = true;
+    if (event.which === 1) engineGUI.mouseleft = true;
 
     engine3D.controls.enabled = false;
 
     //console.log(engine3D.tool);
 
-    if (engine3D.tool === "rotate")
-    {
+    if (engine3D.tool === "rotate") {
         engine3D.controls.enabled = true;
-    }
-    else if (engine3D.tool === "hill" || engine3D.tool === "valley")
-    {
+    } else if (engine3D.tool === "hill" || engine3D.tool === "valley") {
         //event.stopPropagation();
         //event.cancelBubble = true;
         terrain3DMouse.x = event.clientX;
@@ -248,55 +217,48 @@ function on3DLandscapeMouseDown(event)
     }
 };
 
-function on3DLandscapeMouseUp(event)
-{
+function on3DLandscapeMouseUp(event) {
 
     //event.preventDefault();
     //event.stopPropagation();
     engineGUI.mouseleft = false;
     engine3D.controls.enabled = false;
 
-    if (engine3D.tool === "hill" || engine3D.tool === "valley")
-    {
+    if (engine3D.tool === "hill" || engine3D.tool === "valley") {
         terrain3DMouse.x = event.clientX;
         terrain3DMouse.y = event.clientY;
     }
 };
 
-$(document).on('keyup', function(event){
+$(document).on('keyup', function (event) {
 
     event.preventDefault();
     //console.log(event)
 
-    if(engineGUI.scene === "house")
-    {
+    if (engineGUI.scene === "house") {
         if (event.which === 27) //esc
-        {
-            camera3DPositionCache = new THREE.Vector3(0, 6, 20);
-            camera3DPivotCache = new THREE.Vector3(0, 0, 0);
-            engine3D.cameraAnimateResetView();
+            {
+                camera3DPositionCache = new THREE.Vector3(0, 6, 20);
+                camera3DPivotCache = new THREE.Vector3(0, 0, 0);
+                engine3D.cameraAnimateResetView();
+            }
+        /*
         }
-    /*
-    }
-    else if(engineGUI.scene === "2d")
-    {
-        if (event.which === 37) //left arrow
+        else if(engineGUI.scene === "2d")
         {
-
-        }
-        else if (event.which === 38) //up arrow
-        {
-
-        }
-        else if (event.which === 39) //right arrow
-        {
-
-        }
-        else if (event.which === 40) //down arrow
-        {
-
-        }
-    */
+            if (event.which === 37) //left arrow
+            {
+             }
+            else if (event.which === 38) //up arrow
+            {
+             }
+            else if (event.which === 39) //right arrow
+            {
+             }
+            else if (event.which === 40) //down arrow
+            {
+             }
+        */
     }
 });
 
@@ -304,100 +266,80 @@ function on3DRoofVDividerMouseUp(event) {
     engine3D.initRendererQuadSize();
 };
 
-function on3DRoofSplit0MouseMove(event) {
+function on3DRoofSplit0MouseMove(event) {};
 
-};
+function on3DRoofSplit1MouseMove(event) {};
 
-function on3DRoofSplit1MouseMove(event) {
+function on3DRoofSplit2MouseMove(event) {};
 
-};
+function on3DRoofSplit3MouseMove(event) {};
 
-function on3DRoofSplit2MouseMove(event) {
-
-};
-
-function on3DRoofSplit3MouseMove(event) {
-
-};
-
-function on3DHouseMouseUp(event)
-{
+function on3DHouseMouseUp(event) {
     on3DMouseUp(event);
 };
 
-function on3DHouseMouseDown(event)
-{
+function on3DHouseMouseDown(event) {
     on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, engine3D.house)){
+    if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, engine3D.house)) {
         engine3D.scene.add(engine3D.pivot);
 
-    //}
-    //else if (scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, engine3D.groundHouse))
-    //{
+        //}
+        //else if (scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, engine3D.groundHouse))
+        //{
         //if (SelectedObject != null)
         //{
-            //var max = Math.max(SelectedObject.posision.x + SelectedObject.geometry.boundingBox.max.x, SelectedObject.posision.y + SelectedObject.geometry.boundingBox.max.y, SelectedObject.posision.z + SelectedObject.geometry.boundingBox.max.z);
-            //if (SelectedObject != null && (mouse.x > max || mouse.y > max))
-            //{
-                //engine3D.controls.detach(SelectedObject);
-                //scene3DenableOrbitControls(engine3D.camera);
-                //camera3DAnimateResetView();
-                //return;
-            //}
+        //var max = Math.max(SelectedObject.posision.x + SelectedObject.geometry.boundingBox.max.x, SelectedObject.posision.y + SelectedObject.geometry.boundingBox.max.y, SelectedObject.posision.z + SelectedObject.geometry.boundingBox.max.z);
+        //if (SelectedObject != null && (mouse.x > max || mouse.y > max))
+        //{
+        //engine3D.controls.detach(SelectedObject);
+        //scene3DenableOrbitControls(engine3D.camera);
+        //camera3DAnimateResetView();
+        //return;
+        //}
         //}
     }
-    
+
     //engine3D.enableTransformControls('translate');
 };
 
-function on3DHouseMouseMove(event)
-{
+function on3DHouseMouseMove(event) {
     //return; //DEBUG
 
-    if(!engineGUI.mousedrag)
-        return;
+    if (!engineGUI.mousedrag) return;
 
     //if(TWEEN.getAll().length !== 0) //do not interfere with existing animations (performance)
     //    return;
-    
-    if(SelectedObject !== null)
-        on3DObjectMove(engine3D.groundHouse,event);
-    else
-        on3DCubeMove();
+
+    if (SelectedObject !== null) on3DObjectMove(engine3D.groundHouse, event);else on3DCubeMove();
 };
 
-function on3DFloorMouseDown(event)
-{
+function on3DFloorMouseDown(event) {
     on3DMouseDown(event);
 
-    if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, scene3DFloorFurnitureContainer[engineGUI.floor]))
-    {
+    if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, scene3DFloorFurnitureContainer[engineGUI.floor])) {
         //if (!scene3DObjectSelect(mouse.x, mouse.y, engine3D.camera, engine3D.walls[engineGUI.floor]))
         //{
-            engine3D.scene.add(engine3D.pivot);
+        engine3D.scene.add(engine3D.pivot);
         //}
     }
 };
 
-function on3DFloorMouseUp(event)
-{
+function on3DFloorMouseUp(event) {
     on3DMouseUp(event);
 
     var o = 0.1;
-    if(SelectedObject === null)
-    {
-       o = 0.5;
+    if (SelectedObject === null) {
+        o = 0.5;
     }
     //TODO: exception for collision wall
-    for (var i = 0; i < engine3D.walls[engineGUI.floor].children.length; i++)
-        tween = new TWEEN.Tween(engine3D.walls[engineGUI.floor].children[i].material).to({opacity:o}, 500).start();
+    for (var i = 0; i < engine3D.walls[engineGUI.floor].children.length; i++) {
+        tween = new TWEEN.Tween(engine3D.walls[engineGUI.floor].children[i].material).to({ opacity: o }, 500).start();
+    }
 };
 
-function on3DCubeMove()
-{
-    if(json.settings.showcube === false)
-        return;
+function on3DCubeMove() {
+    if (json.settings.showcube === false) return;
 
     /*
     if (engine3D.controls instanceof THREE.TransformControls || engine3D.controls instanceof THREE.FirstPersonControls) {
@@ -416,8 +358,7 @@ function on3DCubeMove()
     //engine3D.cameraCube.needsUpdate = true;
 };
 
-function on3DObjectMove(container,event)
-{
+function on3DObjectMove(container, event) {
     //if(SelectedObject.name === "") //Fix: avoid entire scene selection
     //   return;
 
@@ -428,30 +369,30 @@ function on3DObjectMove(container,event)
     //    SelectedObject.rotation.y += 2; //intersects[0].point.x;
     //}else{
 
-        var x = (event.clientX / window.innerWidth) * 2 - 1;
-        var y = -(event.clientY / window.innerHeight) * 2 + 1;
-        
-        var vector = new THREE.Vector3(x, y, -2.0);
-        vector.unproject(engine3D.camera);
-        var raycaster = new THREE.Raycaster(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
-        var intersects = raycaster.intersectObjects(container.children,true);
-        if (intersects.length > 0) { //No need to check - ground will always be there (faster)
-            if (!collision){
-                //engine3D.controls.enabled = false;
+    var x = event.clientX / window.innerWidth * 2 - 1;
+    var y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-                var menu = $('#WebGLSelectMenu');
-                if(engineGUI.mouseleft)
-                {
-                    menu.tooltipster('close');
-                    //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
-                    SelectedObject.position.x = intersects[0].point.x;
-                    SelectedObject.position.z = intersects[0].point.z;
-                }else if(engineGUI.mouseright){
-                    menu.tooltipster('close');
-                    SelectedObject.rotation.y = intersects[0].point.x;
-                }
+    var vector = new THREE.Vector3(x, y, -2.0);
+    vector.unproject(engine3D.camera);
+    var raycaster = new THREE.Raycaster(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
+    var intersects = raycaster.intersectObjects(container.children, true);
+    if (intersects.length > 0) {
+        //No need to check - ground will always be there (faster)
+        if (!collision) {
+            //engine3D.controls.enabled = false;
+
+            var menu = $('#WebGLSelectMenu');
+            if (engineGUI.mouseleft) {
+                menu.tooltipster('close');
+                //console.log('intersect: ' + intersects[0].point.x.toFixed(2) + ', ' + intersects[0].point.y.toFixed(2) + ', ' + intersects[0].point.z.toFixed(2) + ')');
+                SelectedObject.position.x = intersects[0].point.x;
+                SelectedObject.position.z = intersects[0].point.z;
+            } else if (engineGUI.mouseright) {
+                menu.tooltipster('close');
+                SelectedObject.rotation.y = intersects[0].point.x;
             }
         }
+    }
     //}
 };
 
@@ -462,85 +403,76 @@ function on3DFloorMouseMove(event) {
     //if (!engineGUI.mouseleft)
     //    return;
 
-    if(TWEEN.getAll().length !== 0) //do not interfere with existing animations (performance)
+    if (TWEEN.getAll().length !== 0) //do not interfere with existing animations (performance)
         return;
 
-    if(SelectedObject !== null)
-    {
-        on3DObjectMove(engine3D.groundFloor,event);
-    }
-    else //if (engine3D.walls[engineGUI.floor].children !== undefined)
-    {
-        var tween;
-        var v = new THREE.Vector3( 0, 0, 8 ); //TODO: make this dynamic
-        v.applyQuaternion(engine3D.camera.quaternion);
-        scene3DCutawayPlaneMesh.position.copy(v);
-        scene3DCutawayPlaneMesh.lookAt(engine3D.camera.position);
-
-        var collection = [];
-        var originPoint = scene3DCutawayPlaneMesh.position.clone();
-      
-        for (var vertexIndex = 0; vertexIndex < scene3DCutawayPlaneMesh.geometry.vertices.length; vertexIndex++)
+    if (SelectedObject !== null) {
+        on3DObjectMove(engine3D.groundFloor, event);
+    } else //if (engine3D.walls[engineGUI.floor].children !== undefined)
         {
-            var localVertex = scene3DCutawayPlaneMesh.geometry.vertices[vertexIndex].clone();
-            var globalVertex = localVertex.applyMatrix4(scene3DCutawayPlaneMesh.matrix);
-            var directionVector = globalVertex.sub(scene3DCutawayPlaneMesh.position);
-            
-            var ray = new THREE.Raycaster(originPoint,directionVector.clone().normalize());
-            var collisionResults = ray.intersectObjects(engine3D.walls[engineGUI.floor].children);
+            var tween;
+            var v = new THREE.Vector3(0, 0, 8); //TODO: make this dynamic
+            v.applyQuaternion(engine3D.camera.quaternion);
+            scene3DCutawayPlaneMesh.position.copy(v);
+            scene3DCutawayPlaneMesh.lookAt(engine3D.camera.position);
 
-            if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() )
-            {
-                //console.log("Intersects " + collisionResults.length);
-                //if(collisionResults[0].object.material.opacity > 0.1)
-                    tween = new TWEEN.Tween(collisionResults[0].object.material).to({opacity:0.1}, 800).start();
+            var collection = [];
+            var originPoint = scene3DCutawayPlaneMesh.position.clone();
 
-                collection.push(collisionResults[0].object.id);
-                //break;
+            for (var vertexIndex = 0; vertexIndex < scene3DCutawayPlaneMesh.geometry.vertices.length; vertexIndex++) {
+                var localVertex = scene3DCutawayPlaneMesh.geometry.vertices[vertexIndex].clone();
+                var globalVertex = localVertex.applyMatrix4(scene3DCutawayPlaneMesh.matrix);
+                var directionVector = globalVertex.sub(scene3DCutawayPlaneMesh.position);
+
+                var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+                var collisionResults = ray.intersectObjects(engine3D.walls[engineGUI.floor].children);
+
+                if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
+                    //console.log("Intersects " + collisionResults.length);
+                    //if(collisionResults[0].object.material.opacity > 0.1)
+                    tween = new TWEEN.Tween(collisionResults[0].object.material).to({ opacity: 0.1 }, 800).start();
+
+                    collection.push(collisionResults[0].object.id);
+                    //break;
+                }
             }
+
+            on3DCubeMove();
         }
-        
-        on3DCubeMove();
-    }
 };
 
-function on3DMouseMove(event)
-{
+function on3DMouseMove(event) {
     //event.preventDefault();
 
-    if (!engineGUI.mouseleft || !engineGUI.mouseright ||engine3D.controls instanceof THREE.TransformControls || engine3D.controls instanceof THREE.FirstPersonControls) {
+    if (!engineGUI.mouseleft || !engineGUI.mouseright || engine3D.controls instanceof THREE.TransformControls || engine3D.controls instanceof THREE.FirstPersonControls) {
         return;
     }
 
     //if(TWEEN.getAll().length == 0) { //do not interfere with existing animations
-        clearTimeout(engineGUI.clickMenuTime);
-        //console.log("mouse:" + event.clientX + " window:" + window.innerWidth);
-     
-            engine3D.cameraCube.position.copy(engine3D.camera.position);
-            engine3D.cameraCube.position.sub(engine3D.controls.center);
-            engine3D.cameraCube.position.setLength(18);
-            engine3D.cameraCube.lookAt(scene3DCube.position);
-        
+    clearTimeout(engineGUI.clickMenuTime);
+    //console.log("mouse:" + event.clientX + " window:" + window.innerWidth);
 
-        /*
-        if (event.clientX > window.innerWidth - 50)
-        {
-            scene3DAnimateRotate = true; 
-            engineGUI.mouseleft = false; //TODO: fix this if mouse is outside screen mouseup never triggered
-            animate();
-        }
-        */
+    engine3D.cameraCube.position.copy(engine3D.camera.position);
+    engine3D.cameraCube.position.sub(engine3D.controls.center);
+    engine3D.cameraCube.position.setLength(18);
+    engine3D.cameraCube.lookAt(scene3DCube.position);
+
+    /*
+    if (event.clientX > window.innerWidth - 50)
+    {
+        scene3DAnimateRotate = true; 
+        engineGUI.mouseleft = false; //TODO: fix this if mouse is outside screen mouseup never triggered
+        animate();
+    }
+    */
     //}
 
     /*
     if (SelectedObject != null) {
-
-        $('#WebGLInteractiveMenu').hide();
+         $('#WebGLInteractiveMenu').hide();
         $('#WebGLTextureSelect').hide();
-
-        //if (engine3D.tool == 'moveXY') {
-
-            vector = new THREE.Vector3(x, y, 0.1);
+         //if (engine3D.tool == 'moveXY') {
+             vector = new THREE.Vector3(x, y, 0.1);
             //projector.unprojectVector(vector, engine3D.camera);
             vector.unproject(engine3D.camera);
             var raycaster = new THREE.Raycaster(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
@@ -548,10 +480,8 @@ function on3DMouseMove(event)
             //var ray = new THREE.Ray(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
             //var intersects = ray.intersectObject(engine3D.groundHouse.children[0]);
             if (intersects.length > 0) {
-
-            var collisionContainer;
-
-            if (engineGUI.scene == 'house')
+             var collisionContainer;
+             if (engineGUI.scene == 'house')
             {
                 collisionContainer = engine3D.house; //.clone();
             }
@@ -561,16 +491,13 @@ function on3DMouseMove(event)
             }
             
             //collisionContainer.remove(SELECTED); //avoid detecting itself
-
-            // ===== SIMPLE COLLISION DETECTION ======
+             // ===== SIMPLE COLLISION DETECTION ======
             //http://stackoverflow.com/questions/11418762/how-to-detect-collisions-between-a-cube-and-sphere-in-three-js
             var futurePosition = new THREE.Vector3(intersects[0].point.x,SelectedObject.position.y,intersects[0].point.z);
             var collision = false;
             for (var i = 0,len = collisionContainer.children.length; i < len; i++) {
-
-                var distance = futurePosition.distanceToSquared(collisionContainer.children[i].position);
-
-                if (collisionContainer.children[i].name != SelectedObject.name && distance < 1)
+                 var distance = futurePosition.distanceToSquared(collisionContainer.children[i].position);
+                 if (collisionContainer.children[i].name != SelectedObject.name && distance < 1)
                 {
                     //console.log(collisionContainer.children[i].name);
                     collision = true;
@@ -587,8 +514,7 @@ function on3DMouseMove(event)
                 SelectedObject.position.z = intersects[0].point.z;
             }
         }
-
-        *
+         *
         var box3 = new THREE.Box3().setFromPoints(SELECTED.geometry.vertices); // compute shape from mesh.geometry.vertices
         var boundingBox = SELECTED.geometry.boundingBox.clone();
         
@@ -601,8 +527,7 @@ function on3DMouseMove(event)
             //console.log("analysis of " + colliderSystem[i]);
         }
         *
-
-        // ====== COLLISION DETECTION with RAYS ======
+         // ====== COLLISION DETECTION with RAYS ======
         // http://webmaestro.fr/collisions-detection-three-js-raycasting/
         // ===========================================
     }
@@ -611,55 +536,40 @@ function on3DMouseMove(event)
     /*
         mouse.x = x;
         mouse.y = y;
-
-        var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+         var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5);
         projector.unprojectVector(vector, engine3D.camera);
-
-        var raycaster = new THREE.Raycaster(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
-
-        if (SELECTED) {
+         var raycaster = new THREE.Raycaster(engine3D.camera.position, vector.sub(engine3D.camera.position).normalize());
+         if (SELECTED) {
             var intersects = raycaster.intersectObject(plane);
             SELECTED.position.copy(intersects[0].point.sub(offset));
             return;
         }
-
-        var intersects = raycaster.intersectObjects(engine3D.house);
-
-        if (intersects.length > 0) {
-
-            if (INTERSECTED != intersects[0].object) {
-
-                if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-
-                INTERSECTED = intersects[0].object;
+         var intersects = raycaster.intersectObjects(engine3D.house);
+         if (intersects.length > 0) {
+             if (INTERSECTED != intersects[0].object) {
+                 if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+                 INTERSECTED = intersects[0].object;
                 INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-
-                plane.position.copy(INTERSECTED.position);
+                 plane.position.copy(INTERSECTED.position);
                 plane.lookAt(camera.position);
             }
-
-            //container.style.cursor = 'pointer';
-
-        } else {
-
-            if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+             //container.style.cursor = 'pointer';
+         } else {
+             if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
             INTERSECTED = null;
             //container.style.cursor = 'auto';
         }
     */
 };
 
-function on3DMouseDown(event)
-{
+function on3DMouseDown(event) {
     //event.preventDefault();
 
-    if (event.which === 1)
-        engineGUI.mouseleft = true; // Left mouse button was pressed, set flag
+    if (event.which === 1) engineGUI.mouseleft = true; // Left mouse button was pressed, set flag
 
-    if (event.which === 3)
-        engineGUI.mouseright = true; // Right mouse button was pressed, set flag
+    if (event.which === 3) engineGUI.mouseright = true; // Right mouse button was pressed, set flag
 
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.x = event.clientX / window.innerWidth * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     scene3DObjectUnselect();
@@ -674,8 +584,7 @@ function on3DMouseDown(event)
                 //console.log(TransformConstrolsHighlighted);
                 engine3D.controls.detach(SelectedObject);
                 scene3DenableOrbitControls(engine3D.camera);
-
-                scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
+                 scene3DObjectSelectMenu(mouse.x, mouse.y, '#WebGLInteractiveMenu');
                 //$(engine3D.renderer.domElement).unbind('mousemove', on3DMouseMove);
             }
         }, 500);
@@ -691,8 +600,7 @@ function on3DMouseDown(event)
     scene3DAnimateRotate = false;
 
     clearTimeout(engineGUI.clickTime);
-    engineGUI.clickTime = setTimeout(function()
-    {
+    engineGUI.clickTime = setTimeout(function () {
         engineGUI.mousedrag = true;
         if (document.getElementById('arrow-right').src.indexOf("images/arrowright.png") >= 0) {
             engineGUI.toggleSideMenus(false);
@@ -700,44 +608,37 @@ function on3DMouseDown(event)
     }, 500);
 };
 
-function on3DMouseUp(event)
-{
+function on3DMouseUp(event) {
     //event.preventDefault();
 
     clearTimeout(engineGUI.clickTime);
 
     engineGUI.mousedrag = false;
 
-    if (event.which == 1)
-        engineGUI.mouseleft = false; // Left mouse button was released, clear flag
+    if (event.which == 1) engineGUI.mouseleft = false; // Left mouse button was released, clear flag
 
-    if (event.which == 3)
-        engineGUI.mouseright = false;
+    if (event.which == 3) engineGUI.mouseright = false;
 
-    if (engine3D.controls instanceof THREE.TransformControls || engine3D.controls instanceof THREE.FirstPersonControls)
-        return;
+    if (engine3D.controls instanceof THREE.TransformControls || engine3D.controls instanceof THREE.FirstPersonControls) return;
 
     engine3D.scene.remove(engine3D.pivot);
 
-    if(SelectedObject !== null)
-    {
+    if (SelectedObject !== null) {
         /*
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-        var tween = new TWEEN.Tween(engine3D.camera.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},1000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
+         var tween = new TWEEN.Tween(engine3D.camera.position).to({x:SelectedObject.position.x, y:SelectedObject.position.y+4, z:SelectedObject.position.z + 5},1000).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function() {
             var v = scene3DObjectSelectMenuPosition(mouse.x,mouse.y);
             $('#WebGLSelectMenu').css({ position: 'absolute', left: v.x, top: v.y-50 });
             $('#WebGLSelectMenu').tooltipster('show');
         }).start();
         */
-    }else{
+    } else {
 
         //engine3D.scene.updateMatrixWorld();
 
-        engineGUI.clickTime = setTimeout(function() {
-            if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0)
-                engineGUI.toggleSideMenus(true);
+        engineGUI.clickTime = setTimeout(function () {
+            if (document.getElementById('arrow-right').src.indexOf("images/arrowleft.png") >= 0) engineGUI.toggleSideMenus(true);
         }, 1000);
     }
     //container.style.cursor = 'auto';

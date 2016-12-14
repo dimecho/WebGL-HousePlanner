@@ -67,8 +67,8 @@ engine2D.makeFloor = function(floor)
 	}
    
 	shape.fillColor = '#D8D8D8';
-    shape.remove(); //clean from view
-    
+
+    engine2D.floor[floor].remove(); //clean previous view
 	engine2D.floor[floor] = new paper.Group([shape]);
 	
     //Texture the shape
@@ -85,11 +85,17 @@ engine2D.makeFloor = function(floor)
 		
 		var raster = new paper.Raster(canvas, new paper.Point(shape.bounds.x,shape.bounds.y));
 		raster.fitBounds(shape.bounds, true);
+        raster.remove();
 		
 		engine2D.floor[floor] = new paper.Group([shape, raster]);
 		engine2D.floor[floor].clipped = true;
+
+        if(engine2D.draftPlan !== undefined)
+            engine2D.floor[floor].opacity = 0.6;
     };
-	engine2D.floor[floor].visible = false; //draw on demand
+
+    shape.remove(); //clean from view
+	//engine2D.floor[floor].visible = false; //draw on demand
     
 };
 

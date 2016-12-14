@@ -1,13 +1,11 @@
 var engine3D = window.engine3D || {};
 
-engine3D.makeFloor = function()
-{
-    var radians = (Math.PI / 180);
+engine3D.makeFloor = function () {
 
-    for(var i = 0; i < engine2D.floor.length; i++)
-    {
-        if(engine2D.floor[i].children[0] !== undefined)
-        {
+    var radians = Math.PI / 180;
+
+    for (var i = 0; i < engine2D.floor.length; i++) {
+        if (engine2D.floor[i].children[0] !== undefined) {
             console.log("3D Floor Generate [" + i + "] " + scene2DWallGroup[i].children.length);
 
             scene3DFloorShapeContainer[i] = new THREE.Object3D();
@@ -16,20 +14,18 @@ engine3D.makeFloor = function()
             var h = scene2DWallGroup[i].children[0].h;
             var shape = new THREE.Shape();
 
-            for(a = 0; a < engine2D.floor[i].children[0].segments.length; a++)
-            {
+            for (a = 0; a < engine2D.floor[i].children[0].segments.length; a++) {
                 var p = engine2D.floor[i].children[0].segments[a].point;
-                var x = (p.x/100) * 2 - 1;
-                var y = -(p.y/100) * 2 + 1;
+                var x = p.x / 100 * 2 - 1;
+                var y = -(p.y / 100) * 2 + 1;
                 //var cx = ((p.x + p.x)/2)/100 * 2 - 1;
                 //var cy = -((p.y + p.y)/2)/100 * 2 + 1;
                 x -= 13;
                 y += 7;
 
-                if (a === 0)
-                {
+                if (a === 0) {
                     shape.moveTo(x, y);
-                }else{
+                } else {
                     //shape.quadraticCurveTo(cx, cy, p.x,p.y);
                     shape.lineTo(x, y);
                 }
@@ -71,10 +67,8 @@ engine3D.makeFloor = function()
                 geometry.rotation.x = -(90 * radians);
                 //geometry.position.y = 0.5;
                 var floorBSP = new ThreeBSP(geometry);
-
-                scene3DFloorShapeContainer[i].add(geometry); //DEBUG
-
-                engine3D._groundHouse.traverse (function (mesh)
+                 scene3DFloorShapeContainer[i].add(geometry); //DEBUG
+                 engine3D._groundHouse.traverse (function (mesh)
                 {
                     if (mesh instanceof THREE.Mesh)
                     {

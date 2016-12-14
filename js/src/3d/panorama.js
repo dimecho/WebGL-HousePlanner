@@ -5,8 +5,11 @@ var scene3DPanorama;
 var camera3DPanorama;
 var controls3DPanorama;
 
-engine3D.initPanorama = function(id, files, W,H)
-{
+var movementX;
+var movementY;
+
+engine3D.initPanorama = function (id, files, W, H) {
+
     $(id).show();
     $(id).append(engineGUI.spinner);
 
@@ -16,16 +19,16 @@ engine3D.initPanorama = function(id, files, W,H)
         //devicePixelRatio: window.devicePixelRatio || 1,
         antialias: false
     });
-    rendererPanorama.setSize(window.innerWidth*W, window.innerHeight*H);
+    rendererPanorama.setSize(window.innerWidth * W, window.innerHeight * H);
 
     $(id).append(rendererPanorama.domElement);
 
+    /*
     controls3DPanorama = new THREE.OrbitControls(camera3DPanorama, rendererPanorama.domElement);
-    
     controls3DPanorama.enableDamping = true;
     controls3DPanorama.dampingFactor = 0.25;
     controls3DPanorama.enableZoom = false;
-    
+
     controls3DPanorama.movementSpeed = 5;
     controls3DPanorama.lookSpeed = 0.15;
     controls3DPanorama.noFly = true;
@@ -34,81 +37,70 @@ engine3D.initPanorama = function(id, files, W,H)
     controls3DPanorama.lon = -90;
     controls3DPanorama.lat = 0;
     controls3DPanorama.enabled = false;
+    */
 
     $(id).mousedown(function() {
-        controls3DPanorama.enabled = true;
+        $(id).bind('mousemove', onPanoramaMouseMove);
+    });
+    $(id).mouseup(function() {
+        $(id).unbind('mousemove', onPanoramaMouseMove);
     });
 
-    $(id).mouseup(function() {
-        controls3DPanorama.enabled = false;
-    });
-    
-    engine3D.buildPanorama(scene3DPanorama,files, 1024, 1024, 1024, "_", null);
-    
+    $(id).bind('mousewheel',  onPanoramaMouseWheel);
+
+    engine3D.buildPanorama(scene3DPanorama, files, 1024, 1024, 1024, "_", null);
+
     engine3D.animatePanorama();
-    
+
     //window.addEventListener( 'resize', onPanoramaWindowResize, false );
 };
 
-engine3D.animatePanorama = function()
-{
-    if (rendererPanorama instanceof THREE.WebGLRenderer)
-    {
+engine3D.animatePanorama = function () {
+    if (rendererPanorama instanceof THREE.WebGLRenderer) {
         requestAnimationID = window.requestAnimationFrame(engine3D.animatePanorama);
 
-        if(controls3DPanorama.enabled){
-            controls3DPanorama.update();
-        }else{
+        //if (controls3DPanorama.enabled) {
+        //    controls3DPanorama.update();
+        //} else {
             var delta = clock.getDelta();
 
-            mouse.x +=  0.1;
-            mouse.y = Math.max( - 85, Math.min(85, mouse.y));
+            mouse.x += 0.1;
+            mouse.y = Math.max(-85, Math.min(85, mouse.y));
             var phi = THREE.Math.degToRad(90 - mouse.y);
-            var theta = THREE.Math.degToRad( mouse.x );
+            var theta = THREE.Math.degToRad(mouse.x);
 
-            target.x = Math.sin( phi ) * Math.cos( theta );
-            target.y = Math.cos( phi );
-            target.z = Math.sin( phi ) * Math.sin( theta );
+            target.x = Math.sin(phi) * Math.cos(theta);
+            target.y = Math.cos(phi);
+            target.z = Math.sin(phi) * Math.sin(theta);
 
             camera3DPanorama.lookAt(target);
             //camera3DPanorama.position.copy(camera3DPanorama.target).negate(); // distortion
-        }
+        //}
         rendererPanorama.render(scene3DPanorama, camera3DPanorama);
-    }
-    else
-    {
+    } else {
         engine3D.animate();
     }
 };
 
-engine3D.cubePanoramaImages = function(files,preloader)
-{
-    var img = [
-        'panoramas/' + files + '/' + preloader + 'right.jpg',
-        'panoramas/' + files + '/' + preloader + 'left.jpg',
-        'panoramas/' + files + '/' + preloader + 'top.jpg',
-        'panoramas/' + files + '/' + preloader + 'bottom.jpg',
-        'panoramas/' + files + '/' + preloader + 'front.jpg',
-        'panoramas/' + files + '/' + preloader + 'back.jpg'
-    ];
+engine3D.cubePanoramaImages = function (files, preloader) {
+
+    if(files.indexOf("/") === -1)
+        files = "panoramas/" + files;
+    var img = [files + '/' + preloader + 'right.jpg', files + '/' + preloader + 'left.jpg', files + '/' + preloader + 'top.jpg', files + '/' + preloader + 'bottom.jpg', files + '/' + preloader + 'front.jpg', files + '/' + preloader + 'back.jpg'];
     return img;
 };
 
-engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
-{
+engine3D.buildPanorama = function (container, files, X, Y, Z, preloader, mesh) {
     //if(container.children.length > 0)
     //    return;
-    
-    console.log("Build Panorama :" + files);
-    
-    //engine3D.scene.remove(container);
+
+    //console.log("Build Panorama :" + files);
 
     /*
     var cubemap = THREE.ImageUtils.loadTextureCube(sides);
     cubemap.minFilter = THREE.LinearFilter;
     //cubemap.format = THREE.RGBFormat;
-
-    var shader = THREE.ShaderLib['cube'];
+     var shader = THREE.ShaderLib['cube'];
     var skyBoxMaterial = new THREE.ShaderMaterial( {
         fragmentShader: shader.fragmentShader,
         vertexShader: shader.vertexShader,
@@ -124,61 +116,62 @@ engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
         new THREE.CubeGeometry(X, Y, Z),
         skyBoxMaterial
     );
-
-    if(!(mesh instanceof THREE.Mesh))
+     if(!(mesh instanceof THREE.Mesh))
         container.remove(mesh);
-
-    container.add(skybox);
-
-    if(preloader === "_") //High Resolution
+     container.add(skybox);
+     if(preloader === "_") //High Resolution
         engine3D.buildPanorama(container,files,X,Y,Z,"",skybox);
     */
 
-    var img = engine3D.cubePanoramaImages(files,preloader);
-    
-    //Low Resolution
-    var sides = [
-        new THREE.MeshBasicMaterial({
-            map: engine3D.textureLoader.load(img[0]),
-            side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-            map: engine3D.textureLoader.load(img[1]),
-            side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-            map: engine3D.textureLoader.load(img[2]),
-            side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-            map: engine3D.textureLoader.load(img[3]),
-            side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-            map: engine3D.textureLoader.load(img[4]),
-            side: THREE.BackSide
-        }),
-        new THREE.MeshBasicMaterial({
-            map: engine3D.textureLoader.load(img[5]),
-            side: THREE.BackSide
-        }),
-    ];
+    var img = engine3D.cubePanoramaImages(files, preloader);
 
-    var geometry = new THREE.BoxGeometry(X,Y,Z);
+    //Low Resolution
+    var sides = [new THREE.MeshBasicMaterial({
+        map: engine3D.textureLoader.load(img[0]),
+        side: THREE.BackSide
+    }), new THREE.MeshBasicMaterial({
+        map: engine3D.textureLoader.load(img[1]),
+        side: THREE.BackSide
+    }), new THREE.MeshBasicMaterial({
+        map: engine3D.textureLoader.load(img[2]),
+        side: THREE.BackSide
+    }), new THREE.MeshBasicMaterial({
+        map: engine3D.textureLoader.load(img[3]),
+        side: THREE.BackSide
+    }), new THREE.MeshBasicMaterial({
+        map: engine3D.textureLoader.load(img[4]),
+        side: THREE.BackSide
+    }), new THREE.MeshBasicMaterial({
+        map: engine3D.textureLoader.load(img[5]),
+        side: THREE.BackSide
+    })];
+
+    var geometry = new THREE.BoxGeometry(X, Y, Z);
     var mesh = new THREE.Mesh(geometry, new THREE.MultiMaterial(sides));
 
-    if(preloader !== "")
-    {
+    if (preloader !== "") {
         engineGUI.spinner.remove();
 
-        img = engine3D.cubePanoramaImages(files,"");
+        img = engine3D.cubePanoramaImages(files, "");
 
-        engine3D.textureLoader.load(img[0], function (texture) { sides[0].map = texture; });
-        engine3D.textureLoader.load(img[1], function (texture) { sides[1].map = texture; });
-        engine3D.textureLoader.load(img[2], function (texture) { sides[2].map = texture; });
-        engine3D.textureLoader.load(img[3], function (texture) { sides[3].map = texture; });
-        engine3D.textureLoader.load(img[4], function (texture) { sides[4].map = texture; });
-        engine3D.textureLoader.load(img[5], function (texture) { sides[5].map = texture; });
+        engine3D.textureLoader.load(img[0], function (texture) {
+            sides[0].map = texture;
+        });
+        engine3D.textureLoader.load(img[1], function (texture) {
+            sides[1].map = texture;
+        });
+        engine3D.textureLoader.load(img[2], function (texture) {
+            sides[2].map = texture;
+        });
+        engine3D.textureLoader.load(img[3], function (texture) {
+            sides[3].map = texture;
+        });
+        engine3D.textureLoader.load(img[4], function (texture) {
+            sides[4].map = texture;
+        });
+        engine3D.textureLoader.load(img[5], function (texture) {
+            sides[5].map = texture;
+        });
         //for (var i = 0; i <= 5; i++)
         //    engine3D.textureLoader.load(img[i], function (texture) { sides[i].map = texture; });
     }
@@ -196,18 +189,25 @@ engine3D.buildPanorama = function(container,files,X,Y,Z,preloader,mesh)
     container.add(mesh);
 };
 
-/*
-function onPanoramaMouseMove(event)
-{   
-    var movementX = event.movementX || event.mozMovementX || 0;
-    var movementY = event.movementY || event.mozMovementY || 0;
+function onPanoramaMouseMove(event) {
 
-    mouse.x -= movementX * 0.1;
-    mouse.y += movementY * 0.1;
+    if (event.pageX < movementX ) {
+        mouse.x -= event.pageX * 0.005;
+    } else if (event.pageX > movementX ) {
+        mouse.x += event.pageX * 0.005;
+    }
+
+    movementX = event.pageX || event.mozMovementX || 0;
+
+    //movementY = event.pageY || event.mozMovementY || 0;
+    //mouse.y += event.pageY * 0.1;
 };
 
-function onPanoramaMouseWheel(event)
-{
+function onPanoramaMouseWheel(event) {
+
+    //console.log(event.originalEvent);
+
+    /*
     if (event.wheelDeltaY)
     {
         camera3DPanorama.fov -= event.wheelDeltaY * 0.05;
@@ -220,10 +220,13 @@ function onPanoramaMouseWheel(event)
     {
         camera3DPanorama.fov += event.detail * 1.0;
     }
-
     camera3DPanorama.updateProjectionMatrix();
+    */
+
+    mouse.x += event.pageX * 0.002;
 };
 
+/*
 function onPanoramaTouchStart(event)
 {
     //event.preventDefault();
@@ -248,20 +251,25 @@ function onPanoramaTouchMove(event)
 };
 */
 
-function onPanoramaWindowResize()
-{
+function onPanoramaWindowResize() {
+
     camera3DPanorama.aspect = window.innerWidth / window.innerHeight;
     camera3DPanorama.updateProjectionMatrix();
-    rendererPanorama.setSize( window.innerWidth, window.innerHeight );
+    rendererPanorama.setSize(window.innerWidth, window.innerHeight);
 };
 
-engine3D.disposePanorama = function(id)
-{
+engine3D.disposePanorama = function (id) {
+
     $(id).hide();
     $(id).empty();
 
     rendererPanorama = null;
-    //camera3DPanorama = null;
+    camera3DPanorama = null;
     scene3DPanorama = null;
-    controls3DPanorama = null;
+    //controls3DPanorama = null;
+
+    $(id).unbind('mousedown');
+    $(id).unbind('mouseup');
+    $(id).unbind('mousemove');
+    $(id).unbind('mousewheel');
 };

@@ -1,7 +1,6 @@
 var engineGUI = window.engineGUI || {};
 
-engineGUI.initialize = function()
-{
+engineGUI.initialize = function () {
     window.location.href = "#list";
 
     $('#menuTop').hide();
@@ -17,38 +16,26 @@ engineGUI.initialize = function()
     $('#menuLeft3DFloor').hide();
     $('#menuLeft2D').hide();
     $('#menuFloorSelector').hide();
-    
-    engineGUI.spinner = $("<div>", {class:"cssload-container", style:"position:absolute;top:32%;left:40%;"}).append($("<ul>", {class:"cssload-flex-container"}).append($("<li>").append($("<span>",{class:"cssload-loading"}))));
-    
+
+    engineGUI.spinner = $("<div>", { class: "cssload-container", style: "position:absolute;top:32%;left:40%;" }).append($("<ul>", { class: "cssload-flex-container" }).append($("<li>").append($("<span>", { class: "cssload-loading" }))));
+
     engineGUI.initList();
 };
 
-engineGUI.initHousePlanner = function(id)
-{
+engineGUI.initHousePlanner = function (id) {
     engine3D.id = id;
 
-    $.ajax("scenes/" + id + ".json",{
+    $.ajax("scenes/" + id + ".json", {
         contentType: "application/json",
         dataType: "json",
-        success: function(data)
-        {
+        success: function success(data) {
             json = data;
         },
-        error: function (request, status, error) {
+        error: function error(request, status, _error) {
             //console.log(request.responseText);
             engineGUI.spinner.remove();
             alertify.alert("Cannot load scene json file: " + request.responseText).show();
         }
-    });
-
-    $('.tooltip').tooltipster({
-        animation: 'fade',
-        delay: 200,
-        theme: 'tooltipster-default',
-        touchDevices: false,
-        trigger: 'hover',
-        position: 'bottom',
-        contentAsHTML: true
     });
 
     $('#menu2DTools').tooltipster({
@@ -56,7 +43,7 @@ engineGUI.initHousePlanner = function(id)
         trigger: 'custom',
         touchDevices: true,
         //delay: 200,
-        interactive:true,
+        interactive: true,
         contentAsHTML: true,
         content: ''
     });
@@ -66,10 +53,10 @@ engineGUI.initHousePlanner = function(id)
         trigger: 'custom',
         touchDevices: true,
         delay: 0,
-        interactive:true,
+        interactive: true,
         position: 'top',
         contentAsHTML: true,
-        content: '',
+        content: ''
     });
 
     //$('#dragElement').drags();
@@ -94,16 +81,16 @@ engineGUI.initHousePlanner = function(id)
 
     $('.cssmenu ul ul li:odd').addClass('odd');
     $('.cssmenu ul ul li:even').addClass('even');
-    $('.cssmenu > ul > li > a').click(function(event) {
+    $('.cssmenu > ul > li > a').click(function (event) {
         engineGUI.menuItemClick(this);
     });
 
     //$(".mouseover").editable("php/echo.php", { indicator: "<img src='img/indicator.gif'>", tooltip: "Move mouseover to edit...", event: "mouseover", style  : "inherit" });      
-    $("#menuTop p").click(function() {
+    $("#menuTop p").click(function () {
         $(this).hide().after('<input type="text" class="editP" value="' + $(this).html() + '" size="10" />');
         $('.editP').focus();
     });
-    $('.editP').bind('blur', function() {
+    $('.editP').bind('blur', function () {
         $(this).hide().prev('#menuTop p').html($(this).val()).show();
     });
     stroll.bind('.cssmenu ul');
@@ -113,46 +100,42 @@ engineGUI.initHousePlanner = function(id)
     engine3D.initialize();
 };
 
-engineGUI.initMenuTop = function()
-{
+engineGUI.initMenuTop = function () {
     var menu = $(".menuTop").empty();
-    var div = $("<div>", {class:"hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a"});
+    var div = $("<div>", { class: "hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" });
 
-    if(json.settings.house)
-    {
-        div.append($("<a>", {href:"#", onclick:"engine3D.showHouse()", class:"hi-icon icon-house tooltip",title:"Home Exterior"}));
-        div.append($("<a>", {href:"#", onclick:"engine3D.showFloorLevel()", class:"hi-icon icon-floors tooltip",title:"Floor Arrangements"}));
+    if (json.settings.house) {
+        div.append($("<a>", { href: "#", onclick: "engine3D.showHouse()", class: "hi-icon icon-house tooltip", title: "Home Exterior" }));
+        div.append($("<a>", { href: "#", onclick: "engine3D.showFloorLevel()", class: "hi-icon icon-floors tooltip", title: "Floor Arrangements" }));
     }
 
-    if(json.settings.terrain)
-    {
-        div.append($("<a>", {href:"#", onclick:"engine3D.showLandscape()", class:"hi-icon icon-terrain tooltip",title:"Landscape Editor"}));
+    if (json.settings.terrain) {
+        div.append($("<a>", { href: "#", onclick: "engine3D.showLandscape()", class: "hi-icon icon-terrain tooltip", title: "Landscape Editor" }));
     }
 
-    if(json.settings.roof)
-    {
-        div.append($("<a>", {href:"#", onclick:"engine3D.showRoofDesign()", class:"hi-icon icon-roof tooltip",title:"Roof Design"}));
+    if (json.settings.roof) {
+        div.append($("<a>", { href: "#", onclick: "engine3D.showRoofDesign()", class: "hi-icon icon-roof tooltip", title: "Roof Design" }));
     }
 
-    if(json.settings.floor)
-    {
-        div.append($("<a>", {href:"#", onclick:"engine3D.showFloor(1)", class:"hi-icon icon-armchair tooltip",title:"Floor Furnishings"}));
+    if (json.settings.floor) {
+        div.append($("<a>", { href: "#", onclick: "engine3D.showFloor(1)", class: "hi-icon icon-armchair tooltip", title: "Floor Furnishings" }));
     }
 
-    div.append($("<a>", {href:"#", onclick:"engine2D.show()", class:"hi-icon icon-draftplan tooltip",title:"Floor Plans"}));
+    div.append($("<a>", { href: "#", onclick: "engine2D.show()", class: "hi-icon icon-draftplan tooltip", title: "Floor Plans" }));
 
-    div.append($("<div>", {style:"display:inline-block;width:1px;height:28px;background:black;"}));
-    div.append($("<a>", {href:"#", onclick:"sceneNew()", class:"hi-icon icon-new tooltip",title:"New"}));
-    div.append($("<a>", {href:"#", onclick:"fileSelect(\'opendesign\')", class:"hi-icon icon-open tooltip",title:"Open"}));
-    div.append($("<a>", {href:"#", onclick:"engineGUI.save(false)", class:"hi-icon icon-save tooltip",title:"Save"}));
-    div.append($("<div>", {style:"display: inline-block;width:1px;height:28px;background:black;"}));
+    div.append($("<div>", { style: "display:inline-block;width:1px;height:28px;background:black;" }));
+    div.append($("<a>", { href: "#", onclick: "sceneNew()", class: "hi-icon icon-new tooltip", title: "New" }));
+    div.append($("<a>", { href: "#", onclick: "fileSelect(\'opendesign\')", class: "hi-icon icon-open tooltip", title: "Open" }));
+    div.append($("<a>", { href: "#", onclick: "engineGUI.save()", class: "hi-icon icon-save tooltip", title: "Save" }));
+    div.append($("<div>", { style: "display: inline-block;width:1px;height:28px;background:black;" }));
     //div.append($("<a>", {href:"#", class:"hi-icon icon-share tooltip-share-menu",title:"Share"}));
-    div.append($("<a>", {href:"#", onclick:"engineGUI.makeScreenshot()", class:"hi-icon icon-screenshot tooltip",title:"Screenshot"}));
-    div.append($("<a>", {href:"#", onclick:"screenfull.request(document.documentElement)", class:"hi-icon icon-expand tooltip",title:"Full Screen"}));
-    div.append($("<a>", {href:"#", class:"hi-icon icon-settings tooltip",title:"Settings"}));
+    div.append($("<a>", { href: "#", onclick: "engineGUI.makeScreenshot()", class: "hi-icon icon-screenshot tooltip", title: "Screenshot" }));
+    div.append($("<a>", { href: "#", onclick: "screenfull.request(document.documentElement)", class: "hi-icon icon-expand tooltip", title: "Full Screen" }));
+    div.append($("<a>", { href: "#", class: "hi-icon icon-settings tooltip", title: "Settings" }));
     //div.append($("<a>", {href:"#", onclick:"document.getElementById('iframe').src = '/profile/login'", class:"hi-icon icon-login tooltip",title:"Login"}));
 
     menu.append(div);
+
     /*
     $('.tooltip-share-menu').tooltipster({
         interactive:true,
@@ -171,65 +154,129 @@ engineGUI.initMenuTop = function()
         content: $('<a href="#" onclick="makeScreenshot()" class="hi-icon icon-screenshot" style="color:white"></a><br/><a href="#" onclick="screenfull.request(document.documentElement)" class="hi-icon icon-expand" style="color:white"></a>')
     });
     */
+    //engineGUI.initTooltipster();
 };
 
-engineGUI.initList = function()
-{
-    $.ajax("scenes/index.json",{
+engineGUI.initTooltipster = function (id,js) {
+
+    $('.tooltip').tooltipster({
+        animation: 'fade',
+        delay: 200,
+        theme: 'tooltipster-default',
+        touchDevices: false,
+        trigger: 'hover',
+        position: 'bottom',
+        contentAsHTML: true
+    });
+};
+
+engineGUI.initPanoramaPreview = function (id,js) {
+
+    var panorama = $(id);
+    $.each(js, function () {
+        if(this.panorama !== undefined)
+        {
+            panorama.append($("<div>", { class: "links-left", style: "width:180px;height:100px;"}).append($("<a>", { href: "#panorama", onclick:"engine3D.initPanorama('#WebGLPanorama','" + this.panorama  + "',0.78,0.85)"}).append($("<img>", { class: "tooltip", title: this.note, src: this.panorama + "/front.jpg", style:"width:100%;height:80px;"}))));
+            return true;
+        }
+    });
+    if(id === "#panoramaFloor")
+        panorama.append($("<div>", { class: "links-left", style: "width:180px;height:100px;"}).append($("<a>", { href: "#panoramaBuild", onclick:""}).append($("<img>", { class: "tooltip", title:"Add Panorama", src: "images/placeholder.jpg", style:"width:100%;height:80px;"}))));
+
+    engineGUI.initTooltipster();
+};
+
+engineGUI.initMenuFloorList = function () {
+
+    var menuFloorList = $("#menuFloorList");
+    var div = $("<div>", { class:"cssmenu links-left", style:"width:180px;margin-top:20px"});
+    var icon = $("<span>", {class:"icon-add", style:"font-size:18px;padding-right:5px"});
+    var add_new = $("<span>").append("Add New Floor");
+    var ul = $("<ul>").append($("<li>", { class: "active"}).append($("<a>", { href: "#openAddNewFloor"}).append(icon).append(add_new)));
+
+    for (var i = 0; i < json.plan.length; i++)
+    {
+        $.each(json.plan[i], function () {
+
+            if(this.name !== undefined)
+            {
+                var li = $("<li>", {class:"has-sub"});
+                var a = $("<a>", {href:"#"}).append($("<span>").append(this.name));
+                //var a = $("<a>", {href:"#", onclick:"camera3DFloorFlyIn(" + i + ")"}).append($("<span>").append(this.name));
+            
+                li.append(a);
+
+                //TODO: Add room labels dynamic
+                //=============================
+                var has_sub = $("<ul>");
+                has_sub.append($("<li>").append($("<a>", { href:"#", onclick:"camera3DFloorFlyIn(" + i + ")"}).append($("<span>").append("Living Room"))));
+                has_sub.append($("<li>").append($("<a>", { href:"#", onclick:"camera3DFloorFlyIn(" + i + ")"}).append($("<span>").append("Kitchen"))));
+                has_sub.append($("<li>",{class: "last"}).append($("<a>", { href: "#", onclick:"camera3DFloorFlyIn(" + i + ")"}).append($("<span>").append("Bedroom"))));
+                li.append(has_sub);
+                //=============================
+
+                a.click(function (event) {
+                    engineGUI.menuItemClick(this);
+                });
+
+                ul.append(li);
+            }
+        });
+    }
+
+    menuFloorList.append(div.append(ul));
+};
+
+engineGUI.initList = function () {
+    $.ajax("scenes/index.json", {
         contentType: "application/json",
         dataType: 'json',
-        success: function(data)
-        {
+        success: function success(data) {
             jsonindex = data;
 
             //console.log(jsonindex);
 
             var menu = $("#menuIndexList").empty();
-            $.each(jsonindex.menu, function()
-            {
-                var div = $("<div>", { width:"300px",style: "padding:20px;display:inline-block;text-align:center;"});
+            $.each(jsonindex.menu, function () {
+                var div = $("<div>", { width: "300px", style: "padding:20px;display:inline-block;text-align:center;" });
                 var img = $("<img>", {
                     width: "300px",
                     height: "150px",
                     class: "lazy indexImage",
                     id: this.name,
-                    "data-original": "scenes/" + this.id + "/index.jpg",
-                    //"data-src-retina": itemData.image.slice(0, -4) + "@2x." + itemData.image.split('.').pop(),
-                    //style: "opacity: 0;transition: opacity .3s ease-in;height:100%"
+                    "data-original": "scenes/" + this.id + "/index.jpg"
                 });
-                
-                var a =  $("<a>", {href:"javascript:engineGUI.initParallaxSlider('" + this.id + "')"}).append(img);
-                var p =  $("<p>").append(this.name);
+
+                var a = $("<a>", { href: "javascript:engineGUI.initParallaxSlider('" + this.id + "')" }).append(img);
+                var p = $("<p>").append(this.name);
                 var item = div.append(a).append(p);
 
                 menu.append(item);
             });
             new LazyLoad();
-        }//,error: function (request, status, error) {
-            //alertify.alert(request.responseText).show();
+        } //,error: function (request, status, error) {
+        //alertify.alert(request.responseText).show();
         //}
     });
 };
 
-engineGUI.initMenu = function(id,item)
-{
-    if(json.settings.mode === "database")
-    {
+engineGUI.initMenu = function (id, item) {
+    if (json.settings.mode === "database") {
         item = "php/objects.php?menu=" + item.split('/').shift();
-    }else{
+    } else {
         item = "objects/" + item;
     }
 
-    $.ajax(item,{
+    $.ajax(item, {
         //contentType: "json",
         //async: false,
         dataType: 'json',
-        success: function(json){
+        success: function success(json) {
             //var json = JSON.parse(data);
             var menu = $("#" + id + " .scroll");
             //var menu = $("#" + id + " .cssmenu > ul");
             menu.empty();
-            $.each(json.menu, function() {
+            $.each(json.menu, function () {
                 menu.append(engineGUI.menuGetItem(this));
             });
             /*
@@ -237,42 +284,39 @@ engineGUI.initMenu = function(id,item)
                 engineGUI.menuItemClick(this);
             });
             */
-            $("#" + id + " .cssmenu > ul > li > a").click(function(event) {
+            $("#" + id + " .cssmenu > ul > li > a").click(function (event) {
                 engineGUI.menuItemClick(this);
             });
         },
-        error: function(xhr, textStatus, errorThrown){
+        error: function error(xhr, textStatus, errorThrown) {
             alertify.alert("Menu (" + item + ") Loading Error").show();
         }
     });
-    
+
     engineGUI.menuCorrectHeight();
 
     $("#" + id).show();
     //engineGUI.menuToggleRight('menuRight', true);
 };
 
-engineGUI.menuSelect = function(item, id, color)
-{
+engineGUI.menuSelect = function (item, id, color) {
     if (item === null) //clear all
-    {
-        for (var i = 0; i <= 6; i++) {
-            $("#" + id + i).css('color', 'black');
-        }
-    } else {
+        {
+            for (var i = 0; i <= 6; i++) {
+                $("#" + id + i).css('color', 'black');
+            }
+        } else {
         engineGUI.menuSelect(null, id, color);
         $("#" + id + item).css('color', color); //#53C100
     }
 };
 
-engineGUI.showRightObjectMenu = function(path)
-{
+engineGUI.showRightObjectMenu = function (path) {
     //console.log("Get from " + path + "/index.json");
-    
-    if(json.settings.mode === "database")
-    {
+
+    if (json.settings.mode === "database") {
         path = "php/objects.php?objects=" + path; //item.split('/').shift();
-    }else{
+    } else {
         path = "objects/" + path + '/index.json';
     }
 
@@ -286,29 +330,23 @@ engineGUI.showRightObjectMenu = function(path)
     $('#menuRight2D').hide();
     $('#menuRightObjects').show();
 
-     $.ajax(path,{
+    $.ajax(path, {
         dataType: 'json',
-        success: function(json){
+        success: function success(json) {
             var empty = "<li><span style='margin-let:auto;text-align:center;padding:20px'>No Objects In This Category</span></li>";
             menu.empty();
-            try
-            {
+            try {
                 //var json = JSON.parse(binary.read('string'));
-                $.each(json.menu, function() {
-                    if(Object.keys(json.menu).length > 0)
-                    {
+                $.each(json.menu, function () {
+                    if (Object.keys(json.menu).length > 0) {
 
                         //menu.append(getMenuObjectItem(this));
-                        getMenuObjectItem(menu,this);
-                    }
-                    else
-                    {
+                        getMenuObjectItem(menu, this);
+                    } else {
                         menu.append(empty); //database empty
                     }
                 });
-            }
-            catch(e)
-            {
+            } catch (e) {
                 menu.append(empty); //local no json
             }
 
@@ -325,8 +363,7 @@ engineGUI.showRightObjectMenu = function(path)
     //engineGUI.menuCorrectHeight();
 };
 
-engineGUI.showRightCatalogMenu = function()
-{
+engineGUI.showRightCatalogMenu = function () {
     if (engineGUI.scene === 'house') {
         $('#menuRight3DHouse').show();
     } else if (engineGUI.scene === 'floor') {
@@ -339,8 +376,7 @@ engineGUI.showRightCatalogMenu = function()
     //engineGUI.menuCorrectHeight();
 };
 
-engineGUI.toggleSideMenus = function(open)
-{
+engineGUI.toggleSideMenus = function (open) {
     //Auto close right menu
     engineGUI.menuToggleRight('menuRight', open);
 
@@ -350,19 +386,18 @@ engineGUI.toggleSideMenus = function(open)
     //Auto close left menu
     if (engineGUI.scene == 'house') {
         engineGUI.menuToggleLeft('menuLeft3DHouse', open);
-
     } else if (engineGUI.scene == 'floor') {
         engineGUI.menuToggleLeft('menuLeft3DFloor', open);
     }
 };
 
-engineGUI.menuToggleRight = function(id, open)
-{
+engineGUI.menuToggleRight = function (id, open) {
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-right");
     var box = el.getAttribute("class");
 
-    if (img.src.indexOf("images/arrowleft.png") >= 0 || open) { //box == "hide-right"
+    if (img.src.indexOf("images/arrowleft.png") >= 0 || open) {
+        //box == "hide-right"
         el.style.display = "block";
         el.setAttribute("class", "show-right");
         engineGUI.menuDelay(img, "images/arrowright.png", 400);
@@ -372,13 +407,13 @@ engineGUI.menuToggleRight = function(id, open)
     }
 };
 
-engineGUI.menuToggleLeft = function(id, open)
-{
+engineGUI.menuToggleLeft = function (id, open) {
     var el = document.getElementById(id);
     var img = document.getElementById("arrow-left");
     var box = el.getAttribute("class");
 
-    if (img.src.indexOf("images/arrowright.png") >= 0 || open) { //box == "hide-left"
+    if (img.src.indexOf("images/arrowright.png") >= 0 || open) {
+        //box == "hide-left"
         el.style.display = "block";
         el.setAttribute("class", id + "-show-left");
         engineGUI.menuDelay(img, "images/arrowleft.png", 400);
@@ -388,15 +423,13 @@ engineGUI.menuToggleLeft = function(id, open)
     }
 };
 
-engineGUI.menuDelay = function(elem, src, delayTime)
-{
-    window.setTimeout(function() {
+engineGUI.menuDelay = function (elem, src, delayTime) {
+    window.setTimeout(function () {
         elem.setAttribute("src", src);
     }, delayTime);
 };
 
-engineGUI.menuItemClick = function(self)
-{
+engineGUI.menuItemClick = function (self) {
     //console.log("click");
 
     $('.cssmenu > ul > li').removeClass('active');
@@ -404,11 +437,11 @@ engineGUI.menuItemClick = function(self)
 
     var checkElement = $(self).next();
 
-    if ((checkElement.is('ul')) && (checkElement.is(':visible'))) {
+    if (checkElement.is('ul') && checkElement.is(':visible')) {
         $(self).closest('li').removeClass('active');
         checkElement.slideUp('normal');
     }
-    if ((checkElement.is('ul')) && (!checkElement.is(':visible'))) {
+    if (checkElement.is('ul') && !checkElement.is(':visible')) {
         $('.cssmenu ul ul:visible').slideUp('normal');
         checkElement.slideDown('normal');
     }
@@ -428,8 +461,7 @@ engineGUI.menuItemClick = function(self)
     }
 };
 
-engineGUI.menuGetItem = function(itemData, last)
-{
+engineGUI.menuGetItem = function (itemData, last) {
     //console.log(itemData);
     var li = "<li";
     if (itemData.sub) {
@@ -454,9 +486,10 @@ engineGUI.menuGetItem = function(itemData, last)
 
     if (itemData.sub) {
         var subList = $("<ul>");
-        $.each(itemData.sub, function(index) {
+        $.each(itemData.sub, function (index) {
             //console.log(this);
-            if (index == itemData.sub.length - 1) { // this is the last one
+            if (index == itemData.sub.length - 1) {
+                // this is the last one
                 subList.append(engineGUI.menuGetItem(this, true));
             } else {
                 subList.append(engineGUI.menuGetItem(this, false));
@@ -467,14 +500,12 @@ engineGUI.menuGetItem = function(itemData, last)
     return item;
 };
 
-engineGUI.initParallaxSlider = function(id)
-{
-    if (getCookie("firstTimer"))
-    {
-        createCookie("firstTimer","1",15);
-        
+engineGUI.initParallaxSlider = function (id) {
+    if (getCookie("firstTimer")) {
+        createCookie("firstTimer", "1", 15);
+
         window.location.href = "#start";
-    }else{
+    } else {
         window.location.href = "#scene";
     }
 
@@ -485,27 +516,24 @@ engineGUI.initParallaxSlider = function(id)
     var img;
     var li;
 
-    if(json.settings.house)
-    {
-        img = $("<img>",{src: "scenes/" + id + "/1.jpg"});
-        li =  $("<li>").append($("<a>",{href:"javascript:engineGUI.open(1)"}).append(img));
+    if (json.settings.house) {
+        img = $("<img>", { src: "scenes/" + id + "/1.jpg" });
+        li = $("<li>").append($("<a>", { href: "javascript:engineGUI.open(1)" }).append(img));
         pxs_slider.append(li);
 
-        img = $("<img>",{src: "scenes/" + id + "/1.jpg", width:146, height:80});
-        li =  $("<li>").append(img);
+        img = $("<img>", { src: "scenes/" + id + "/1.jpg", width: 146, height: 80 });
+        li = $("<li>").append(img);
         pxs_thumbnails.append(li);
     }
 
-    if(json.settings.floor)
-    {
-        for(var i = 2; i <= 3; i++)
-        {
-            img = $("<img>",{src: "scenes/" + id + "/" + i + ".jpg"});
-            li =  $("<li>").append($("<a>",{href:"javascript:engineGUI.open(" + i + ")"}).append(img));
+    if (json.settings.floor) {
+        for (var i = 2; i <= 3; i++) {
+            img = $("<img>", { src: "scenes/" + id + "/" + i + ".jpg" });
+            li = $("<li>").append($("<a>", { href: "javascript:engineGUI.open(" + i + ")" }).append(img));
             pxs_slider.append(li);
-            
-            img = $("<img>",{src: "scenes/" + id + "/" + i + ".jpg", width:146, height:80});
-            li =  $("<li>").append(img);
+
+            img = $("<img>", { src: "scenes/" + id + "/" + i + ".jpg", width: 146, height: 80 });
+            li = $("<li>").append(img);
             pxs_thumbnails.append(li);
         }
     }
@@ -516,12 +544,11 @@ engineGUI.initParallaxSlider = function(id)
     engineGUI.initMenuTop();
 };
 
-function getMenuObjectItem(menu,itemData)
-{
+function getMenuObjectItem(menu, itemData) {
     //console.log(itemData);
 
     var li = "<li style='border:1px solid #aaa;text-align:center'>";
-    var div = "<div style='background-color:#fff;height:120px'>"
+    var div = "<div style='background-color:#fff;height:120px'>";
     var img = $("<img>", {
         id: itemData.name,
         src: "images/loader.gif", //itemData.image,
@@ -536,8 +563,8 @@ function getMenuObjectItem(menu,itemData)
         threshold : 200
     });
     */
-    
-    var a =  $("<a>", {href:"javascript:engine3D.insert3DModel('" + itemData.file + "')"}).append(img);
+
+    var a = $("<a>", { href: "javascript:engine3D.insert3DModel('" + itemData.file + "')" }).append(img);
     var divInfo = "<span class='objectItemInfo' style='height:40px'>";
 
     var item = $(li).append($(div).append(a).append(divInfo));
@@ -545,10 +572,10 @@ function getMenuObjectItem(menu,itemData)
     menu.append(item);
 
     //$(img).unveil();
-    $(img).unveil(200, function() {
-      $(this).load(function() {
-        this.style.opacity = 1;
-      });
+    $(img).unveil(200, function () {
+        $(this).load(function () {
+            this.style.opacity = 1;
+        });
     });
 
     //console.log(item);
@@ -556,8 +583,7 @@ function getMenuObjectItem(menu,itemData)
     //return item;
 };
 
-engineGUI.menuCorrectHeight = function()
-{
+engineGUI.menuCorrectHeight = function () {
     var h = window.innerHeight - 250;
     var a;
     var b;
@@ -593,12 +619,10 @@ engineGUI.menuCorrectHeight = function()
     }
 };
 
-engineGUI.selectFloor = function(next)
-{
+engineGUI.selectFloor = function (next) {
     var i = engineGUI.floor + next;
 
-    if (i < engineGUI.floor)
-    {
+    if (i < engineGUI.floor) {
         //TODO: would be awesome to have some kind of flip transition effect
 
         if (engineGUI.scene == 'floor') {
@@ -606,7 +630,7 @@ engineGUI.selectFloor = function(next)
         } else if (engineGUI.scene == '2d') {
             engine2D.showFloor(i);
         }
-    }else{
+    } else {
 
         alertify.confirm("Add New Floor?", function (e) {
             if (e) {
@@ -615,14 +639,13 @@ engineGUI.selectFloor = function(next)
                 } else if (engineGUI.scene == '2d') {
                     engine2D.addFloor("New Floor");
                 }
-            //} else { // user clicked "cancel"
+                //} else { // user clicked "cancel"
             }
         });
     }
 };
 
-function selectMeasurement()
-{
+function selectMeasurement() {
     if (engine3D.measurements == 1.8311874) {
         //$('#menuMeasureText').html("Imperial");
         engine3D.measurements = 1; //Imperial Ratio TODO: Get the right ratio
@@ -646,27 +669,23 @@ function getParents(obj) {
 };
 */
 
-engineGUI.sceneMapBox = function()
-{
-    if (typeof mapbox == undefined) 
-    {
+engineGUI.sceneMapBox = function () {
+    if ((typeof L == 'undefined' ? 'undefined' : _typeof(L)) === undefined) {
         engine3D.animateStop();
-
-        $.getScript( "js/dynamic/mapbpx.js" )
-              .done(function( script, textStatus ) {
-                L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
-                var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);
-              })
-              .fail(function( jqxhr, settings, exception ) {
-                console.log('Failed to load mapbox.js');
+        $.getScript("js/dynamic/mapbox.js").done(function (script, textStatus){
+            L.mapbox.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q';
+            var mapBox = L.mapbox.map('map1', 'mapbox.streets').setView([48.43102300370144, -123.3489990234375], 14);
+            console.log("mapbox.js loaded");
+            window.location = "#map";
+        }).fail(function (jqxhr, settings, exception) {
+            alertify.alert("Failed to load mapbox.js").show();
         });
     }
 };
 
-engineGUI.makeScreenshot = function()
-{
+engineGUI.makeScreenshot = function () {
     window.open(engine3D.renderer.domElement.toDataURL('image/png'), 'Final');
-    
+
     /*
     renderer.preserveDrawingBuffer = true;
     window.open(renderer.domElement.toDataURL('image/png'), 'Final');
@@ -677,25 +696,23 @@ engineGUI.makeScreenshot = function()
     */
 };
 
-engineGUI.addNewFloor = function() {
-    
-    if($("#addNewFloor").val())
-    {
-        engine3D.newFloor($("#addNewFloor").val());
+engineGUI.addNewFloor = function () {
 
+    if ($("#addNewFloor").val()) {
+        engine3D.newFloor($("#addNewFloor").val());
         var a = "<a href='#' onclick='camera3DFloorFlyIn(" + scene3DFloorFurnitureContainer.length + ")'><span>" + $("#addNewFloor").val() + "</span></a>";
         var item = $("<li>").append(a);
         $("#menuLeft3DHouseFloorList").append(item);
     }
 };
 
-engineGUI.generateItemList =function() {
+engineGUI.generateItemList = function () {
 
     var list = $("#generateItemList");
     list.empty();
 
     for (var i = 0; i < scene3DFloorFurnitureContainer.length; i++) {
-        
+
         console.log(scene3DFloorFurnitureContainer[i].name);
 
         for (var c = 0; c < scene3DFloorFurnitureContainer[i].children.length; c++) {
@@ -710,15 +727,13 @@ engineGUI.generateItemList =function() {
     }
 };
 
-engineGUI.exportPDF = function() {
-    
+engineGUI.exportPDF = function () {
+
     //alert('Sorry, your browser is not supported.');
 
-    if(engineGUI.scene === '2d')
-    {
-        if (typeof jsPDF === undefined)
-        {
-            $.getScript("js/dynamic/jspdf.js", function(data, textStatus, jqxhr) {
+    if (engineGUI.scene === '2d') {
+        if ((typeof jsPDF === 'undefined' ? 'undefined' : _typeof(jsPDF)) === undefined) {
+            $.getScript("js/dynamic/jspdf.js", function (data, textStatus, jqxhr) {
                 //if (typeof jsPDF == 'undefined') $.loadScript("js/jspdf.js", function(){
                 /*
                 console.log(data); //data returned
@@ -754,10 +769,9 @@ engineGUI.exportPDF = function() {
     }
 };
 
-function scene3DSplitViewTop()
-{
-    var w = window.innerWidth/1.4;
-    var h = window.innerHeight*0.2;
+function scene3DSplitViewTop() {
+    var w = window.innerWidth / 1.4;
+    var h = window.innerHeight * 0.2;
 
     $("#left-component-1").css({ width: w });
     $("#right-component-1").css({ left: w });
@@ -770,10 +784,9 @@ function scene3DSplitViewTop()
     engine3D.initRendererQuadSize();
 };
 
-function scene3DSplitViewFront()
-{
-    var w = window.innerWidth*0.3;
-    var h = window.innerHeight*0.2;
+function scene3DSplitViewFront() {
+    var w = window.innerWidth * 0.3;
+    var h = window.innerHeight * 0.2;
 
     $("#left-component-1").css({ width: w });
     $("#right-component-1").css({ left: w });
@@ -786,10 +799,9 @@ function scene3DSplitViewFront()
     engine3D.initRendererQuadSize();
 };
 
-function scene3DSplitViewSide()
-{
-    var w = window.innerWidth*0.15;
-    var h = window.innerHeight/1.4;
+function scene3DSplitViewSide() {
+    var w = window.innerWidth * 0.15;
+    var h = window.innerHeight / 1.4;
 
     $("#left-component-1").css({ width: w });
     $("#right-component-1").css({ left: w });
@@ -802,14 +814,10 @@ function scene3DSplitViewSide()
     engine3D.initRendererQuadSize();
 };
 
-function scene3DSplitView3D()
-{
-    
-};
+function scene3DSplitView3D() {};
 
 //TODO: optimize there two functions into one
-function handleFile3DObjectSelect(event)
-{
+function handleFile3DObjectSelect(event) {
     //console.log("catch file");
     switch (event.target.files[0].type) {
         case 'application/zip': //Zip root folder structure should contain .js and textures in '/Textures' folder (assuming have proper texture paths)
@@ -822,21 +830,22 @@ function handleFile3DObjectSelect(event)
                 resetForm: true // reset the form after successful submit 
             };
 
-            $('#uploadForm').submit(function() {
+            $('#uploadForm').submit(function () {
                 $(this).ajaxSubmit(options);
                 return false; // return false to prevent standard browser submit and page navigation 
             });
             break;
-        case 'application/x-javascript': //Security Reason local load can only load string file (JSON,DAE,OBJ) content but no Textures or Binary extentions
+        case 'application/x-javascript':
+            //Security Reason local load can only load string file (JSON,DAE,OBJ) content but no Textures or Binary extentions
             fileReader = new FileReader();
             fileReader.onerror = errorHandler;
             //fileReader.onprogress = updateProgress;
 
-            fileReader.onloadstart = function(e) {
+            fileReader.onloadstart = function (e) {
                 //TODO: show indicator, some 3D objects take time to load
             };
 
-            fileReader.onload = function(e) {
+            fileReader.onload = function (e) {
                 console.log("Load File: " + $('#fileInput').value + ":" + event.target.files[0].name);
                 engine3D.open(e.target.result);
                 engine2D.open(e.target.result);
@@ -852,8 +861,8 @@ function handleFile3DObjectSelect(event)
     }
 };
 
-function handleFile2DImageSelect(event)
-{
+function handleFile2DImageSelect(event) {
+    
     if (!event.target.files[0].type.match('image.*')) {
         alert('Currently only photos are supported');
         return;
@@ -869,17 +878,9 @@ function handleFile2DImageSelect(event)
     fileReader.onloadstart = function(e) {
     };
     */
-
-    fileReader.onload = function(e)
-    {
-        engine2D.draftPlan[engineGUI.floor] = new paper.Raster({source:e.target.result, position:paper.view.center });
-        engine2D.draftPlan[engineGUI.floor].opacity = 0.6;
-        //engine2D.draftPlan[engineGUI.floor].scale(0.5);
-        //engine2D.draftPlan[engineGUI.floor].rotate(5);
-        
-        //scene2D.add(engine2D.draftPlan[engineGUI.floor]);
-        //scene2D.sendToBack(engine2D.draftPlan[engineGUI.floor]);
-        //scene2D.renderAll();
+    
+    fileReader.onload = function (e) {
+        engine2D.loadDraftPlan(e.target.result);
     };
 
     // Read image file as a binary string.
@@ -893,8 +894,8 @@ function handleFile2DAutoCADConvert(event) {
 
     fileReader = new FileReader();
     fileReader.onerror = errorHandler;
-   
-    fileReader.onload = function(e) {
+
+    fileReader.onload = function (e) {
         var parser = new DXFParser(e.target.result);
         console.log(parser);
     };
@@ -904,26 +905,21 @@ function handleFile2DAutoCADConvert(event) {
     $('#fileInput').unbind('change', handleFile2DAutoCADConvert);
 };
 
-function toggleTextureSelect()
-{
-    if ($('#WebGLTextureSelect').is(':visible'))
-    {
+function toggleTextureSelect() {
+    if ($('#WebGLTextureSelect').is(':visible')) {
         $('#WebGLTextureSelect').hide();
         $('#WebGLColorWheelSelect').hide();
-    }
-    else
-    {
+    } else {
         $('#WebGLTextureSelect').empty();
 
-        if (SelectedWall !== null)
-        {
-            var scroll =  $("<div>", {class:"scroll","data-ui":"jscroll-default",style:"width:100%;height:80px"});
-            var list =  $("<div>", {class:"objectItem",style:"width:100px;height:64px"});
+        if (SelectedWall !== null) {
+            var scroll = $("<div>", { class: "scroll", "data-ui": "jscroll-default", style: "width:100%;height:80px" });
+            var list = $("<div>", { class: "objectItem", style: "width:100px;height:64px" });
 
-            var item = $("<a>", {href:"#"}).append($("<img>", {id:"test", src:"objects/Wall/Textures/W2367.jpg"}));
+            var item = $("<a>", { href: "#" }).append($("<img>", { id: "test", src: "objects/Wall/Textures/W2367.jpg" }));
             list.append(item);
 
-            item = $("<a>", {href:"#"}).append($("<img>", {id:"test", src:"objects/Wall/Textures/W3465.jpg"}));
+            item = $("<a>", { href: "#" }).append($("<img>", { id: "test", src: "objects/Wall/Textures/W3465.jpg" }));
             list.append(item);
 
             $('#WebGLTextureSelect').append(scroll.append(list));
@@ -931,15 +927,13 @@ function toggleTextureSelect()
 
         $('#WebGLTextureSelect').show();
 
-        if (SelectedWall !== null)
-        {
+        if (SelectedWall !== null) {
             $('#WebGLColorWheelSelect').show();
         }
     }
 };
 
-function ajaxBeforeSubmit()
-{
+function ajaxBeforeSubmit() {
     var fsize = $('#fileInput')[0].files[0].size; //get file size
     var ftype = $('#fileInput')[0].files[0].type; // get file type
 
@@ -960,8 +954,7 @@ function ajaxBeforeSubmit()
     }
 };
 
-function fileSelect(action)
-{
+function fileSelect(action) {
     // Check for the various File API support.
     if (window.File && window.FileReader && window.FileList && window.Blob) {
 
@@ -970,11 +963,9 @@ function fileSelect(action)
         if (action == '2ddraftplan') {
 
             $('#fileInput').bind('change', handleFile2DImageSelect);
-
-        }else if (action == '2dautocad') {
+        } else if (action == '2dautocad') {
 
             $('#fileInput').bind('change', handleFile2DAutoCADConvert);
-
         } else if (action == '3dobject') {
 
             //Determine if local or submit through webserver
@@ -986,8 +977,7 @@ function fileSelect(action)
     }
 };
 
-function errorHandler(event)
-{
+function errorHandler(event) {
     switch (event.target.error.code) {
         case event.target.error.NOT_FOUND_ERR:
             alert('File Not Found!');
@@ -1037,20 +1027,17 @@ function ajaxProgress(event, position, total, percentComplete)
 }
 */
 
-
 function getCookie(name) {
-  var value = "; " + document.cookie;
-  var parts = value.split("; " + name + "=");
-  if (parts.length == 2) 
-    return parts.pop().split(";").shift();
+    var value = "; " + document.cookie;
+    var parts = value.split("; " + name + "=");
+    if (parts.length == 2) return parts.pop().split(";").shift();
 };
 
-function createCookie(name,value,days) {
+function createCookie(name, value, days) {
     if (days) {
         var date = new Date();
-        date.setTime(date.getTime()+(days*24*60*60*1000));
-        var expires = "; expires="+date.toGMTString();
-    }
-    else var expires = "";
-    document.cookie = name+"="+value+expires+"; path=/";
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        var expires = "; expires=" + date.toGMTString();
+    } else var expires = "";
+    document.cookie = name + "=" + value + expires + "; path=/";
 };

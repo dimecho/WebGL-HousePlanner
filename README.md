@@ -33,7 +33,7 @@ Windows
     <pre style="margin: 0; line-height: 125%">chrome.exe --disable-web-security</pre>
 </div>
 
-![HousePlanner](https://raw.githubusercontent.com/poofik/WebGL-HousePlanner/master/screenshot.jpg)
+![HousePlanner](https://raw.githubusercontent.com/poofik/WebGL-HousePlanner/master/images/screenshot.jpg)
 
 ## Author
 

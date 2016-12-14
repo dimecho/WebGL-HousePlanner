@@ -46,6 +46,8 @@
   <script src="js/src/library/colorwheel.js"></script>
   <script src="js/src/library/parallaxslider.js"></script>
 
+  <script src="js/cannon/cannon.min.js"></script>
+
   <script src="js/src/variables.js"></script>
   <script src="js/src/load.js"></script>
   <script src="js/src/gui.js"></script>
@@ -79,7 +81,7 @@
       engineGUI.initialize();
       
       //engineGUI.initParallaxSlider("4af8b812");
-
+      
       //engineGUI.initHousePlanner("4af8b812");
       //engineGUI.open(1);
     });
@@ -114,14 +116,6 @@
   <link rel="stylesheet" type="text/css" href="css/src/cssflip.css" />
   <link rel="stylesheet" type="text/css" href="css/src/cssload.css" />
   <link rel="stylesheet" type="text/css" href="css/src/mapbox.css" />
-
-  <!--[if gte IE 9]>
-    <style type="text/css">
-      .gradient {
-         filter: none;
-      }
-    </style>
-  <![endif]-->
 </head>
 
 <body>
@@ -278,8 +272,8 @@
         <canvas id="fabricjs2"></canvas>
       </div>
   </div>
-
-  <div id="openPanoramaSelect" class="modalDialog">
+  
+  <div id="panoramaBuild" class="modalDialog">
     <div style="width:600px;height:400px">
       <a href="#close" class="close">X</a>
       <div>
@@ -318,8 +312,8 @@
 
   <div id="panorama" class="modalDialog">
   	<div style="width:80%;height:90%;margin:2% auto;">
-  		<a href="#close" class="close" onclick="engine3D.disposePanorama('#WebGLPanoramaHouse');">X</a>
-      <div id="WebGLPanoramaHouse" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
+  		<a href="#close" class="close" onclick="engine3D.disposePanorama('#WebGLPanorama');">X</a>
+      <div id="WebGLPanorama" style=" display: block; margin: 10px auto 0 auto;width:100%; height:100%;"></div>
   	</div>
   </div>
 
@@ -343,15 +337,26 @@
     </div>
   </div>
 
+  <div id="menuAgent" class="flip-container"> <!--ontouchstart="this.classList.toggle('hover');">-->
+    <div class="flipper">
+      <div class="front image-circular">
+        <a href="#start" id="image-circular-src"><img id="agentPicture" alt="" /></a>
+      </div>
+      <div class="back image-circular">
+        <a href="#" id="image-circular-src" onclick="engineGUI.sceneMapBox()"><img src="images/map.jpg" alt="" /></a>
+      </div>
+    </div>
+  </div>
+
   <!-- Slide Right Menu -->
   <div id="menuRight" class="hide-right" style="display:none">
-      <ul id="tab-right">
+      <ul class="tab-right">
           <li>
               <img id="arrow-right" onclick="engineGUI.menuToggleRight('menuRight',false);" src="images/arrowleft.png">
           </li>
       </ul>
 
-      <div id="links-left" style="width:320px;">
+      <div class="links-left" style="width:320px;">
           <div style="display:inline-block;width:100%;vertical-align:top;padding:8px">
               <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" >
                   <a href="#" onclick="fileSelect('3dobject')" class="hi-icon icon-upload tooltip-top" title="Upload Your 3D Object"></a>
@@ -405,59 +410,26 @@
   </div>
   <!-- END Slide Right Menu -->
 
-  <div id="menuAgent" class="flip-container"> <!--ontouchstart="this.classList.toggle('hover');">-->
-    <div class="flipper">
-      <div class="front image-circular">
-        <a href="#start" id="image-circular-src"><img id="agentPicture" alt="" /></a>
-      </div>
-      <div class="back image-circular">
-        <a href="#map" id="image-circular-src" onclick="engineGUI.sceneMapBox()"><img src="images/map.jpg" alt="" /></a>
-      </div>
-    </div>
-  </div>
-
   <!-- Slide Left Menu -->
-  <div id="menuLeft3DHouse" class="hide-left" style="width:240px;" >
-      <ul id="tab-left">
+  <div id="menuLeft3DHouse" class="hide-left">
+      <ul class="tab-left">
           <li>
-              <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
+            <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DHouse',false);" src="images/arrowright.png">
           </li>
       </ul>
-      <div id="links-left" style="width:180px;height:100px;">
-            <a href="#panorama" onclick="engine3D.initPanorama('#WebGLPanoramaHouse','3427',0.78,0.85)">
-              <img class="tooltip-top" title="MLS#: 123456" src="panoramas/3427/preview.jpg" alt="Property" style="width:100%;height:80px;"/>
-            </a>
-      </div>
-      <div id="links-left" class='cssmenu' style="width:180px;margin-top:20px">
-          <ul id="menuLeft3DHouseFloorList" class="flip">
-              <li class='active'><a href='#openAddNewFloor'><span class="icon-add" style="font-size:18px;padding-right:5px"></span><span>Add New Floor</span></a></li>
-              <li><a href='#' onclick="camera3DFloorFlyIn(0)"><span>Basement</span></a></li>
-              <li class='has-sub'><a href='#'><span>Floor 1</span></a>
-                <ul>
-                   <li><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Living Room</span></a></li>
-                   <li><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Kitchen</span></a></li>
-                   <li class='last'><a href='#' onclick="camera3DFloorFlyIn(1)"><span>Garage</span></a></li>
-                </ul>
-              </li>
-              <li class='has-sub'><a href='#'><span>Floor 2</span></a>
-                <ul>
-                   <li><a href='#' onclick="camera3DFloorFlyIn(2)"><span>Bedroom 1</span></a></li>
-                   <li class='last'><a href='#' onclick="camera3DFloorFlyIn(2)"><span>Bedroom 2</span></a></li>
-                </ul>
-              </li>
-          </ul>
-      </div>
+      <div id="panoramaHouse"></div>
+      <div id="menuFloorList"></div>
   </div>
 
   <div id="menuLeft3DLandscape" class="hide-left">
-      <ul id="tab-left">
+      <ul class="tab-left">
           <li>
               <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DLandscape',false);" src="images/arrowright.png">
           </li>
       </ul>
-      <div id="links-left" style="width:80px">
+      <div class="links-left" style="width:80px">
           <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
-              <a href="#openPanoramaSelect" onclick="" class="hi-icon icon-panorama tooltip" title="Panorama Image"></a>
+              <a href="#panoramaBuild" onclick="" class="hi-icon icon-panorama tooltip" title="Panorama Image"></a>
               <a href="#" onclick="engineGUI.menuSelect(0,'menuLeft3DLandscapeItem','#ff3700');engine3D.tool='rotate'" class="hi-icon icon-rotate2 tooltip" id="menuLeft3DLandscapeItem0" title="Rotate"></a>
               <a href="#" onclick="engineGUI.menuSelect(1,'menuLeft3DLandscapeItem','#ff3700');engine3D.tool='angle'" class="hi-icon icon-angle tooltip" id="menuLeft3DLandscapeItem1" title="Angle"></a>
               <a href="#" onclick="engineGUI.menuSelect(2,'menuLeft3DLandscapeItem','#ff3700');engine3D.tool='hill';landscape.select('hill');" class="hi-icon icon-hill tooltip" id="menuLeft3DLandscapeItem2" title="Create Hill" ></a>
@@ -468,38 +440,21 @@
   </div>
 
   <div id="menuLeft3DFloor" class="hide-left">
-    <ul id="tab-left">
+    <ul class="tab-left">
       <li>
         <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft3DFloor',false);" src="images/arrowright.png">
       </li>
     </ul>
-    <div id="links-left" style="width:200px;height:120px;">
-      <a href="#" onclick="">
-        <img src="panoramas/3428/back.jpg" alt="" style="height:100px"/>
-      </a>
-    </div>
-    <div id="links-left" style="width:200px;height:120px;">
-      <a href="#" onclick="">
-        <img src="images/placeholder.jpg" alt="" style="height:100px"/>
-      </a>
-    </div>
-    <div id="links-left" style="width:200px;height:120px;">
-      <a href="#" onclick="">
-        <img src="images/placeholder.jpg" alt="" style="height:100px"/>
-      </a>
-    </div>
-    <div id="links-left" style="width:200px;height:120px;">
-      <a href="#" onclick=""><img src="images/placeholder.jpg" alt="" style="height:100px"/></a>
-    </div>
+    <div id="panoramaFloor"></div>
   </div>
-
+  
   <div id="menuLeft2D" class="hide-left">
-      <ul id="tab-left">
+      <ul class="tab-left">
           <li>
               <img id="arrow-left" onclick="engineGUI.menuToggleLeft('menuLeft2D',false);" src="images/arrowright.png">
           </li>
       </ul>
-      <div id="links-left" style="width:80px">
+      <div class="links-left" style="width:80px">
           <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a" style="padding: 0px;">
               <a href="#" onclick="fileSelect('2dautocad')" class="hi-icon icon-dxf tooltip" id="menuLeft2DItem0" title="Upload AutoCAD DXF"></a>
               <a href="#" onclick="fileSelect('2ddraftplan')" class="hi-icon icon-jpg tooltip" id="menuLeft2DItem1" title="Upload Draft Plan (pdf, jpg, png)"></a>
@@ -516,7 +471,6 @@
   </div>
   <!-- END Slide Right Menu -->
 
-	<!-- Thumbnail class="ui-widget-content" -->
 	<div class="menuTop"></div>
   
   <div id="menuFloorSelector" align="center">
@@ -537,6 +491,7 @@
         <a href="#Tutorial-1" class="hi-icon icon-help tooltip" title="Help"></a>
       </div>
   </div>
+
   <div id="menuBottomFloor" class="menuBottom">
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
         <a href="#" onclick="engineGUI.exportPDF()" class="hi-icon icon-print tooltip" title="Print PDF"></a>
@@ -553,6 +508,7 @@
         <a href="#" class="hi-icon icon-help tooltip" title="Help"></a>
       </div>
   </div>
+
   <div id="menuBottomPlan" class="menuBottom">
       <div class="hi-icon-wrap hi-icon-effect-1 hi-icon-effect-1a">
         <a href="#" onclick="engineGUI.exportPDF()" class="hi-icon icon-print tooltip" title="Print PDF"></a>
@@ -569,8 +525,6 @@
   	<p>Address Location</p>
   </div>
   -->
-  <!-- End Thumbnail -->
-  <!-- UI -->
 
   <form action="" method="post" enctype="multipart/form-data" id="uploadForm" style="display:none">
       <input type="file" name="fileInput" id="fileInput"  hidden />
@@ -638,7 +592,7 @@
       <form id="WebGLNote" style="position:absolute;left:40%;top:40%;display:none;">
           <textarea  name="note" maxlength="1000" cols="50" rows="6" style="border:none;background-color:transparent;">A Note with dynamic text and very cool visual effects</textarea>
       </form>
-      <div id="WebGLPanorama" style="position:absolute;left:10%;bottom:50px;display:none;"></div>
+      <!--<div id="WebGLPanorama" style="position:absolute;left:10%;bottom:50px;display:none;"></div>-->
       <div id="WebGLWallPaintMenu" style="display:none;position:absolute;width:35px;height:35px;">
           <a href="#" onclick="toggleTextureSelect()"><img src="images/colorwheel.svg" /></a>
       </div>
